@@ -28,7 +28,9 @@
       "Bash(pkill -f 'vite preview')",
       "Bash(pkill -f 'node.*vite')",
       "Bash(grep -n 'const { useState\\\\|const {$\\\\|^const rootEl\\\\|ReactDOM.createRoot' original-artifact.html)",
-      "Bash(xargs cat)"
+      "Bash(xargs cat)",
+      "Bash(git -C /Users/daniachini/Documents/tank-wizard log --oneline -10)",
+      "Bash(node *)"
     ]
   }
 }
