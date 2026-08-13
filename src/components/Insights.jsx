@@ -93,8 +93,6 @@ export function Insights({ readings, icps, paramDefs, settings, latestByParam,
   const nutrients = useMemo(() => computeNutrientRatio(readings), [readings]);
   /* Same replacement dates the findings layer uses, or this panel would keep
      showing an offset the rest of the app had already retired. */
-  /* The alkalinity protocol assessment — computed here so the dose row and its
-     detail read from one result rather than two engines. */
   const calibration = useMemo(
     () => computeCalibration(readings, icps, paramDefs, 7, kitChanges),
     [readings, icps, paramDefs, kitChanges]);
