@@ -23,7 +23,7 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
   onRestoreFinding, onRestoreAllFindings,
   customTasks = [], dismissedList = [] }) {
 
-  const [vol, setVol] = useState(String(settings.volumeL ?? 77));
+  const [vol, setVol] = useState((settings.volumeL == null ? "" : String(settings.volumeL)));
   const [backupAt, setBackupAt] = useState(null);
   const [restoreMsg, setRestoreMsg] = useState(null);
   const [pending, setPending] = useState(null);
@@ -56,7 +56,7 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
   const [doseDate, setDoseDate] = useState(todayStr());
 
   useEffect(() => {
-    setVol(String(settings.volumeL ?? 77));
+    setVol((settings.volumeL == null ? "" : String(settings.volumeL)));
     setElemDose(String(settings[elem.doseField] ?? 0));
     setElemStrength(String(settings[elem.strengthField] ?? elem.defaultStrength));
     setSigmaVal(String(kitSigma(elem.key, settings)));
@@ -67,11 +67,17 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
   const doseNum = parseFloat(elemDose);
   const strengthNum = parseFloat(elemStrength) || 0;
   const doseChanged = !isNaN(doseNum) && doseNum !== currentDose;
-  const perDayDelivered = currentDose * strengthNum * (100 / (parseFloat(vol) || 77));
+  const volNum = parseFloat(vol);
+  const perDayDelivered = volNum > 0
+    ? currentDose * strengthNum * (100 / volNum) : null;
 
+  /* Clearing the field stores nothing, rather than storing some other tank's
+     volume. The app would rather refuse to dose than dose the wrong tank. */
   const saveVolume = async () => {
-    await onSaveSettings({ ...settings, volumeL: parseFloat(vol) || 77 });
-    setSaveMsg("Tank volume saved.");
+    await onSaveSettings({ ...settings, volumeL: volNum > 0 ? volNum : null });
+    setSaveMsg(volNum > 0
+      ? "Tank volume saved."
+      : "Tank volume cleared. Dosing advice will not be calculated until you enter it.");
     setTimeout(() => setSaveMsg(null), 2500);
   };
 
@@ -111,7 +117,7 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
   const calcDef = paramDefs.find((d) => d.key === calcParam) || correctable[0];
   const calcCurrent = latestByParam && latestByParam[calcParam] ? latestByParam[calcParam].value : null;
   const correction = useMemo(
-    () => computeCorrection(calcParam, calcCurrent, parseFloat(calcTarget), settings.volumeL || 77),
+    () => computeCorrection(calcParam, calcCurrent, parseFloat(calcTarget), settings.volumeL),
     [calcParam, calcCurrent, calcTarget, settings.volumeL]);
 
   // Lighting log state
@@ -167,11 +173,18 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
         ))}
         <p className="text-[11px] text-ink2 mt-1 leading-snug">
           Precision decides how long the app waits before it will read a trend —
-          a better kit earns a verdict sooner. Alkalinity currently needs{" "}
-          {settleWindow("alkalinity",
-            (settings.dailyDoseMl || 0) * (settings.dkhPerMlPer100L || 0) * 100 / (settings.volumeL || 77),
-            settings)}{" "}
-          days of readings on this tank.
+          a better kit earns a verdict sooner.{" "}
+          {settings.volumeL > 0 ? (
+            <>
+              Alkalinity currently needs{" "}
+              {settleWindow("alkalinity",
+                (settings.dailyDoseMl || 0) * (settings.dkhPerMlPer100L || 0) * 100 / settings.volumeL,
+                settings)}{" "}
+              days of readings on this tank.
+            </>
+          ) : (
+            <>How many days that takes on this tank depends on your net volume, which isn't set yet.</>
+          )}
         </p>
       </Card>
 
@@ -210,7 +223,9 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
           )}
           {!doseChanged && currentDose > 0 && strengthNum > 0 && (
             <p className="text-[11px] font-bold text-teal-brand mt-1.5">
-              Delivering about {fmtAmount(perDayDelivered)} {elem.unit} per day to {vol}L.
+              {perDayDelivered != null
+                ? `Delivering about ${fmtAmount(perDayDelivered)} ${elem.unit} per day to ${vol}L.`
+                : "What this delivers per day cannot be worked out until the tank's net volume is set above."}
             </p>
           )}
           {saveMsg && <p className="text-[11px] font-extrabold text-teal-brand mt-1.5">{saveMsg}</p>}
@@ -350,9 +365,14 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
         </div>
         {calcCurrent == null ? (
           <p className="text-[13px] text-ink2 font-medium">No current reading logged for {calcDef ? calcDef.label.toLowerCase() : "this parameter"} — log one first.</p>
+        ) : !(settings.volumeL > 0) ? (
+          <p className="text-[13px] text-ink2 font-medium">
+            Currently {calcCurrent}{calcDef.unit}. Set your tank's net volume above before this
+            can be worked out — every amount here is per litre of water.
+          </p>
         ) : !correction ? (
           <p className="text-[13px] text-ink2 font-medium">
-            Currently {calcCurrent}{calcDef.unit}. Enter a target to see what it takes to get there in {settings.volumeL || 77}L.
+            Currently {calcCurrent}{calcDef.unit}. Enter a target to see what it takes to get there in {settings.volumeL}L.
           </p>
         ) : !correction.raising ? (
           <div className="rounded-xl p-3" style={{ background: "#1D6FA512", border: "1px solid #1D6FA540" }}>
@@ -363,7 +383,7 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
         ) : (
           <div className="rounded-xl p-3" style={{ background: "#B8541A12", border: "1px solid #B8541A40" }}>
             <p className="text-[13px] text-ink font-medium leading-relaxed mb-2">
-              Raising {calcDef.label.toLowerCase()} by {correction.delta.toFixed(correction.delta < 1 ? 2 : 0)}{correction.unit} in {settings.volumeL || 77}L.
+              Raising {calcDef.label.toLowerCase()} by {correction.delta.toFixed(correction.delta < 1 ? 2 : 0)}{correction.unit} in {settings.volumeL}L.
               {correction.days > 1
                 ? ` That exceeds the safe change of ${correction.maxPerDay}${correction.unit} per day, so spread it over ${correction.days} days.`
                 : " That's within a safe single-day change."}

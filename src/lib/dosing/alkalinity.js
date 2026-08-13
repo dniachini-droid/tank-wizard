@@ -4,7 +4,7 @@ import { minutesOf, nowTime } from '../analytics/time-of-day.js'
 import { dayNum } from '../analytics/water-changes.js'
 import { todayStr } from '../dates.js'
 import { repeatedCorrections } from './calcium.js'
-import { bracketDose, capDoseStep, correctionPlanFor, correctionProgress, doseDriftedFrom, doseObservations, dosePlausible, pendingCorrection } from './helpers.js'
+import { bracketDose, capDoseStep, correctionPlanFor, correctionProgress, doseDriftedFrom, doseObservations, dosePlausible, missingDoseInputs, pendingCorrection } from './helpers.js'
 import { strengthPlausible } from './magnesium.js'
 
 /* --- Alkalinity dosing assessment ---
@@ -448,7 +448,7 @@ export function assessAlkalinity({ readings, doseLog = [], waterChanges = [], se
   out.effectSolved = solveAlkEffect(readings, doseLog, waterChanges,
     { ...settings, _corrections: corrections });
   if (!effect) {
-    out.reason = "Set your tank volume and alkalinity solution strength in Setup before this can be calculated.";
+    out.reason = missingDoseInputs(settings, "alkalinity", "dkhPerMlPer100L");
     return out;
   }
 

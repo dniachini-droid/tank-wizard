@@ -509,6 +509,28 @@ export function dosePlausible(ml, settings) {
   return ml <= vol * 2;
 }
 
+/* Why an effect-per-mL could not be worked out, in the user's terms.
+ *
+ * The two inputs fail differently. A missing strength is a bottle detail; a
+ * missing net volume means the app has no idea how big the tank is, and there
+ * is no safe stand-in for that — so it is named explicitly rather than folded
+ * into a generic "check Setup" (reef-chemistry.md §2, §7.6). One wording, used
+ * by all three engines, so they cannot drift apart on it. */
+export function missingDoseInputs(settings, label, strengthField) {
+  const vol = Number(settings && settings.volumeL);
+  const per100 = Number(settings && settings[strengthField]);
+  const noVolume = !isFinite(vol) || vol <= 0;
+  const noStrength = !isFinite(per100) || per100 <= 0;
+  const parts = [];
+  if (noVolume) parts.push("your tank's net volume");
+  if (noStrength) parts.push(`your ${label} solution strength`);
+  if (!parts.length) return null;
+  return `Set ${parts.join(" and ")} in Setup before this can be calculated.`
+    + (noVolume
+      ? " Every millilitre figure here is worked out per litre of water, so no dose is calculated until the net volume is entered — the app will not assume one."
+      : "");
+}
+
 export function mgEffectPerMl(settings) {
   const per100 = Number(settings && settings.mgPpmPerMlPer100L);
   const vol = Number(settings && settings.volumeL);
@@ -546,7 +568,7 @@ export function assessMagnesium({ readings, doseLog = [], waterChanges = [], set
   const effect = mgEffectPerMl(settings);
   out.effectPerMl = effect;
   if (!effect) {
-    out.reason = "Set your tank volume and magnesium solution strength in Setup before this can be calculated.";
+    out.reason = missingDoseInputs(settings, "magnesium", "mgPpmPerMlPer100L");
     return out;
   }
   out.effectSolved = solveMgEffect(readings, doseLog, waterChanges, settings, corrections);

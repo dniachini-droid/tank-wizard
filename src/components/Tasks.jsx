@@ -26,8 +26,10 @@ export function Tasks({ allTasks, taskLog, onAddCustom, onDeleteCustom, onMarkDo
 
   const preview = useMemo(() => {
     const L = parseFloat(wcLitres);
-    if (!L || L <= 0) return null;
-    return predictAfterChange(latestByParam, paramDefs, settings.volumeL || 77, L);
+    /* What a change dilutes is a fraction of the tank, so with no net volume
+       there is no fraction to quote. */
+    if (!L || L <= 0 || !(settings.volumeL > 0)) return null;
+    return predictAfterChange(latestByParam, paramDefs, settings.volumeL, L);
   }, [wcLitres, latestByParam, paramDefs, settings.volumeL]);
 
   const confirmWaterChange = async () => {
@@ -35,7 +37,8 @@ export function Tasks({ allTasks, taskLog, onAddCustom, onDeleteCustom, onMarkDo
     if (!L || L <= 0) return;
     await onAddWaterChange({ date: todayStr(), litres: L, note: "" });
     await onMarkDone("waterchange", todayStr());
-    setWcResult(predictAfterChange(latestByParam, paramDefs, settings.volumeL || 77, L));
+    setWcResult(settings.volumeL > 0
+      ? predictAfterChange(latestByParam, paramDefs, settings.volumeL, L) : null);
     setWcOpen(false);
   };
 
@@ -112,7 +115,7 @@ export function Tasks({ allTasks, taskLog, onAddCustom, onDeleteCustom, onMarkDo
           </Field>
           {wcPreview && (
             <p className="text-[12px] text-ink2 font-medium leading-relaxed mt-1 mb-2">
-              {wcPreview.pct.toFixed(1)}% of your {settings.volumeL || 77}L system.
+              {wcPreview.pct.toFixed(1)}% of your {settings.volumeL}L system.
             </p>
           )}
           <Btn className="w-full" onClick={logWaterChange}>

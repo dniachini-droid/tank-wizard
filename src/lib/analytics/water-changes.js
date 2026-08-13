@@ -26,7 +26,12 @@ export const DEFAULT_SETTINGS = {
      read as the fallback so existing setups keep working. */
   testKit: "hanna",
   testKits: { alkalinity: "hanna", calcium: "redsea", magnesium: "salifert" },
-  volumeL: 77,
+  /* Deliberately absent. Every millilitre figure in the app is scaled by the
+     tank's net volume, so a default here is not a convenience — it is one
+     particular tank's volume silently dosing somebody else's. The engines
+     refuse and name it as the missing input instead (reef-chemistry.md §2,
+     §7.6, §9). */
+  volumeL: null,
   /* Derived from the actual mix rather than a label. Aquaforest Balling at 2x
      standard: 101 g soda ash per L = 1906 meq/L, so 1 mL into 100 L gives
      0.0533 dKH. Calcium: 100 g AF Calcium per L (anhydrous CaCl2, 36.1% Ca)

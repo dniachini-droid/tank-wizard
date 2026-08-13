@@ -4,7 +4,7 @@ import { minutesOf, nowTime } from '../analytics/time-of-day.js'
 import { dayNum } from '../analytics/water-changes.js'
 import { todayStr } from '../dates.js'
 import { alkAnomaly, alkFit, alkIntervals, alkStamp, applyDoseConstraints, directionConsistent, noteCurrentAndInterventions, rateLimitDose, trendConfirmed } from './alkalinity.js'
-import { correctionPlanFor, correctionProgress, doseDriftedFrom, dosePlausible, mgEffectPerMl, pendingCorrection } from './helpers.js'
+import { correctionPlanFor, correctionProgress, doseDriftedFrom, dosePlausible, mgEffectPerMl, missingDoseInputs, pendingCorrection } from './helpers.js'
 import { strengthPlausible } from './magnesium.js'
 
 /* --- Calcium dosing assessment ---
@@ -209,7 +209,7 @@ export function assessCalcium({ readings, doseLog = [], waterChanges = [], setti
   const effect = caEffectPerMl(settings);
   out.effectPerMl = effect;
   if (!effect) {
-    out.reason = "Set your tank volume and calcium solution strength in Setup before this can be calculated.";
+    out.reason = missingDoseInputs(settings, "calcium", "caPpmPerMlPer100L");
     return out;
   }
   out.effectSolved = solveCaEffect(readings, doseLog, waterChanges, settings, corrections);

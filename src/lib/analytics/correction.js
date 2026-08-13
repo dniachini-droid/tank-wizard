@@ -50,6 +50,9 @@ export function fmtDoseMass(g) {
 export function computeCorrection(paramKey, current, target, volumeL) {
   const c = CORRECTIONS[paramKey];
   if (!c || current == null || target == null || isNaN(current) || isNaN(target)) return null;
+  /* Doses scale straight off the volume, so without it there is no correction
+     to quote — a missing volume must not quietly become a zero-gram answer. */
+  if (!(volumeL > 0)) return null;
   const delta = target - current;
   if (Math.abs(delta) < 1e-9) return null;
   const volFactor = volumeL / 100;

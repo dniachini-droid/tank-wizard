@@ -243,8 +243,8 @@ export function computeDoseCalc(key, driftPerWeek, settings) {
   const s = { ...DEFAULT_SETTINGS, ...settings };
   const doseMl = s[cfg.doseField] || 0;
   const strength = s[cfg.strengthField] || 0;
-  const litres = s.volumeL || 77;
-  if (doseMl <= 0 || strength <= 0 || litres <= 0) return null;
+  const litres = s.volumeL;
+  if (doseMl <= 0 || strength <= 0 || !(litres > 0)) return null;
 
   const perMl = strength * (100 / litres);      // units delivered per mL
   const delivered = doseMl * perMl;              // units per day

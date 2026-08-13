@@ -115,7 +115,7 @@ export function Insights({ readings, icps, paramDefs, settings, latestByParam,
 
   const skeleton = useMemo(
     () => (consumption && consumption.consumption != null
-      ? computeSkeletonMass(consumption.consumption, settings.volumeL || 77) : null),
+      ? computeSkeletonMass(consumption.consumption, settings.volumeL) : null),
     [consumption, settings.volumeL]);
 
   const nutrientProd = useMemo(
@@ -427,7 +427,7 @@ export function Insights({ readings, icps, paramDefs, settings, latestByParam,
           summary={`about ${skeleton.gPerMonth.toFixed(0)} g of calcium carbonate a month`}>
           <p className="text-[13px] text-ink font-medium leading-relaxed mb-3">
             Every dKH of alkalinity your tank consumes becomes calcium carbonate. Converting
-            your {fmtAmount(consumption.consumption)} dKH a day across {settings.volumeL || 77}L
+            your {fmtAmount(consumption.consumption)} dKH a day across {settings.volumeL}L
             gives the mass actually being deposited.
           </p>
           <div className="grid grid-cols-3 gap-2 mb-3">

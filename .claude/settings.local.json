@@ -35,7 +35,9 @@
       "Bash(npx vitest *)",
       "Bash(perl -0pi -e 's/\\\\|\\\\| \\\\\\(a\\\\.trendPerDay > 0 && a\\\\.action === \"increase\"\\\\\\)/|| \\(a.trendPerDay > 0 && a.action === \"decrease\"\\)/' src/lib/dosing/state.js)",
       "Bash(perl -0pi -e 's/strengthStep: 0\\\\.1, defaultStrength: 1\\\\.0,/strengthStep: 0.1, defaultStrength: 0.024,/' src/lib/analytics/consumption.js)",
-      "Bash(git checkout *)"
+      "Bash(git checkout *)",
+      "Bash(echo \"exit:$?\")",
+      "Bash(git stash *)"
     ]
   }
 }

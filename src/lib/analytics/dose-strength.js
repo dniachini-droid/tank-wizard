@@ -20,7 +20,10 @@ export function calibrateDoseStrength(key, readings, doseLog, waterChanges, sett
   const cfg = DOSE_ELEMENTS.find((e) => e.key === key);
   if (!cfg) return null;
   const s = { ...DEFAULT_SETTINGS, ...settings };
-  const volumeL = s.volumeL || 77;
+  const volumeL = s.volumeL;
+  /* The strength this solves for is per 100 L, so it cannot be expressed at all
+     without knowing the tank. Reported as its own status rather than guessed. */
+  if (!(volumeL > 0)) return { status: "novolume", key };
 
   const changes = (doseLog || [])
     .filter((d) => (d.element || "alkalinity") === key)
