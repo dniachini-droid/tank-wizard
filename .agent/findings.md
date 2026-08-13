@@ -98,3 +98,81 @@ brief (stale/old-shape callers). Logged as low-severity so the negative result
 is on record rather than silently assumed.
 suggested fix: none needed.
 confidence: high
+
+### breaker / 2026-08-13 / S1
+what: CORRECTION to domain-verifier's S3 finding above (lines 15-31): its
+"impact: currently unreachable in practice" claim is wrong. Setup.jsx:77 is
+NOT the only settings writer for volumeL — `restoreBackup`
+(src/lib/backup.jsx:151-155) is a second one, and it applies
+`{ ...DEFAULT_SETTINGS, ...b["tank-settings"] }` straight from an imported
+JSON file with **zero numeric validation**, unlike Setup.jsx's
+`volNum > 0 ? volNum : null`. Setup.jsx's own "Restore from a backup" button
+calls `restoreBackup(pending.parsed, {...}, true)` unconditionally
+(Setup.jsx:602-606, `applySettings` hardcoded `true`, no checkbox, no
+confirmation of what settings will change) on any file the user uploads. A
+hand-edited or corrupted backup JSON containing `"tank-settings": {"volumeL":
+-50}` reaches live `settings.volumeL` verbatim, which Insights.jsx reads
+directly (line 118) to call the very `computeSkeletonMass` the S3 finding
+above discusses — reclassifying that finding as reachable and materially more
+severe than S3.
+evidence: `npx vitest run src/test/spec/analytics/skeleton-mass-negative-volume.test.js src/test/spec/components/insights-skeleton-negative-volume.test.js src/test/spec/data/backup-restore-data-integrity.test.js` →
+6 failed, 2 passed (all 6 failures are the documented bugs; the 2 passes are
+positive controls proving the test methodology). Direct repro:
+`computeSkeletonMass(0.3, -50)` → `{ gPerDay: -0.268..., gPerMonth: -8.16...,
+kgPerYear: -0.0979... }` instead of `{status:'novolume', missing:'net
+volume'}`. Rendered live: Insights.jsx's "Skeleton laid down" card (line 440,
+guarded only by `skeleton.status === "novolume"` at line 424, which a
+negative-but-truthy object never satisfies) shows
+`summary={`about ${skeleton.gPerMonth.toFixed(0)} g...`}` → literally "about
+-8 g of calcium carbonate a month" on screen, confirmed by
+insights-skeleton-negative-volume.test.js finding a rendered `/-\d/` text node
+where the refusal copy should be.
+impact: a real, reachable path (upload a backup file — including one that
+could plausibly be corrupted by a text editor, a bad merge, an old app
+version's now-fixed bug, or hand-editing to fix something else in it) puts a
+negative "grams of skeleton grown per month" figure on the Insights screen
+where the app should refuse and name the missing/invalid net volume, exactly
+the failure class TW-001 exists to close for the other two engines. Also
+compounds the false claim in Setup.jsx:596 ("nothing is overwritten") — the
+restore *does* overwrite tank-settings, unsanitised, is not opt-in, and is
+never previewed to the user before the button is pressed (inspectBackup's
+preview, Setup.jsx:554-565, reports `hasSettings` as a boolean but never what
+the incoming settings values actually are).
+suggested fix: (1) tighten calcification.js:25's guard to `!(volumeL > 0)` per
+domain-verifier's original suggestion — necessary but not sufficient; (2)
+restoreBackup (backup.jsx:151-155) needs the same numeric sanitisation
+Setup.jsx:77 already applies before writing `tank-settings`, since it is a
+second, unguarded write path to the same storage key; (3) consider previewing
+the actual incoming settings values (not just `hasSettings: true/false`)
+before Restore is pressed, since it silently changes numbers that drive every
+dose calculation in the app.
+confidence: high
+
+### breaker / 2026-08-13 / S2
+what: `restoreBackup`'s natural-key dedup for `readings`
+(`${r.param}|${r.date}`, backup.jsx:114) cannot distinguish a genuine second
+same-day reading (e.g. an AM/PM retest, or a corrected re-test) already
+present locally from a duplicate of it in an imported backup file — the
+incoming row is silently discarded rather than added. This directly
+contradicts the restore button's own copy (Setup.jsx:596): "Restoring adds
+anything missing and leaves what you already have alone, so nothing is
+overwritten or duplicated" — a genuinely-different second reading for the
+same day IS something missing, and it is not added.
+evidence: tests/... `npx vitest run src/test/spec/data/backup-restore-data-integrity.test.js` →
+"BUG: two DIFFERENT alkalinity readings on the same day (e.g. a retest) merge
+into one, losing real data" fails: `expected [ { id: 'r1', ... } ] to have a
+length of 2 but got 1` — the backup's second reading (value 6.9, same
+param/date as an existing 8.2 reading) never reaches `result.readings`.
+impact: restoring an otherwise-good backup after logging a legitimate same-day
+retest (a normal thing to do when the first reading looks wrong and you
+retest before dosing) silently drops the retest with no error, no skipped
+count (inspectBackup's `skipped` counter, backup.jsx:89-99, only counts
+unparseable rows, not natural-key collisions against existing data — the
+preview even reports it as "0 fresh" without saying why). Falls squarely under
+AGENTS.md's "Silent data loss is the worst possible failure here."
+suggested fix: key `readings` (and `dose-log`) by `${param}|${date}|${time}`
+where a time field exists, or fall back to also comparing `value` so two
+same-day rows with different values are never treated as the same
+observation; surface true collisions (same key, same value) vs. genuine
+same-day duplicates differently in the preview.
+confidence: high
