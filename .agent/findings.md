@@ -463,3 +463,121 @@ this component. Purely a rendering/memoization change to chart-display code
 (axis tick formatting, slicing) — does not touch any chemistry constant,
 formula, or threshold in src/lib/analytics or src/lib/dosing.
 confidence: high
+
+### state-auditor / 2026-08-13 / S1
+what: DosingWizard's per-element panel (AlkAssessmentBlock, and the
+DoseChangeSheet nested inside it) is rendered without a `key` tied to which
+element is open. Switching the open element while the "Record the new dose"
+sheet is showing leaves the mL input holding the PREVIOUS element's
+recommended-dose string, because DoseChangeSheet seeds `ml` via
+`useState(String(recommended...))` once at mount and the component instance
+is reused rather than remounted.
+evidence: src/components/DosingWizard.jsx:252
+(`<AlkAssessmentBlock a={active.a} def={activeDef} .../>`, no key) and
+src/components/ErrorBoundary.jsx:249 (`<DoseChangeSheet .../>`, no key).
+Reproduced with a scratch RTL test (created, run, then deleted — repo left
+clean, confirmed via `git status --porcelain`): rendered DosingWizard with
+alkalinity (recommendedDose 5.2) and calcium (recommendedDose 40) both
+needing a dose, opened alkalinity's "Set the dose" sheet (mL field shows
+"5.2"), then clicked the Calcium card while the sheet stayed open. `npx
+vitest run <temp file>` → `AssertionError: expected '5.2' to be '40'` — the
+mL field still read "5.2" after switching to calcium.
+impact: If "Record" is tapped without noticing the stale figure,
+AlkAssessmentBlock's onSave (ErrorBoundary.jsx:253-264) calls
+`onApplyDose(ml, {...})` with the OLD element's mL amount but the NEW
+element's metadata (effectPerMl/currentValue/maintenanceDose all correctly
+reflect the newly active element, since `a` is a fresh prop) — so e.g.
+calcium's daily dose gets saved as an alkalinity-sized number. The number
+written to settings/doseLog is not the number the app actually computed for
+that element.
+suggested fix: key `<AlkAssessmentBlock>` (and thereby its nested
+`<DoseChangeSheet>`) by `active.key` in DosingWizard.jsx so switching
+elements always remounts fresh input state instead of carrying it over.
+confidence: high
+
+### state-auditor / 2026-08-13 / S1
+what: Setup.jsx's Volume (L) field silently reverts an unsaved, in-progress
+edit to the last-saved value whenever any *other* settings write happens on
+the same screen (e.g. recording a dose change), because the resync effect
+fires on any change of `settings` object identity, not just external ones.
+evidence: src/components/Setup.jsx:58-64 —
+`useEffect(() => { setVol(...); setElemDose(...); setElemStrength(...);
+setSigmaVal(...); setSaveMsg(null); }, [settings, elemKey])`. `saveDose()`
+(Setup.jsx:86-92) calls `onAddDoseChange`, which in App.jsx's `addDoseChange`
+(App.jsx:388-394) also does `await saveSettings({ ...settings,
+[cfg.doseField]: row.ml })` — a `settings` write unrelated to volume — which
+produces a new object reference and re-fires the Setup effect, resetting
+`vol` back to `settings.volumeL`. Reproduced with a scratch RTL test (created,
+run, then deleted — repo left clean, confirmed via `git status --porcelain`):
+harness mirrors App.jsx's real wiring (onAddDoseChange also saves the dose
+field into settings). Started with settings.volumeL=70, typed "95" into
+Volume (L) without clicking its own Save button, then edited and saved the
+unrelated Dose (mL/day) field. `npx vitest run <temp file>` →
+`AssertionError: expected '70' to be '95'` — Volume field reverted to "70".
+impact: A user entering net volume for the first time — the exact input
+tonight's TW-001 fix made dosing refuse-and-name on when absent — can lose
+that entry with no warning if they also record/adjust a dose on the same
+Setup visit before hitting the Volume field's own Save button. Dosing
+continues to be computed (or refused, per TW-001) against the old/missing
+volume while the screen gives no indication the typed value was discarded.
+suggested fix: don't resync `vol`/`elemDose`/`elemStrength`/`sigmaVal` on
+every `settings` reference change. Either run the resync only on mount and
+after an explicit restore (`onRestored`), or track per-field "dirty" state
+and skip overwriting a field the user has edited since its own last save.
+confidence: high
+
+### state-auditor / 2026-08-13 / S2
+what: DoseChangePopup does not reset its 14-second auto-dismiss countdown
+(`left`) when a new `result` arrives, and — unlike its three sibling
+confirmation popups — is not `key`ed to force a remount per result. A second
+dose confirmation shown shortly after a first one that had already counted
+down to 0 auto-closes itself immediately, before the user can read the
+expected-change figures it just calculated.
+evidence: src/components/DoseExpectation.jsx:17-36 — the effect at 24-29
+resets `phase` on a new `result` but not `left`/`held`; the countdown effect
+at 31-36 (`if (left <= 0) { onClose(); return; }`) runs again on the new
+`result` with `left` still at its old value of 0. Contrast with App.jsx:1272
+(`<DoseChangePopup result={doseResult} onClose={...} />`, no key) vs.
+App.jsx:1273 `<LogResultPopup key={logResult ? logResult.at : "none"} .../>`,
+:1276 `<IcpResultPopup key={icpResult ? "icp"+icpResult.at : "icpnone"} .../>`,
+:1278 `<TaskDonePopup key={taskResult ? "task"+taskResult.at : "tasknone"} .../>`
+— the other three are deliberately keyed to remount per result; DoseChangePopup
+is not. Reproduced with fake timers (scratch test, created/run/deleted — repo
+left clean, confirmed via `git status --porcelain`): ran a first dose
+result's countdown out to 0 (`onClose` called once, as expected), then
+supplied a second, unrelated dose result. `npx vitest run <temp file>` →
+`AssertionError: expected "vi.fn()" to not be called at all, but actually
+been called 1 times` — the second popup called `onClose` immediately.
+impact: making two dose changes in reasonably quick succession — e.g. tuning
+alkalinity then calcium in the same Dosing Wizard visit, an ordinary
+workflow — causes the second confirmation (expected ppm/dKH change, days to
+test) to auto-dismiss on arrival, so the user never sees the number the app
+just calculated for that dose.
+suggested fix: add `setLeft(AUTO); setHeld(false);` to the effect keyed on
+`result` at DoseExpectation.jsx:24-29, mirroring
+ReadingConfirmation.jsx:446-449's `setLeft(AUTO_SECONDS); setHeld(false);`;
+or simply key `<DoseChangePopup>` in App.jsx the same way the other three
+confirmation popups already are.
+confidence: high
+
+### state-auditor / 2026-08-13 / S3
+what: CorrectionPanel's pace selection (`pace` state) is not reset when the
+user switches which element's correction panel is open, because it shares
+the same missing-key root cause as the S1 above — `<CorrectionPanel
+def={active.def} .../>` in DosingWizard.jsx is not keyed by `active.key`.
+evidence: src/components/DosingWizard.jsx:96-190 (`const [pace, setPace] =
+useState(null)` at line 102) and :267-273 (`<CorrectionPanel def={active.def}
+.../>`, no key). Traced by code reading, not independently reproduced with a
+failing test — see impact for why.
+impact: picking "quick" while correcting alkalinity and then opening
+calcium's correction panel (if it also offers "quick") shows calcium's panel
+pre-selected on "quick" rather than defaulting to its own best pace. The
+mL/day and day-count figures shown are still correct for whichever pace ends
+up selected — each is read fresh from `offers[chosen]` for the current
+element — so this is not itself a wrong-number bug, only a misleading
+carried-over UI selection. Flagged because it is the same missing-key defect
+class as the two S1 findings above and would compound if either is fixed
+without addressing this one too.
+suggested fix: same as the AlkAssessmentBlock finding — key
+`<CorrectionPanel>` (or the surrounding Card) by `active.key`.
+confidence: medium
