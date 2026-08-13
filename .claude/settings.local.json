@@ -39,7 +39,9 @@
       "Bash(echo \"exit:$?\")",
       "Bash(git stash *)",
       "Bash(perl -0pi -e \"s|import \\\\{ ICP_SEED \\\\} from './lib/analytics/icp-data.js'\\\\n||; s|import \\\\{ HISTORICAL_DATA \\\\} from './lib/seed-data.js'\\\\n||\" src/App.jsx)",
-      "Bash(npm ls *)"
+      "Bash(npm ls *)",
+      "Bash(git log *)",
+      "Bash(grep -n \"element:.*ml:\\\\|ml:.*element:\\\\|{ date, time, ml\" src/App.jsx)"
     ]
   }
 }
