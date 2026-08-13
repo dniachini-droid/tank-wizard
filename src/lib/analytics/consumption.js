@@ -89,7 +89,7 @@ export const DOSE_ELEMENTS = [
     unit: "ppm", strengthLabel: "ppm/mL/100L", strengthStep: 0.01, defaultStrength: 0.3611,
     hint: "Aquaforest Balling at 2x standard (100 g AF Calcium per litre) works out at 0.3611 ppm per mL per 100L. Paired with the alkalinity part that gives 6.8 ppm calcium per dKH — the ratio corals actually consume." },
   { key: "magnesium", label: "Magnesium", doseField: "magDoseMl", strengthField: "mgPpmPerMlPer100L",
-    unit: "ppm", strengthLabel: "ppm/mL/100L", strengthStep: 0.1, defaultStrength: 1.0,
+    unit: "ppm", strengthLabel: "ppm/mL/100L", strengthStep: 0.1, defaultStrength: 0.024,
     hint: "Magnesium products vary a lot in concentration — check your bottle. Leave the dose at 0 if water changes alone replenish it." },
 ];
 
