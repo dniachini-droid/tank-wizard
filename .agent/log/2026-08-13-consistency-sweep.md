@@ -153,3 +153,31 @@ Unverified (needs full React render tree, not driven this pass): DosingWizard
 .jsx/Dashboard.jsx/Insights.jsx end-to-end; dedicated alerts surface (treated
 buildFindings/computeDoseAdvice as proxy — no separate alerts component
 found); live IndexedDB/localStorage persistence round-tripping.
+
+## Wave C — contradiction-hunter (complete)
+Built §7 matrix: 14 cells actually populated (no separate "notifications"
+surface exists — no push code, only in-app reminders). 2 cells agree by
+construction (safe: band across dashboard/alert-banner/history all call
+paramStatus on the same object; expected-delta/days-to-target between
+wizard and test-log-confirmation both read the same deriveTankState-built
+correctionPlan object). 9 cells agree BY COINCIDENCE only — flagged as
+their own class of finding per orchestrator brief, since they will break on
+the next unrelated change. Concrete example: STATUS_COLOR.high and the
+SAFE_BOUNDS emergency tone are both hex #C4285B, identical by accident
+across two unrelated files, which happens to mask the severity distinction
+on the high side while STATUS_COLOR.low (#926A09) exposes it on the low
+side. 5 cells are already-live contradictions.
+Headline (new, verified S1): ParamCard (Dashboard's primary scan tile,
+DoseExpectation.jsx:219-309) shows THREE independently-computed severities
+for ONE reading in ONE render, in a single ~90px card, no navigation
+needed: the big number tinted mild amber via paramStatus, a dose badge
+reading "Dangerously low" (red) via doseStatus's inline SAFE_BOUNDS check
+(dosing/state.js:184-201), and a findings badge independently reaching red/
+"dangerously low" via findings.js's own separate SAFE_BOUNDS check. Worked
+example: 6.9 dKH is < def.min (8.5, triggers mild amber) and <
+SAFE_BOUNDS.alkalinity.min (7, triggers urgent red) simultaneously — same
+number, same instant, two different severities on screen together.
+Also: ZoomableChart.jsx shades only the no-action band with no visual
+representation of alert thresholds — an out-of-band point and an
+alert-severity point plot identically (contradiction shape: chart shading
+not matching classifier boundaries).

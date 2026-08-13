@@ -2,9 +2,9 @@ run: 2026-08-13-consistency-sweep
 routine: routine 5 — consistency sweep
 started: 2026-08-13T08:20:31Z
 status: in-progress
-last completed step: Wave B complete (dose-parity-checker, 45 tests / 38 pass / 7 documented findings, 10 findings logged)
-next step: await Wave C completion (contradiction-hunter), then Wave D (adjudicator, triage-analyst, reporter)
-in-flight: contradiction-hunter — read-only
+last completed step: Wave C complete (contradiction-hunter, §7 matrix built, worst finding: ParamCard shows 3 severities for 1 reading in 1 render)
+next step: Wave D — dispatch adjudicator (read-only, verifies S1/S2 findings)
+in-flight: none
 branch: claude/2026-08-13-consistency-sweep
 uncommitted work: no
 
