@@ -2,8 +2,8 @@ run: 2026-08-13-build-1
 routine: routine 1 — build cycle
 started: 2026-08-13T22:00:00Z
 status: in-progress
-last completed step: Wave 2 complete — all 6 auditors done, 23 raw findings in .agent/findings.md (under 40-finding stop threshold)
-next step: Wave 3 — dispatch adjudicator to independently reproduce every S1/S2
+last completed step: Wave 3 step 1 (adjudicator) complete — 9/9 S1/S2 confirmed, 0 downgraded, plan for 5 fixer rounds (A-E) decided, several items correctly deferred to backlog per untagged-item/chemistry-constant rules
+next step: Wave 3 step 2 — dispatch fixer round A (calcification.js guard + restoreBackup sanitisation)
 in-flight: none
 in-flight: none
 branch: claude/dazzling-faraday-9zbsv7
