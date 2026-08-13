@@ -177,6 +177,25 @@ observation; surface true collisions (same key, same value) vs. genuine
 same-day duplicates differently in the preview.
 confidence: high
 
+### fixer (round D) / 2026-08-13 / S2
+what: same root cause as the just-fixed Volume-field revert bug
+(state-auditor/S1, adjudicated.md item 8), but in the OTHER effect in
+Setup.jsx (now lines 66-71, unmodified by round D's fix): `elemDose`,
+`elemStrength`, and `sigmaVal` all resync from the whole `settings` object
+on any write, not just a write to their own field. Saving the Volume field
+would clobber an unsaved dose-mL edit in the same screen, same failure
+class as the fixed bug.
+evidence: src/components/Setup.jsx:66-71 (post round-D fix); surfaced
+directly by the fixer while scoping round D's fix, not independently
+reproduced with a test (round D's task was explicitly scoped to the Volume
+field only, per the confirmed finding).
+impact: same class as the fixed S1 (silent loss of an unsaved edit), but
+narrower — requires two specific fields on the same screen edited in the
+right order. Not independently verified/reproduced yet.
+suggested fix: apply the same narrowed-dependency pattern round D just used
+for volumeL to each of these three fields individually.
+confidence: medium (mechanism confirmed by code read; not test-reproduced)
+
 ### domain-verifier / 2026-08-13 / S1
 what: §6 rate-of-change rail constants for magnesium still disagree with
 today's canon update (reef-chemistry.md §6: magnesium 50 ppm/24h). Two
