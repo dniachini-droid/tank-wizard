@@ -60,3 +60,19 @@ message (findings.js:362-363) — flagged as needing a spec-challenge since
 ICP confirmation popup shows bare element values with no unit ever
 (IcpConfirmation.jsx); chart axis/tooltip in ZoomableChart.jsx never carries
 a unit.
+
+### message-consistency-auditor — complete
+6 findings appended (4xS1, 1xS2, 1xS3).
+Headline: ReadingConfirmation.jsx:74-78 shows headline "In range, correction
+still running" immediately followed by remaining-ppm/days-left text — an
+in-band badge paired with active-correction language, on the very first
+in-band reading after a correction plan starts, reachable via
+App.jsx:1014-1020. Systemic pattern: every genuine insufficient-data refusal
+from the three dosing engines (alkalinity.js/calcium.js/helpers.js) renders
+as a calm "Hold"/"No change"/"needs another reading" in the same neutral
+tone as a real recommendation, across 3 surfaces (AlkAssessmentBlock,
+DoseElementCard, state.js doseStatus) — and on 2 of 3 surfaces the refusal
+reason is replaced with wrong generic wording even when the actual problem
+is a missing Setup field no amount of testing fixes. Also S2: pH "running
+high" threshold disagrees between Insights narrative (>8.4) and Dashboard
+claim feed (>8.45) for the same reading.
