@@ -2,8 +2,8 @@ run: 2026-08-13-build-1
 routine: routine 1 — build cycle
 started: 2026-08-13T22:00:00Z
 status: in-progress
-last completed step: Wave 3 step 4 (integrator), first pass — REJECT. Full independent re-verification passed on everything except fixer round C: src/test/spec/components/dose-change-popup-remount-key.test.js is tautological (hardcodes App.jsx's key expression in its own test harness instead of rendering App.jsx; passes even with App.jsx's fix fully reverted -- reproduced directly, see .agent/log/2026-08-13-build-1.md). No PR opened. Live run continuing, not a died/resumed run -- this is a normal REJECT-and-retry cycle within wave 3.
-next step: dispatch fixer to rewrite dose-change-popup-remount-key.test.js to actually exercise App.jsx's real render site, re-verify by reverting App.jsx's key and confirming the test flips, then re-dispatch integrator for a second gate pass. Everything else from wave 3 (rounds A, B, D, E, TW-001, test-engineer's other 2 new tests) verified clean and does not need rework.
+last completed step: Fixer round C retry (round trip 2 of max 3) complete — dose-change-popup-remount-key.test.js rewritten to render the real ReefConsole/App.jsx tree end-to-end (seeds real localStorage state, drives 2 real dose changes through the real UI) instead of a hand-rolled harness. Explicitly proven with revert-and-reflip: fails against reverted App.jsx, passes against fixed App.jsx, restored and reconfirmed passing, 6x flake-checked. Full suite byte-identical to integrator's prior baseline (34 failed files/66 failed tests/210 passed/276 total). npm run build succeeds, bundle unchanged.
+next step: re-dispatch integrator for second gate pass
 in-flight: none
 branch: claude/dazzling-faraday-9zbsv7
 uncommitted work: no
