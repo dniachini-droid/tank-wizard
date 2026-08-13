@@ -320,7 +320,7 @@ export function doseStatus(a, def, todayIso, settings, latestByParam, doseLog, w
          engine still wants more of the same. Anything else after a change —
          wanting to cut back while it climbs — means it went too far. */
       const same = (a.trendPerDay < 0 && a.action === "increase")
-        || (a.trendPerDay > 0 && a.action === "increase");
+        || (a.trendPerDay > 0 && a.action === "decrease");
       return same
         ? { state: "fell-short", tone: "#A2621B", short: "Needs more",
             headline: `${def.label} is still moving after the change`,
