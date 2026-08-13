@@ -54,8 +54,8 @@ describe('restoreBackup — a second genuine same-day reading for the same param
   });
 });
 
-describe('restoreBackup — tank-settings from a backup file are applied with no numeric validation', () => {
-  it('BUG: a negative volumeL in the backup file overwrites live settings unsanitised', async () => {
+describe('restoreBackup — tank-settings from a backup file are sanitised like manual entry', () => {
+  it('a negative volumeL in the backup file is nulled, not written through, matching Setup.jsx\'s saveVolume convention', async () => {
     const backup = makeBackup({
       'tank-settings': { volumeL: -50, dailyDoseMl: 10, dkhPerMlPer100L: 0.05 },
     });
@@ -63,12 +63,11 @@ describe('restoreBackup — tank-settings from a backup file are applied with no
     const result = await restoreBackup(backup, emptyCurrent, true);
 
     // Setup's own manual entry path sanitises this exact field before saving
-    // it (Setup.jsx:77 — `volNum > 0 ? volNum : null`). restoreBackup applies
-    // tank-settings straight from the file with no equivalent check, so a
-    // corrupted or hand-edited backup can put an unusable net volume into
-    // live settings that every dosing/analytics surface in the app then
-    // reads directly (App.jsx spreads `settings` from this exact storage
-    // key).
-    expect(result['tank-settings'].volumeL).toBeGreaterThan(0);
+    // it (Setup.jsx:77 — `volNum > 0 ? volNum : null`). restoreBackup.jsx now
+    // applies the identical convention (backup.jsx:155-158): invalid input
+    // becomes null, the same refusal shape every other volume-null site in
+    // the app already checks for — not a fabricated positive fallback, which
+    // no other write path in the codebase does.
+    expect(result['tank-settings'].volumeL).toBeNull();
   });
 });
