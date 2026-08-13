@@ -2,8 +2,8 @@ run: 2026-08-13-build-1
 routine: routine 1 — build cycle
 started: 2026-08-13T22:00:00Z
 status: in-progress
-last completed step: setup — read run-state (was complete), read AGENTS.md, confirmed clean tree on claude/dazzling-faraday-9zbsv7
-next step: Wave 1 — dispatch planner
+last completed step: Wave 1 — planner complete, selected TW-001 (only approved item), 3 acceptance criteria + 1 render-guard fix
+next step: Wave 1 — dispatch implementer for TW-001
 in-flight: none
 branch: claude/dazzling-faraday-9zbsv7
 uncommitted work: no
