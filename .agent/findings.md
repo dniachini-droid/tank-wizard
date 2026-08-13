@@ -449,3 +449,22 @@ evidence: file:line citations inline above; full detail for items 10-14 in the W
 impact: Of the 14 populated matrix cells surveyed, 2 are safe by construction, 7 are agreement that depends on nobody touching one of two-or-three independently-maintained copies (a live risk, not yet a bug), and 5 are already-contradicting today. The ratio (coincidence and outright contradiction together dwarfing genuine by-construction agreement) is itself the headline finding for this matrix: the app's parity guarantee currently rests on accident far more than on architecture, exactly as band-classifier-auditor's root-cause finding predicts.
 suggested fix: Prioritise collapsing the classifiers (already the top suggested fix on file) — every "by coincidence" cell above becomes "by construction" for free once `classifyReading`/`messageFor` exist and every surface listed is migrated onto them; no additional per-cell fix is needed beyond that migration for cells 3, 4, 6, 7, 9. Cells 5 and 8 need an explicit shared-constant fix (a severity colour token; `SAFE_DAILY_RISE` imported instead of `CORRECTIONS`'s own table, already recommended by manual-dose-auditor).
 confidence: high
+
+### adjudicator / 2026-08-13 / CORRECTION (not a new finding — corrects direction of an existing S1)
+what: manual-dose-auditor's finding (lines ~94-98) and dose-parity-checker's
+"correction-calculator-vs-rail" finding both correctly identify that
+`src/lib/analytics/correction.js`'s magnesium maxPerDay (100) and
+`src/lib/analytics/safe-rate.js`'s SAFE_DAILY_RISE.magnesium (25) disagree
+4x — that part is confirmed. But both findings then claim both figures
+"disagree with reef-chemistry.md §6 canon in different directions." That is
+wrong. `docs/spec/reef-chemistry.md:154-160`'s rail table gives magnesium =
+100 ppm/24h. `correction.js` (100) matches canon exactly. `safe-rate.js`
+(25) is the one that violates canon — and `safe-rate.js`'s
+SAFE_DAILY_RISE/rateLimitDose is what the live Dosing Wizard actually calls
+on every path (dosing/helpers.js, dosing/state.js), not correction.js's
+table. So the wizard is running magnesium corrections 4x too conservative
+relative to spec, not the other way around.
+evidence: docs/spec/reef-chemistry.md:154-160 (rail table); src/lib/analytics/correction.js (CORRECTIONS.magnesium.maxPerDay=100); src/lib/analytics/safe-rate.js:27 (SAFE_DAILY_RISE.magnesium=25); src/lib/dosing/helpers.js, src/lib/dosing/state.js (both import SAFE_DAILY_RISE, not correction.js's table); tests/parity/correction-calculator-vs-rail.test.js (fails, confirming the 4x gap).
+impact: The original findings' suggested fix ("delete correction.js's table, route through SAFE_DAILY_RISE") would make Setup's calculator wrong instead of fixing the real defect. This is a chemistry-constant rail with live-tank safety implications — do not implement either fix without Dan's sign-off (escalated to .agent/needs-dan.md as item 2 under 2026-08-13, since safe-rate.js's own code comment cites independent real-world sourcing that may mean the spec itself needs revisiting, not just the code).
+suggested fix: do not action until Dan resolves .agent/needs-dan.md item 2.
+confidence: high

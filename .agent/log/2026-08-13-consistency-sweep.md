@@ -181,3 +181,29 @@ Also: ZoomableChart.jsx shades only the no-action band with no visual
 representation of alert thresholds — an out-of-band point and an
 alert-severity point plot identically (contradiction shape: chart shading
 not matching classifier boundaries).
+
+## Wave D step 1 — adjudicator (complete)
+Independently re-verified all 40 S1/S2 findings (of 51 raw: 26 S1, 14 S2,
+6 S3, 4 S4) against source, tests, and spec. Result: night's findings were
+mostly real, not noise. 0 downgraded to UNCONFIRMED. Verified both test
+suites match their own claims exactly (tests/parity: 45/38 pass/7 fail;
+src/test/spec/history: 4 fail/11 pass) and additionally ran
+src/test/spec/classification/ (cited repeatedly as evidence): 7/8 files
+fail, 24/115 tests fail — matches citations.
+Merged 51 raw findings → 25 distinct root-cause clusters (heaviest:
+classifyReading-absence mega-cluster ~10 raw findings → 1 architectural
+root cause with several independently-actionable symptoms).
+One important correction found and written up: manual-dose-auditor and
+dose-parity-checker both got the FIX DIRECTION backwards on the magnesium
+rail-constant disagreement — correction.js's magnesium value (100) matches
+reef-chemistry.md canon exactly; safe-rate.js's value (25, what the live
+wizard actually uses) is the one violating canon. Appended a CORRECTION
+block to .agent/findings.md so triage doesn't promote the wrong fix.
+No stark two-agent contradictions found (checked specifically per brief).
+Two items escalated to .agent/needs-dan.md by the orchestrator (adjudicator
+had no write access): (1) the two canon spec files disagree with each other
+on volume terminology ("water volume" vs "net volume") — a genuine spec
+self-contradiction, not resolvable by an agent; (2) the magnesium/calcium
+rail constant tension above — safe-rate.js's own code comment cites
+independent real-world sourcing that may mean the spec itself needs
+revisiting, a live-tank-safety chemistry-constant decision reserved for Dan.
