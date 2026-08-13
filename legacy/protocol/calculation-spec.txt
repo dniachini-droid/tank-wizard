@@ -1,0 +1,332 @@
+================================================================================
+HANDOVER NOTES  -  read before giving this to anyone
+================================================================================
+
+Read out of the running code on 2026-08-12. Every formula, fraction and
+threshold was traced through the source, not written from memory.
+
+This is the third of three documents:
+
+  dosing-spec.txt   the RULES  - bands, rate limits, what may be changed
+  wizard-spec.txt   the STATES - what the card says and in what order
+  calculation-spec  the MATHS  - how a number becomes a recommendation
+  (this one)
+
+Four things to watch:
+
+1. THE THREE ELEMENTS USE DIFFERENT STAGING FRACTIONS, ON PURPOSE.
+   They are not a copy-paste drift. Alkalinity is read to 0.01 dKH every two
+   days and can be trusted to move fast; magnesium is read to 25 ppm every
+   three weeks and cannot. Section 6 gives the numbers side by side. An agent
+   who unifies them will make magnesium unstable.
+
+2. MAGNESIUM HAS NO RESCUE PATH, AND THAT IS DELIBERATE.
+   Alkalinity and calcium apply the full calculated change when the level is
+   out of band. Magnesium never does. Raising a dilute maintenance dose to
+   lift a low magnesium produces figures nobody would pour - a drifting tank
+   once asked for 72 mL/day. Levels are moved by a correction; this dose only
+   ever tracks consumption.
+
+3. FIVE CONSTRAINTS APPLY IN A FIXED ORDER AND THE ORDER MATTERS.
+   Staging, then rate ceiling, then plausibility, then bracketing, then the
+   step cap. Reordering changes the answer. Section 7 sets it out.
+
+4. THE STEP CAP IS USUALLY THE BINDING CONSTRAINT.
+   In testing, the rate ceiling almost never bound - the 25% step cap was
+   tighter in every realistic case. If an agent is tuning rate limits to
+   change behaviour, they are probably tuning the wrong thing.
+
+================================================================================
+
+
+================================================================================
+HOW THE WIZARD CALCULATES A DOSE CHANGE
+================================================================================
+
+Alkalinity, calcium and magnesium. The path from readings to a recommended
+millilitre figure, in the order the code executes it.
+
+
+1. The one equation everything rests on
+---------------------------------------
+
+    consumption = whatTheDoseSupplies - whatTheLevelDid
+
+    maintenanceDose = consumption / effectPerMl
+
+In the code:
+
+    out.supplied        = out.currentDose * effectPerMl
+    out.consumption     = out.supplied - trendPerDay
+    out.maintenanceDose = out.consumption / effectPerMl
+
+Read it in plain terms: if you are adding 0.62 dKH a day and the level is
+falling by 0.10, the tank is using 0.72. If the level is rising by 0.10, it is
+using 0.52.
+
+Everything after this is deciding how much of the gap between currentDose and
+maintenanceDose to actually apply, and whether it is safe to apply any of it.
+
+
+2. Where effectPerMl comes from
+-------------------------------
+
+    effectPerMl = strengthPer100L * (100 / volumeL)
+
+Units: strengthPer100L is the change one millilitre makes in 100 litres, so
+scaling by (100 / volumeL) gives the change one millilitre makes in this tank.
+On 77 L with a 0.0533 solution that is 0.0692 dKH per mL.
+
+The strength comes from Setup. If history contains enough dose changes and
+readings, the app solves it from observation instead and compares - a mismatch
+raises "dose strengths not yet confirmed".
+
+    WARNING: a wrong strength in Setup makes every figure below wrong, in
+    proportion, and invisibly. There is no independent check. This is the
+    single largest correctness risk in the system.
+
+
+3. Where the trend comes from
+-----------------------------
+
+A least-squares fit across readings inside the analysis window:
+
+    alkalinity   7 days, extendable to 21
+    calcium      14 days, extendable to 35
+    magnesium    14 days, extendable to 35
+
+Readings are excluded if they fall inside a disturbance - a water change or a
+logged correction - because those move the level without being consumption.
+
+The fit also produces:
+
+    slopeSE      standard error of the slope
+    fittedNow    the fitted value at today, used in preference to the last
+                 raw reading wherever the app reasons about where the level
+                 actually is
+    rmse         used to detect an anomalous reading
+
+
+4. Before any change is calculated
+----------------------------------
+
+The wizard returns "hold" early, without calculating, in all of these:
+
+    fewer than 3 usable readings
+    inside the settle window since the last dose change
+    the trend is within the kit's noise floor
+    the trend is not statistically confirmed (calcium, magnesium)
+    the level is out of band but moving TOWARD it
+    a correction plan is running and progressing normally
+    the arithmetic is implausible - see section 9
+
+The fifth is worth naming. If alkalinity is at 8.1 and rising at 0.1 a day, it
+is already on its way back. Changing the dose now works against that, so the
+app says so and waits.
+
+
+5. The raw change
+-----------------
+
+    rawChange = maintenanceDose - currentDose
+    mag       = abs(rawChange)
+
+Positive means dose more. This is the full correction, before any staging.
+
+
+6. Staging - how much of the raw change to apply
+------------------------------------------------
+
+A large calculated change resting on few readings is not applied at once. The
+fractions differ per element and the differences are deliberate.
+
+ALKALINITY  (read to 0.01 dKH, tested every 2 days)
+
+    rescue          apply 100%      out of band and still heading away,
+                                    or outside safe bounds
+    mag <= 2 mL     apply 100%
+    mag <= 4 mL     apply 90%
+    larger          apply 70% if urgent, otherwise 55%
+
+CALCIUM  (read to 5-15 ppm, tested weekly)
+
+    rescue          apply 100%      out of band, either direction
+    mag <= 1 mL     apply 100%
+    mag <= 3 mL     apply 85%
+    larger          apply 60% if urgent, otherwise 50%
+
+MAGNESIUM  (read to 25 ppm, tested every 3 weeks)
+
+    NO RESCUE PATH
+    mag <= 1 mL     apply 100%
+    mag <= 3 mL     apply 80%
+    larger          apply 55% if urgent, otherwise 45%
+
+"urgent" means the level is out of band, near an edge, or the trend has reached
+the meaningful threshold (alkalinity 0.3 dKH/day x 1.5, calcium 20 ppm/week,
+magnesium 30 ppm/week).
+
+Why alkalinity is bolder: it is measured precisely and often, so a mistake is
+visible within days. Magnesium is measured coarsely and rarely, so a mistake
+persists for weeks - it moves in smaller steps and never rescues.
+
+The alkalinity rescue path exists because simulation showed tanks crashing
+while the engine politely corrected 70% at a time. Each held-back step costs
+another two days at a level the tank should not be at.
+
+
+7. The five constraints, in order
+---------------------------------
+
+Applied to the staged figure, in this sequence. Order changes the answer.
+
+  1  ROUNDING
+     to 0.1 mL, and never below zero
+
+  2  RATE CEILING
+     the new dose must not move the level faster than
+        alkalinity  0.5 dKH/day
+        calcium     20 ppm/day
+        magnesium   25 ppm/day
+     Implemented as safeDoseBand around maintenanceDose. In practice this
+     almost never binds - the step cap below is tighter in realistic cases.
+
+  3  PLAUSIBILITY
+     if the figure implies a solution strength that cannot be right, the
+     wizard stops and says "check setup" rather than quoting it
+
+  4  BRACKETING
+     if history contains a dose where the level fell and one where it rose,
+     the answer must sit between them. Observations older than 45 days are
+     dropped; any whose implied consumption differs from today's by more than
+     25% is discarded.
+
+  5  STEP CAP  -  25% per change
+     relaxed only when the tank is outside workable range AND still heading
+     the wrong way
+
+Then:
+
+    out.recommendedDose = next
+    out.action          = next > currentDose ? "increase"
+                        : next < currentDose ? "decrease"
+                        : "hold"
+    out.staged          = mag > 4      (alkalinity; the threshold differs
+                                        per element)
+
+
+8. Continuing an existing plan
+------------------------------
+
+If a staged plan is already running, and its destination still agrees with what
+the readings now say, the wizard keeps walking it rather than inventing a new
+target on every render:
+
+    planLive = the plan's applied dose matches the current dose
+               AND abs(plan.target - maintenanceDose) <= max(1.5, target * 20%)
+
+Without this the target would drift every time a reading was logged, and the
+keeper would never arrive anywhere.
+
+
+9. When the arithmetic is impossible
+------------------------------------
+
+If the numbers imply something that cannot be true - a solution strength far
+from what Setup says, or a dose that would need to be negative and large - the
+wizard sets action = "implausible" and shows "Check setup".
+
+It does not quote the figure. A number produced from a broken input is worse
+than no number, because it looks like an answer.
+
+
+10. Worked example
+------------------
+
+Alkalinity, 77 L, solution 0.0533 dKH per mL per 100 L.
+
+    effectPerMl     = 0.0533 * (100 / 77)           = 0.0692 dKH per mL
+    currentDose     = 9.0 mL/day
+    supplied        = 9.0 * 0.0692                  = 0.623 dKH/day
+    trend           = -0.10 dKH/day  (falling)
+    consumption     = 0.623 - (-0.10)               = 0.723 dKH/day
+    maintenanceDose = 0.723 / 0.0692                = 10.4 mL/day
+    rawChange       = 10.4 - 9.0                    = +1.4 mL
+    mag             = 1.4, which is <= 2            -> apply 100%
+    applied         = +1.4
+    next            = 10.4, rounded to 10.4
+
+    step cap: 25% of 9.0 = 2.25, so 1.4 is within it
+    rate ceiling: 0.5 dKH/day; this change moves 0.10 - within it
+
+    recommendedDose = 10.4 mL/day, action = "increase"
+
+Same tank, falling faster - 0.25 dKH a day instead of 0.10:
+
+    consumption     = 0.623 + 0.25                  = 0.873 dKH/day
+    maintenanceDose = 0.873 / 0.0692                = 12.6 mL/day
+    rawChange       = +3.6 mL
+    mag             = 3.6, which is 2 < mag <= 4    -> apply 90%
+    applied         = +3.2
+    next            = 12.2
+
+    step cap: 9.0 * 1.25 = 11.25                    -> CLAMPED
+    recommendedDose = 11.3 mL/day, action = "increase"
+
+And a tank whose dose is badly short - 5 mL, falling 0.30 a day:
+
+    maintenanceDose = 9.3 mL/day
+    rawChange       = +4.3 mL
+    mag             = 4.3, which is > 4             -> apply 55%
+    applied         = +2.4
+    step cap: 5.0 * 1.25 = 6.25                     -> CLAMPED to 6.3
+
+    recommendedDose = 6.3 mL/day, and the card marks it STAGED - the app
+    intends to come back for the rest once this step has been measured.
+
+All three figures above were produced by the running code, not worked by hand.
+
+
+11. Known faults
+----------------
+
+11.1  A slow decline is under-served  (UNRESOLVED)
+
+      Section 4 returns "hold" when the trend is within the stable band, and
+      that band stays true for a fall of about 0.02 dKH a day. A slowly
+      crashing tank never reaches section 5.
+
+      Simulated over three years with demand growing 30% a year, a keeper
+      following every recommendation: three dose changes, and alkalinity
+      reached 0.5 dKH. The wizard said "hold" at 6.87 - below the safe floor.
+
+      A dose-gap trigger was tightened out of band as a partial rescue. It is a
+      patch. The real fix: a level outside its band and moving further out
+      should never be graded stable, whatever the rate. That is a change to
+      stability grading, not to this calculation.
+
+11.2  The rate ceiling is nearly inert
+
+      Searched across doses of 2 to 14 mL and falls of 0.05 to 0.8 dKH a day:
+      the rate ceiling never bound. The step cap was always tighter. It is kept
+      because it is the correct backstop, but tuning it will not change
+      behaviour.
+
+
+12. Where to look in the code
+-----------------------------
+
+  assessAlkalinity      489 lines - the full path for alkalinity
+  assessCalcium         the same path, calcium fractions
+  assessMagnesium       the same path, no rescue branch
+
+  rateLimitDose         constraint 2 and 3, shared by all three
+  applyDoseConstraints  constraints 4 and 5, shared by all three
+  safeDoseBand          the rate ceiling itself
+  settleWindow          how long before a change can be judged
+  doseObservations      the bracketing history
+
+  tests/protocols.js    39 worked examples from published guidance
+  tests/golden.js       5,940 pinned cases - any change to the maths shows here
+  tests/shared.js       proves the shared helpers stay element-aware
+  tests/sim/years.js    three-year behaviour, 6 scenarios x 4 seeds

@@ -1,0 +1,164 @@
+================================================================================
+TANK WIZARD  -  START HERE
+================================================================================
+
+Paste this file into a new chat, and upload tank-wizard-repo.tar.gz alongside
+it. Nothing else carries over between chats: a new session gets a fresh
+container, and Claude has no memory of the previous conversation's work beyond
+what you upload.
+
+
+WHAT THIS IS
+------------
+
+A reef aquarium dosing app. One React file, built as a single self-contained
+HTML page. It reads test results a keeper logs, works out what the tank
+consumes, and recommends daily doses and one-off corrections for alkalinity,
+calcium and magnesium.
+
+The owner (Dan) supplies all reef chemistry expertise and corrects the model on
+it. Claude writes all the code. That division has held throughout and works.
+
+
+FIRST THING TO DO IN THE NEW CHAT
+---------------------------------
+
+    tar -xzf /mnt/user-data/uploads/tank-wizard-repo.tar.gz -C /home/claude
+    cd /home/claude/repo
+    python3 tools/build_harness.py
+    ./verify.sh
+
+The gate takes about two minutes. It should exit 0. If it does not, that is the
+first thing to fix - do not build on a red gate.
+
+Then read STAGE5-PLAN.md. It is long and it is the running record of every
+finding, in order, with the reasoning. It is the single most useful file in the
+repo for picking up context.
+
+
+THE SHAPE OF THE REPO
+---------------------
+
+  src/reef-console.jsx        the entire app, one file
+  tools/build.py              produces the single-page HTML
+  tools/build_harness.py      produces build/engines.js so tests can run
+  verify.sh                   41 checks; must pass before anything ships
+  tests/                      the suites
+  tools/*.py                  static checkers
+  protocol/                   the four specifications
+  STAGE5-PLAN.md              the running record
+
+
+THE FOUR SPECIFICATIONS
+-----------------------
+
+All in protocol/, all plain text, all read out of the running code rather than
+written from memory:
+
+  dosing-spec.txt        bands, rate limits, what may be changed
+  wizard-spec.txt        the 15-state machine and the order it decides in
+  calculation-spec.txt   how a daily dose change is worked out
+  correction-spec.txt    how a correction is sized and tracked
+
+Each opens with handover notes listing what an agent is most likely to break.
+Read those notes before changing anything in that area.
+
+Not yet written, in the order they are worth writing:
+
+  1  stability grading      -  small, and the known unresolved bug lives there
+  2  the derivation pipeline-  deriveTankState, the spine
+  3  overview / briefing / findings  -  1,559 lines, most-read screens
+  4  non-dosing parameters  -  nitrate, phosphate, pH, ICP
+  5  the data model         -  storage keys, backup, restore
+
+
+HOW THE WORK HAS BEEN DONE
+--------------------------
+
+Two habits account for most of what was found. Keep both.
+
+1. BREAK IT ON PURPOSE AND WATCH.
+   A test that passes proves nothing until you have seen it fail. Repeatedly in
+   this project a check looked correct and was inert: four suites that could
+   not fail, a gate flag nothing read, a fingerprint that depended on the time
+   of day. Every one was found by deliberately introducing the fault it was
+   supposed to catch.
+
+2. WHEN YOU ADD A RULE, CHECK ITS NEIGHBOURS.
+   Twice a guard was written for new code while identical old code went on
+   breaking the same rule. Building the guard teaches you what to look for; it
+   does not occur to you to look where the guard is not.
+
+Two things to distrust in your own work:
+
+  - Test scenarios that cannot reach the branch they claim to test. Several
+    "the check is blind" moments were the probe being wrong, not the check.
+  - Clock handling in test harnesses. Three separate bugs came from a harness
+    measuring against real "today" while sliding dates into the past.
+
+
+THE ONE UNRESOLVED FAULT
+------------------------
+
+A slowly declining tank is under-served. `band === "stable"` stays true for a
+fall of about 0.02 dKH a day, so a tank drifting down enters the hold branch
+and the wizard says "hold" while the level crashes.
+
+Simulated over three years with demand growing 30% a year, a keeper following
+every recommendation: three dose changes, and alkalinity reached 0.5 dKH. The
+wizard said "hold" at 6.87, below the safe floor.
+
+A dose-gap trigger was tightened out of band as a partial rescue. It is a
+patch. The real fix: a level outside its band and moving further out should
+never be graded stable, whatever the rate. That is a change to stability
+GRADING, not another threshold.
+
+See dosing-spec.txt section 9.1 and calculation-spec.txt section 11.1. If this
+is fixed properly, the out-of-band halving in the dose-gap trigger should
+probably come back out, and both specs need updating together.
+
+
+WHERE THE TEN-STAGE PLAN GOT TO
+-------------------------------
+
+A ten-stage test plan was run against the newest feature - the reading
+confirmation window after a dose change. Stages 1 to 9 are done and are
+recorded in STAGE5-PLAN.md. Stage 10, a mutation sweep over the six message
+branches, is not.
+
+Worth knowing: of roughly ten bugs that plan found, most were in code that
+predated the feature it was written to test. Scrutiny of a small area finds
+faults in whatever it touches.
+
+
+THE HONEST STATE OF THE APP
+---------------------------
+
+Estimates, not measurements:
+
+  dosing arithmetic          95%   the most-tested part by a wide margin
+  husbandry bands            95%   all sourced and enforced
+  corrections                85%   heavily reworked, never used on a real tank
+  reading confirmation       85%   new, and scrutinised hard
+  notifications / findings   80%   least systematically audited
+  summary and headline       80%   two bugs found in it recently
+  data safety                90%   the crash guard is half-built
+  anything that renders      60%   NOTHING has ever been rendered in a test
+
+The last line is the important one. There is no React in the sandbox, so no
+component has ever been drawn during testing. The one fault that made the app
+completely unusable - a misplaced hook that broke the splash screen - shipped
+past 38 passing checks and was found by Dan in about thirty seconds.
+
+The parts that could harm a tank are the best tested. The parts most likely to
+annoy someone are the least.
+
+
+WHAT ACTUALLY NEEDS DOING
+-------------------------
+
+Dan should use the app on his tank. That has still not happened. Eight stages
+of testing and forty-one gate checks have not produced the information that two
+weeks of real use would.
+
+Everything else on the list is secondary to that.

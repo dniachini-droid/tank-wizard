@@ -1,0 +1,493 @@
+/* ============================================================================
+   MERIDIAN — a restyle for Dan's Tank Wizard
+   ============================================================================
+
+   Presentation only. No JavaScript, no markup changes, no logic touched — the
+   app source is byte-identical to the stable build. This file is appended
+   after the app's own <style> block, so it redefines the palette classes the
+   whole interface is built from rather than merely decorating the surface.
+   Delete it and the app reverts exactly.
+
+   The direction is a scientific instrument, not a consumer dashboard. Warm
+   paper instead of cool mint, a serif for headings, hairlines instead of
+   shadows, and colour reserved almost entirely for data. The reference points
+   are a good field notebook and a Swiss timetable: quiet, dense, confident,
+   and completely legible at a glance.
+   ========================================================================= */
+
+:root {
+  /* Warm neutrals. The old ground was a cool mint that tinted every white
+     surface green; paper lets the parameter colours read true. */
+  --mrd-paper:     #F7F5F1;
+  --mrd-paper-2:   #FBFAF8;
+  --mrd-card:      #FFFFFF;
+  --mrd-sink:      #EFEBE4;
+
+  --mrd-ink:       #14171A;
+  --mrd-ink-2:     #5A6469;
+  --mrd-ink-3:     #949CA1;
+
+  /* The teal survives but deepens — it now reads as ink with colour in it
+     rather than a brand wash. */
+  --mrd-accent:    #075C66;
+  --mrd-accent-lo: #0E8794;
+
+  /* Hairlines do the work shadows used to. Two weights: a structural rule and
+     a whisper for internal divisions. */
+  --mrd-rule:      #DFD8CD;
+  --mrd-rule-soft: #EBE6DD;
+
+  --mrd-ease:      cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* --- The palette, redefined --------------------------------------------- */
+
+.bg-app        { background-color: var(--mrd-paper) !important; }
+.border-app    { border-color: var(--mrd-rule) !important; }
+.text-ink      { color: var(--mrd-ink) !important; }
+.text-ink2     { color: var(--mrd-ink-2) !important; }
+.text-teal-brand { color: var(--mrd-accent) !important; }
+.bg-teal-brand { background-color: var(--mrd-accent) !important; }
+
+html, body { background: var(--mrd-paper) !important; }
+
+/* A barely-there paper grain. Real paper is never a flat value, and a single
+   flat fill across a whole phone screen is the thing that makes a web app
+   look like a web app. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image:
+    radial-gradient(circle at 20% 12%, rgba(7, 92, 102, 0.045), transparent 46%),
+    radial-gradient(circle at 86% 88%, rgba(150, 120, 70, 0.040), transparent 44%);
+}
+#root, main, aside { position: relative; z-index: 1; }
+
+/* --- Type: the largest single change ------------------------------------ */
+
+/* Headings move to a serif. It is the fastest way to make an interface read as
+   considered rather than generated, and it separates titles from data at a
+   glance without needing size or colour to do it. System faces only — no
+   network dependency, and these are present on every platform the app runs on. */
+.font-display {
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua',
+               Georgia, 'Times New Roman', serif !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.012em !important;
+  font-feature-settings: "kern" 1, "liga" 1, "onum" 1;
+}
+h2.font-display, h2 {
+  font-size: 1.85rem !important;
+  line-height: 1.12 !important;
+  color: var(--mrd-ink) !important;
+}
+
+.font-body {
+  font-family: -apple-system, 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Every number the app displays, in tabular figures, so a value never shifts
+   its neighbours as it changes. */
+.font-black, .font-extrabold, [class*="text-["] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The eyebrow becomes a small-caps rule — the label above a plate in a
+   reference book rather than a coloured tag. */
+.tracking-\[0\.14em\] {
+  font-family: -apple-system, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 10px !important;
+  letter-spacing: 0.18em !important;
+  color: var(--mrd-ink-3) !important;
+  font-weight: 700 !important;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--mrd-rule);
+  display: inline-block;
+  margin-bottom: 0.55rem !important;
+}
+
+/* --- Surfaces: hairlines, not shadows ----------------------------------- */
+
+/* Cards become plates: a true white, a single crisp rule, and almost no
+   shadow. Depth comes from the rule and the paper behind it, which is how
+   print does it and why print never looks dated. */
+.bg-white {
+  background: var(--mrd-card) !important;
+  border: 1px solid var(--mrd-rule) !important;
+  box-shadow: 0 1px 0 rgba(20, 23, 26, 0.03) !important;
+  transition: border-color 200ms var(--mrd-ease), box-shadow 200ms var(--mrd-ease),
+              transform 200ms var(--mrd-ease);
+}
+
+/* Tighter, more architectural radii. The old 16–24px read as friendly; 10px
+   reads as precise. */
+.rounded-2xl { border-radius: 10px !important; }
+.rounded-xl  { border-radius: 8px  !important; }
+.rounded-lg  { border-radius: 6px  !important; }
+.rounded-md  { border-radius: 4px  !important; }
+
+/* Interaction is a darkening rule and a one-pixel lift. Restrained on purpose:
+   at this density, a large hover effect turns scrolling into a light show. */
+.cursor-pointer.bg-white:hover, button:hover > .bg-white {
+  border-color: var(--mrd-accent) !important;
+  box-shadow: 0 2px 10px -4px rgba(7, 92, 102, 0.28) !important;
+  transform: translateY(-1px);
+}
+.fixed .bg-white:hover { transform: none; }
+button { transition: transform 110ms var(--mrd-ease), opacity 110ms var(--mrd-ease); }
+button:active { transform: scale(0.988); }
+
+/* --- Parameter cards: the instrument face ------------------------------- */
+
+/* The tinted header cap becomes a printed band with a rule under it, so the
+   parameter colour identifies the card without colouring the whole thing. */
+.grid > div > button > .bg-white > div:first-child {
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.5), transparent) !important;
+  border-bottom: 1px solid var(--mrd-rule-soft);
+}
+
+/* Card titles pick up the small-caps treatment of a specimen label. */
+.grid .text-\[12px\].font-black {
+  letter-spacing: 0.055em !important;
+  text-transform: uppercase;
+  font-size: 10.5px !important;
+  color: var(--mrd-ink-2) !important;
+}
+
+/* The reading itself gets the serif and real size. It is the one thing on the
+   card you actually came to look at, and it should win decisively. */
+.grid .text-\[24px\].font-black {
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif !important;
+  font-weight: 600 !important;
+  font-size: 30px !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1 !important;
+}
+
+/* --- Navigation ---------------------------------------------------------- */
+
+nav.fixed, .fixed.bottom-0 {
+  background: rgba(247, 245, 241, 0.94) !important;
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  border-top: 1px solid var(--mrd-rule) !important;
+  box-shadow: none !important;
+}
+aside {
+  background: var(--mrd-paper-2) !important;
+  border-right: 1px solid var(--mrd-rule) !important;
+}
+
+/* --- Controls ------------------------------------------------------------ */
+
+input, select, textarea {
+  background: var(--mrd-paper-2) !important;
+  border-color: var(--mrd-rule) !important;
+  transition: border-color 160ms var(--mrd-ease), box-shadow 160ms var(--mrd-ease);
+}
+input:focus, select:focus, textarea:focus {
+  outline: none !important;
+  background: #fff !important;
+  border-color: var(--mrd-accent) !important;
+  box-shadow: 0 0 0 3px rgba(7, 92, 102, 0.11) !important;
+}
+
+/* The committing action is the only solid block of colour on a screen, which
+   is what makes it unmissable without needing to be large. */
+.bg-teal-brand {
+  background-image: none !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.16) !important;
+  letter-spacing: 0.01em;
+}
+.bg-teal-brand:hover { background-color: var(--mrd-accent-lo) !important; }
+
+/* --- Motion: quieter than before ---------------------------------------- */
+
+/* Content settles rather than performs. Shorter, smaller, and no sheen — at
+   this density the earlier choreography competed with the data. */
+@keyframes mrdRise {
+  from { opacity: 0; transform: translateY(7px); }
+  to   { opacity: 1; transform: none; }
+}
+.grid > div { animation: mrdRise 380ms var(--mrd-ease) both; }
+.grid > div:nth-child(1) { animation-delay: 0ms;  }
+.grid > div:nth-child(2) { animation-delay: 32ms; }
+.grid > div:nth-child(3) { animation-delay: 64ms; }
+.grid > div:nth-child(4) { animation-delay: 96ms; }
+.grid > div:nth-child(5) { animation-delay: 128ms;}
+.grid > div:nth-child(6) { animation-delay: 160ms;}
+.grid > div:nth-child(7) { animation-delay: 192ms;}
+.grid > div:nth-child(8) { animation-delay: 224ms;}
+
+main > div > div { animation: mrdRise 280ms var(--mrd-ease) both; }
+
+/* The trace still draws itself in — it is the one animation that carries
+   meaning, because it shows the direction the tank is moving. */
+.grid svg polyline, .grid svg path[stroke]:not([stroke="none"]) {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: mrdDraw 900ms var(--mrd-ease) 200ms both;
+}
+@keyframes mrdDraw { to { stroke-dashoffset: 0; } }
+
+/* The gauge marker arrives after its band, so context precedes position. */
+.grid .absolute[style*="left:"] { animation: mrdMark 420ms var(--mrd-ease) 320ms both; }
+@keyframes mrdMark {
+  0%   { opacity: 0; transform: scale(0.5); }
+  70%  { opacity: 1; transform: scale(1.15); }
+  100% { opacity: 1; transform: none; }
+}
+
+/* --- Chrome -------------------------------------------------------------- */
+
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--mrd-rule); border-radius: 999px;
+  border: 3px solid transparent; background-clip: content-box;
+}
+::selection { background: rgba(7, 92, 102, 0.16); color: var(--mrd-ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ============================================================================
+   PART TWO — the redesigned dashboard
+   ============================================================================
+   Styles for StatusHero and ParamRow, which replace the score tile and the
+   card grid. Everything above is a restyle; this section is the redesign.
+   ========================================================================= */
+
+/* --- The hero ------------------------------------------------------------ */
+
+.hero {
+  position: relative;
+  padding: 0 0 1.25rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--mrd-rule);
+}
+
+.hero-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.hero-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mrd-ink-3);
+}
+
+/* The score is present but subordinate — it sits at the top right in the
+   position a page number occupies, which is where the eye goes last. */
+.hero-score {
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.hero-score-max { font-size: 0.75rem; color: var(--mrd-ink-3); font-weight: 400; margin-left: 1px; }
+
+/* The verdict is the largest text in the app. It is the answer to the question
+   that made you open it. */
+.hero-verdict {
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  font-size: clamp(1.55rem, 6.2vw, 2.15rem);
+  line-height: 1.14;
+  letter-spacing: -0.016em;
+  font-weight: 600;
+  color: var(--mrd-ink);
+  margin: 0 0 0.85rem;
+  text-wrap: balance;
+  animation: mrdRise 420ms var(--mrd-ease) both;
+}
+
+.hero-meter {
+  height: 3px;
+  border-radius: 999px;
+  background: var(--mrd-sink);
+  overflow: hidden;
+}
+.hero-meter-fill {
+  height: 100%;
+  border-radius: 999px;
+  transform-origin: left center;
+  animation: mrdMeter 900ms var(--mrd-ease) 180ms both;
+}
+@keyframes mrdMeter { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+.hero-more {
+  display: inline-block;
+  margin-top: 0.85rem;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--mrd-accent);
+  border-bottom: 1px solid rgba(7, 92, 102, 0.28);
+  padding-bottom: 1px;
+}
+.hero-more:hover { border-bottom-color: var(--mrd-accent); }
+
+.hero-detail {
+  margin-top: 0.9rem;
+  animation: mrdRise 320ms var(--mrd-ease) both;
+}
+.hero-detail p {
+  font-size: 13px;
+  line-height: 1.62;
+  color: var(--mrd-ink-2);
+  margin: 0 0 0.7rem;
+  max-width: 62ch;
+}
+
+/* --- The instrument list ------------------------------------------------- */
+
+.param-list {
+  border-top: 1px solid var(--mrd-rule);
+  margin-bottom: 2rem;
+}
+
+.param-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-bottom: 1px solid var(--mrd-rule-soft);
+  animation: mrdRise 340ms var(--mrd-ease) both;
+}
+.param-row:nth-child(1) { animation-delay: 0ms; }
+.param-row:nth-child(2) { animation-delay: 26ms; }
+.param-row:nth-child(3) { animation-delay: 52ms; }
+.param-row:nth-child(4) { animation-delay: 78ms; }
+.param-row:nth-child(5) { animation-delay: 104ms; }
+.param-row:nth-child(6) { animation-delay: 130ms; }
+.param-row:nth-child(7) { animation-delay: 156ms; }
+.param-row:nth-child(8) { animation-delay: 182ms; }
+.param-row:hover { background: rgba(255,255,255,0.7); }
+
+.param-row-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 3px 4.9rem minmax(3.4rem, auto) 1fr 0.9rem;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.72rem 0.15rem 0.72rem 0;
+  text-align: left;
+}
+
+/* A short coloured rule at the left edge identifies the parameter without
+   tinting anything else, so eight rows do not become a paint chart. */
+.param-row-rule { width: 3px; height: 1.55rem; border-radius: 2px; }
+
+.param-row-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--mrd-ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.param-row-value {
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  font-size: 1.32rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.018em;
+  line-height: 1;
+  white-space: nowrap;
+}
+.param-row-unit {
+  font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--mrd-ink-3);
+  margin-left: 2px;
+  letter-spacing: 0.02em;
+}
+
+/* The band track. The lit segment is the target range; the mark is where the
+   tank actually is. Position is faster to read than a number checked against
+   a remembered range. */
+.param-row-track {
+  position: relative;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--mrd-sink);
+  min-width: 2.5rem;
+  overflow: visible;
+}
+.param-row-band {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  transform-origin: left center;
+  animation: mrdMeter 620ms var(--mrd-ease) 140ms both;
+}
+.param-row-mark {
+  position: absolute;
+  top: 50%;
+  width: 8px; height: 8px;
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 2px var(--mrd-card);
+  animation: mrdMark 420ms var(--mrd-ease) 300ms both;
+}
+
+.param-row-trend { display: flex; align-items: center; justify-content: center; font-weight: 700; }
+
+.param-row-tail {
+  display: flex;
+  align-items: center;
+  gap: 0.32rem;
+  padding-right: 0.1rem;
+  flex: 0 0 auto;
+}
+
+.param-row-flag {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mrd-accent);
+  border: 1px solid rgba(7, 92, 102, 0.3);
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+
+.param-row-dot { width: 6px; height: 6px; border-radius: 999px; flex: 0 0 auto; }
+
+.param-row-add {
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--mrd-rule);
+  border-radius: 5px;
+  background: var(--mrd-card);
+  transition: border-color 150ms var(--mrd-ease), background 150ms var(--mrd-ease);
+}
+.param-row-add:hover { border-color: currentColor; background: var(--mrd-paper-2); }
+
+@media (min-width: 640px) {
+  .param-row-main { grid-template-columns: 3px 7rem minmax(4.2rem, auto) 1fr 1rem; }
+  .param-row-value { font-size: 1.45rem; }
+}

@@ -1,0 +1,310 @@
+================================================================================
+HANDOVER NOTES  -  read before giving this to anyone
+================================================================================
+
+Read out of the running code on 2026-08-12. Every formula and threshold was
+traced through the source and the arithmetic checked against the running
+engine, not written from memory.
+
+Fourth of four documents:
+
+  dosing-spec.txt       the RULES  - bands, rate limits, what may change
+  wizard-spec.txt       the STATES - what the card says, in what order
+  calculation-spec.txt  the MATHS  - how a daily dose change is worked out
+  correction-spec.txt   THIS ONE   - how a correction is sized and tracked
+
+Five things to watch:
+
+1. A CORRECTION REPLACES THE DAILY DOSE. IT IS NOT ADDED TO IT.
+   The figure the app gives you is the whole dose to run while correcting -
+   maintenance plus the extra needed to move the level. Section 3 shows the
+   arithmetic. If an agent reads `dose` as an addition, every correction
+   doubles.
+
+2. FOUR SEPARATE FLAGS EXIST TO STOP A CORRECTION, AND THEY ARE NOT
+   INTERCHANGEABLE.
+   arrived, passed, stalled and backwards each answer a different question and
+   each was added after a specific failure. Section 6 records which failure.
+   Collapsing them will reintroduce one of four bugs.
+
+3. TIME CHECKS RUN WITH NO READINGS AT ALL.
+   dueNow and overrun are measured on the calendar. This is deliberate: a plan
+   left unattended must expire. Before this, a three-day plan still read "on
+   its way to 9.0dKH" at day forty, by which point the same dose would have
+   carried alkalinity past 13.
+
+4. `measuredSince` USES A STRICTLY-GREATER DATE COMPARISON, AND MUST.
+   A plan stores a date stamping at midnight; a reading logged at 20:00 on the
+   same day sorts after it. Counting that reading as "since" made every plan
+   look measured from the moment it began - 48% of plans over three years were
+   killed as stalled having never had a chance to work.
+
+5. THE RETURN DOSE IS RECOMPUTED, NOT REPLAYED.
+   Section 7. A plan that runs while demand grows must not hand the keeper back
+   to a figure that is now short.
+
+================================================================================
+
+
+================================================================================
+CORRECTIONS  -  HOW THEY ARE SIZED AND TRACKED
+================================================================================
+
+Two functions. proposeCorrection works out what a correction would involve.
+correctionProgress tracks one that is running.
+
+
+PART ONE  -  proposeCorrection  (84 lines)
+==========================================
+
+
+1. When nothing is offered at all
+---------------------------------
+
+Returns null, with no card shown, if any of these hold:
+
+  no assessment, no current reading, or no usable effectPerMl
+  the level is INSIDE the band
+  a logged correction happened after the newest reading
+  a correction plan started after the newest reading
+  a dose change happened after the newest reading
+
+The last three are one rule: nothing is proposed on a reading that predates the
+app's own intervention.
+
+    const staleAgainst = (when) => when && readingDate <= when.slice(0, 10)
+
+Without it, corrections stack on unmeasured levels. Over three simulated years
+this drove calcium from 403 to 498 ppm: a 120 mL correction delivering 56 ppm
+was already in flight, the last reading still said 399, and all three paces
+offered another. Plans started two days apart and the level oscillated.
+
+
+2. The target
+-------------
+
+    target = (def.min + def.max) / 2
+
+The MIDDLE of the band, never the nearest edge. Correcting to the edge leaves
+the tank one bad week from being out again.
+
+    gap = abs(target - level)
+    up  = target > level
+
+
+3. The dose  -  and it REPLACES, not adds
+-----------------------------------------
+
+    maxRate = CORRECTION_MAX_RATE[element]
+    perDay  = maxRate * paceFraction
+    days    = max(1, ceil(gap / perDay))
+    delta   = perDay / effectPerMl
+    dose    = round((up ? maintenance + delta : maintenance - delta) * 10) / 10
+
+The returned `dose` is the WHOLE daily figure to run while correcting. It
+already contains the maintenance portion. It is not an amount to add.
+
+Worked, verified against the running engine - alkalinity at 7.6, band 8.5-9.5,
+target 9.0, gap 1.4 dKH, maintenance 9.0 mL, effectPerMl 0.0692:
+
+  pace     perDay      days   dose      returnDose   extra over maintenance
+  -------  ----------  -----  --------  -----------  ----------------------
+  gentle   0.125/day     12   10.8 mL       9.0 mL              +1.8 mL
+  steady   0.250/day      6   12.6 mL       9.0 mL              +3.6 mL
+  quick    0.500/day      3   16.2 mL       9.0 mL              +7.2 mL
+
+Pace fractions are 25%, 50% and 100% of the element's max rate.
+
+
+4. Lowering a level
+-------------------
+
+A dose cannot pull a level down. The fastest it can fall is the rate the tank
+consumes it, reached by stopping the dose entirely.
+
+If the arithmetic wants a negative dose:
+
+  IF stopping the dose can do the job in a sensible time:
+      returns possible: true, atFloor: true, dose: 0
+      days = ceil(gap / (maintenance * effectPerMl))
+      with a note that stopping is the fastest it can fall
+
+  IF it cannot - magnesium, where the tank uses a fraction of a ppm a day:
+      returns possible: false, with stopDays and an explanation
+
+The atFloor branch exists because returning "not at this pace" for all three
+paces left the panel with nothing to offer when the obvious move was sitting
+right there.
+
+Verified against the running engine - calcium at 530 ppm, band 400-450, target
+425, maintenance 12 mL:
+
+  pace     result
+  -------  --------------------------------------------------
+  gentle   dose 1.3 mL over 21 days  - a reduced dose suffices
+  steady   dose 0 mL over 19 days    - atFloor, stop the dose
+  quick    dose 0 mL over 19 days    - atFloor, same answer
+
+Note that steady and quick give the same answer. Once the dose is at zero the
+level falls at whatever rate the tank consumes it, and no pace can beat that.
+The app says so rather than pretending the paces differ.
+
+
+5. When the solution is the wrong tool
+--------------------------------------
+
+    if (up && dose > max(maintenance * 6, maintenance + 40))
+        possible: false
+
+A maintenance solution is formulated to replace daily consumption. Using it for
+a large correction can call for a dose nobody can pour - magnesium at 1300 ppm
+needed 409 mL/day of an 8 mL solution.
+
+Past that ceiling the app says the product is wrong for the job and points at
+dry salt or water changes, rather than quoting an impossible volume.
+
+Verified: magnesium at 1150 ppm on an 8 mL/day maintenance dose is refused at
+all three paces, with the explanation naming the target and the volume that
+would be required.
+
+
+PART TWO  -  correctionProgress  (103 lines)
+============================================
+
+Takes a plan and the readings since it started, and returns the flags the
+wizard branches on.
+
+
+6. The six flags
+----------------
+
+Only readings dated on or after plan.startedAt are considered.
+
+ARRIVED
+    const lastTwo = rows.slice(-2)
+    arrived = lastTwo.length >= 2 && lastTwo.every(r => inBand(r.value))
+
+    TWO consecutive in-band readings, not one. A single reading is a moment,
+    not an endpoint, and dropping back to maintenance on it leaves the tank
+    sagging straight out again.
+
+PASSED
+    passed = up ? latest.value >= plan.target : latest.value <= plan.target
+
+    ONE reading past the target is enough. Deliberately weaker than arrived,
+    and the two answer different questions: passing decides when to stop
+    PUSHING, confirmation decides when to say DONE. Waiting for confirmation
+    before easing off cost real overshoot - calcium reached its band and kept
+    climbing to 702 ppm because its weekly cadence put two confirming readings
+    a fortnight away, and alkalinity ran to zero on a downward correction for
+    the same reason.
+
+DUENOW
+    dueNow = expected != null && days >= expected && !passed
+
+    The plan has run as long as it was estimated to need and has not got there.
+    Time to test. Continuing to push blind is how calcium overshot to 515 ppm:
+    it entered its band on a Monday, the next test was the following Monday,
+    and the elevated dose ran the whole week between.
+
+OVERRUN
+    overrun = expected != null && days > expected * 2 + 2
+
+    More than twice the estimate. Something is wrong with the assumptions
+    rather than with the tank, and quietly continuing to over-dose is the worst
+    outcome available.
+
+STALLED
+    measuredSince = rows.filter(r => r.date.slice(0,10) > startDay).length
+    stalled = days >= 3 && measuredSince >= 1
+              && movedSoFar < STABILITY_RULES[element].noiseFloor
+
+    Three days in, at least one reading SINCE the plan began, and the level has
+    not moved beyond the kit's noise.
+
+BACKWARDS
+    backwards = days >= 3 && measuredSince >= 1
+                && ((up && latest.value < plan.startValue)
+                 || (!up && latest.value > plan.startValue))
+
+    Same preconditions, but the level has moved AWAY from the target.
+
+The `measuredSince >= 1` condition on the last two is load-bearing. Without it,
+the latest reading IS the one the plan started from, movement is measured from
+a reading to itself, and comes out zero every time. Absence of evidence was
+being read as evidence of failure: 48% of plans over three years were killed as
+stalled having never had a chance to work, and each replacement started from a
+worse level.
+
+The comparison is strictly greater than startDay, because a plan stored as a
+date stamps at midnight and a reading logged at 20:00 the same day sorts after
+it.
+
+
+7. The return dose is recomputed
+--------------------------------
+
+    freshReturn = (maintenanceNow is finite and > 0
+                   && (plan.returnDose == null
+                       || maintenanceNow < plan.returnDose * 6))
+                  ? round(maintenanceNow * 10) / 10
+                  : plan.returnDose
+
+The dose recorded when the plan started is what the tank used THEN. A plan that
+runs for weeks while demand grows would send the keeper back to a figure 38%
+short, and the level falls straight out again.
+
+The stored value survives as a sanity floor: if the fresh figure is absurd -
+more than six times the recorded one - the recorded one is the safer answer.
+
+Both are returned: `returnDose` is the fresh figure, `storedReturnDose` the
+original.
+
+
+8. With no readings at all
+--------------------------
+
+If nothing has been logged since the plan started, the function does NOT return
+early with nothing. It returns the time-based flags:
+
+    days      = elapsed since startedAt
+    dueNow    = elapsed >= expectedDays
+    overrun   = elapsed > expectedDays * 2 + 2
+    arrived, passed, stalled, backwards = false
+    remaining, daysLeft = null
+
+An elevated dose has been running the whole time and the clock is the one thing
+knowable without a test. Returning early here meant a three-day plan still read
+"on its way to 9.0dKH" forty days later - by which point the same dose would
+have carried alkalinity past 13, the app cheerfully reporting progress on a
+correction that had long since become an overdose.
+
+
+9. Everything the flags feed
+----------------------------
+
+From wizard-spec.txt section 2, in the order the wizard tests them:
+
+    overrun && !passed        ->  correction-stalled  "Taking too long"
+    dueNow && !overrun        ->  correction-due      "Test now"
+    arrived || passed         ->  correction-done     "Target reached"
+    backwards || stalled      ->  correction-stalled  "Not responding"
+    otherwise                 ->  correcting-dose     "Correction running"
+
+Order matters. A plan that has both overrun and arrived reports as done, not
+stalled, because arrived is tested first among the outcome flags.
+
+
+10. Where to look in the code
+-----------------------------
+
+  proposeCorrection      84 lines  - sizing, feasibility, refusals
+  correctionProgress    103 lines  - the six flags and the return dose
+  canLowerByDose                   - whether stopping the dose can do the job
+  CORRECTION_MAX_RATE              - one rate per element
+  CORRECTION_PACE                  - 0.25 / 0.5 / 1.0
+  pendingCorrection                - logged one-off corrections, not plans
+
+  tests/crosstalk.js               - 24 checks that a stale reading is refused
+  tests/matrix.js                  - correction states against reading positions
+  tests/sim/years.js               - plan behaviour over three years

@@ -1,0 +1,432 @@
+/* ============================================================================
+   AURELIA — a display skin for Dan's Tank Wizard
+   ============================================================================
+
+   Pure presentation. Not one selector here changes what the app does, which is
+   why it lives in its own file and is appended after the base styles: the skin
+   can be pulled out entirely and the app still runs.
+
+   The approach is deliberately CSS-only. Parameter colours arrive as inline
+   styles from the data (def.color), so they win against any stylesheet — and
+   that is correct, because those colours are the app's identity. Everything
+   around them is fair game: surface, depth, type, motion.
+
+   Design brief, in one line: a laboratory instrument that happens to be
+   beautiful. Calm ground, precise type, colour used only where it carries
+   meaning, and motion that explains rather than decorates.
+   ========================================================================= */
+
+:root {
+  /* A ground built from three near-whites rather than one. Cards read as
+     objects sitting on a surface instead of panels cut out of it. */
+  --aur-void:      #EEF3F4;
+  --aur-ground:    #F6F9FA;
+  --aur-surface:   #FFFFFF;
+
+  --aur-ink:       #0A1A20;
+  --aur-ink-2:     #5B7078;
+  --aur-ink-3:     #93A7AE;
+
+  --aur-accent:    #0B7C86;
+  --aur-accent-lo: #0FA0AC;
+  --aur-line:      rgba(11, 60, 70, 0.09);
+
+  /* Two shadows on every raised object: a tight contact shadow that anchors it
+     and a wide soft one that gives the room depth. One shadow always reads as
+     a sticker. */
+  --aur-lift-1: 0 1px 2px rgba(10, 30, 38, 0.05), 0 8px 24px -8px rgba(10, 30, 38, 0.10);
+  --aur-lift-2: 0 2px 4px rgba(10, 30, 38, 0.06), 0 18px 44px -14px rgba(10, 30, 38, 0.16);
+  --aur-inset:  inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+  --aur-ease:     cubic-bezier(0.22, 1, 0.36, 1);
+  --aur-ease-in:  cubic-bezier(0.55, 0, 0.35, 1);
+}
+
+/* --- Ground -------------------------------------------------------------- */
+
+html, body { background: var(--aur-void) !important; }
+
+/* A single very large, very slow gradient field. It is almost subliminal —
+   the point is that the background is never quite flat, so the app feels like
+   a surface with light falling on it rather than a colour value. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -20vmax;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(48vmax 42vmax at 12% -6%,  rgba(15, 160, 172, 0.13), transparent 62%),
+    radial-gradient(42vmax 38vmax at 92% 4%,   rgba(64, 130, 190, 0.10), transparent 60%),
+    radial-gradient(52vmax 46vmax at 76% 96%,  rgba(11, 124, 134, 0.09), transparent 64%),
+    radial-gradient(38vmax 34vmax at 4% 88%,   rgba(120, 190, 180, 0.10), transparent 62%);
+  filter: blur(28px) saturate(112%);
+  animation: aurDrift 54s var(--aur-ease) infinite alternate;
+}
+@keyframes aurDrift {
+  0%   { transform: translate3d(0, 0, 0)          scale(1);    }
+  50%  { transform: translate3d(2.2%, -1.6%, 0)   scale(1.06); }
+  100% { transform: translate3d(-1.8%, 2.2%, 0)   scale(1.03); }
+}
+
+/* Caustics: the shifting net of light on a pool floor. Two layers of the same
+   conic pattern at different scales and speeds, so it never visibly repeats.
+   Kept under 3% opacity — you should notice it only if you look for it. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.030;
+  background-image:
+    repeating-conic-gradient(from 8deg at 30% 22%, #0B7C86 0deg 8deg, transparent 8deg 26deg),
+    repeating-conic-gradient(from 52deg at 74% 78%, #2E8B9E 0deg 6deg, transparent 6deg 22deg);
+  background-size: 42vmax 42vmax, 58vmax 58vmax;
+  filter: blur(1.2px);
+  animation: aurCaustic 38s linear infinite;
+  mix-blend-mode: multiply;
+}
+@keyframes aurCaustic {
+  0%   { background-position:   0     0,   0     0;   }
+  100% { background-position: 42vmax 30vmax, -58vmax 40vmax; }
+}
+
+#root, main, aside { position: relative; z-index: 1; }
+
+/* --- Type ---------------------------------------------------------------- */
+
+body, button, input, select, textarea {
+  font-feature-settings: "cv02" 1, "cv03" 1, "cv04" 1, "ss01" 1;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Page titles get optical sizing and a tightened track — the single cheapest
+   thing that separates a designed interface from a default one. */
+h2, .font-display {
+  letter-spacing: -0.022em !important;
+  font-variation-settings: "opsz" 40;
+}
+h2 { font-weight: 700 !important; }
+
+/* Numbers must never reflow as they tick. Tabular figures everywhere a value
+   is displayed large. */
+.tabular-nums, [class*="text-[24px]"], [class*="text-2xl"], [class*="text-3xl"] {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* The eyebrow above each heading, rebuilt as a rule with a lead-in mark. */
+.tracking-\[0\.14em\] {
+  position: relative;
+  padding-left: 1.15rem !important;
+}
+.tracking-\[0\.14em\]::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 50%;
+  width: 0.75rem; height: 2px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, var(--aur-accent), transparent);
+  border-radius: 2px;
+}
+
+/* --- Surfaces ------------------------------------------------------------ */
+
+/* Cards: a soft white pane, a hairline that is darker at the bottom than the
+   top (light falls from above), and a highlight along the top edge. */
+.bg-white {
+  background: linear-gradient(180deg, rgba(255,255,255,0.97), rgba(252,254,254,0.94)) !important;
+  backdrop-filter: blur(14px) saturate(122%);
+  -webkit-backdrop-filter: blur(14px) saturate(122%);
+  border-color: var(--aur-line) !important;
+  box-shadow: var(--aur-lift-1), var(--aur-inset);
+  transition: box-shadow 260ms var(--aur-ease), transform 260ms var(--aur-ease);
+}
+
+.rounded-2xl { border-radius: 20px !important; }
+.rounded-xl  { border-radius: 15px !important; }
+.rounded-lg  { border-radius: 11px !important; }
+
+/* A card you can open lifts toward you. Suppressed for anything inside a
+   modal, where a hover lift reads as instability. */
+.cursor-pointer.bg-white:hover,
+button:hover > .bg-white {
+  box-shadow: var(--aur-lift-2), var(--aur-inset);
+  transform: translateY(-2px);
+}
+.fixed .bg-white:hover { transform: none; }
+
+/* Press gives immediate physical feedback — the single most-missed detail in
+   web UI, and the reason native apps feel more responsive at identical speed. */
+button:active { transform: scale(0.985); }
+button { transition: transform 120ms var(--aur-ease-in); }
+
+/* --- Parameter cards ----------------------------------------------------- */
+
+/* The tinted header cap gets a gradient and a hairline, so the colour reads as
+   a material rather than a fill. */
+.grid > div > button > .bg-white > div:first-child {
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.55), transparent) !important;
+  box-shadow: inset 0 -1px 0 var(--aur-line);
+}
+
+/* The big value: a subtle vertical gradient so it has weight at the baseline. */
+.text-\[24px\].font-black {
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+
+/* --- Motion -------------------------------------------------------------- */
+
+/* Everything arrives. A staggered rise on the parameter grid and on stacked
+   panels, so a screen assembles itself in about a third of a second rather
+   than snapping into place. */
+@keyframes aurRise {
+  from { opacity: 0; transform: translateY(14px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+.grid > div,
+main > div > .bg-white,
+main > div > div > .bg-white {
+  animation: aurRise 520ms var(--aur-ease) both;
+}
+.grid > div:nth-child(1) { animation-delay: 0ms;  }
+.grid > div:nth-child(2) { animation-delay: 45ms; }
+.grid > div:nth-child(3) { animation-delay: 90ms; }
+.grid > div:nth-child(4) { animation-delay: 135ms;}
+.grid > div:nth-child(5) { animation-delay: 180ms;}
+.grid > div:nth-child(6) { animation-delay: 225ms;}
+.grid > div:nth-child(7) { animation-delay: 270ms;}
+.grid > div:nth-child(8) { animation-delay: 315ms;}
+
+/* A sheen that crosses each card once as it arrives — the light catching the
+   surface as it settles. Purely decorative and it never repeats. */
+.grid > div::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,0.62) 50%, transparent 62%);
+  transform: translateX(-130%);
+  animation: aurSheen 1500ms var(--aur-ease) 320ms both;
+}
+@keyframes aurSheen {
+  to { transform: translateX(130%); }
+}
+
+/* --- Charts and gauges --------------------------------------------------- */
+
+/* Band shading gets a soft edge instead of a hard cut, so a value near the
+   boundary does not look like it is falling off a cliff. */
+svg rect[fill]:not([fill="none"]) { shape-rendering: geometricPrecision; }
+svg path, svg line, svg polyline { vector-effect: non-scaling-stroke; }
+
+/* The marker on a gauge breathes — slowly, and only the marker, so the eye is
+   drawn to the one element that says "you are here". */
+@keyframes aurPulse {
+  0%, 100% { box-shadow: 0 0 0 0    rgba(11, 124, 134, 0.28); }
+  50%      { box-shadow: 0 0 0 5px  rgba(11, 124, 134, 0.00); }
+}
+.absolute.rounded-full[style*="left:"] { animation: aurPulse 3.4s var(--aur-ease) infinite; }
+
+/* --- Navigation ---------------------------------------------------------- */
+
+/* The bottom bar becomes a floating pill rather than a slab across the base. */
+nav.fixed, .fixed.bottom-0 {
+  background: rgba(255, 255, 255, 0.82) !important;
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  border-top: 1px solid var(--aur-line) !important;
+  box-shadow: 0 -8px 32px -16px rgba(10, 30, 38, 0.22);
+}
+
+aside {
+  background: rgba(255, 255, 255, 0.62) !important;
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border-right: 1px solid var(--aur-line) !important;
+}
+
+/* --- Sheets and modals --------------------------------------------------- */
+
+.fixed.inset-0 { backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+
+/* A sheet rises from the edge it is anchored to, with a slight overshoot so it
+   feels weighted rather than teleported. */
+@keyframes aurSheet {
+  from { opacity: 0; transform: translateY(26px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+.fixed .rounded-t-3xl, .fixed .max-w-2xl, .fixed .max-w-sm {
+  animation: aurSheet 380ms var(--aur-ease) both;
+}
+
+/* --- Controls ------------------------------------------------------------ */
+
+input, select, textarea {
+  transition: border-color 180ms var(--aur-ease), box-shadow 180ms var(--aur-ease), background 180ms var(--aur-ease);
+}
+input:focus, select:focus, textarea:focus {
+  outline: none !important;
+  border-color: var(--aur-accent) !important;
+  box-shadow: 0 0 0 3px rgba(11, 124, 134, 0.13) !important;
+  background: #fff !important;
+}
+
+/* The primary action gets depth and a light source, so the one button that
+   commits a change does not look like the four that do not. */
+.bg-teal-brand {
+  background-image: linear-gradient(180deg, var(--aur-accent-lo), var(--aur-accent)) !important;
+  box-shadow: 0 1px 2px rgba(10, 30, 38, 0.12), 0 6px 18px -8px rgba(11, 124, 134, 0.55),
+              inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+.bg-teal-brand:hover { filter: brightness(1.06); }
+
+/* --- Respect the setting ------------------------------------------------- */
+
+/* Anyone who has asked their system to stop animating things means it. Motion
+   is removed rather than shortened — a fast animation is still an animation. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  body::before, body::after { animation: none !important; }
+}
+
+/* ============================================================================
+   PART TWO — the data
+   ============================================================================
+   The first half makes the app feel built. This half makes the numbers feel
+   alive, which matters more: a reef parameter is a moving thing, and a static
+   readout of it is a lie of omission.
+   ========================================================================= */
+
+/* --- The sparkline on each card ----------------------------------------- */
+
+/* Each card's history draws itself in on arrival, left to right, so you watch
+   the tank's recent past assemble rather than finding it already there. The
+   dash trick works on any path length because the length is set per-element by
+   the browser's own geometry. */
+.grid svg polyline, .grid svg path[stroke]:not([stroke="none"]) {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: aurDraw 1400ms var(--aur-ease) 260ms both;
+}
+@keyframes aurDraw { to { stroke-dashoffset: 0; } }
+
+/* A soft glow under the trace, so a line one pixel wide still has presence. */
+.grid svg { overflow: visible; }
+.grid svg polyline { filter: drop-shadow(0 1px 3px rgba(11, 124, 134, 0.28)); }
+
+/* --- Gauges -------------------------------------------------------------- */
+
+/* The band fills outward from the centre as the card lands, which reads as the
+   safe range being established before the value is placed within it. */
+.grid .relative > .absolute.rounded-full:first-child {
+  transform-origin: center;
+  animation: aurBand 620ms var(--aur-ease) 180ms both;
+}
+@keyframes aurBand {
+  from { transform: scaleX(0.06); opacity: 0; }
+  to   { transform: scaleX(1);    opacity: 1; }
+}
+
+/* The current-value marker drops in last and slightly overshoots, so the eye
+   lands on it after the context is already drawn. */
+.grid .absolute[style*="left:"] {
+  animation: aurMarker 720ms var(--aur-ease) 520ms both, aurPulse 3.4s var(--aur-ease) 1400ms infinite;
+}
+@keyframes aurMarker {
+  0%   { opacity: 0; transform: translateY(-10px) scale(0.4); }
+  62%  { opacity: 1; transform: translateY(0)     scale(1.25); }
+  100% { opacity: 1; transform: none; }
+}
+
+/* --- Large readouts ------------------------------------------------------ */
+
+/* The headline number counts into place with a short blur — it reads as a
+   measurement settling, which is what a titration actually does. */
+.text-\[24px\].font-black,
+.text-2xl.font-black,
+[class*="text-\[32px\]"] {
+  animation: aurSettle 700ms var(--aur-ease) 300ms both;
+}
+@keyframes aurSettle {
+  0%   { opacity: 0; filter: blur(7px); transform: translateY(7px) scale(0.94); }
+  70%  { opacity: 1; filter: blur(0);   transform: translateY(0)   scale(1.03); }
+  100% { opacity: 1; filter: none;      transform: none; }
+}
+
+/* --- Status colour as material ------------------------------------------ */
+
+/* Any pill carrying a status gets a gradient and an inner highlight rather than
+   a flat wash, so severity reads at a glance from form as well as hue. */
+[class*="rounded-md"][style*="background"],
+[class*="rounded-lg"][style*="background"],
+[class*="rounded-full"][style*="background"] {
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.34), rgba(255,255,255,0));
+}
+
+/* --- The health score ---------------------------------------------------- */
+
+/* The score tile gets a slow conic sweep behind it — a radar wash, on a long
+   enough cycle to read as ambient rather than busy. */
+.w-16.h-16.rounded-2xl {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.w-16.h-16.rounded-2xl::before {
+  content: "";
+  position: absolute;
+  inset: -60%;
+  z-index: -1;
+  background: conic-gradient(from 0deg, transparent 0deg, rgba(11,124,134,0.20) 42deg, transparent 92deg);
+  animation: aurSweep 7.5s linear infinite;
+}
+@keyframes aurSweep { to { transform: rotate(360deg); } }
+
+/* --- Findings and alerts ------------------------------------------------- */
+
+/* Something needing action gets a single slow breath. One element at a time,
+   never more, or the screen turns into a slot machine. */
+.border-rose-300, [style*="C4285B"] {
+  animation: aurAlert 2.8s var(--aur-ease) infinite;
+}
+@keyframes aurAlert {
+  0%, 100% { box-shadow: 0 0 0 0   rgba(196, 40, 91, 0.00); }
+  50%      { box-shadow: 0 0 0 4px rgba(196, 40, 91, 0.09); }
+}
+
+/* --- Tab transitions ----------------------------------------------------- */
+
+/* Switching tabs cross-fades with a slight lift, so the app feels like one
+   surface being re-dressed rather than five separate pages. */
+main > div > div { animation: aurTab 340ms var(--aur-ease) both; }
+@keyframes aurTab {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* --- Scrollbar ----------------------------------------------------------- */
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(11, 60, 70, 0.16);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(11, 60, 70, 0.28); background-clip: content-box; }
+
+/* --- Selection ----------------------------------------------------------- */
+
+::selection { background: rgba(11, 124, 134, 0.18); color: var(--aur-ink); }
