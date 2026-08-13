@@ -3,7 +3,7 @@ import { AllGraphsModal, TestLab } from './AllParametersSheet.jsx'
 import { Btn, Field, inputCls } from './DoseExpectation.jsx'
 import { Card, DeleteButton } from './ErrorBoundary.jsx'
 import { IcpPanel } from './IcpPanel.jsx'
-import { Activity, FileBarChart2, FlaskConical, Save, Upload } from '../icons.jsx'
+import { Activity, FileBarChart2, FlaskConical, Save } from '../icons.jsx'
 import { fmtVal } from '../lib/analytics/time-in-range.js'
 import { byNewest, fmtTime } from '../lib/analytics/time-of-day.js'
 import { StatusPill } from '../lib/backup.jsx'
@@ -45,12 +45,10 @@ export function TestModeSwitch({ mode, setMode, testCount, icpCount }) {
   );
 }
 
-export function WaterLog({ readings, onAdd, onDelete, onImportHistorical, paramDefs, chartEvents = [],
+export function WaterLog({ readings, onAdd, onDelete, paramDefs, chartEvents = [],
   icps = [], onAddIcp, onDeleteIcp, onEdit, prefill = null, onOpenParam,
   reminders = [], reminderView = null }) {
   const [mode, setMode] = useState("tests");
-  const [importMsg, setImportMsg] = useState(null);
-  const [importing, setImporting] = useState(false);
   const [allGraphs, setAllGraphs] = useState(false);
   const [histParam, setHistParam] = useState(PARAM_DEFS[0].key);
   const [editId, setEditId] = useState(null);
@@ -65,17 +63,6 @@ export function WaterLog({ readings, onAdd, onDelete, onImportHistorical, paramD
     if (!prefill || !prefill.paramKey) return;
     setMode("tests");
   }, [prefill && prefill.at]);
-
-  const runImport = async () => {
-    setImporting(true);
-    try {
-      const count = await onImportHistorical();
-      setImportMsg(count > 0 ? `Imported ${count} historical readings.` : "Already up to date.");
-    } finally {
-      setImporting(false);
-    }
-  };
-
 
   const histDef = paramDefs.find((d) => d.key === histParam) || paramDefs[0];
   const histRows = useMemo(() => readings
@@ -110,10 +97,6 @@ export function WaterLog({ readings, onAdd, onDelete, onImportHistorical, paramD
           </button>
         </div>
         <TestModeSwitch mode={mode} setMode={setMode} testCount={readings.length} icpCount={icps.length} />
-        <Btn variant="ghost" onClick={runImport} disabled={importing} className="w-full sm:w-auto">
-          <span className="flex items-center justify-center gap-1.5"><Upload size={14} /> {importing ? "Importing…" : "Import historical data"}</span>
-        </Btn>
-        {importMsg && <div className="text-[11px] font-bold text-teal-brand mt-1.5">{importMsg}</div>}
       </div>
 
       <TestLab paramDefs={paramDefs} readings={readings} onAdd={onAdd}

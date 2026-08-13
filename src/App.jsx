@@ -13,7 +13,6 @@ import { Tasks } from './components/Tasks.jsx'
 import { WaterLog } from './components/WaterLog.jsx'
 import { AlertTriangle, Waves, X } from './icons.jsx'
 import { DOSE_ELEMENTS } from './lib/analytics/consumption.js'
-import { ICP_SEED } from './lib/analytics/icp-data.js'
 import { fmtAmount } from './lib/analytics/time-in-range.js'
 import { addDays, byNewest, byOldest, nowTime } from './lib/analytics/time-of-day.js'
 import { DEFAULT_SETTINGS, LIGHTING_SEED, WATER_CHANGE_LITRES, WATER_CHANGE_SEED } from './lib/analytics/water-changes.js'
@@ -27,7 +26,6 @@ import { doseStatus } from './lib/dosing/state.js'
 import { buildFindings } from './lib/findings.js'
 import { buildBriefing, buildOverview, explainScore } from './lib/narrative-engine.js'
 import { REMINDER_SEED, autoCompletions, computeReminders, intervalLabel, reminderState } from './lib/reminders.js'
-import { HISTORICAL_DATA } from './lib/seed-data.js'
 import { computeStability } from './lib/stability-engine.js'
 import { loadKey, notify, onStorageError, onToast, saveKey } from './lib/storage.js'
 
@@ -446,36 +444,19 @@ export function ReefConsoleInner() {
         loadKey("water-changes", []),
       ]);
 
-      let finalReadings = r;
+      /* Readings are measurements somebody took, so nothing is seeded into
+         them — a clean device starts empty. The marker is still written on the
+         first run so the state of an install stays readable. */
+      const finalReadings = r;
       if (!seeded) {
-        const existing = new Set(r.map((row) => `${row.param}|${row.date}`));
-        const additions = [];
-        for (const [param, rows] of Object.entries(HISTORICAL_DATA)) {
-          for (const row of rows) {
-            const dedupeKey = `${param}|${row.date}`;
-            if (!existing.has(dedupeKey)) {
-              existing.add(dedupeKey);
-              additions.push({ id: uid(), param, value: row.value, date: row.date, note: "" });
-            }
-          }
-        }
-        finalReadings = [...r, ...additions];
         await saveKey("readings", finalReadings);
         await saveKey("historical-seeded", true);
       }
 
-      /* Seed the two Triton panels once. Matching by date means a panel already
-         entered by hand is left alone rather than duplicated, and anything
-         edited afterwards is never touched again. */
-      let finalIcps = i;
+      /* ICP panels are measurements too, and are seeded no more than readings
+         are. */
+      const finalIcps = i;
       if (!icpSeeded) {
-        const haveDates = new Set(i.map((t) => t.date));
-        const newPanels = ICP_SEED.filter((t) => !haveDates.has(t.date))
-          .map((t) => ({ ...t, elements: { ...t.elements } }));
-        if (newPanels.length) {
-          finalIcps = [...i, ...newPanels].sort(byNewest);
-          await saveKey("icp-tests", finalIcps);
-        }
         await saveKey("icp-seeded", true);
       }
 
@@ -1051,22 +1032,6 @@ export function ReefConsoleInner() {
     const next = readings.filter((r) => r.id !== id);
     setReadings(next); await saveKey("readings", next);
   };
-  const importHistorical = async () => {
-    const existing = new Set(readings.map((r) => `${r.param}|${r.date}`));
-    const additions = [];
-    for (const [param, rows] of Object.entries(HISTORICAL_DATA)) {
-      for (const row of rows) {
-        const dedupeKey = `${param}|${row.date}`;
-        if (!existing.has(dedupeKey)) {
-          existing.add(dedupeKey);
-          additions.push({ id: uid(), param, value: row.value, date: row.date, note: "" });
-        }
-      }
-    }
-    const next = [...readings, ...additions];
-    setReadings(next); await saveKey("readings", next);
-    return additions.length;
-  };
   /* Shared by readings and ICP panels: mark any linked reminder done and clear
      a pending nudge, so the schedule follows what actually happened. */
   const completeLinkedReminders = async (paramKey, date, kind) => {
@@ -1247,7 +1212,7 @@ export function ReefConsoleInner() {
           )}
           {tab === "log" && (
             <WaterLog readings={readings} onAdd={addReading} onDelete={deleteReading}
-              onImportHistorical={importHistorical} paramDefs={paramDefs} chartEvents={chartEvents}
+              paramDefs={paramDefs} chartEvents={chartEvents}
               icps={icps} onAddIcp={addIcp} onDeleteIcp={deleteIcp} onEdit={editReading} prefill={testPrefill}
               onOpenParam={setModalParam} reminders={reminders} reminderView={reminderView} />
           )}
