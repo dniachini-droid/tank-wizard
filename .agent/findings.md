@@ -581,3 +581,230 @@ without addressing this one too.
 suggested fix: same as the AlkAssessmentBlock finding — key
 `<CorrectionPanel>` (or the surrounding Card) by `active.key`.
 confidence: medium
+
+### static-analyst / 2026-08-13 / S2
+what: In all three dosing engines (alkalinity, calcium, magnesium), the rate-
+ceiling clamp (`rateLimitDose`, which sets `out.rateLimited = {wanted, allowed,
+perDay, unit, days}` and is the only thing rendered in the "Held to X mL
+rather than Y mL..." UI banner) runs BEFORE the shared `applyDoseConstraints`
+(bracketing, `capDoseStep`, and a second `safeDoseBand` re-check). Both
+functions can independently shrink the working dose figure, but only
+`rateLimitDose`'s clamp is ever recorded on `out`. When `applyDoseConstraints`
+tightens the figure further (via `capDoseStep`'s ordinary 25%-of-current-dose
+cap, or its own trailing `safeDoseBand` re-check), `out.recommendedDose` ends
+up strictly smaller than what `out.rateLimited.allowed` already told the user
+was the (rate-limited) answer — with no field recording that a second,
+different clamp happened, and no update to the rendered "Held to {allowed} mL"
+text. The banner and the number the app is about to record disagree, for the
+same assessment, in the same render.
+evidence: Ran the real, unmodified exported functions from
+src/lib/dosing/alkalinity.js directly (not reimplemented), in the exact
+sequence and with the exact call signature used in production at
+alkalinity.js:853 (`rateLimitDose`) then :859 (`applyDoseConstraints`),
+:862 (`out.recommendedDose = next`) — the identical pattern also appears
+verbatim at calcium.js:574,580,583 and helpers.js:942,948,951 (assessMagnesium).
+Script (bundled with esbuild, run under node with a minimal window/localStorage
+shim so the module graph loads headless):
+  const out = { currentDose: 4, maintenanceDose: 50,
+    current: { value: 9.0 }, trendPerDay: 0 };
+  const applied = (out.maintenanceDose - out.currentDose) * 0.1;  // 4.6, a
+    // modest staged step -- same shape as the real 0.55/0.7/0.9 urgency
+    // multipliers assessAlkalinity itself applies before calling rateLimitDose
+    // (alkalinity.js:843-846; the identical pattern recurs in calcium.js:566-569
+    // and helpers.js:936-937)
+  const limited = rateLimitDose(applied, out, def, { volumeL: 200 }, 0.05);
+  // -> { next: 40, stop: false }; out.rateLimited = { wanted: 8.6, allowed: 40,
+  //      perDay: 0.5, unit: "dKH", days: 4 }
+  const finalNext = applyDoseConstraints(limited.next, out, def, { volumeL: 200 }, [], []);
+  // -> finalNext = 5; out.stepCapped = { wanted: 40, allowed: 5 }
+Output: `out.recommendedDose would be: 5` / `but out.rateLimited (shown in UI)
+claims allowed = 40` / `MISMATCH: true`.
+Rendered surface confirmed by reading: ErrorBoundary.jsx:158-165 renders
+`a.rateLimited.allowed`/`.wanted`/`.perDay`/`.days` verbatim as "Held to X mL
+rather than Y mL... Getting there will take about {days} more days" with no
+re-check against `a.recommendedDose`; ErrorBoundary.jsx:249-251 prefills the
+DoseChangeSheet's editable amount from `a.recommendedDose` (the smaller,
+further-clamped figure), so the number the sheet offers to record is not the
+number the banner directly above it just described.
+Full end-to-end reproduction through `assessAlkalinity()`'s own trend/
+consumption maths (rather than calling the two shared functions directly)
+was attempted but not completed in this pass — flagged as UNVERIFIED at that
+level; the mechanism itself is verified against the real, unmodified
+production functions in the exact call order and with realistic magnitudes
+(a 100-200 L tank, a 1-4 mL/day current dose, a 0.35 dKH/mL/100L solution
+strength within STRENGTH_RANGE.alkalinity's plausible band).
+impact: A user reads "Held to 40 mL rather than 8.6 mL: the larger figure
+would move alkalinity faster than 0.5 dKH a day... Getting there will take
+about 4 more days" and then taps Record on a sheet pre-filled with 5 mL — a
+different number the banner never mentioned, with no explanation for the
+second reduction. Whichever figure the user trusts, one of the two on-screen
+numbers is stale/wrong for that render. Because `out.stepCapped` (the field
+that would explain the second clamp) is set but never read by any component
+(`grep -rn "\.stepCapped\b" src --include=*.js --include=*.jsx` outside
+alkalinity.js's own assignment and test files returns nothing), there is
+currently no path for the discrepancy to be explained to the user at all.
+suggested fix: Either (a) re-run/replace `out.rateLimited` after
+`applyDoseConstraints` so it always reflects the final clamp that actually
+produced `out.recommendedDose` (and drop or supersede it if a later step
+un-does the rate-limit binding), or (b) merge the two into one ordered
+constraint pass that records a single "why the number changed" trail
+reflecting whichever constraint bound last, and render `out.stepCapped`
+(currently dead) alongside `out.rateLimited` so no clamp is silent. Add a
+regression test asserting `out.recommendedDose === (out.rateLimited ?
+out.rateLimited.allowed : out.maintenanceDose-derived value)` whenever
+`out.rateLimited` is set, across all three engines.
+confidence: high
+
+### static-analyst / 2026-08-13 / S3
+what: DoseChangeSheet's `def` and `element` props are declared in its
+destructured signature but never read anywhere in the component body — the
+component has no access to the parameter's rail (`SAFE_DAILY_RISE[def.key]`)
+or its own element identity at all, despite the caller explicitly threading
+both through. This is concrete, file-level evidence for backlog TW-004 ("no
+§6 rail check reachable from manual dose entry"): the wiring needed for a
+rail check at this exact call site already exists and is being dropped on
+the floor, not merely absent.
+evidence: `grep -n "\bdef\b\|\belement\b" src/components/DoseChangeSheet.jsx`
+→ only one match, the destructuring line itself
+(src/components/DoseChangeSheet.jsx:16:
+`export function DoseChangeSheet({ def, element, current, recommended,
+suggested, plan, onCancel, onSave }) {`) — zero uses in the function body
+(lines 17-69). Caller passes both anyway:
+src/components/ErrorBoundary.jsx:249 `<DoseChangeSheet def={def}
+element={a.element || "alkalinity"} ... />`.
+impact: Same user-facing gap TW-004 already describes (Record is enabled for
+any finite value >= 0 with no rail lookup) — this finding narrows the cause
+to a specific, already-half-built code path: `def` (which would let the
+component look up `SAFE_DAILY_RISE[def.key]`/`CORRECTIONS[def.key].maxPerDay`
+itself) is sitting in scope, threaded by the caller, and silently discarded.
+suggested fix: When implementing TW-004's rail check, wire it through the
+`def` prop that already reaches this component rather than adding a new prop;
+if `def`/`element` remain genuinely unused after that work, remove them from
+the signature and the caller so an unused prop doesn't look like a check that
+already exists.
+confidence: high
+
+### static-analyst / 2026-08-13 / S4
+what: Two directly contradictory comments about the same code exist ~500
+lines apart in the same file. src/lib/dosing/alkalinity.js:332-340 (the block
+comment immediately above `rateLimitDose`'s own definition) states in the
+present tense: "Alkalinity does NOT have this block — it has no safeDoseBand
+call of its own and never sets out.rateLimited... alkalinity clamps silently
+at the end and says nothing." But alkalinity.js calls `rateLimitDose` itself
+at line 853, and the comment sitting directly above that call
+(alkalinity.js:848-851) correctly describes the same functionality in the
+PAST tense as something that used to be missing and has since been added:
+"Alkalinity had its own shorter version and never set out.rateLimited... The
+ceiling was applied either way; the difference was that the user was not
+told." The earlier comment (332-340) was not updated when the later fix
+(848-853) was made, so it now asserts the opposite of what the file's own
+code three hundred lines down does.
+evidence: src/lib/dosing/alkalinity.js:335-339 ("Alkalinity does NOT have
+this block... alkalinity clamps silently at the end and says nothing.")
+vs. src/lib/dosing/alkalinity.js:848-853 (`const limited =
+rateLimitDose(applied, out, def, settings, out.effectPerMl);`) with its own
+comment describing the gap as already closed.
+impact: Low direct user impact (the code itself is correct and consistent
+with the newer comment), but a real hazard to future work on this file: a
+maintainer or agent reading top-to-bottom hits the false claim first and may
+"fix" a gap that no longer exists, or distrust the (correct) rendered
+rateLimited banner because the nearby comment says alkalinity "says nothing."
+suggested fix: Delete or rewrite alkalinity.js:332-340 to match current
+behaviour, or move/consolidate it next to the 848-853 comment it now
+duplicates and contradicts.
+confidence: high
+
+### static-analyst / 2026-08-13 / S4
+what: src/lib/dosing/magnesium.js ends with an orphaned doc comment
+describing a function that is not in this file. The comment
+("A last backstop on the resulting dose, deliberately loose: two millilitres
+per litre per day is beyond any real system, so this only catches
+combinations the strength test somehow lets through.") is immediately
+followed by end-of-file — no function definition. The function it describes
+(a millilitres-vs-volume backstop, "two millilitres per litre" ≈ `ml <=
+vol * 2`) does exist, but as `dosePlausible` in src/lib/dosing/helpers.js:525-529,
+not in magnesium.js.
+evidence: `cat -A src/lib/dosing/magnesium.js | tail -5` →
+  }$
+  $
+  /* A last backstop on the resulting dose, deliberately loose: two millilitres$
+     per litre per day is beyond any real system, so this only catches$
+     combinations the strength test somehow lets through. */$
+  (file ends at line 55, no code follows). src/lib/dosing/helpers.js:525-529:
+  `export function dosePlausible(ml, settings) { const vol = Number(settings
+  && settings.volumeL); if (!isFinite(ml) || !isFinite(vol) || vol <= 0)
+  return true; return ml <= vol * 2; }` — matches the comment's description
+  exactly (`vol * 2` = "two millilitres per litre").
+impact: Cosmetic — behaviour is correct and dosePlausible is used correctly
+by all three engines (grep confirms call sites in alkalinity.js:363,752,
+calcium.js:383,499, helpers.js:764,860). But the dangling comment reads as
+though a function was deleted from magnesium.js without removing its
+docstring, which could lead a future reader to search for a missing
+implementation that was actually just relocated.
+suggested fix: Delete the orphaned comment from magnesium.js, or move it to
+sit above `dosePlausible` in helpers.js where the function it describes
+actually lives.
+confidence: high
+
+### static-analyst / 2026-08-13 / S4
+what: src/components/Insights.jsx has a stray, misplaced comment sitting
+above the wrong `useMemo` call. The comment ("The alkalinity protocol
+assessment — computed here so the dose row and its detail read from one
+result rather than two engines.") is positioned directly above the
+`computeCalibration(...)` memo (ICP-vs-test-kit calibration), which has
+nothing to do with an "alkalinity protocol assessment" or a "dose row" — no
+such concepts appear anywhere near this code. `computeCalibration`'s actual
+job (comparing logged readings against ICP lab panels to flag a
+miscalibrated test kit) is unrelated to dosing protocol assessment entirely.
+evidence: src/components/Insights.jsx:94-100:
+  94: /* Same replacement dates the findings layer uses, or this panel would keep
+  95:    showing an offset the rest of the app had already retired. */
+  96: /* The alkalinity protocol assessment — computed here so the dose row and its
+  97:    detail read from one result rather than two engines. */
+  98: const calibration = useMemo(
+  99:   () => computeCalibration(readings, icps, paramDefs, 7, kitChanges),
+  100:   [readings, icps, paramDefs, kitChanges]);
+`grep -n "dose row" src/components/*.jsx` → only this one hit, nowhere else in
+the file or component tree; `grep -n "protocol assessment" src/components/Insights.jsx`
+→ only this one hit, with no matching code below it. `git log -p --follow --
+src/components/Insights.jsx | grep -n "alkalinity protocol assessment"` →
+added once, in the file's initial commit — never relocated alongside actual
+"dose row" code, if such code ever existed elsewhere in this file.
+impact: Purely cosmetic/misleading — no behavioural effect, since
+`computeCalibration`'s own two-line comment above it (94-95) is the one that
+actually matches the code. But the misplaced block is confusing enough that
+a future reader could mistake `calibration` for something dosing-related.
+suggested fix: Delete the misplaced comment (lines 96-97) or move it to
+whichever code it actually describes, if that code still exists elsewhere in
+the file.
+confidence: medium
+
+### static-analyst / 2026-08-13 / S4
+what: src/lib/stability-engine.js has a duplicate object key (`fmtRate`) in
+a single object literal — a copy-paste artifact from merging two return
+shapes. Harmless in this instance because both occurrences assign the
+identical value, so the second silently overwrites the first with no
+behaviour change, but it is the only such duplicate-key defect anywhere in
+the app's bundled source.
+evidence: src/lib/stability-engine.js:103-106:
+  103:     return { grade: "unknown", label: "Not enough data", rule, fmtRate: "—",
+  104:       detail: "Log another reading to establish a trend", readingCount: all.length,
+  105:       spread: 0, spanDays: 1, netChange: 0, typicalRate: 0, fmtRate: "—",
+  106:       pattern: "flat", atResolution: false, maxDelta: 0 };
+`fmtRate` is set at both 103 and 105 (same value, "—", both times).
+Confirmed via a full-app esbuild bundle of the real entry point (not a
+partial/synthetic snippet): bundling src/App.jsx with esbuild
+(`bundle:true, jsx:'automatic'`) produces exactly one warning across the
+entire app: "Duplicate key \"fmtRate\" in object literal" at
+src/lib/stability-engine.js:105 — no other duplicate-key warnings anywhere
+else in the bundled tree, confirming this is not a systemic pattern
+elsewhere.
+impact: None currently (values are identical, so JS's "last key wins"
+semantics produce the same result either way). Flagged because it is
+concrete evidence of an object literal assembled by copy-pasting one
+return shape into another without deduplicating fields — the same failure
+class that, in a case where the two values differed, would silently drop
+one of them.
+suggested fix: Remove the duplicate `fmtRate: "—"` at line 105 (keep
+the one at line 103, or vice versa — they're identical).
+confidence: high

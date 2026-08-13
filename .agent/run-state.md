@@ -2,9 +2,9 @@ run: 2026-08-13-build-1
 routine: routine 1 — build cycle
 started: 2026-08-13T22:00:00Z
 status: in-progress
-last completed step: Wave 1 complete — TW-001 implemented and domain-verifier PASS (only approved item; wave done)
-next step: Wave 2 — waiting on all 6 parallel auditors to complete, then move to wave 3 (adjudicator)
-in-flight: static-analyst, state-auditor, dataflow-tracer, domain-verifier, breaker (may write new test files only), perf-watchdog — all dispatched concurrently, none write application source except breaker's new test files
+last completed step: Wave 2 complete — all 6 auditors done, 23 raw findings in .agent/findings.md (under 40-finding stop threshold)
+next step: Wave 3 — dispatch adjudicator to independently reproduce every S1/S2
+in-flight: none
 in-flight: none
 branch: claude/dazzling-faraday-9zbsv7
 uncommitted work: no
