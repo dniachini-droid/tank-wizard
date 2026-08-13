@@ -188,6 +188,12 @@ export function computeElementConsumption(key, readings, waterChanges, settings)
 /* Uses the salt maker's published figures. Batches vary, so these are
    estimates to test against rather than values to rely on. */
 export function predictAfterChange(latestByParam, paramDefs, volumeL, litres) {
+  /* spec: reef-chemistry.md §2, §7.6/§9 — net volume unset must refuse and
+     name the missing input, not fall through the division below. With
+     volumeL null/undefined, litres / volumeL is NaN or Infinity, and
+     Math.min(1, ...) turned that into a silent, plausible-looking "100% water
+     change" prediction instead of a refusal. */
+  if (!(volumeL > 0)) return { status: "novolume", missing: "net volume" };
   const f = Math.min(1, litres / volumeL);
   const out = [];
   for (const def of paramDefs) {

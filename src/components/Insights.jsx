@@ -421,7 +421,22 @@ export function Insights({ readings, icps, paramDefs, settings, latestByParam,
       </InfoBlock>
 
       {/* --- Calcium carbonate deposited --- */}
-      {skeleton && (
+      {skeleton && (skeleton.status === "novolume" ? (
+        /* spec: reef-chemistry.md §2, §7.6/§9 — computeSkeletonMass refuses
+           and names net volume as the missing input instead of a mass
+           figure. Rendered explicitly rather than let the card vanish
+           silently or crash reading .gPerMonth off an object that doesn't
+           have it. */
+        <InfoBlock icon={Scale} eyebrow="Growth" title="Skeleton laid down" tone="#0B7C86"
+          collapsible
+          summary="Set your tank's net volume in Setup to see this">
+          <p className="text-[13px] text-ink font-medium leading-relaxed">
+            Set your tank's net volume in Setup before this can be calculated — the mass of
+            calcium carbonate deposited is worked out per litre of water, so nothing is shown
+            until net volume is entered.
+          </p>
+        </InfoBlock>
+      ) : (
         <InfoBlock icon={Scale} eyebrow="Growth" title="Skeleton laid down" tone="#0B7C86"
           collapsible
           summary={`about ${skeleton.gPerMonth.toFixed(0)} g of calcium carbonate a month`}>
@@ -447,7 +462,7 @@ export function Insights({ readings, icps, paramDefs, settings, latestByParam,
             close proxy for growth rather than an exact measurement of it.
           </p>
         </InfoBlock>
-      )}
+      ))}
 
       {/* --- Nutrient production --- */}
       <InfoBlock icon={Droplets} eyebrow="Nutrients" title="What your tank generates" tone="#2A8050"
