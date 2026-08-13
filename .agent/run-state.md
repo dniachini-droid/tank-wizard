@@ -1,10 +1,10 @@
 run: 2026-08-13-consistency-sweep
 routine: routine 5 — consistency sweep
 started: 2026-08-13T08:20:31Z
-status: in-progress
-last completed step: Wave D step 2 complete (triage-analyst)
-next step: await reporter (Wave D step 3 of 3, final step), then commit brief + set status complete + open/update PR
-in-flight: reporter — writes .agent/morning-brief.md only
+status: complete
+last completed step: Wave D step 3 complete (morning brief written) — run finished
+next step: none — run complete
+in-flight: none
 branch: claude/2026-08-13-consistency-sweep
 uncommitted work: no
 

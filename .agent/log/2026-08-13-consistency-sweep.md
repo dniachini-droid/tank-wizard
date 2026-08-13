@@ -227,3 +227,29 @@ self-contradicting headline, no submit lock on confirm buttons, no
 persisted classification/target-change event, overrides not stored with
 recommendation, forbidden vocabulary leaking into narrative text,
 "drifting" meaning three incompatible things.
+
+## Wave D step 3 — reporter (complete, written by orchestrator)
+The reporter subagent's actual tool grant was Read/Grep/Glob only — no
+Write, despite its brief describing "Write .agent/morning-brief.md only".
+It read backlog.md/needs-dan.md/the run log and returned brief content as
+text rather than writing the file. Before using its numbers, the
+orchestrator independently ran `npm test` and `npm run build` directly
+(evidence rule — never report an unverified claim) and found the reporter's
+own health numbers were incomplete (it summed only history+parity+
+classification failures = 35, not the true total). Corrected and verified
+numbers: 261 tests, 193 pass, 68 fail, 0 skip, across 44 files (12 pass, 32
+fail) — of the 32 failing files, 23 pre-date this sweep (existing spec
+tests used as evidence, not created tonight) and 9 are new (3 history + 6
+parity, all intentional). Bundle: main JS 286.2 kB gzip vs 180 kB budget,
+total initial ~294.9 kB gzip vs 250 kB budget — both over, pre-existing
+(no app source touched tonight). Build passes. Wrote
+.agent/morning-brief.md directly with corrected numbers, otherwise
+following the reporter's structure and content (lead-with-contradictions
+per this run's brief, needs-dan items, PR #1 reference).
+
+## Run complete
+All four waves (A, B, C, D) ran to completion, nothing stalled. PR #1
+(https://github.com/dniachini-droid/tank-wizard/pull/1) already existed
+for this branch (created via the Claude Code UI mid-run) — subscribed to
+its activity instead of opening a duplicate. Updating its body to match
+the morning brief as the final step, then setting run-state to complete.
