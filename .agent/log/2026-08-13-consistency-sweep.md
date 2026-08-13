@@ -124,3 +124,32 @@ returning zero matches, cited independently by 4 of 6 auditors. This is the
 single-source rule (§1) violation and outranks all other findings per
 orchestrator rules. At least 8 divergent classifiers found in its place.
 Proceeding to Wave B.
+
+## Wave B — differential (dose-parity-checker)
+Wrote 9 files under tests/parity/ (1 fixture module + 8 test files). Verified
+locally: `npx vitest run tests/parity` → 45 tests, 38 pass, 7 intentional
+documented failures (SPEC VIOLATION pattern, paired with confirms-actual-
+behavior tests), zero test errors — matches auditor's own report exactly.
+10 findings appended to .agent/findings.md.
+Headline: `assessAlkalinity`/`assessCalcium` — the functions the real Dosing
+Wizard renders (App.jsx:148-150) — have NO awareness of magnesium at all.
+For the exact alert-thresholds.test.js fixture (Mg 1180→1140, below
+alert-low 1150; alk falling 7.9→7.4), assessAlkalinity recommends
+"increase" and never mentions magnesium, identical whether or not Mg
+readings are even in the input array. Per reef-chemistry §5 the spec-correct
+behavior is to defer/refuse while Mg is below alert-low — the wizard does
+the opposite. This is a second, independent confirmation (via differential
+testing rather than static reading) of the magnesium-gate gap
+wizard-dose-auditor already flagged structurally.
+Also: DoseChangeSheet has no §6 rail check (3rd independent confirmation,
+after manual-dose-auditor and wizard-dose-auditor); a boundary-exact
+cross-surface disagreement where doseStatus calls 6.9 dKH "Dangerously low"
+(red) while readingVerdict (the popup shown the instant that reading is
+logged) calls the same value "Well below band" (amber) because SAFE_BOUNDS'
+emergency branch is unreachable outside an active dose-change window;
+readings <2 days apart get a confident "hold" verdict from assessAlkalinity
+instead of the required refusal.
+Unverified (needs full React render tree, not driven this pass): DosingWizard
+.jsx/Dashboard.jsx/Insights.jsx end-to-end; dedicated alerts surface (treated
+buildFindings/computeDoseAdvice as proxy — no separate alerts component
+found); live IndexedDB/localStorage persistence round-tripping.

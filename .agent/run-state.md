@@ -2,9 +2,9 @@ run: 2026-08-13-consistency-sweep
 routine: routine 5 — consistency sweep
 started: 2026-08-13T08:20:31Z
 status: in-progress
-last completed step: Wave A complete (all 6 auditors reported, 36 findings)
-next step: await Wave B completion (dose-parity-checker), then Wave C (contradiction-hunter)
-in-flight: dose-parity-checker — writes tests/parity/ only
+last completed step: Wave B complete (dose-parity-checker, 45 tests / 38 pass / 7 documented findings, 10 findings logged)
+next step: Wave C — dispatch contradiction-hunter (read-only)
+in-flight: none
 branch: claude/2026-08-13-consistency-sweep
 uncommitted work: no
 
