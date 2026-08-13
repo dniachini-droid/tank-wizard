@@ -55,8 +55,15 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
      so the change date is editable rather than assumed to be today. */
   const [doseDate, setDoseDate] = useState(todayStr());
 
+  /* Only an actual change to volumeL (e.g. an external backup restore)
+     should resync this field. Depending on the whole `settings` object
+     re-fired this on every unrelated settings write on this screen (e.g.
+     saving a dose change), clobbering an unsaved volume edit. */
   useEffect(() => {
     setVol((settings.volumeL == null ? "" : String(settings.volumeL)));
+  }, [settings.volumeL]);
+
+  useEffect(() => {
     setElemDose(String(settings[elem.doseField] ?? 0));
     setElemStrength(String(settings[elem.strengthField] ?? elem.defaultStrength));
     setSigmaVal(String(kitSigma(elem.key, settings)));
