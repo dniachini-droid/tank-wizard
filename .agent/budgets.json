@@ -1,0 +1,21 @@
+{
+  "_comment": "Enforced by perf-watchdog and integrator. Tighten once you have a baseline.",
+  "bundle": {
+    "main_js_kb_gzip": 180,
+    "total_initial_kb_gzip": 250,
+    "css_kb_gzip": 40
+  },
+  "deps": {
+    "max_runtime_dependencies": 20,
+    "max_new_deps_per_night": 0
+  },
+  "tests": {
+    "min_line_coverage_pct": 70,
+    "min_coverage_pct_chemistry_modules": 95,
+    "max_suite_runtime_seconds": 180
+  },
+  "change": {
+    "max_lines_changed_per_item": 400,
+    "max_items_per_build_cycle": 3
+  }
+}
