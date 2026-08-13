@@ -76,3 +76,51 @@ reason is replaced with wrong generic wording even when the actual problem
 is a missing Setup field no amount of testing fixes. Also S2: pH "running
 high" threshold disagrees between Insights narrative (>8.4) and Dashboard
 claim feed (>8.45) for the same reading.
+
+### history-truth-auditor — complete
+5 findings appended (3xS1, 2xS4). Added 4 regression test files under
+src/test/spec/history/ (target-change-immutability, dose-log-immutability,
+override-visibility, timezone-dst) — verified locally: 4 tests fail
+(documenting real bugs), 11 pass (positive controls / already-correct
+behaviour), matches auditor's own report exactly.
+Headline: no persisted classification anywhere in the app, and no
+classifyReading function exists (grep confirms zero matches) — every
+surface, including history itself, computes band status live from
+paramStatus(def, value) using TODAY's targets (App.jsx:377-381 merges
+customRanges live on every render). Editing a target in Setup silently
+reclassifies every past reading of that parameter, no error, no flag, and no
+recorded target-change event. This is the exact failure §6 names as the
+worst-case bug. Needs a [schema]-tagged fix (persist classification + target
+band in force at log time). Also confirmed: no recommended-dose field is
+ever captured on manual dose-log rows (root cause shared with
+manual-dose-auditor's override-recording finding); CSV export passes raw
+values through unscaled (fine, but carries no classification to be faithful
+to); timezone/DST handling verified correct across 3 zones.
+
+### wizard-dose-auditor — complete
+5 findings appended (2xS1, 2xS2, 1xS3).
+Headline: AlkAssessmentBlock CRASHES on the two most common refusal states
+(net volume/strength unset; no readings yet) — `a.current.value` read
+unguarded when `a.current` is null. Reproduced live against real
+assessAlkalinity output. Hits every new user on first use of the Dosing tab,
+destroying the spec-required "refuse and name what's missing" message,
+replacing it with a raw error card. Also S1: magnesium gate and precipitation
+guard (reef-chemistry §5/§9) are structurally unreachable from the wizard —
+assessAlkalinity/assessCalcium have no parameter channel for magnesium
+status or sibling-element due-today status; confirmed via repo's own
+currently-failing spec tests (magnesium-gate.test.js, precipitation-guard
+.test.js). S2: no submit lock on Record/Start controls, stale-closure state
+reads risk dropped/desynced dose-log entries on rapid double-confirm
+(medium confidence, code-inspection). S2: zero component/integration tests
+for the wizard itself — exactly how the S1 crash went undetected.
+
+## Wave A complete
+All 6 surface auditors reported. 36 findings total appended to
+.agent/findings.md across the wave. Cross-cutting theme, confirmed
+independently by band-classifier-auditor, terminology-auditor,
+message-consistency-auditor, and history-truth-auditor: **`classifyReading`
+does not exist anywhere in the codebase** — confirmed by direct grep
+returning zero matches, cited independently by 4 of 6 auditors. This is the
+single-source rule (§1) violation and outranks all other findings per
+orchestrator rules. At least 8 divergent classifiers found in its place.
+Proceeding to Wave B.
