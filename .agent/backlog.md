@@ -18,8 +18,37 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
      missing date/time, kitChanges not threaded into assessAlkalinity, chart has
      no alert-low/high shading) — will resurface next sweep if still true.
      2 items (volume terminology spec self-contradiction; magnesium/calcium rail
-     constant conflict) are already escalated in .agent/needs-dan.md and are
-     NOT repeated here — see that file. -->
+     constant conflict) were escalated in .agent/needs-dan.md and RESOLVED by Dan
+     on 2026-08-13 — see the Decisions section of that file. The code work those
+     decisions create is TW-016 and TW-017 below. -->
+
+- [ ] [chem] TW-016 Magnesium rail constants disagree with canon's new 50 ppm/24 h
+      why: Dan set the §6 magnesium rail to 50 ppm/24 h on 2026-08-13.
+      src/lib/analytics/correction.js:20 CORRECTIONS.magnesium.maxPerDay is 100 —
+      it now EXCEEDS the rail, and per §6 "any recommendation exceeding a rail is a
+      bug". src/lib/analytics/safe-rate.js:27 CORRECTION_MAX_RATE.magnesium is 25 —
+      under the rail, but a hardcoded tightening where §6 permits only a [user] one.
+      safe-rate.js's SAFE_DAILY_RISE is what the live Dosing Wizard calls on every
+      dosing path, so today the wizard doses magnesium at half the authorised rate
+      while the correction planner would allow double it.
+      spec: docs/spec/reef-chemistry.md#6-rate-of-change-rails--hard-caps
+      repro: tests/parity/correction-calculator-vs-rail.test.js; also
+      src/test/spec/classification/rails.test.js, which hardcodes the OLD canon
+      (SPEC_RAIL calcium 25, magnesium 100 at line 24, quoted again in the header
+      comment lines 8-15). 6 of its 12 assertions fail today. Under the new canon
+      the 3 calcium ones are asserting the wrong number — code is already 20, which
+      is now correct — and the magnesium ones fail for the right reason. The test
+      constants must be re-pointed at the new rails as part of this item, not
+      edited on their own to go green (AGENTS.md rule 4).
+      owner: implementer — needs [approved][chem] first (AGENTS.md rule 3)
+
+- [ ] TW-017 Terminology: "water volume" is now a banned synonym for "net volume"
+      why: Dan's 2026-08-13 registry decision. surfaces-and-messaging.md §5 now
+      requires "net volume"; "water volume" is never-use. terminology-auditor
+      previously found "tank volume" / "net volume" / "water volume" all live in the
+      app, twice in one message at src/lib/findings.js:362-363.
+      spec: docs/spec/surfaces-and-messaging.md#5-terminology-registry
+      owner: implementer
 
 - [ ] TW-002 No single classifyReading(); ~8 divergent classifiers disagree on the same reading
       why: classifyReading(param, value, targets) — the one legal place band classification

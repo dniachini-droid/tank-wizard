@@ -4,75 +4,50 @@ Decisions no agent may make. Newest at top. Dan clears this file.
 
 ---
 
-## 2026-08-13 — consistency sweep (run 2026-08-13-consistency-sweep)
+## Open
 
-### 1. The two canon spec files disagree with each other on volume terminology
+### 1. `reef-chemistry.md` §2 still uses the losing term (follow-on from the 2026-08-13 terminology decision)
 
-`docs/spec/surfaces-and-messaging.md:132` (terminology registry) says the
-approved term is **"water volume"** and explicitly bans "tank size, volume,
-capacity" as synonyms.
+The registry now bans "water volume" (see Decisions, below). Two places in
+`docs/spec/reef-chemistry.md` still use it:
 
-`docs/spec/reef-chemistry.md` uses **"net water volume"/"net volume"**
-consistently, 6+ times (lines 45, 48, 51, 186, 204, 228-229), including in
-the canonical refusal-message wording for worked example 2 ("refuses; names
-net volume as the missing input").
+- line 43, the §2 heading: `## 2. Water volume`
+- line 45: "`[user]` net water volume — gross system volume minus rock…"
 
-This is not a case of the spec being silent — it's the two canon documents
-naming the same concept differently. Per AGENTS.md, agents never edit
-`docs/spec/*`, and this can't be resolved by an agent's judgement (the
-escalation rule: "the spec is silent, ambiguous, or self-contradictory").
-The app itself is inconsistent too (terminology-auditor found "tank volume"
-/ "net volume" / "water volume" all in use, sometimes both in one message —
-`src/lib/findings.js:362-363`), but the app can't be made consistent until
-the spec is. Please pick one term and update the losing spec file (or tell
-us which file wins so we don't have to re-raise this every run).
+Not changed: only three spec edits were authorised and these are a fourth.
+Say the word and they become "Net volume" / "net volume", or confirm the
+heading and the definition line are exempt as prose describing the concept
+rather than app-facing terminology.
 
-Found independently by: terminology-auditor, confirmed by adjudicator.
+---
 
-### 2. Magnesium/calcium dose-rate constants: two in-app tables disagree with each other AND the live engine disagrees with reef-chemistry.md canon
+## Decisions
 
-`src/lib/analytics/correction.js`'s `CORRECTIONS.magnesium.maxPerDay` (100)
-and `src/lib/analytics/safe-rate.js`'s `SAFE_DAILY_RISE.magnesium` (25)
-disagree 4x. Checked both against `docs/spec/reef-chemistry.md:154-160`
-canon table directly:
+### 2026-08-13 — Dan, spec owner (resolves both items from run 2026-08-13-consistency-sweep)
 
-```
-| Rail | Default per 24 h |
-| Alkalinity | 0.5 dKH |
-| Calcium | 25 ppm |
-| Magnesium | 100 ppm |
-```
+**Magnesium rail: 50 ppm / 24 h.** `reef-chemistry.md` §6 changed from 100 to
+50. Source recorded in the table: Aqua Forest magnesium label, "maximum daily
+increase 50 mg/l (ppm)". Neither in-app table was right — `correction.js`'s
+100 matched the old canon and now **exceeds** the rail; `safe-rate.js`'s 25 is
+under it but is a hardcoded tightening, not a `[user]` one.
 
-`correction.js`'s magnesium value (100) **matches canon exactly**.
-`safe-rate.js`'s value (25) is the one that's wrong. `safe-rate.js`'s
-`SAFE_DAILY_RISE`/`rateLimitDose` is what the live Dosing Wizard actually
-calls on every dosing path (`src/lib/dosing/helpers.js:1,407`,
-`src/lib/dosing/state.js:1,194,261,365`) — so **the wizard is currently
-running magnesium corrections 4x too conservative relative to spec**, not
-the other way around. (Calcium is a separate, smaller issue: both tables
-agree with each other at 20 ppm/day but both undercut canon's 25 — no
-cross-surface contradiction there, just a uniform constant drift.)
+**Calcium rail: 20 ppm / 24 h.** `reef-chemistry.md` §6 changed from 25 to 20,
+noted in the table as matching the real-world sourcing cited in
+`src/lib/analytics/safe-rate.js` (reefcalcs' 20 ppm/day safe rate). Both
+in-app tables already agree at 20, so canon moved to the code here, not the
+code to canon. The uniform constant drift is closed.
 
-`safe-rate.js`'s own code comment (lines 22-26) cites independent real-world
-sourcing (BRS caps calcium at 50, reefcalcs calls 20 "safe", magnesium
-"widely given as 25 ppm/day") that was chosen deliberately and conflicts
-with `reef-chemistry.md`'s canon table. This may mean the code author
-disagreed with the canon table on purpose, in which case the spec itself
-may need revisiting rather than the code — that's a judgement call on a
-chemistry-safety rail we won't make ourselves (AGENTS.md rule 3: never
-change chemistry constants without an authorising, spec-matching backlog
-item; escalation rule: "a fix requires changing a chemistry constant").
+**Volume terminology: "net volume" wins.** `surfaces-and-messaging.md` §5
+registry row changed: the word to use is **net volume**; "water volume" joins
+"tank size, volume, capacity" in the never-use column. `reef-chemistry.md`
+already uses "net volume" throughout, so the losing file was the registry.
+This is the file that wins on terminology going forward — do not re-raise.
 
-Two Wave A/B findings (manual-dose-auditor, dose-parity-checker) originally
-reported this with the fix direction backwards (claiming both figures
-"disagree with canon in different directions" and suggesting deleting
-`correction.js`'s table) — the adjudicator corrected this: `correction.js`
-is the one that's right for magnesium. Please resolve which of
-`safe-rate.js` / canon / real-world sourcing should actually govern before
-anyone touches this rail — it directly controls how much magnesium gets
-dosed into a live tank.
+Why these and not the alternatives: the rails are hard caps on how much goes
+into a live tank, so each one now carries its own real-world source in the
+spec rather than an unattributed number. "net volume" was already the majority
+usage in canon and is the more precise of the two terms — "water volume" does
+not say net.
 
-Found by: manual-dose-auditor, dose-parity-checker; direction corrected by
-adjudicator via direct file read + `tests/parity/correction-calculator-vs-
-rail.test.js`.
-
+Application source code was **not** touched under this authorisation. The
+resulting code work is filed untagged in `.agent/backlog.md`.

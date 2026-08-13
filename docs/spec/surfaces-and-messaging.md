@@ -129,7 +129,7 @@ One word per concept, everywhere. Any synonym is a finding.
 | moving toward an edge | **drifting** | trending, slipping, creeping |
 | the user's chosen value | **target** | ideal, optimal, recommended level, correct |
 | a suggested dose | **recommended dose** | required, needed, prescribed |
-| net water volume | **water volume** | tank size, volume, capacity |
+| net water volume | **net volume** | water volume, tank size, volume, capacity |
 | a user-entered dose | **manual dose** | custom, override, adjusted |
 
 The app never uses "safe" or "unsafe" about any reading. It reports position

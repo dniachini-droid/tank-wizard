@@ -151,13 +151,13 @@ dosing both into the same location at the same time.
 Any recommendation exceeding a rail is a **bug**, not a preference. Enforced in
 logic, not merely displayed.
 
-| Rail | Default per 24 h |
-|---|---|
-| Alkalinity | **0.5 dKH** |
-| Calcium | 25 ppm |
-| Magnesium | 100 ppm |
-| Salinity | 0.5 ppt |
-| Temperature | 0.5 °C |
+| Rail | Default per 24 h | Source |
+|---|---|---|
+| Alkalinity | **0.5 dKH** | |
+| Calcium | 20 ppm | Matches the real-world sourcing cited in `src/lib/analytics/safe-rate.js`. |
+| Magnesium | 50 ppm | Aqua Forest magnesium label: "maximum daily increase 50 mg/l (ppm)". |
+| Salinity | 0.5 ppt | |
+| Temperature | 0.5 °C | |
 
 `[user]` may tighten a rail. **The app never permits loosening beyond the
 default.** A correction needing more than one day is presented as a **multi-day
