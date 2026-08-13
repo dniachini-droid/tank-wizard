@@ -6,7 +6,21 @@ Decisions no agent may make. Newest at top. Dan clears this file.
 
 ## Open
 
-### 1. `reef-chemistry.md` §2 still uses the losing term (follow-on from the 2026-08-13 terminology decision)
+### 1. DOSE_ELEMENTS default Ca:alk strength ratio (~6.77) vs spec-fixed 7.15 — which is right?
+
+`reef-chemistry.md` §1 fixes the Ca:alk consumption ratio at 7.15 ppm Ca per
+1.0 dKH, "for every user." The app's own suggested two-part defaults
+(`src/lib/analytics/consumption.js:84-93`) imply 6.77 (and the hint text next
+to them claims "6.8 ppm calcium per dKH", which doesn't even match its own
+code). Before an implementer changes either the code or asks for a spec
+exception: is 7.15 a verified real-world Ca:alk consumption ratio the app's
+defaults should be recomputed to match, or does the coded ~6.8 track a real
+product's actual mixing ratio that 7.15 should be checked against? No agent
+has asserted the spec itself is wrong — this reads as a spec-vs-product-
+reality question, not a `spec-challenges.md` case — but the target number
+needs to be your call before `.agent/backlog.md`'s TW-021 can be `[approved]`.
+
+### 2. `reef-chemistry.md` §2 still uses the losing term (follow-on from the 2026-08-13 terminology decision)
 
 The registry now bans "water volume" (see Decisions, below). Two places in
 `docs/spec/reef-chemistry.md` still use it:

@@ -33,14 +33,43 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       while the correction planner would allow double it.
       spec: docs/spec/reef-chemistry.md#6-rate-of-change-rails--hard-caps
       repro: tests/parity/correction-calculator-vs-rail.test.js; also
-      src/test/spec/classification/rails.test.js, which hardcodes the OLD canon
-      (SPEC_RAIL calcium 25, magnesium 100 at line 24, quoted again in the header
-      comment lines 8-15). 6 of its 12 assertions fail today. Under the new canon
-      the 3 calcium ones are asserting the wrong number — code is already 20, which
-      is now correct — and the magnesium ones fail for the right reason. The test
-      constants must be re-pointed at the new rails as part of this item, not
-      edited on their own to go green (AGENTS.md rule 4).
+      src/test/spec/classification/rails.test.js and
+      src/test/spec/dosing/rate-rails.test.js, both of which hardcode the OLD
+      canon (rails.test.js's SPEC_RAIL calcium 25, magnesium 100 at line 24,
+      quoted again in the header comment lines 8-15; rate-rails.test.js:37-45
+      asserts SAFE_DAILY_RISE.calcium===25 and SAFE_DAILY_RISE.magnesium===100
+      directly). 6 of rails.test.js's 12 assertions and both of
+      rate-rails.test.js's calcium/magnesium assertions fail today. Under the
+      new canon the calcium assertions in both files are asserting the wrong
+      number — code is already 20, which is now correct — and the magnesium
+      assertions fail for the right reason but against the wrong stale target
+      (100, not 50). Both files' test constants must be re-pointed at the new
+      rails as part of this item, not edited on their own to go green (AGENTS.md
+      rule 4).
       owner: implementer — needs [approved][chem] first (AGENTS.md rule 3)
+
+- [ ] [chem] TW-021 DOSE_ELEMENTS default Ca:alk strength ratio (~6.77) contradicts spec-fixed 7.15
+      why: reef-chemistry.md §1 fixes the Ca:alk consumption ratio at 7.15 ppm
+      Ca per 1.0 dKH for every user ("Changing any of these without an
+      [approved][chem] item is an S1 defect"). src/lib/analytics/
+      consumption.js:84-93 DOSE_ELEMENTS pre-fills alkalinity.defaultStrength
+      = 0.0533 and calcium.defaultStrength = 0.3611; 0.3611/0.0533 = 6.7749,
+      not 7.15. A user who accepts both suggested defaults gets a calcium
+      dose ~5.2% short of what measured alkalinity consumption implies, for
+      the life of the tank. The hint text is also internally inconsistent
+      with the code it describes: it claims "6.8 ppm calcium per dKH" while
+      the coded values imply 6.77, not even the 6.8 it states.
+      spec: docs/spec/reef-chemistry.md#1-fixed-constants
+      repro: npx vitest run src/test/spec/analytics/unit-conversions.test.js
+      "SPEC VIOLATION: DOSE_ELEMENTS default calcium/alkalinity strengths
+      imply a ratio other than 7.15" — fails: expected 6.774859287054409 to
+      be close to 7.15
+      owner: implementer — needs [approved][chem] first (AGENTS.md rule 3).
+      Open question for Dan filed at .agent/needs-dan.md (top of Open): is
+      7.15 confirmed correct for this specific default product pairing, or
+      does the coded ~6.8 track a real product's actual mixing ratio that
+      7.15 should be checked against? Do not change either number until
+      that's resolved.
 
 - [ ] TW-017 Terminology: "water volume" is now a banned synonym for "net volume"
       why: Dan's 2026-08-13 registry decision. surfaces-and-messaging.md §5 now
@@ -48,6 +77,12 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       previously found "tank volume" / "net volume" / "water volume" all live in the
       app, twice in one message at src/lib/findings.js:362-363.
       spec: docs/spec/surfaces-and-messaging.md#5-terminology-registry
+      repro: grep -rniE "water volume|tank size\b" src --include=*.js
+      --include=*.jsx | grep -v /test/ → src/lib/findings.js:363 is the one
+      remaining live site (both "tank volume" and "net water volume" appear in
+      the same message). Permanent regression test:
+      src/test/spec/dosing/no-volume-finding-terminology.test.js (added
+      2026-08-13, fails by design against current source).
       owner: implementer
 
 - [ ] TW-002 No single classifyReading(); ~8 divergent classifiers disagree on the same reading
@@ -107,6 +142,11 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       driving the real DoseChangeSheet component with 70 mL/day entered shows no text
       matching /rail|limit|confirm|exceed/ anywhere, Record enabled, onSave(70,...) fires
       silently. src/components/Setup.jsx:66-92,204-208 (no min, no dosePlausible call).
+      note: static-analyst (2026-08-13) found concrete supporting evidence — the
+      wiring this item needs already reaches DoseChangeSheet and is being
+      dropped: it destructures def/element (DoseChangeSheet.jsx:16) but never
+      reads either in its body (:17-69), even though ErrorBoundary.jsx:249
+      already threads both through.
       owner: implementer
 
 - [ ] [chem] TW-005 Magnesium gate and precipitation guard are unreachable from the Dosing Wizard
@@ -135,6 +175,33 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       repro: npx vitest run tests/parity/multiday-plan-parity.test.js — currentDose 6 mL/day,
       maintenanceDose ~9.93 mL/day: recommendedDose = 7.5 (stepCapped {wanted:9.9,
       allowed:7.5}), plan[0] = 8.4 — a third figure, matching neither.
+      owner: implementer
+
+- [ ] TW-020 rateLimitDose vs applyDoseConstraints ordering: the "Held to X mL" banner can disagree with recommendedDose
+      why: in all three dosing engines, `rateLimitDose` (sets
+      `out.rateLimited`, the only thing the "Held to X mL rather than Y mL"
+      UI banner renders) runs BEFORE `applyDoseConstraints`
+      (bracketing/capDoseStep/a second safeDoseBand re-check), which can
+      shrink the dose further without updating `out.rateLimited`.
+      `out.recommendedDose` — what actually prefills DoseChangeSheet and what
+      gets recorded — is set from the value AFTER this second, unreported
+      clamp. `out.stepCapped` (which would explain the gap) is set but never
+      read outside its own assignment. A user can read "Held to 40 mL... will
+      take about 4 more days" and then Record a sheet prefilled with a
+      different, smaller, unexplained number.
+      spec: docs/spec/surfaces-and-messaging.md §2 (the recommended dose
+      shown must be the one the app is about to record — no unexplained
+      second clamp)
+      repro: src/lib/dosing/alkalinity.js:853 (rateLimitDose) then :859
+      (applyDoseConstraints) then :862 (out.recommendedDose = next); same
+      pattern verbatim at calcium.js:574,580,583 and helpers.js:942,948,951.
+      Permanent regression test:
+      src/test/spec/dosing/rate-limited-vs-recommended-mismatch.test.js
+      (added 2026-08-13, fails by design against current source). Confirmed
+      S2 by adjudicator (.agent/adjudicated.md item 10), deliberately left
+      unfixed tonight — touches dose-recommendation logic in all three
+      chemistry engines, needs a full implementer + domain-verifier round,
+      not a same-night patch.
       owner: implementer
 
 - [ ] TW-007 Rate/drift verdicts compare display-rounded values and skip the minimum-evidence gate
@@ -219,6 +286,55 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       (addDoseChange: setDoseLog(next) built from closure, not a functional updater), :720-759
       owner: implementer
 
+- [ ] TW-019 restoreBackup's natural-key dedup silently drops a genuine same-day retest reading
+      why: src/lib/backup.jsx:114 keys imported `readings` by
+      `${r.param}|${r.date}` only — no time, no value. A second, genuinely
+      different same-day reading (e.g. an AM reading and a corrected PM
+      retest) collides on the same key and is silently discarded rather than
+      added (`have.has(k)) continue;`, backup.jsx:143). Contradicts the
+      Restore button's own copy (Setup.jsx:596: "Restoring adds anything
+      missing and leaves what you already have alone, so nothing is
+      overwritten or duplicated") — a different same-day reading IS something
+      missing, and it is not added. inspectBackup's `skipped` counter
+      (backup.jsx:89-99) only counts unparseable rows, not natural-key
+      collisions, so the preview gives no hint this happens. Real data loss —
+      AGENTS.md: "Silent data loss is the worst possible failure here."
+      spec: docs/spec/surfaces-and-messaging.md §6 (history-truthfulness —
+      restore must not silently drop logged data)
+      repro: npx vitest run src/test/spec/data/backup-restore-data-integrity.test.js
+      — the "two DIFFERENT alkalinity readings on the same day (e.g. a
+      retest) merge into one, losing real data" case fails: expected [...] to
+      have a length of 2 but got 1. Confirmed S2 by adjudicator
+      (.agent/adjudicated.md item 2), deliberately left unfixed tonight — the
+      correct dedup-key redesign has real ambiguity (time-absent case,
+      migrating already-stored data) that AGENTS.md's data-loss severity
+      warrants a full implementer/domain-verifier round rather than a
+      same-night patch.
+      owner: implementer — needs design/scoping first, the natural-key
+      redesign is not mechanical; do not tag [approved] until the dedup-key
+      approach is settled
+
+- [ ] TW-022 Setup's elemDose/elemStrength/sigmaVal fields share the just-fixed "resyncs on any unrelated settings write" bug
+      why: same root cause as the Volume field revert bug fixed tonight
+      (round D) — Setup.jsx's OTHER resync effect (now Setup.jsx:66-71,
+      unmodified by round D's fix, which only narrowed the Volume field's own
+      effect to depend on settings.volumeL alone) still resyncs
+      elemDose/elemStrength/sigmaVal from the whole `settings` object on any
+      write. Saving the Volume field (or any other settings write) can
+      silently clobber an unsaved edit to the dose-mL/strength fields on the
+      same screen.
+      spec: docs/spec/surfaces-and-messaging.md §6 (an unsaved edit must not
+      silently vanish)
+      repro: not yet reproduced with a test — surfaced by the round-D fixer
+      while scoping the Volume field fix, confirmed by code read only
+      (src/components/Setup.jsx:66-71). Medium confidence. Needs an RTL
+      repro mirroring
+      setup-volume-unsaved-edit-survives-unrelated-write.test.js before this
+      can be [approved].
+      owner: implementer — write the reproduction test first (AGENTS.md
+      definition of done requires a regression test that would have caught
+      the bug); do not tag [approved] until one exists
+
 - [ ] [schema] TW-013 No persisted classification or target-change event — editing a target silently reclassifies all history
       why: readings store no band/target-at-time-of-reading; every surface reclassifies live
       against the user's current customRanges, so narrowing or adopting a new target
@@ -259,7 +375,7 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       Insights.jsx:15
       owner: implementer
 
-- [ ] TW-016 "drift"/"drifting" is used for three incompatible meanings across the app
+- [ ] TW-018 "drift"/"drifting" is used for three incompatible meanings across the app
       why: reading-meaning.js's verdict="drifting" fires on an out-of-band, oscillating
       median — the opposite of the spec's inside-band, trending-toward-an-edge definition.
       Dashboard's "Weekly drift" label is a generic rate-of-change magnitude shown even when
@@ -269,6 +385,41 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       §5 (no invented or reused vocabulary)
       repro: code trace — src/lib/analytics/reading-meaning.js:196-220; src/components/
       Dashboard.jsx:492,582; src/components/Insights.jsx:384,391
+      owner: implementer
+      note: 2026-08-13 triage — renumbered from TW-016 (a numbering collision
+      with the unrelated magnesium rail item, flagged by planner/adjudicator/
+      this run's log). Content, tag, and owner unchanged; only the ID moved.
+
+- [ ] [perf] TW-023 Main JS bundle and total initial payload remain over budget (pre-existing, flat)
+      why: single un-split ~987 kB JS chunk; no route-level code splitting, no
+      dynamic import() anywhere in src/, no manualChunks in vite.config.js.
+      recharts (pulling in victory-vendor/d3-*, lodash, react-smooth,
+      react-transition-group) loads on every route including ones that never
+      render a chart on first paint.
+      spec: .agent/budgets.json (main_js_kb_gzip: 180, total_initial_kb_gzip: 250)
+      repro: npm run build → dist/assets/index-*.js 987.01 kB, gzip 286.4 kB
+      (59% over budget); total initial (JS+CSS gzip) 295.1 kB (18% over).
+      Pre-existing, not introduced by tonight's TW-001 diff (+0.2 kB only,
+      confirmed via git stash before/after by both implementer and
+      perf-watchdog).
+      owner: implementer
+
+- [ ] [perf] TW-024 ZoomableLineChart recomputes its full visible-window derivation unmemoized on every render
+      why: src/components/ZoomableChart.jsx's `visible`/`values`/`scaleVals`/
+      `axis` (lines 163-173) are plain consts recomputed every render — only
+      `visibleEvents` is memoized (line 177). At the unzoomed default (whole
+      log selected, Dashboard.jsx:274 returns the unsliced array once
+      activeWin >= 99999), this is the entire dataset with no cap. Measured
+      ~65 ms of React-side work per unrelated re-render at 5000 points
+      (props/data unchanged) — not currently budget-breaking, but unbounded
+      and paid on every unrelated parent re-render while "whole log" is
+      selected.
+      spec: .agent/budgets.json (per-interaction perf guideline); no
+      docs/spec/* rule governs UI perf directly
+      repro: Profiler-wrapped render harness, jsdom, warm run — re-render
+      with identical props at 5000 points: 64.8 ms (200 points: 14.6 ms;
+      1000: 28.8 ms). src/components/ZoomableChart.jsx:163-177 (useMemo only
+      wraps visibleEvents); Dashboard.jsx:274 (unbounded path).
       owner: implementer
 
 ## Blocked
