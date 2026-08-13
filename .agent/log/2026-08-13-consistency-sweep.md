@@ -207,3 +207,23 @@ self-contradiction, not resolvable by an agent; (2) the magnesium/calcium
 rail constant tension above — safe-rate.js's own code comment cites
 independent real-world sourcing that may mean the spec itself needs
 revisiting, a live-tank-safety chemistry-constant decision reserved for Dan.
+
+## Wave D step 2 — triage-analyst (complete)
+found 51 / merged 17 / deleted 5 (noise, not bugs) / parked 2 (UNVERIFIED,
+flagged for a future run) / held back 7 (qualified, cut by the 15-item cap,
+noted in backlog.md for next sweep) / promoted 15. .agent/findings.md
+emptied (header/template preserved). The 2 items already escalated to
+needs-dan.md were correctly NOT re-promoted as ordinary backlog items.
+Top 5 promoted, in priority order: TW-002 (no classifyReading, ~8 divergent
+classifiers), TW-003 (Dosing Wizard crashes on the two most common refusal
+states), TW-004 (manual dose entry has no §6 rail check, Setup accepts
+negative/unbounded doses), TW-005 (magnesium gate + precipitation guard
+structurally unreachable from wizard), TW-006 (assessCalcium's displayed
+dose and internal plan[0] disagree for the same correction). Remaining 10:
+rate/drift round-before-compare + missing evidence gate, "No change" beside
+a live correction button, refusals rendered as calm holds, insufficient-data
+rendered as green "Saved", "in range, correction still running"
+self-contradicting headline, no submit lock on confirm buttons, no
+persisted classification/target-change event, overrides not stored with
+recommendation, forbidden vocabulary leaking into narrative text,
+"drifting" meaning three incompatible things.

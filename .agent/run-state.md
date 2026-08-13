@@ -2,9 +2,9 @@ run: 2026-08-13-consistency-sweep
 routine: routine 5 — consistency sweep
 started: 2026-08-13T08:20:31Z
 status: in-progress
-last completed step: Wave D step 1 complete (adjudicator)
-next step: await triage-analyst (Wave D step 2 of 3), then reporter
-in-flight: triage-analyst — writes .agent/backlog.md, empties .agent/findings.md
+last completed step: Wave D step 2 complete (triage-analyst: 51 findings -> 15 promoted backlog items, findings.md emptied)
+next step: Wave D step 3 — dispatch reporter (writes .agent/morning-brief.md only)
+in-flight: none
 branch: claude/2026-08-13-consistency-sweep
 uncommitted work: no
 
