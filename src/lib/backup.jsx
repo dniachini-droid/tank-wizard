@@ -149,7 +149,14 @@ export async function restoreBackup(parsed, current, applySettings) {
     result[key] = merged;
   }
   if (applySettings && b["tank-settings"]) {
-    const s = { ...DEFAULT_SETTINGS, ...b["tank-settings"] };
+    /* Same sanitisation as Setup.jsx:77's saveVolume: a backup file is not
+       trusted input any more than the manual entry field is, so an invalid
+       net volume is refused (null) rather than written through. */
+    const volNum = parseFloat(b["tank-settings"].volumeL);
+    const s = {
+      ...DEFAULT_SETTINGS, ...b["tank-settings"],
+      volumeL: volNum > 0 ? volNum : null,
+    };
     await saveKey("tank-settings", s);
     result["tank-settings"] = s;
   }

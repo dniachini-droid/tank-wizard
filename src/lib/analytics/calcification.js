@@ -22,7 +22,7 @@ export function computeSkeletonMass(alkConsumedPerDay, volumeL) {
      named rather than folded into the same bare null the zero/negative-
      consumption branch below returns. A caller cannot otherwise tell "the
      tank isn't calcifying" from "we don't know how big the tank is". */
-  if (!volumeL) return { status: "novolume", missing: "net volume" };
+  if (!(volumeL > 0)) return { status: "novolume", missing: "net volume" };
   if (!alkConsumedPerDay || alkConsumedPerDay <= 0) return null;
   const meqPerDay = alkConsumedPerDay * (1 / 2.8) * volumeL;
   const mmolPerDay = meqPerDay / 2;
