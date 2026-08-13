@@ -2,8 +2,8 @@ run: 2026-08-13-build-1
 routine: routine 1 — build cycle
 started: 2026-08-13T22:00:00Z
 status: in-progress
-last completed step: Wave 3 fixer stage complete — all 5 rounds (A-E) applied and verified, 0 reverted/blocked. Fixed: negative-volume reachability, DosingWizard element-switch state bleed (2 bugs), DoseChangePopup countdown reset, Setup Volume field silent revert, 4 cosmetic cleanups.
-next step: Wave 3 step 3 — dispatch test-engineer (permanent regression tests for every fix + every confirmed-but-unfixed finding, plus fix the one flawed assertion flagged by fixer round A)
+last completed step: Wave 3 step 3 (test-engineer) complete — flawed assertion fixed, 2 new permanent regression tests added for confirmed-but-unfixed findings, all round A-D tests verified genuine, no flakiness found, coverage-tooling gap flagged
+next step: Wave 3 step 4 — dispatch integrator (final gate: PASS -> PR, REJECT -> return items)
 in-flight: none
 in-flight: none
 branch: claude/dazzling-faraday-9zbsv7
