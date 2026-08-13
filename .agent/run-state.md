@@ -2,8 +2,8 @@ run: 2026-08-13-build-1
 routine: routine 1 — build cycle
 started: 2026-08-13T22:00:00Z
 status: in-progress
-last completed step: Wave 3 complete — integrator PASS on second pass, independently re-derived (revert-and-reflip re-confirmed, fresh npm test x2 byte-identical, git log confirms only the retry commit changed). Branch ready for PR.
-next step: open the PR (AGENTS.md template), then wave 4 — dispatch triage-analyst, then reporter
+last completed step: Wave 3 complete, integrator PASS. PR #3 opened: https://github.com/dniachini-droid/tank-wizard/pull/3 (claude/dazzling-faraday-9zbsv7 -> main)
+next step: Wave 4 — dispatch triage-analyst (dedupe findings.md into backlog, fix TW-016 numbering collision), then reporter
 in-flight: none
 branch: claude/dazzling-faraday-9zbsv7
 uncommitted work: no
