@@ -1,29 +1,28 @@
-# 2026-08-13 — Tank Wizard overnight
+# 2026-08-13 — Tank Wizard overnight (build cycle)
 
 ## Needs you (N)
-Two spec files disagree with each other on volume terminology — surfaces-and-messaging.md says "water volume", reef-chemistry.md says "net volume" — pick one. (.agent/needs-dan.md #1)
-Magnesium dose-rate rail: the live wizard runs on safe-rate.js's 25 ppm/day, which contradicts both reef-chemistry.md canon (100 ppm/day) and Setup's own correction.js (100). safe-rate.js's code comment cites independent real-world sourcing — may be the spec that's wrong, not the code. Needs your call before anyone touches a dosing rail. (.agent/needs-dan.md #2)
-15 backlog items (TW-002 through TW-016) are waiting for [approved] tags — untagged, implementer can't act on any of them.
+TW-021 Ca:alk ratio: spec says 7.15, code has 6.77 (~5% systematic calcium under-dosing on the app's own default settings) — spec-vs-product-reality decision needed, top of `.agent/needs-dan.md` Open. Needed before TW-021 can be `[approved][chem]`.
+`reef-chemistry.md` §2 (lines 43, 45) still says "water volume" — leftover from your 2026-08-13 terminology decision that "net volume" wins. Second item in needs-dan.md Open.
+TW-016 (magnesium rail) and TW-021 (Ca:alk ratio) both need an `[approved][chem]` tag from you before an implementer can touch them — your 50 ppm/24h magnesium decision is already recorded, just not tagged onto the backlog item yet.
 
 ## Shipped (branches awaiting your merge)
-PR #1 — claude/2026-08-13-consistency-sweep: adds 4 permanent regression tests under src/test/spec/history/ and 9 files (fixtures + 8 suites) under tests/parity/, proving cross-surface disagreement. No application source touched, no user-facing number moved — this was a read-only audit sweep by design.
+PR #3 — claude/dazzling-faraday-9zbsv7: TW-001 (net-volume refuse-and-name at 3 call sites + 1 render guard) plus 5 same-night fixes from tonight's audit — closed a reachable negative-volume bug via backup restore, fixed a stale dose amount that could cross from one element to another in the Dosing Wizard, fixed a confirmation popup that could self-close before you saw it, fixed Setup's Volume field silently reverting an unsaved edit, plus 4 cosmetic cleanups. No chemistry constant, formula, or threshold touched (checked twice). https://github.com/dniachini-droid/tank-wizard/pull/3
 
 ## Found
-**Lead contradiction — the app disagrees with itself.** TW-002: `classifyReading()` — the one function the spec requires every surface to call — does not exist anywhere in the codebase. ~8 independently-maintained classifiers exist in its place, and they visibly disagree today: a single 6.9 dKH reading shows mild amber (paramStatus) directly beside two separate red "Dangerously low" badges (doseStatus, findings.js) in one Dashboard card, one render. This is the root cause behind most of tonight's other findings and outranks them per the single-source rule.
-TW-003: the Dosing Wizard crashes outright (`TypeError`, null dereference) on the two most common refusal states — no volume/strength set, no readings yet. First thing a new user hits.
-TW-004: manual dose entry (DoseChangeSheet + Setup's dose field) has no rail check at all — Setup accepts negative or unbounded doses with zero validation.
-TW-005: the magnesium gate and precipitation guard (reef-chemistry §5/§9) are structurally unreachable from the wizard — assessAlkalinity/assessCalcium have no channel to receive magnesium status at all.
-Also flagged by contradiction-hunter: 9 cross-surface facts that agree today only by coincidence (no shared source) — they will break on the next unrelated change, not just today's bugs.
+**Most dangerous — negative volume renders live.** A hand-edited or corrupted backup file could carry a negative `volumeL` straight into your live settings unvalidated (Setup's own volume field is protected, `restoreBackup` wasn't) — Insights would then show a negative "grams of skeleton grown" figure instead of refusing. Fixed tonight.
+**Second — wrong element gets the wrong dose.** Switching elements mid-wizard while a dose-change sheet was open left the previous element's recommended mL amount on screen; tapping Record would have logged it under the new element. Fixed tonight.
+**Still open — real data loss on restore.** `restoreBackup`'s dedup only keys on param+date, not time — a genuine second same-day reading (e.g. a retest) silently vanishes rather than being added, with no warning. Filed as TW-019; needs a design decision on the right dedup key before an implementer can touch it, so left alone tonight on purpose.
+**Still open — magnesium rail still wrong both ways.** `correction.js` recommends 2x over your new 50 ppm/24h cap; `safe-rate.js` runs the live wizard at half of it. Confirmed live tonight. Blocked on your `[approved]` tag on TW-016.
 
 ## Health
-tests: 193 passing / 68 failing / 0 skipped (44 files: 12 pass, 32 fail). Of the 32 failing files, 23 pre-date tonight's sweep (existing spec-violation tests the auditors used as evidence, not created by this run) and 9 are new — 3 history + 6 parity regression tests this sweep added, all failing intentionally to document real findings, none broken infrastructure.
-coverage: not measured this run (read-only sweep, no coverage tooling run)
-bundle: main JS 286.2 kB gzip (budget 180 kB) — over budget; CSS 8.7 kB (budget 40 kB) — fine; total initial ~294.9 kB gzip (budget 250 kB) — over budget. Pre-existing, not caused by tonight's sweep (no application source changed), but flagging since it's over both thresholds in .agent/budgets.json.
-build: pass (`npm run build` succeeds, one Vite warning about a >500 kB chunk — same root cause as the bundle-budget miss)
-audit: 51 raw findings → adjudicator independently reproduced all 40 S1/S2 (0 downgraded) → merged to 25 root-cause clusters → triage promoted 15 to backlog, deleted 5 as noise, parked 2 unverified, held back 7 at the item cap
+tests: 34 failed files / 66 failed tests / 210 passed (276 total) — every failure is either a confirmed-but-deliberately-deferred finding with its own permanent regression test, or pre-existing and unrelated to tonight; none is broken infrastructure. Verified twice (two independent gate passes), byte-identical both times.
+coverage: not measured — `@vitest/coverage-v8` isn't installed and no `[approved][deps]` item authorizes adding it.
+bundle: main JS 286.4 kB gzip (budget 180 kB) — over budget, pre-existing, +0.2 kB from tonight (not the cause).
+build: pass.
+audit: 23 raw findings → adjudicator independently reproduced all 9 S1/S2 (0 downgraded, 0 false positives) → 5 fixed same-night → 6 new backlog items filed (TW-019 through TW-024) → 1 escalated to you.
 
 ## Didn't finish
-Nothing stalled. All four waves (A: 6 surface auditors, B: parity checker, C: contradiction-hunter, D: adjudicator/triage/reporter) ran to completion.
+One fixer round needed a retry: the integrator caught a tautological regression test on the first gate pass (it hardcoded the fix's own logic instead of exercising the real app, so it would have passed even with the bug reintroduced) and rejected the branch. The fixer rewrote it to render the app end-to-end; the integrator independently re-verified and passed it on the second gate. This is the safety net working as designed, not a stall — flagging it because it's exactly the class of mistake that's easy to wave through if nobody checks.
 
 ## Cost
 not tracked this run
