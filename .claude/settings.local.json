@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(awk '{ if \\(length\\($0\\) > max\\) { max = length\\($0\\); n = NR } } END { print \"line \" n \" has \" max \" chars\" }' reef-console-BRIEFING.html)",
+      "Bash(awk 'NR<=30 { print NR\": \"substr\\($0,1,200\\) }' reef-console-BRIEFING.html)",
+      "Bash(awk '{print substr\\($0,1,80\\)}')",
+      "Bash(awk 'NR>=539 && NR<=16885' reef-console-BRIEFING.html)",
+      "Bash(awk 'NR>16320 { print NR\": \"substr\\($0,1,150\\) }' app-src.js)",
+      "Bash(npm --version)",
+      "Bash(python3 *)",
+      "Bash(npm install *)",
+      "Bash(npm init *)",
+      "Bash(mkdir -p src/styles)",
+      "Bash(sips -z 192 192 public/icon.png --out public/icon-192.png)",
+      "Bash(sips -z 512 512 public/icon.png --out public/icon-512.png)",
+      "Bash(node split.mjs app-src.js /Users/daniachini/Documents/tank-wizard/src)",
+      "Bash(awk 'NR<=4 {print substr\\($0,1,120\\)}' icons.jsx)",
+      "Bash(awk '/^import/ {print substr\\($0,1,140\\)}' App.jsx)",
+      "Bash(npm run *)",
+      "Bash(npx playwright *)",
+      "Bash(grep -rn -oE '\\(bg|text|border|ring|from|to|via|fill|stroke|shadow|w|h|p|m|gap|grid-cols\\)-\\\\$\\\\{[^}]*\\\\}' --include='*.jsx' --include='*.js' .)",
+      "Bash(awk -F: '{s+=$2} END {print s}')",
+      "Bash(awk 'NR==94||NR==107 {print \"ReadingContext:\"NR\": \"substr\\($0,1,130\\)}' components/ReadingContext.jsx)",
+      "Bash(awk 'NR==514 {print \"Setup:\"NR\": \"substr\\($0,1,130\\)}' components/Setup.jsx)",
+      "Bash(awk 'NR==94||NR==107 {print \"ReadingContext:\"NR\": \"substr\\($0,1,140\\)}' components/ReadingContext.jsx)",
+      "Bash(awk 'NR==514 {print \"Setup:\"NR\": \"substr\\($0,1,140\\)}' components/Setup.jsx)",
+      "Bash(node check-app.mjs http://localhost:5173/ dev-app.png)",
+      "Bash(pkill -f 'vite preview')",
+      "Bash(pkill -f 'node.*vite')",
+      "Bash(grep -n 'const { useState\\\\|const {$\\\\|^const rootEl\\\\|ReactDOM.createRoot' original-artifact.html)",
+      "Bash(xargs cat)"
+    ]
+  }
+}
