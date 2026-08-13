@@ -26,3 +26,37 @@ confirmation (S1); round-before-compare defects in drift/rate grading,
 confirmed by existing failing vitest suite at src/test/spec/classification/.
 This is the top-priority finding of the run per orchestrator rules (single-
 source violation outranks current symptoms).
+
+### manual-dose-auditor — complete
+6 findings appended to .agent/findings.md (4xS1, 1xS2, 1xS3).
+Headline: DoseChangeSheet.jsx (the wizard's manual-override sheet) has NO §6
+rail check at all — never passed effectPerMl/rail constants, Save fires
+unconditionally for any value >= 0, no confirmation step. Direct §2 violation.
+The correct warning pattern already exists elsewhere (ErrorBoundary.jsx
+a.rateLimited block) but isn't reused here. Also S1: Setup.jsx's separate
+"Dosing" card dose editor has zero validation (accepts negative doses, no
+rail check); no manual override anywhere persists both recommended+entered
+values (doseLog only stores {date,time,ml,element,note}), so history can't
+distinguish an override from an accepted recommendation; and a second,
+independent correction calculator (lib/analytics/correction.js) disagrees
+with the shared SAFE_DAILY_RISE rate constant by 4x for magnesium (100 vs 25
+ppm/day), and both differ from reef-chemistry.md §6 canon in different
+directions. Positive: feedback loop correctly uses actual-dosed amounts, not
+stored recommendations; no evidence of override contaminating targets.
+
+### terminology-auditor — complete
+7 findings appended (2xS1, 4xS2, 1xS3, 1xS4).
+Headline: lib/findings.js's SAFE_BOUNDS renders the explicitly forbidden words
+"dangerously low/high" and a wizard state literally named "emergency" — on
+all three parity surfaces (wizard: dosing/state.js:198-199, test log
+confirmation: ReadingConfirmation.jsx:50-53,150-155, dashboard:
+findings.js:201,247). Cross-confirms band-classifier-auditor: since
+classifyReading doesn't exist, SAFE_BOUNDS has become the de facto
+unauthorized second band classifier. Also: "safe"/"optimal"/"healthier"
+leaking via CONSISTENCY_RULES[...].why (time-in-range.js); "net volume" vs
+"water volume" vs "tank volume" used inconsistently, sometimes both in one
+message (findings.js:362-363) — flagged as needing a spec-challenge since
+§5 says "water volume" but reef-chemistry.md tests enforce "net volume";
+ICP confirmation popup shows bare element values with no unit ever
+(IcpConfirmation.jsx); chart axis/tooltip in ZoomableChart.jsx never carries
+a unit.
