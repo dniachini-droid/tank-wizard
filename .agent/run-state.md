@@ -2,9 +2,9 @@ run: 2026-08-13-build-1
 routine: routine 1 — build cycle
 started: 2026-08-13T22:00:00Z
 status: in-progress
-last completed step: Wave 1 — implementer complete for TW-001 (4 files, 54 lines, 5 tests flipped to pass, 0 new failures, build clean)
-next step: Wave 1 — dispatch domain-verifier for TW-001
-in-flight: domain-verifier about to be dispatched for TW-001
+last completed step: Wave 1 complete — TW-001 implemented and domain-verifier PASS (only approved item; wave done)
+next step: Wave 2 — dispatch 6 parallel read-only auditors (static-analyst, state-auditor, dataflow-tracer, domain-verifier, breaker, perf-watchdog)
+in-flight: none
 in-flight: none
 branch: claude/dazzling-faraday-9zbsv7
 uncommitted work: no
