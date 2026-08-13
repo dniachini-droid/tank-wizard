@@ -2,8 +2,8 @@ run: 2026-08-13-build-1
 routine: routine 1 — build cycle
 started: 2026-08-13T22:00:00Z
 status: in-progress
-last completed step: Fixer round C retry (round trip 2 of max 3) complete — dose-change-popup-remount-key.test.js rewritten to render the real ReefConsole/App.jsx tree end-to-end (seeds real localStorage state, drives 2 real dose changes through the real UI) instead of a hand-rolled harness. Explicitly proven with revert-and-reflip: fails against reverted App.jsx, passes against fixed App.jsx, restored and reconfirmed passing, 6x flake-checked. Full suite byte-identical to integrator's prior baseline (34 failed files/66 failed tests/210 passed/276 total). npm run build succeeds, bundle unchanged.
-next step: re-dispatch integrator for second gate pass
+last completed step: Wave 3 complete — integrator PASS on second pass, independently re-derived (revert-and-reflip re-confirmed, fresh npm test x2 byte-identical, git log confirms only the retry commit changed). Branch ready for PR.
+next step: open the PR (AGENTS.md template), then wave 4 — dispatch triage-analyst, then reporter
 in-flight: none
 branch: claude/dazzling-faraday-9zbsv7
 uncommitted work: no
