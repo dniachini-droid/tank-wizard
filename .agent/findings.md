@@ -176,3 +176,290 @@ same-day rows with different values are never treated as the same
 observation; surface true collisions (same key, same value) vs. genuine
 same-day duplicates differently in the preview.
 confidence: high
+
+### domain-verifier / 2026-08-13 / S1
+what: §6 rate-of-change rail constants for magnesium still disagree with
+today's canon update (reef-chemistry.md §6: magnesium 50 ppm/24h). Two
+independent "rail" sources in src/lib exist and BOTH are wrong, in opposite
+directions:
+  - src/lib/analytics/correction.js:20 `CORRECTIONS.magnesium.maxPerDay = 100`
+    — this now EXCEEDS the hard cap (2x). It is live and reachable: Setup.jsx
+    imports `computeCorrection` (Setup.jsx:7,119-121) and renders its output
+    directly in the one-off correction calculator, including the literal
+    string "That exceeds the safe change of {maxPerDay} ppm per day"
+    (Setup.jsx:387-388) — i.e. the UI tells the user 100 ppm/day is the safe
+    ceiling and sizes `days`/`perDayG` off it.
+  - src/lib/analytics/safe-rate.js:27 `CORRECTION_MAX_RATE.magnesium = 25` and
+    safe-rate.js:31 `SAFE_DAILY_RISE.magnesium = 25` (same object, re-exported)
+    — under the new 50 ppm/24h default. SAFE_DAILY_RISE is what the live
+    Dosing Wizard's rate ceiling (`safeDoseBand`, called from
+    src/lib/dosing/alkalinity.js's `rateLimitDose`/`applyDoseConstraints`,
+    shared by calcium.js and magnesium.js) actually enforces on every dosing
+    path today.
+  Calcium is confirmed correctly updated in both places (safe-rate.js:27 = 20,
+  correction.js:16 = 20) — matches the task brief's "code already matched".
+  This is a fresh verification of backlog TW-016, which is still open and
+  still accurate as filed; nothing has changed the constants since it was
+  logged.
+evidence:
+  $ node -e "..." (script imported CORRECTIONS/CORRECTION_MAX_RATE/SAFE_DAILY_RISE
+  directly and ran computeCorrection('magnesium', 1200, 1350, 200)):
+    CORRECTIONS.magnesium.maxPerDay = 100
+    CORRECTIONS.calcium.maxPerDay = 20
+    CORRECTION_MAX_RATE.magnesium = 25
+    SAFE_DAILY_RISE.magnesium = 25
+    computeCorrection(magnesium, 1200->1350, 200L) => { delta:150, days:2,
+      products:[{name:"Magnesium chloride hexahydrate", totalG:250.8,
+      perDayG:125.4}, {name:"Magnesium sulphate heptahydrate", totalG:303,
+      perDayG:151.5}], maxPerDay:100 }
+    implied ppm/day = 150/2 = 75  <-- 50% over the current 50 ppm/24h rail
+  $ npx vitest run src/test/spec/classification/rails.test.js
+    6 failed | 6 passed (12) — includes:
+    "magnesium: CORRECTION_MAX_RATE.magnesium === CORRECTIONS.magnesium.maxPerDay"
+      expected 25 to be 100 (the two in-app sources contradict each other)
+  src/lib/dosing/alkalinity.js:319,348 (`safeDoseBand` call sites),
+  src/lib/analytics/safe-rate.js:43-48 (`safeDoseBand` reads SAFE_DAILY_RISE)
+impact: Setup's correction calculator (a live, reachable feature) recommends
+a magnesium correction plan that delivers 75 ppm/24h — 1.5x the current hard
+cap — while its own copy tells the user this is "safe". Independently, the
+Dosing Wizard's rate ceiling under-corrects magnesium at half the currently
+authorised rate (25 vs 50), which is not dangerous on its own but is a
+hardcoded tightening the spec reserves for `[user]`, and the two sources
+disagreeing with each other is exactly the failure mode safe-rate.js's own
+header comment (lines 15-20) says previously caused a 105-tank oscillation /
+29-tank crash in simulation when SAFE_DAILY_RISE and CORRECTION_MAX_RATE
+disagreed for calcium.
+suggested fix: needs `[approved][chem]` per AGENTS.md rule 3 before either
+constant may change (already the case per TW-016's own note). Set
+CORRECTIONS.magnesium.maxPerDay = 50 in correction.js:20, and
+CORRECTION_MAX_RATE.magnesium = 50 in safe-rate.js:27 (SAFE_DAILY_RISE is
+derived from it automatically at safe-rate.js:31). Re-point the hardcoded
+SPEC_RAIL/canon-table constants in the test files noted in the next finding
+at the same time, in the same change, so the tests don't go green against a
+number that is itself stale.
+confidence: high
+
+### domain-verifier / 2026-08-13 / S2
+what: Two test files that exist specifically to pin the §6 rail constants
+against canon hardcode the numbers from BEFORE today's spec update, not
+today's canon. This makes them actively misleading right now: they currently
+fail on calcium (which the app already fixed to the new, correct 20) and
+would tell a future agent that reverting calcium back to 25 "fixes" it —
+the opposite of AGENTS.md's rule 3. They also assert magnesium should be 100,
+which was true yesterday but is 50 as of today's spec change (the task brief
+that spawned this run).
+evidence: src/test/spec/classification/rails.test.js:24
+  `const SPEC_RAIL = { alkalinity: 0.5, calcium: 25, magnesium: 100 };`
+  and header comment lines 6-9 quoting the same stale table.
+  src/test/spec/dosing/rate-rails.test.js:37-45, explicitly asserting
+  `expect(SAFE_DAILY_RISE.calcium).toBe(25)` (labelled "calcium default rail
+  is 25 ppm/24h per canon (code enforces 20)") and
+  `expect(SAFE_DAILY_RISE.magnesium).toBe(100)`.
+  $ npx vitest run src/test/spec/classification/rails.test.js
+  src/test/spec/dosing/rate-rails.test.js
+    → "calcium: CORRECTIONS.calcium.maxPerDay === 25" fails: expected 20 to be 25
+    → "calcium default rail is 25 ppm/24h per canon (code enforces 20)" fails:
+       expected 20 to be 25
+    → "magnesium default rail is 100 ppm/24h per canon (code enforces 25)"
+       fails: expected 25 to be 100 (right direction, wrong target number —
+       should assert 50, not 100)
+impact: not a live user-facing defect, but a real hazard to the run's own
+correctness process — these tests currently reward the wrong fix for
+calcium (making it non-compliant again) and would not catch a "fix" of
+magnesium to 100 as still being wrong, since neither file's constant was
+updated alongside today's canon change.
+suggested fix: update both files' hardcoded canon tables to
+`{ alkalinity: 0.5, calcium: 20, magnesium: 50 }` in the same change that
+fixes the underlying constants (see prior finding), per AGENTS.md rule 4 —
+this is "the test is genuinely wrong" case, not a live-code question, and
+should be corrected rather than skipped since the fix is dictated directly
+by the spec text, not a guess.
+confidence: high
+
+### domain-verifier / 2026-08-13 / S1
+what: The default calcium/alkalinity dosing-solution strengths the app
+pre-fills for a new user, and the explanatory hint text shown next to them,
+imply and explicitly state a Ca:alk consumption ratio of ~6.8 ppm Ca per dKH
+— not the reef-chemistry.md §1 fixed universal constant of 7.15 ppm Ca per
+1.0 dKH ("Changing any of these without an [approved][chem] item is an S1
+defect", line 29).
+evidence: src/lib/analytics/consumption.js:84-93 (`DOSE_ELEMENTS`):
+  alkalinity `defaultStrength: 0.0533` (dKH/mL/100L)
+  calcium `defaultStrength: 0.3611` (ppm/mL/100L)
+  calcium hint text, verbatim: "Paired with the alkalinity part that gives
+  6.8 ppm calcium per dKH — the ratio corals actually consume."
+  0.3611 / 0.0533 = 6.774859287054409 (i.e. the coded ratio is actually 6.77,
+  not even the 6.8 the hint text itself claims — a second, smaller
+  discrepancy on top of the spec mismatch).
+  These defaults are live: Setup.jsx:61 pre-fills the strength input from
+  `elem.defaultStrength` whenever a setting is unset, and Setup.jsx:103 falls
+  back to `elem.defaultStrength` on save if the typed field is empty/0 — so a
+  user who accepts the suggested defaults for both parts is silently given a
+  7.15-vs-6.77 mismatch (5.2% short) baked into every downstream dose,
+  consumption and maintenance-dose calculation for the life of the tank.
+  $ npx vitest run src/test/spec/analytics/unit-conversions.test.js
+    "SPEC VIOLATION: DOSE_ELEMENTS default calcium/alkalinity strengths imply
+    a ratio other than 7.15" — fails: expected 6.774859287054409 to be close
+    to 7.15, received difference is 0.3751407129455915
+impact: A calcium dose sized to this default strength systematically
+under-supplies calcium relative to real alkalinity consumption for anyone
+using the app's own suggested two-part product pairing — exactly the failure
+mode reef-chemistry.md §5 describes ("If measured alk consumption implies a
+calcium draw the user's calcium dosing does not cover, calcium is drifting
+down"), except here the shortfall is built into the app's own default rather
+than an emergent finding. The hint text also makes an affirmative, wrong
+factual claim ("the ratio corals actually consume") that contradicts the
+spec's fixed constant and would mislead a user who checked their own product
+label's mixing ratio against it.
+suggested fix: needs `[approved][chem]` before changing (AGENTS.md rule 3).
+Recompute one of the two default strengths so 0.3611/0.0533 (or whichever
+values are kept) equals 7.15, and correct the hint text's "6.8" claim to
+match. Flag to Dan first since this may reflect a real product's actual
+mixing ratio rather than a typo — if so this is a spec-vs-product-reality
+conflict for spec-challenges.md, not a straightforward constant fix.
+confidence: high
+
+### domain-verifier / 2026-08-13 / S2
+what: surfaces-and-messaging.md §5 terminology registry ("net volume" is the
+required term; "water volume" is explicitly banned) is still violated at one
+live, user-facing site — confirms backlog TW-017 is still open and its
+repro is still accurate as of this run; nothing has changed since it was
+filed.
+evidence: src/lib/findings.js:363, live in the current tree:
+  `detail: \`Every dosing and consumption figure divides by your tank volume,
+  so without a sensible number in Setup none of them mean anything. Enter
+  your net water volume — total system litres less rock and sand
+  displacement, usually around 80-85% of the display figure.\`,`
+  — uses both "tank volume" and "net water volume" (containing the banned
+  "water volume") in the same message, neither of which is the required
+  "net volume".
+  $ grep -rniE "water volume|tank size\b" src --include=*.js --include=*.jsx | grep -v /test/
+    → only this one hit; no other live "water volume"/"tank size" instances
+    found in the current tree.
+impact: this message fires on the "tank volume not set" finding (id:
+no-volume, scope: dosing, severity: act) — one of the most safety-critical
+refusal messages in the app (net volume is the input every dose calculation
+depends on per §2/§9) — and it is the one place still using the banned
+synonym instead of the term the registry requires everywhere else.
+suggested fix: change "your tank volume" -> "your net volume" and "net water
+volume" -> "net volume" at findings.js:363 (per TW-017, already queued,
+untagged/needs [approved] tag before an implementer may act per AGENTS.md
+"Untagged items are read-only to the implementer").
+confidence: high
+
+### perf-watchdog / 2026-08-13 / S3
+what: Main JS bundle and total initial payload remain over budget, re-measured
+fresh (not trusted from the prior sweep's numbers). Delta since this morning's
+pre-TW-001 baseline is negligible (+0.19 kB gzip main JS) and attributable to
+TW-001's own ~50-line diff (new refusal branches in consumption.js,
+calcification.js, helpers.js, Insights.jsx) — not a regression, not growing.
+CSS remains well under budget. No new runtime dependency was added (package.json
+byte-identical across TW-001's commit) and `max_new_deps_per_night: 0` holds.
+evidence:
+`npm run build` (clean checkout, current HEAD 7968d5c on
+claude/dazzling-faraday-9zbsv7):
+  dist/assets/index-Drz21Ht6.js   987.01 kB │ gzip: 286.39 kB
+  dist/assets/index-9qIAZR0F.css   37.31 kB │ gzip:   8.71 kB
+Total initial (JS+CSS gzip) = 286.39 + 8.71 = 295.10 kB.
+Cross-checked with raw `gzip -c`: JS 285,715 B (285.7 kB), CSS 8,689 B
+(8.7 kB) — consistent with Vite's own reported figures within tool-level
+gzip-setting noise.
+Prior baseline (.agent/log/2026-08-13-consistency-sweep.md:243-244, this
+morning, pre-TW-001): main JS 286.2 kB gzip, total ~294.9 kB gzip.
+Budget (.agent/budgets.json): main_js_kb_gzip 180, total_initial_kb_gzip 250,
+css_kb_gzip 40.
+`git diff HEAD~2 HEAD -- package.json package-lock.json` → empty (TW-001 added
+zero dependencies).
+`npm ls --omit=dev --all` → 3 direct runtime deps (react, react-dom,
+recharts), 45 total nodes incl. transitive — under
+`max_runtime_dependencies: 20`.
+impact:
+  metric              | budget | previous (this AM) | current | delta   | verdict
+  main_js_kb_gzip      | 180    | 286.2               | 286.4   | +0.2    | FAIL (59% over)
+  total_initial_kb_gzip| 250    | 294.9               | 295.1   | +0.2    | FAIL (18% over)
+  css_kb_gzip           | 40     | 8.7                 | 8.7     | 0.0     | PASS
+Both breaches are pre-existing (predate tonight's build cycle entirely per the
+consistency-sweep run two cycles ago) and flat — TW-001 did not move them
+meaningfully. Root cause (unchanged from this morning): the whole app ships as
+a single un-split ~987 kB chunk (Vite's own build warning: "Some chunks are
+larger than 500 kB after minification"), no dynamic import() anywhere in
+src/, no manualChunks config in vite.config.js. recharts (5.4 MB unpacked,
+pulling in victory-vendor/d3-* + lodash + react-smooth +
+react-transition-group as transitive deps) is the single largest contributor
+loaded on every route, including ones that never render a chart on first
+paint.
+suggested fix: code-split at the route/tab level (Dashboard/WaterLog/Insights/
+Setup/Tasks) via React.lazy + dynamic import, and/or move recharts import
+behind a lazy boundary so it only loads when a chart is actually mounted, so
+the initial payload for a cold load doesn't include the charting stack. Purely
+a bundling change — touches vite.config.js and top-level route wiring only, no
+chemistry logic.
+confidence: high
+
+### perf-watchdog / 2026-08-13 / S4
+what: Test suite runtime is well inside budget; no action needed, logged for
+the record.
+evidence: `time npm test` → `Test Files 31 failed | 14 passed (45)`, `Tests 63
+failed | 199 passed (262)`, `Duration 21.35s`, `real 0m21.933s`. Budget
+(.agent/budgets.json `tests.max_suite_runtime_seconds`) is 180s — suite runs
+at ~12% of budget. (Failing-test counts here are pre-existing correctness
+findings tracked by other auditors this cycle, not a perf-watchdog concern —
+see TW-001's own log and the dataflow-tracer/breaker findings above.)
+impact: none — clean bill on this budget line.
+suggested fix: none needed.
+confidence: high
+
+### perf-watchdog / 2026-08-13 / S3
+what: `ZoomableLineChart` (src/components/ZoomableChart.jsx) recomputes its
+full visible-window derivation — `visible` (array slice), `values`,
+`scaleVals`, and the `niceAxis()` call that drives axis domain/ticks/
+formatters — on every render, unmemoized (only `visibleEvents` is wrapped in
+`useMemo`, line 177). At the unzoomed default (`range: {start:0, end:1}`,
+which is what a user sees immediately after picking "your whole log" in
+Dashboard.jsx, since `rows` returns `allRows` unsliced when
+`activeWin >= 99999`, Dashboard.jsx:274), `visible` is the entire dataset —
+there is no cap and no virtualisation on this path. Measured directly (not
+eyeballed) with a Profiler-wrapped render harness at realistic-to-large scale.
+evidence: React `Profiler`-instrumented render of `ZoomableLineChart` under
+jsdom (ResizeObserver/getBoundingClientRect stubbed so
+`ResponsiveContainer` actually lays out), warm (JIT-warmed with a throwaway
+5-point mount first, discarded), single run per size:
+  points | mount (wall) | re-render w/ identical props (wall)
+  200    | 43.8 ms       | 14.6 ms
+  1000   | 62.2 ms       | 28.8 ms
+  5000   | 117.9 ms      | 64.8 ms
+The re-render column is the key number: props and data were unchanged between
+the two renders (simulating a parent re-render from an unrelated sibling state
+change, e.g. any Dashboard state update while "whole log" is selected), yet
+recharts + the unmemoized slice/scale math still cost ~65 ms of React work at
+5000 points because nothing short-circuits it. React's own Profiler
+`onRender` callback additionally logged extra "update"/"nested-update"
+commits beyond the two renders actually triggered (5 commit phases logged for
+2 explicit render calls) — recharts' `ResponsiveContainer` does its own
+internal two-pass layout (measure, then re-render at measured size), which is
+normal recharts behaviour but doubles the real commit cost of every mount.
+This is React-thread/reconciliation cost only (jsdom does no real SVG paint);
+real-device paint cost for 5000 plotted points would be additional and is not
+measured here.
+Confirmed by reading (not just profiling): src/components/ZoomableChart.jsx:
+`visible` (163), `values`/`scaleVals`/`axis` (166-173) are plain `const`s
+recomputed every render; `useMemo` only wraps `visibleEvents` (177-193).
+Dashboard.jsx:274 (`if (activeWin >= 99999) return allRows;`) is the one place
+an unbounded array reaches this component. WaterLog.jsx's own "Past readings"
+list, by contrast, already caps to 40 rows (`histRows`, WaterLog.jsx:68-72) —
+no equivalent problem there.
+impact: not currently budget-breaking or crash-causing — the largest realistic
+per-parameter history for one real tank over years is unlikely to reach 5000
+readings soon, and even at 5000 the measured React-side cost (~65-120 ms) is
+below the ~100 ms interaction-response guideline most of the time, not a hard
+freeze. But it is unbounded and unmemoized by construction, so it degrades
+linearly with log size with no ceiling, and every unrelated re-render while
+"whole log" is selected pays the full recompute cost for no reason (nothing
+in the derivation depends on the changed state).
+suggested fix: wrap `visible`/`values`/`scaleVals`/`axis` in
+`useMemo(..., [data, startIdx, endIdx, targetMin, targetMax])` alongside the
+existing `visibleEvents` memo, so an unrelated parent re-render is a no-op for
+this component. Purely a rendering/memoization change to chart-display code
+(axis tick formatting, slicing) — does not touch any chemistry constant,
+formula, or threshold in src/lib/analytics or src/lib/dosing.
+confidence: high
