@@ -1,11 +1,11 @@
-run: 2026-08-13-consistency-sweep
-routine: routine 5 — consistency sweep
-started: 2026-08-13T08:20:31Z
-status: complete
-last completed step: Wave D step 3 complete (morning brief written) — run finished
-next step: none — run complete
+run: 2026-08-13-build-1
+routine: routine 1 — build cycle
+started: 2026-08-13T22:00:00Z
+status: in-progress
+last completed step: setup — read run-state (was complete), read AGENTS.md, confirmed clean tree on claude/dazzling-faraday-9zbsv7
+next step: Wave 1 — dispatch planner
 in-flight: none
-branch: claude/2026-08-13-consistency-sweep
+branch: claude/dazzling-faraday-9zbsv7
 uncommitted work: no
 
 <!--
@@ -13,4 +13,10 @@ This file is the resume point. Every routine reads it first and writes it
 throughout. If status is in-progress or interrupted, the last run died and the
 next run must resume before starting anything new. See AGENTS.md, "Checkpoint
 and resume contract".
+
+Note: the harness for this session pins development to a fixed branch,
+claude/dazzling-faraday-9zbsv7 (not the claude/<date>-<slug> convention
+AGENTS.md describes) — see session instructions. That branch already carried
+one unmerged commit ahead of main from a prior session (649a135, Dan's direct
+spec-decision commit) before this run started; left untouched.
 -->
