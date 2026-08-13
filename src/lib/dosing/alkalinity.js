@@ -332,12 +332,11 @@ export function applyDoseConstraints(next, out, def, settings, readings, doseLog
 /* From "the maths produced a figure" to "it is a real dose": rounding, the
    rate ceiling, and the plausibility check.
 
-   Shared by calcium and magnesium, byte-identical. Alkalinity does NOT have
-   this block — it has no safeDoseBand call of its own and never sets
-   out.rateLimited, so where calcium tells you "we wanted 32 mL but the safe
-   rate allows 14", alkalinity clamps silently at the end and says nothing.
-   That difference is real and worth resolving, but it is a behaviour change
-   rather than a refactor, so it is left alone here and recorded instead. */
+   Shared by all three elements, byte-identical. Alkalinity calls this too
+   (see the call site further down in this file) and sets out.rateLimited
+   just like calcium and magnesium, so where calcium says "we wanted 32 mL
+   but the safe rate allows 14", alkalinity now says the same thing instead
+   of clamping silently at the end. */
 export function rateLimitDose(applied, out, def, settings, effect) {
   /* `applied` is the raw adjustment; the block below names its own `next`. */
   let next = Math.max(0, Math.round((out.currentDose + applied) * 10) / 10);
