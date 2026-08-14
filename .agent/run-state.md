@@ -1,26 +1,33 @@
-run: 2026-08-14-durability-remainder
-routine: routines/16-durability-remainder.md (PR #30)
-started: 2026-08-14T11:30:00Z
-status: piece one complete
+run: 2026-08-14-real-history-replay
+routine: routines/18-real-history-replay.md
+started: 2026-08-14T12:20:00Z
+status: complete
+last completed step: report written (all 11 sections), log written, committing
+  and opening the PR
+next step: none — Dan reviews and merges (or not). Follow-ups are filed inside
+  the report, §8 (other owners) and §9 (questions for Dan).
+in-flight: nothing
+branch: claude/hopeful-bohr-yc58vu
+uncommitted work: no
 
-pieces:
-  routine file — done, pushed, PR #30 (claude/routines-durability-remainder-a6u43v)
-  piece one, wipe detection (TW-D5) — done on claude/durability-wipe-detection,
-    branched from the routine branch. Test-first (6 of 10 red before the fix),
-    verify green, vitest 62/323 against a 62/313 baseline. PR number recorded
-    in the log once opened.
-  piece two, automatic backup (TW-D12) — not started. Branch from piece one's
-    branch. The ring's refuse-to-overwrite rule reads piece one's high-water
-    marks, which is why the order matters.
-  piece three, keys to IndexedDB (TW-D11) — not started. Branch from piece
-    two's branch. The drain interaction analysis is in the routine §piece
-    three; read it before writing anything.
+what shipped:
+  .agent/real-history-replay.md          — the full report, sections 1-11
+  .agent/log/2026-08-14-real-history-replay.md
+  .agent/run-state.md                    — this file
 
-notes for resume:
-  - npm ci before anything; a fresh clone fails verify at `vite: not found`.
-  - Baselines: verify green (advisory deadcode 3 + csscheck 3), vitest 62/313
-    pre-piece-one, 62/323 after.
-  - src/lib/idb.js now owns DB_NAME/DB_VERSION (2). Adding a store = add to
-    STORES + bump version there, nowhere else.
-  - blockdup ceiling is 10 and the tree sits exactly at it; watch for new
-    incidental duplication when writing piece two's ring.
+nothing else in the tree moved. The replay harness lived in the session
+scratchpad and dies with the session; its core loop is preserved in the
+report's appendix (§10).
+
+notes for whoever runs this next:
+  - npm ci first; node_modules is empty in a fresh clone and the engine cannot
+    be imported without it.
+  - The engine modules cannot be imported by plain Node: src/lib/constants.js
+    imports ../icons.jsx. A node --import loader that transpiles .jsx through
+    the esbuild vendored with vite fixes it (report §10.1). Do not work around
+    it by stubbing PARAM_DEFS.
+  - The clock fake is not optional. Verify todayStr() returns the step date
+    before trusting one line of output; computeStability alone flips green to
+    amber on the system clock (report §8, finding O2).
+  - Key everything by (param, date, value). Reading ids do not survive an
+    export/restore round trip (report §1).
