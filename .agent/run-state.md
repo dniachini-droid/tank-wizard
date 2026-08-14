@@ -2,11 +2,11 @@ run: 2026-08-14-failure-replay
 routine: routines/17-failure-replay.md
 started: 2026-08-14T00:00:00Z
 status: complete
-last completed step: report written (.agent/failure-replay.md), log written
-next step: commit, push, open PR (never merge)
+last completed step: committed, pushed, PR #38 opened (https://github.com/dniachini-droid/tank-wizard/pull/38) — never merged, per AGENTS.md #13
+next step: none — routine finished
 in-flight: none
 branch: claude/stoic-carson-i9416q
-uncommitted work: yes — .agent/failure-replay.md, .agent/log/2026-08-14-failure-replay.md, this file
+uncommitted work: no
 
 notes:
   - read-only routine: no application code, spec, test, or constant changed.
