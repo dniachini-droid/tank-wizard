@@ -509,6 +509,120 @@ export function dosePlausible(ml, settings) {
   return ml <= vol * 2;
 }
 
+/* ---- Negative consumption ----------------------------------------------
+   reef-chemistry.md §24, decided 14 August 2026.
+
+   Consumption comes out negative when the level rises faster than the dose
+   supplies. That is not the model breaking: a one-off correction, a water
+   change with a richer salt, demand collapsing, a wrong Setup strength, a bad
+   reading and a fast nitrate drop all produce it, and 626 of the 6,000 random
+   assessments in the invariants sweep do. The clamp to zero stays — a negative
+   maintenance dose is not a thing anyone can pour.
+
+   What must not happen is what came after the clamp. A forced zero against a
+   real dose reads as a 100% gap, which saturates the dose-gap trigger and
+   walks straight into the act block: roughly a 25% cut on Decision 3's worked
+   alkalinity case, toward a level the arithmetic never diagnosed as excessive.
+   That cut is the harm, and it is the only thing this removes.
+
+   So: hold, report the observation without claiming a cause, ask about the two
+   things the app cannot see, and escalate only on the third consecutive
+   negative with nothing logged — one is a reading, three is a signal.
+
+   It deliberately does not stand in front of the level. A tank at or over the
+   top of its range and still climbing needs less of the element whatever the
+   consumption arithmetic says; Decision 3 named suppressing that response as
+   the concrete regression risk of any refuse-style fix, and the protocol
+   corpus agrees (magnesium §56 is a gaining reading whose answer is still
+   "decrease"). Those callers are exempted at the call site by `levelWantsLess`
+   and reach the act block as they do today. */
+
+/* Consecutive, counted from the newest interval backwards and stopped at the
+   first one that does not gain — so "three in a row" means the last three
+   readings each rose faster than the dose supplies, not three scattered across
+   the window. */
+export function gainingRun(intervals, suppliedPerDay) {
+  let run = 0;
+  for (let i = (intervals || []).length - 1; i >= 0; i--) {
+    const iv = intervals[i];
+    if (!iv || !isFinite(iv.perDay) || suppliedPerDay - iv.perDay >= 0) break;
+    run++;
+  }
+  return run;
+}
+
+/* The two things the app cannot see for itself, if either was in fact logged
+   inside the window the trend was fitted over. */
+export function loggedRise(waterChanges, corrections, key, fromStamp) {
+  const events = [
+    ...(waterChanges || []).map((w) => ({ what: "water change", when: w && w.date, at: alkStamp(w) })),
+    ...(corrections || [])
+      .filter((c) => c && (c.element || c.param || "alkalinity") === key)
+      .map((c) => ({ what: "one-off correction", when: c && c.date, at: alkStamp(c) })),
+  ].filter((e) => e.when && isFinite(e.at) && e.at >= fromStamp);
+  if (!events.length) return null;
+  return events.sort((a, b) => b.at - a.at)[0];
+}
+
+export function gainingHold(out, def, { intervals, waterChanges, corrections }) {
+  /* Alkalinity is judged per day, calcium and magnesium per week — each
+     engine's own idiom, kept so this sentence reads like the ones around it. */
+  const weekly = def.key !== "alkalinity";
+  const rate = weekly ? Math.abs(out.trendPerWeek) : Math.abs(out.trendPerDay);
+  const per = weekly ? "a week" : "a day";
+  const noun = String(def.label || def.key).toLowerCase();
+  const used = out.used || [];
+  const from = used.length ? alkStamp(used[0]) : 0;
+  const logged = loggedRise(waterChanges, corrections, def.key, from);
+  const run = gainingRun(intervals, out.supplied);
+
+  out.ok = true;
+  out.recommendedDose = out.currentDose;
+  out.action = "hold";
+  /* Marks the rows this rule created, so the surfaces that echo the wizard can
+     tell them apart from the holds that were already there — a hold reached
+     any other way still means "the dose matches", and this one does not. */
+  out.gainingHold = true;
+
+  /* The observation, and only the observation. Every cause the app could name
+     here — a richer salt, dissolution, a nitrate drop, lower demand, a bad
+     reading, a wrong strength — is consistent with the same arithmetic, so
+     naming one would be a guess wearing a diagnosis's clothes. */
+  out.explanation =
+    `${def.label} is rising ${fmtAmount(rate)}${def.unit} ${per}, faster than your `
+    + `${fmtAmount(out.currentDose)} mL/day dose accounts for — that dose supplies about `
+    + `${fmtAmount(out.supplied)}${def.unit} a day. The dose is unchanged. A rise the dose `
+    + `cannot explain is not evidence the dose is too large, so there is nothing here to `
+    + `size a change from.`;
+
+  if (logged) {
+    out.explanation += ` A ${logged.what} is logged on ${String(logged.when).slice(0, 10)}, `
+      + `inside the period these readings cover, which would account for it.`;
+    out.nextCheck = `Measure ${noun} again in two days. Once the effect of that has passed, `
+      + `the readings will show what the dose is really doing.`;
+    return out;
+  }
+
+  if (run >= 3) {
+    /* Part four: escalate on repetition, not on a single instance. */
+    out.caution = (out.caution ? out.caution + " " : "")
+      + `That is the third reading in a row where ${noun} rose faster than the dose accounts `
+      + `for, with no water change or correction logged against any of them. One is a reading; `
+      + `three is a pattern. The likeliest explanations now are the ${noun} strength in Setup `
+      + `being wrong — every millilitre figure on this screen is derived from it — or demand `
+      + `having genuinely fallen away.`;
+    out.nextCheck = `Check the ${noun} strength in Setup against the bottle before trusting any `
+      + `dose figure here, and log any water change or one-off correction that is missing. `
+      + `Then measure ${noun} again in two days.`;
+    return out;
+  }
+
+  out.nextCheck = `Has a water change or a one-off correction gone unlogged in this period? `
+    + `If not, this may be a testing error or a change in demand. Measure ${noun} again in two `
+    + `days rather than acting on this one.`;
+  return out;
+}
+
 /* Why an effect-per-mL could not be worked out, in the user's terms.
  *
  * The two inputs fail differently. A missing strength is a bottle detail; a
@@ -899,6 +1013,20 @@ export function assessMagnesium({ readings, doseLog = [], waterChanges = [], set
      dose because of one test is exactly the move the protocol warns against —
      unless magnesium is already outside the range, where waiting costs more
      than verifying. */
+  /* §24 — a negative consumption never sizes a dose change. Magnesium is where
+     this bites hardest: its dose supplies hundredths of a ppm a day, so a rise
+     barely clear of test noise turns consumption negative, and with no drift
+     trigger of its own the engine either sat silent or cut the dose by half.
+     The exemption is the level, as for the other two — §56's reading, five ppm
+     from the top of its range and still climbing, is a gaining reading whose
+     answer is still "dose less". */
+  if (out.gaining) {
+    const levelWantsLess = (above && out.trendPerDay > 0) || out.nearEdge === "upper";
+    if (!levelWantsLess) {
+      return gainingHold(out, def, { intervals, waterChanges, corrections });
+    }
+  }
+
   const rawChange = out.maintenanceDose - out.currentDose;
   const mag = Math.abs(rawChange);
   if (mag > 3 && out.intervals < 2 && inRange && !out.nearEdge) {

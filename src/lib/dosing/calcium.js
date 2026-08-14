@@ -4,7 +4,7 @@ import { minutesOf, nowTime } from '../analytics/time-of-day.js'
 import { dayNum } from '../analytics/water-changes.js'
 import { todayStr } from '../dates.js'
 import { alkAnomaly, alkFit, alkIntervals, alkStamp, applyDoseConstraints, directionConsistent, noteCurrentAndInterventions, rateLimitDose, trendConfirmed } from './alkalinity.js'
-import { correctionPlanFor, correctionProgress, doseDriftedFrom, dosePlausible, mgEffectPerMl, missingDoseInputs, pendingCorrection } from './helpers.js'
+import { correctionPlanFor, correctionProgress, doseDriftedFrom, dosePlausible, gainingHold, mgEffectPerMl, missingDoseInputs, pendingCorrection } from './helpers.js'
 import { strengthPlausible } from './magnesium.js'
 
 /* --- Calcium dosing assessment ---
@@ -554,6 +554,17 @@ export function assessCalcium({ readings, doseLog = [], waterChanges = [], setti
     out.explanation = `Calcium is ${above ? "above" : "below"} your range at ${fmtVal(def, out.current.value)}${def.unit} and moving ${out.trendPerDay < 0 ? "down" : "up"} toward it at ${fmtAmount(Math.abs(out.trendPerWeek))}${def.unit} a week. That is the direction you want, so changing the dose now would work against it.`;
     out.nextCheck = `Reassess once calcium reaches ${fmtVal(def, def.min)}–${fmtVal(def, def.max)}${def.unit}.`;
     return out;
+  }
+
+  /* §24 — a negative consumption never sizes a dose change. The exemption is
+     the level itself: at or over the top of the range and still rising still
+     gets the reduction below, because that answer comes from where calcium is
+     rather than from the consumption arithmetic. */
+  if (out.gaining) {
+    const levelWantsLess = (above && out.trendPerDay > 0) || out.nearEdge === "upper";
+    if (!levelWantsLess) {
+      return gainingHold(out, def, { intervals, waterChanges, corrections });
+    }
   }
 
   /* Section 39 and 40: conservative sizing, because feedback is a week away. */
