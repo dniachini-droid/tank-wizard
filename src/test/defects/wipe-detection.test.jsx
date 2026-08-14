@@ -30,7 +30,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { ReefConsoleInner } from '../../App.jsx'
 import { DB_NAME, DB_VERSION, PHOTO_STORE, WITNESS_STORE } from '../../lib/idb.js'
 import { closePhotoStore, putPhoto } from '../../lib/photo-store.js'
-import { lsGet, saveKey } from '../../lib/storage.js'
+import { loadKey, lsGet, saveKey } from '../../lib/storage.js'
 
 const WITNESS_KEY = 'install'
 
@@ -158,8 +158,12 @@ describe('a genuinely clean install', () => {
     render(<ReefConsoleInner />)
     await started()
 
-    await waitFor(() => expect((lsGet('water-changes') || []).length).toBe(25))
-    expect((lsGet('lighting-log') || []).length).toBe(1)
+    /* Read through loadKey rather than lsGet: piece three moved the keys into
+       IndexedDB, so localStorage is no longer where a seeded value lands on a
+       device where IndexedDB works. The property pinned is unchanged — a
+       genuinely clean install still gets its seed. */
+    await waitFor(async () => expect((await loadKey('water-changes', [])).length).toBe(25))
+    expect((await loadKey('lighting-log', [])).length).toBe(1)
     expect(document.body.textContent).not.toMatch(/cleared/i)
   })
 
