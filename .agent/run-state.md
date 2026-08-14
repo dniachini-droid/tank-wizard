@@ -8,15 +8,15 @@ last completed step: bug 1 (App.jsx:1275 goTo crash, Tasks.jsx:198 onComplete cr
   vitest suite shows 194 passed / 69 failed matching the routine's documented
   pre-existing baseline, backlog updated, committed, pushed, PR opened.
 next step: bug 2 — negative consumption (alkalinity.js:635-642, calcium.js:360-367,
-  helpers.js:718-724). Branch fresh from claude/friendly-keller-y5zoqc tip
-  (do NOT branch from literal origin/main — see log's "Branch/base note", it
-  is ~145k lines behind this project's real trunk). Read routine section 2
-  in full again before starting; do not rely on this summary alone.
+  helpers.js:718-724). Branch fresh from origin/main (normal — a first fetch
+  in this container misread main as stale, corrected in the log's "Branch/base
+  note"; main is current, PR bug 1 was opened against it normally). Read
+  routine section 2 in full again before starting; do not rely on this
+  summary alone.
 in-flight: none — bug 1 fully closed out (commit, push, PR), working tree
   clean, no half-finished edits anywhere
-branch: claude/2026-08-14-bug1-tab-nav-crashes (bug 1's PR branch, pushed) —
-  this session's designated branch claude/friendly-keller-y5zoqc is
-  untouched and is the correct base for the next branch
+branch: claude/2026-08-14-bug1-tab-nav-crashes (bug 1's PR branch, pushed,
+  PR opened against main)
 uncommitted work: no
 
 <!--
