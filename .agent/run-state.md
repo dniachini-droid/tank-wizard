@@ -1,3 +1,38 @@
+run: 2026-08-14-four-owner-decisions
+routine: none — owner decisions delivered directly by Dan, not a routine
+started: 2026-08-14T (in session)
+status: complete
+last completed step: spec, needs-dan, backlog and log written; committed, pushed,
+  PR opened. Never merged, per AGENTS.md #13.
+next step: none. Dan reviews; the code work waits on [approved] tags against
+  TW-037, TW-039, TW-042, TW-043, TW-044.
+in-flight: none
+branch: claude/four-owner-decisions-spec-h2qm6v (harness-designated), cut from
+  main at 0b13829
+uncommitted work: no
+
+notes:
+  - **Spec-only.** No application code, no test, no chemistry constant touched.
+    `git diff --stat main...HEAD -- . ':!*.md'` is empty. AGENTS.md #1 forbids an
+    agent editing docs/spec; Dan's explicit authorisation is the only reason this
+    run did, same exception as the §26 change.
+  - What moved: reef-chemistry.md §3 (rails fixed, tighten clause withdrawn);
+    wizard-states.md §22 (new — the six consistency verdicts registered, drifting
+    -> unsettled, the alert tier, unknown refuses), §15 (notice + unsettled +
+    consistency-verdict rows, and a new colour registry), §20 (the word, and the
+    confirmation sentence restated), §13 and §21 cross-references.
+  - needs-dan: items 7 and 8 closed, two of the three notes in 6 closed, the
+    "target" rename left open and parked, **new open item 9** — alkalinity's brand
+    colour is byte-identical to STATUS_COLOR.ok, not covered by the decision and
+    its harm points the other way.
+  - Colour figures were computed, not eyeballed (sRGB -> CIE Lab, WCAG luminance);
+    the scripts lived in the session scratchpad and die with it. §15 and the log
+    carry the numbers and enough method to re-derive.
+  - Nothing here changes any other run's state. The consistency-sweep record below
+    (PR #41) is what this branch was cut from.
+
+---
+
 run: 2026-08-14-failure-replay
 routine: routines/17-failure-replay.md
 started: 2026-08-14T00:00:00Z

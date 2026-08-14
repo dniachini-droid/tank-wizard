@@ -10,6 +10,10 @@ authority — §19 and §20, the surfaces and notice halves of the Reef Chemistr
 Engine decision, folded in from `docs/spec/DECISION-reef-chemistry-engine.md`
 (now deleted). Its assessment half is `reef-chemistry.md` §25. **§21 added
 14 August 2026** on the spec owner's authority — what Setup may ask for.
+**§22 added, and §15 and §20 amended, 14 August 2026** on the spec owner's
+authority — the consistency verdicts registered as a second vocabulary, one
+word for a notice, and the colour registry. Its companion decision is
+`reef-chemistry.md` §3, the rails.
 
 > Agents never edit this file. Disagreements → `.agent/spec-challenges.md`.
 
@@ -18,8 +22,9 @@ number the app produces; this one to know why a particular card is showing,
 what words may go on it, and what the app must be true of as a program.
 
 Part I (§0–§10) is the wizard's state machine. Part II (§11–§18) is the surfaces
-and messaging canon plus the platform floor. Part III (§19–§21) is the Reef
-Chemistry Engine's surfaces, the notice model, and what Setup may ask for.
+and messaging canon plus the platform floor. Part III (§19–§22) is the Reef
+Chemistry Engine's surfaces, the notice model, what Setup may ask for, and the
+consistency verdicts.
 
 ---
 
@@ -512,13 +517,21 @@ over the fitted window, §5 and §11 there — never a single pair of readings.
   reading of 7.849 displayed as 7.8 classifies as 7.849.
 - Classification never rounds. Display rounds.
 
-**Every surface uses these bands and no other vocabulary.** No surface may
-invent a category like "slightly low" or "borderline" that is not in this table.
+**Every surface uses these bands and no other vocabulary for where a reading
+sits.** No surface may invent a category like "slightly low" or "borderline"
+that is not in this table.
 
 These seven bands are not the wizard's 17 states. A band describes where a
 reading sits; a state describes what to do about the element. Branch 21's
 `recovering` / `worsening` / `off-target` split, for instance, is three states
 over one band.
+
+**Nor are they the consistency verdicts.** §22 registers a second, separate
+vocabulary of six words answering a different question — *how steady has this
+been over the window*, which these seven bands cannot express. The two never
+substitute for each other, and `drifting` above is a band word only: **inside**
+the band, trending toward an edge. The verdict that used to share that name
+meant nearly the opposite and is now `unsettled` (§22, §15).
 
 ---
 
@@ -556,11 +569,14 @@ One word per concept, everywhere. Any synonym is a finding.
 | within no-action band | **in range** | fine, good, OK, normal, healthy, ideal |
 | outside no-action band | **out of range** | bad, off, abnormal, dangerous |
 | at/beyond alert threshold | **needs attention** | critical, urgent, emergency, danger |
-| moving toward an edge | **drifting** | trending, slipping, creeping |
+| moving toward an edge, **inside** the band | **drifting** | trending, slipping, creeping |
 | the user's chosen value | **target** | ideal, optimal, recommended level, correct |
 | a suggested dose | **recommended dose** | required, needed, prescribed |
 | net water volume | **net volume** | water volume, tank size, volume, capacity |
 | a user-entered dose | **manual dose** | custom, override, adjusted |
+| a thing the app shows about a parameter | **notice** | notification, note, hidden note, "worth knowing about" |
+| off the band and moving about | **unsettled** | drifting, wandering |
+| how steady a parameter has been over the window | **consistency verdict** | control grade, stability score, steadiness rating |
 
 The app never uses "safe" or "unsafe" about any reading. It reports position
 relative to the user's own targets and nothing more. This is a rule about
@@ -569,6 +585,55 @@ name of a threshold, and the app does not say it out loud.
 
 **net volume** won the 13 August terminology decision; "water volume" is a
 banned synonym (`.agent/needs-dan.md`).
+
+**notice** won the 14 August decision, and it is the **only** word for the
+concept. The three that shipped alongside it are banned: "Worth knowing about"
+(`src/components/Dashboard.jsx:619-620`), "Hidden notes" / "Notes"
+(`src/components/Setup.jsx:478-491`), and "notification" — including in §20's
+confirmation sentence, which is restated there. Owner quotations elsewhere in
+this document are left verbatim; a quotation records what was said, and the
+ban is on what the **app** says. `.agent/backlog.md` TW-031 carries the
+restated sentence.
+
+Two words are deliberately **not** in that never-use column, because they are
+canon's own and mean something else: **alert**, which §13 and §18 use for a
+threshold and two band names, and **message**, which is §14's word for the
+four-part thing a notice contains. A notice carries a message; it is not called
+one.
+
+**unsettled** and **drifting** are the pair this registry exists for: near
+opposites that shared one word until 14 August. `drifting` is §13's band word —
+inside the band, sliding toward an edge. `unsettled` is §22's verdict — off the
+band, moving about while it is there. Neither may be used for the other, and
+neither may be used loosely for movement in general.
+
+### The colour registry
+
+**Decided 14 Aug.** One word per concept has a colour twin: a colour that means
+*something is wrong* must not also be a parameter's identity. This is §15's
+rule one level down — colours instead of words.
+
+- **The severity colours are reserved, and unchanged by this decision:** `ok`
+  `#0B7C86`, `low` `#926A09`, `high` `#C4285B`, `unknown` `#9FB0AE`
+  (`STATUS_COLOR`, `src/lib/dates.js:31`). Nothing here moves them.
+- **A parameter's brand colour may never be byte-identical to a severity
+  colour.** Two were: `phosphate` `#C4285B`, the danger red, and `potassium`
+  `#926A09`, the low amber (`PARAM_DEFS`, `src/lib/constants.js:32-33`).
+  Phosphate's chart line and header cap therefore render in the alarm colour at
+  every value, a perfect reading included.
+- **The new brand colours: phosphate `#9B3A8C` (plum), potassium `#5F7A12`
+  (olive).** Chosen to clear both the severity register and the rest of the
+  palette, measured rather than eyeballed: contrast against the `#F3F7F6` page
+  is 5.76:1 and 4.54:1 (§18's floor for text is 4.5:1, for a chart stroke
+  3:1); CIE76 separation from the severity colour each replaces is 37.9 and
+  32.7. The palette's own closest pair is unchanged at 16.4 —
+  alkalinity/pH, which these do not touch — and calcium/potassium improves from
+  29.3.
+- **One collision is left standing and is not a silent omission.** `alkalinity`
+  `#0B7C86` is byte-identical to `ok`. It was not named in the decision, and
+  its direction of harm is the mirror of phosphate's — an alarming chart that
+  looks healthy, rather than a healthy chart that looks alarming. Recorded as
+  an open one-liner in `.agent/needs-dan.md` rather than changed here.
 
 ---
 
@@ -757,10 +822,15 @@ overruled: the user may have one the app cannot see.
 
 **Serious notices get a confirmation before hiding:**
 
-> "This is flagged as a serious notification. Are you sure you wish to hide
-> it?"
+> "This is flagged as a serious notice. Are you sure you wish to hide it?"
 
 with a line noting hidden notices can be brought back from the tank summary.
+
+**The sentence changed on 14 August**, from "a serious notification" to "a
+serious notice", when §15 registered **notice** as the one word for the
+concept. The wording was settled before the registry entry existed; the
+decision that created the entry restated it. `.agent/backlog.md` TW-031 quotes
+the restated version.
 
 **Serious** is the app's existing severity vocabulary and not a new category: a
 finding of severity `act`, or a wizard state whose §3 tone is red. **The
@@ -783,14 +853,27 @@ and `findingHidden` (`src/components/DoseExpectation.jsx:148`) already
 implements exactly this for findings: an entry stays hidden only while the
 stored signature still equals the current one.
 
-### A note on the word
+### The word — settled 14 August
 
-This document uses **notice** for the thing shown about a parameter — what the
-code variously calls a finding, a claim and a dose state. The confirmation
-sentence above says "notification" because that is the settled user-facing
-wording, quoted verbatim. §15's registry carries no entry for this concept yet;
-adding one is the owner's call and nothing here should be read as having made
-it.
+**Notice is the single term.** §15 now carries the entry, and the three
+alternatives that shipped alongside it are banned: "Worth knowing about"
+(`Dashboard.jsx:619-620`), "Hidden notes" / "Notes" (`Setup.jsx:478-491`), and
+"notification", which the confirmation sentence above used and no longer does.
+
+`finding`, `claim` and `dose state` are what the **code** calls the same thing
+in `src/lib/narrative-engine.js`; they are internal names, not user-facing
+words, and the ban is on what the app says out loud. Renaming them in code is
+tidiness, not this decision.
+
+One hide control ships with no noun at all — "Got it — hide this"
+(`DoseExpectation.jsx:175`). That is not a fourth term and needs no rename to
+comply; it is listed here so the next auditor does not file it as one.
+
+Two more non-violations, for the same reason. This document says "the
+notification model in `docs/journeys/journey-4-notifications.md`" and §21 lists
+"notification thresholds" as an example judgement — both name a document and a
+concept in canon's own prose, not a thing shown on a screen. A **file name is
+not a user-facing word**, and renaming journey 4 is not part of this decision.
 
 ### Enforced by
 
@@ -911,3 +994,130 @@ Setup field can be added without anything objecting.
 
 Ask what only the user knows. Default everything else, and change a default
 when a real tank proves it wrong — not when a user might have had an opinion.
+
+**Consequence recorded 14 August:** `reef-chemistry.md` §3's "a user may
+tighten a rail" clause is withdrawn under this section's reasoning. The rails
+are fixed, one figure per element for everyone. Tighten-never-loosen survives
+where it belongs — on §2's bands, which are the user's judgement about their
+own corals, inside safe bounds the app will not let them leave.
+
+---
+
+## 22. Consistency verdicts — the second vocabulary, registered
+
+**Decided 14 Aug (Dan, spec owner).**
+
+> **Two vocabularies, both registered.** §13's seven bands answer *where is
+> this reading*. The six consistency verdicts answer *how steady has this been
+> over time* — a different axis, and one §13 has no words for.
+
+`computeControl` (`src/lib/analytics/reading-meaning.js:89-236`) has been
+emitting six headline categories with no entry anywhere in canon, rendered
+beside the official band badge in the same modal (`Dashboard.jsx:467`). They
+are **not** removed. They answer a question the seven bands cannot: a reading
+can sit inside its band all window and still have bounced across it, and only
+these words say so.
+
+### The six
+
+Graded over the analysis window (`reef-chemistry.md` §4), from the spread or
+the fitted rate of the readings in it — never from a single reading.
+
+| Verdict | What it says about the window | Headline |
+|---|---|---|
+| `dialled` | held inside the band, tightly | Dialled in |
+| `controlled` | centred in the band, ordinary test-to-test variation | Well controlled |
+| `steady-off` | very steady, but settled off the band | Steady, running high/low |
+| `unsettled` | off the band, and moving about while it is there | Unsettled high/low |
+| `loose` | swinging widely, no consistent direction | Wide swing |
+| `sliding` | moving one way, fast | Moving up/down fast |
+
+Six verdicts and seven bands, and nothing else. A surface inventing a seventh
+verdict is a finding, exactly as §13 says of the bands.
+
+### The rename — `drifting` became `unsettled`
+
+`drifting` is §13's word and stays §13's word: **inside** the band, trending
+toward an edge. The verdict of the same name fired on close to the opposite
+condition — the window **median outside** the band, with moderate spread
+(`reading-meaning.js:218`). Two badges in one modal, one word, near-opposite
+meanings.
+
+The verdict is renamed **`unsettled`**; the headline becomes "Unsettled high" /
+"Unsettled low". §15 carries both entries and the ban. This is a rename of the
+verdict only — no threshold, no condition and no band definition moves with it.
+
+### A verdict never masks a position — the alert tier
+
+**A steadiness verdict must never mask a dangerous position.** The six grade
+movement and say nothing about how far out the current reading is, so as
+written a lethal value and a mildly-off one both read `sliding`, in the same
+colour (`tone` is fixed per verdict, `reading-meaning.js:196-220`).
+
+The verdicts therefore gain a tier, and it is §13's, not a new severity scale:
+
+- **Every verdict carries the tier of the latest reading's §13 band, and
+  renders no calmer than it.** A latest reading classifying `alert-low` or
+  `alert-high` renders at the alert tier whatever the window says.
+- **At the alert tier the verdict's text leads with the position**, then
+  discusses steadiness. "Steady" is never the first thing a keeper reads about
+  a level that needs attention.
+- **The verdict word itself does not change.** A tank at alert-low held very
+  steadily is still `steady-off`; it is simply not shown in a calm colour, and
+  it says the level first. The window graded the window; the tier reports the
+  reading.
+- The reading the tier is read from is the **last** one — `reef-chemistry.md`
+  §26, position is the last reading — not the median and not a fitted value.
+
+This does not make a verdict into a band. It stops a verdict outranking one.
+
+### Unknown refuses
+
+A verdict is produced only where consistency can actually be graded. Where it
+cannot — no tolerance rule for the parameter, or a metric that cannot be
+computed — the surface **refuses and names what is missing**, per §13's last
+row (`insufficient-data`). It does not fall through to a graded verdict.
+
+Today it falls through. `consistency` initialises to `"unknown"`
+(`reading-meaning.js:141`) and, with no rule for the parameter, still reaches
+`controlled` or `unsettled` through the median test alone, because every branch
+that tests `consistency` fails open. That is a graded verdict resting on no
+grading, which is the one thing §13's last row exists to prevent.
+
+### What this section does not do
+
+- It does not let a verdict state a band position in its own words. Where the
+  reading sits is §13's answer, quoted, not paraphrased.
+- It does not change any threshold, window or grading rule. It registers the
+  words, renames one, adds a tier and closes one fall-through.
+- It does not settle the four-way use of "target" — the value the user types,
+  the app's computed aim point, the whole band, and a synonym for in-band, all
+  in one modal. **Parked, pending a review of all four uses** (§15,
+  `.agent/needs-dan.md`).
+
+### Enforced by
+
+Per §10, named rather than asserted: **nothing asserts §22 today.** Three
+checks would: that the verdict set is exactly these six, that no verdict
+renders calmer than its own reading's band, and that an ungradeable parameter
+refuses instead of grading. Filed in `.agent/backlog.md`; until they exist this
+section is an intention, and `scripts/verify/wordingcheck.mjs` covers one field
+of one loop in one function.
+
+### In plain terms
+
+Two questions, two sets of words. "Where is my alkalinity right now" has seven
+answers, and they are the official ones. "Has it been steady these last few
+weeks" has six — and those are now official too, where before they were being
+shown to you with nothing in writing behind them.
+
+One of the six used to be called "drifting". Everywhere else in the app that
+word means you are still inside your range and sliding toward the edge; as a
+steadiness verdict it meant you were already outside it. Near enough opposite,
+same word, and both could appear one tap apart. It is now "unsettled".
+
+Two more fixes. However steady a parameter has been, if your last test is at a
+level that needs attention, the steadiness note may no longer show in a calm
+colour and has to tell you the level first — steady is not the same as safe.
+And where the app has no yardstick for what steady even means for a parameter,
+it now says so instead of quietly grading you against nothing.
