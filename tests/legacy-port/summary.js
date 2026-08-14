@@ -362,15 +362,25 @@ if(ks.length) process.exit(1);
        the very message the overlap rule exists to suppress. */
     /* The reading that ARRIVES in band. The message is said once, when it
        becomes true — an earlier version used readings already in band, which
-       the "say it once" rule correctly silences. */
-    ['it worked', { ago: 7, dose: 11, vals: [8.0, 8.1, 8.2, 8.3, 8.4], now: 9.0 },
+       the "say it once" rule correctly silences.
+       Values re-picked for bug 4 (routine 15) — alkalinity's band tightened
+       from 8.5-9.5 to 8.2-8.8 (reef-chemistry.md §2). The original fixture
+       (vals ending 8.4, now 9.0) arrived inside the OLD band; under the new,
+       tighter one 9.0 is 0.2 dKH past the top — an overshoot, not an arrival
+       — so the scenario this case is meant to exercise (a dose that worked)
+       needs values that land inside 8.2-8.8 instead. Shifted down by the same
+       shape (four 0.1 steps, then the arrival), not re-derived from scratch. */
+    ['it worked', { ago: 7, dose: 11, vals: [7.7, 7.8, 7.9, 8.0, 8.1], now: 8.5 },
       /working/i, /hold it here/i],
     /* "Not moved" splits in two. If the dose does not match consumption the
        change was too small; if it DOES match, the level is not stuck, it is
        being HELD — which is what a matched dose does, and is the normal state
        after a correction that overshot and was cancelled. An earlier version
-       asserted the "too small" wording for both. */
-    ['it has not moved', { ago: 7, dose: 11, vals: [8.4, 8.4, 8.4, 8.4, 8.4], now: 8.4 },
+       asserted the "too small" wording for both.
+       Values re-picked for bug 4, same reason as above: flat at 8.4 sat below
+       the old 8.5 floor; under the new 8.2 floor it reads as dead centre, not
+       held below range. Flat at 8.0 keeps the same "held below range" shape. */
+    ['it has not moved', { ago: 7, dose: 11, vals: [8.0, 8.0, 8.0, 8.0, 8.0], now: 8.0 },
       /has not moved|held at/i, /solution strength|matching what the tank uses/i],
     ['overshot', { ago: 7, dose: 14, vals: [8.4, 8.8, 9.3, 9.6, 9.9], now: 10.3 },
       /overshoot/i, /not suspect/i],
@@ -422,8 +432,8 @@ if(ks.length) process.exit(1);
      work, so the claim must soften from "your dose did this" to "it has
      moved". Crediting the wrong cause teaches the wrong lesson. */
   {
-    const credited = window({ ago: 7, dose: 11, vals: [8.0, 8.1, 8.2, 8.3, 8.4], now: 9.0 });
-    const softened = window({ ago: 7, dose: 11, vals: [8.0, 8.1, 8.2, 8.3, 8.4], now: 9.0, waterChange: true });
+    const credited = window({ ago: 7, dose: 11, vals: [7.7, 7.8, 7.9, 8.0, 8.1], now: 8.5 });
+    const softened = window({ ago: 7, dose: 11, vals: [7.7, 7.8, 7.9, 8.0, 8.1], now: 8.5, waterChange: true });
     checked++;
     if (softened.line === credited.line) {
       console.log('  FAIL a water change in between did not soften the attribution'); bad++;
@@ -523,8 +533,14 @@ if(ks.length) process.exit(1);
        engine wanting another change, and "hold it here" is then correctly
        withheld — so the success case needs a gentle approach, not a sharp
        one. */
-    ['it worked', { ago: 7, dose: 11, vals: [8.35, 8.4, 8.42, 8.45, 8.48], now: 8.6 }, /working|in band/i],
-    ['it has not moved', { ago: 7, dose: 11, vals: [8.4, 8.4, 8.4, 8.4, 8.4], now: 8.4 }, /has not moved|held at/i],
+    /* Values re-picked for bug 4 (routine 15) — alkalinity's band tightened
+       to 8.2-8.8 (reef-chemistry.md §2). The originals (below the old 8.5
+       floor, arriving/held around 8.4-8.6) already sat inside the new,
+       narrower band throughout, so there was no arrival transition left to
+       exercise. Shifted below the new 8.2 floor, same shape (gentle
+       approach for "it worked" per the comment above; flat for "not moved"). */
+    ['it worked', { ago: 7, dose: 11, vals: [8.05, 8.1, 8.12, 8.15, 8.18], now: 8.3 }, /working|in band/i],
+    ['it has not moved', { ago: 7, dose: 11, vals: [8.0, 8.0, 8.0, 8.0, 8.0], now: 8.0 }, /has not moved|held at/i],
     ['overshot', { ago: 7, dose: 14, vals: [8.4, 8.8, 9.3, 9.6, 9.9], now: 10.3 }, /overshoot/i],
     /* Sparse readings and a fresh change reach the OTHER settling returns —
        there are three, and removing the facts from any one of them went
@@ -682,8 +698,11 @@ if(ks.length) process.exit(1);
     ['overshoot', { ago: 7, dose: 14, vals: [8.4, 8.8, 9.3, 9.6, 9.9], now: 10.3 }, /overshoot/i],
     /* Either wording — "has not moved" when the dose is short, "held at" when
        the dose matches and is holding the level where it is. Both explain why
-       the wizard wants a change rather than contradicting it. */
-    ['has not moved', { ago: 7, dose: 11, vals: [8.4, 8.4, 8.4, 8.4, 8.4], now: 8.4 }, /has not moved|held at/i],
+       the wizard wants a change rather than contradicting it.
+       Values re-picked for bug 4 (routine 15) — see the note by the first
+       "it has not moved" case above; flat 8.4 sat below the old 8.5 floor,
+       and now sits inside the new 8.2-8.8 band instead of below it. */
+    ['has not moved', { ago: 7, dose: 11, vals: [8.0, 8.0, 8.0, 8.0, 8.0], now: 8.0 }, /has not moved|held at/i],
   ]) {
     const { ds, v } = both(setup);
     checked++;
@@ -698,8 +717,12 @@ if(ks.length) process.exit(1);
     /* Arriving in band, not sitting in it. The success message is said once,
        on the reading that makes it true — a run of readings already in band is
        precisely the case it now stays quiet for, and asserting it there was
-       asserting the wallpaper this change removed. */
-    const { v } = both({ ago: 7, dose: 11, vals: [8.35, 8.4, 8.42, 8.45], now: 8.6 });
+       asserting the wallpaper this change removed.
+       Values re-picked for bug 4 (routine 15) — see the note by the first
+       "it worked" case above; the originals arrived inside the OLD 8.5-9.5
+       band and sat inside the new 8.2-8.8 one throughout, with no arrival
+       transition left to exercise. */
+    const { v } = both({ ago: 7, dose: 11, vals: [8.05, 8.1, 8.12, 8.15], now: 8.3 });
     checked++;
     if (!/working/i.test(v.headline)) {
       console.log(`  FAIL a working dose change went unmentioned with the wizard idle — "${v.headline}"`);
