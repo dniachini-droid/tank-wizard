@@ -1,12 +1,12 @@
-run: 2026-08-13-consistency-sweep
-routine: routine 5 — consistency sweep
-started: 2026-08-13T08:20:31Z
+run: 2026-08-14-phase5-gate
+routine: routine 13 — phase 5: the gate
+started: 2026-08-14T05:01:19Z
 status: complete
-last completed step: Wave D step 3 complete (morning brief written) — run finished
-next step: none — run complete
-in-flight: none
-branch: claude/2026-08-13-consistency-sweep
-uncommitted work: no
+last completed step: report written, backlog items filed, ready to commit/push/PR
+next step: git add, commit, push -u origin claude/eloquent-hypatia-dlftze, open PR per AGENTS.md #13
+in-flight: none — npm run verify passes locally (exit 0), mutate.mjs 6/6 caught
+branch: claude/eloquent-hypatia-dlftze
+uncommitted work: yes — scripts/verify/*, .github/workflows/verify.yml, package.json, .agent/*
 
 <!--
 This file is the resume point. Every routine reads it first and writes it

@@ -336,4 +336,73 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
 
 ## Blocked
 
+- [ ] [blocked] TW-021 `verify:linkcheck` and `verify:propcheck` land advisory — two real
+      reference bugs to fix first
+      why: both checkers (scripts/verify/linkcheck.mjs, scripts/verify/propcheck.mjs — ported
+      from legacy/tools/validate.js and propcheck.py) currently fail on the real tree, not
+      on a false positive: `App.jsx:1275` calls `goTo(...)`, which exists only inside
+      `Dashboard`'s own body, and `Tasks.jsx:198` calls `onComplete(id)`, which `Tasks`
+      never receives (only `onMarkDone` is passed in). Both throw `ReferenceError` at
+      runtime on a real user action — see `.agent/findings.md` for the full trace. Making
+      either checker blocking today would make the required CI check red for a reason
+      unrelated to whatever a given PR touches.
+      what it would take to go blocking: fix both reference bugs (findings above), rerun
+      `npm run verify:linkcheck` and `npm run verify:propcheck`, confirm clean, then flip
+      the `mode` for `linkcheck` and `propcheck` from `'advisory'` to `'blocking'` in
+      scripts/verify/run.mjs.
+      owner: implementer — the two underlying bugs need [approved] first (they touch
+      src/App.jsx and src/components/Tasks.jsx; neither is chemistry, so AGENTS.md rule 3
+      doesn't gate them, but nothing in src/ is [approved] by default per the handoff format)
+
+- [ ] [blocked] TW-022 `verify:deadcode` lands advisory — three unread `useMemo` values
+      why: scripts/verify/deadcode.mjs (ported from legacy/tools/deadcode.py, extended to
+      catch component-local dead `useMemo` values, not just top-level dead code) finds
+      `doseAdvice` at Insights.jsx:108 and Dashboard.jsx:298 (already known,
+      .agent/five-decisions.md) and a new one, `preview` at Tasks.jsx:27 — see
+      `.agent/findings.md` for what each is and whether it's a real feature gap.
+      what it would take to go blocking: resolve or explicitly accept each of the three
+      (delete the dead memo, or wire it up), rerun `npm run verify:deadcode` clean, flip
+      `deadcode`'s mode to `'blocking'` in scripts/verify/run.mjs.
+      owner: implementer for the two known cases; `preview` needs a domain read first
+      (is the water-change preview a missing feature or leftover code?) before it's safe
+      to call [approved]
+
+- [ ] [blocked] TW-023 `verify:csscheck` lands advisory — three dead CSS rules
+      why: scripts/verify/csscheck.mjs (ported from legacy/tools/csscheck.py, reading
+      src/styles/*.css and JSX source directly instead of a built HTML file) finds
+      `.err`/`#boot` (leftover from the monolith's removed boot-loader screen) and
+      `.rc-head` and `.rc-modal` (never applied as a className anywhere — `.rc-modal`'s
+      case is a live a11y gap: the light focus ring it was meant to add inside modals
+      never turns on). See `.agent/findings.md`.
+      what it would take to go blocking: delete `.err`/`#boot` (confirmed orphaned), and
+      for `.rc-modal` either apply the class where modals render or get a11y-reviewer to
+      confirm the default ring already clears contrast there; rerun `npm run
+      verify:csscheck` clean, flip `csscheck`'s mode to `'blocking'`.
+      owner: implementer for the deletions; a11y-reviewer's read needed before `.rc-modal`
+      is called safe to drop instead of fixed
+
+- [ ] [deps] TW-024 `npm run lint` doesn't exist; several checkers overlap what eslint does
+      why: AGENTS.md's Definition of Done requires `npm run lint` clean, and there is no
+      `lint` script in package.json — true before this routine and still true after it,
+      since adding a dependency is out of scope here (AGENTS.md rule 6, Dan approves).
+      Three of the ported checkers in scripts/verify/ have off-the-shelf equivalents that
+      would do the same job better once eslint exists:
+        - scripts/verify/linkcheck.mjs (undefined calls/components) -> `no-undef` +
+          `eslint-plugin-react` (component-usage rules), real scope resolution instead of
+          the flat-file/single-import-hop heuristic this port uses.
+        - scripts/verify/hookcheck.mjs (hooks must run unconditionally) ->
+          `eslint-plugin-react-hooks`'s `rules-of-hooks`, which understands actual control
+          flow instead of a fixed-indent heuristic.
+        - scripts/verify/deadcode.mjs (dead exports) -> a dead-export finder (e.g.
+          `eslint-plugin-unused-imports` or `ts-prune`-style tooling), real import-graph
+          resolution instead of a whole-tree text-frequency count (documented coverage gap
+          in that file's header comment).
+      evidence this isn't a guess: each ported checker above already does a cruder version
+      of what the eslint equivalent does, and each one's docstring/header names the exact
+      real bug it exists to catch — see .agent/phase5-gate.md §3 and §5.
+      cost: one new devDependency (eslint) plus two plugins
+      (eslint-plugin-react-hooks, eslint-plugin-react), a config file, and CI wiring —
+      closes this item's own `npm run lint` gap and three checkers' coverage gaps at once.
+      owner: Dan approves the dependency; implementer wires it in once approved
+
 ## Done
