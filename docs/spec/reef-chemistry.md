@@ -257,6 +257,10 @@ not being done here.
 > plausible value, which is the failure that matters. Bracketing (§8.3) is the
 > only real defence.
 
+Step 2 can produce a negative consumption, when the level is rising faster than
+the dose supplies. **See §24** — the clamp to zero stays, but nothing downstream
+may size a dose change from it.
+
 ---
 
 ## 7. When the app will change a dose
@@ -708,6 +712,8 @@ This replaces the dose-gap halving (§7), which was a patch for this fault.
 
 - Change a dose on fewer than 3 readings in the window
 - Change a dose inside the settle window
+- Derive a dose change from a negative consumption figure (§24)
+- Name a cause for a negative consumption figure it cannot see (§24)
 - Tune magnesium's daily dose from a measured gap — ever
 - Propose a correction for a level inside its band
 - Propose a correction on a reading older than the last intervention
@@ -1020,3 +1026,163 @@ rail and the multi-day split, not the band width.
 10. GIVEN target 8.5, upper edge 8.8, stored reading 8.849 displayed as 8.8
     THEN classified on 8.849 (out of range), not on the displayed 8.8
 ```
+
+---
+
+# Part III — decided after the canon swap
+
+Part II above is carried forward from the previous canon. What follows was
+decided after it and is new canon, not a restatement of anything older.
+
+---
+
+## 24. Negative consumption
+
+**Decided 14 Aug (Dan, spec owner): a negative consumption never sizes a dose
+change. Hold, report the observation, ask about what the app cannot see, and
+escalate only on repetition.** This replaces the option authorised in
+`routines/15-phase6-bugs.md` bug 2 — `.agent/five-decisions.md` Decision 3's
+option (c), a refusal for any gain beyond the element's trend-noise floor —
+which was wrong at the premise and was tried, measured and reverted first.
+The evidence and the reasoning are in `.agent/needs-dan.md`.
+
+### Why the premise was wrong
+
+The earlier working assumed a negative consumption meant the model had broken.
+It does not. **626 of the 6,000 random assessments in
+`tests/legacy-port/invariants.js` produce one**, and the legitimate causes are
+ordinary: a one-off correction, a water change with a richer salt, demand
+collapsing, a wrong Setup strength, a bad reading, or a fast nitrate drop
+(~2.3 dKH per 50 ppm NO3, forum-level sourcing — Decision 3 records the limit
+on it). The legacy behavioural suite already knows this, which is why
+`tests/legacy-port/protocols.js` expects **`hold`** for magnesium §61 — a
+reading of 1360 → 1380 → 1400 over 14 days, comfortably inside its band, whose
+consumption comes out at −1.86 ppm/day.
+
+### The actual bug — the cut, not the clamp
+
+The clamp itself is right: a negative maintenance dose is not a thing anyone
+can pour, and zero is the honest floor. What was wrong is what followed it.
+
+A forced `maintenanceDose` of 0 against any positive `currentDose` reads as a
+**100% gap** to `doseDriftedFrom`, which saturates both the 12% alkalinity and
+30% calcium triggers unconditionally. The engine then walks into its act block
+and sizes a reduction from that zero. On Decision 3's worked alkalinity case —
+9.0 mL/day of a 0.05 dKH/mL/100 L solution in 72 L, supplying 0.625 dKH/day
+against a measured +0.9 dKH/day — that came out as a staged cut to 6.8 mL/day,
+**roughly 25%**, toward a level the arithmetic never diagnosed as excessive.
+**That cut is the harm.** Nothing on screen said the working had implied the
+tank was manufacturing alkalinity.
+
+Bracketing (§8.3), named elsewhere as the only real defence against a wrong
+Setup strength, computes the same `currentDose × effectPerMl − trend` and
+discards every observation when it is not positive — so it is **inert for
+exactly as long as a gaining event lasts**, and cannot catch the cut either.
+
+### The rule, four parts
+
+1. **Hold.** When consumption comes out negative, never derive a dose change
+   from it. `recommendedDose` equals `currentDose`, nothing is staged, and no
+   plan is left behind.
+2. **Report the observation, not a cause.** The level is rising faster than the
+   dose accounts for, and the dose is unchanged. **The app must not claim to
+   know why.** Every candidate cause is consistent with the same arithmetic, so
+   naming one would be a guess wearing a diagnosis's clothes.
+3. **Ask what it cannot see.** Has a water change or a one-off correction been
+   logged? If one has, name it and say it would account for the rise. If none
+   has, ask — and say that this may be a testing error or a change in demand,
+   and to test again in **two days**.
+4. **Escalate on repetition, not on a single instance.** **Three consecutive
+   negatives with nothing logged** is a real signal — most likely a wrong Setup
+   strength or genuinely collapsed demand — and the app should say so. One
+   reading is a reading; three is a pattern. Consecutive means counted from the
+   newest interval backwards and stopped at the first that does not gain, and
+   "nothing logged" means no water change and no correction for that element
+   dated inside the window the trend was fitted over.
+
+The action stays `hold` at every step, including the escalation. Escalating
+changes what is said, never what is dosed.
+
+### The one qualification — the level outranks the arithmetic
+
+**A level at or over the top of its range and still rising keeps its
+reduction.** That answer comes from where the element is, not from the
+consumption sum, and holding there would leave a tank without guidance at the
+moment it most needs it. Decision 3 named suppressing it as the concrete
+regression risk of any refuse-style fix, and the protocol corpus agrees:
+`protocols.js` Mg §56 (1480 → 1495 in a week, five ppm below the top of its
+range) is a gaining reading whose required answer is still `decrease`.
+
+Expressed in each engine's own existing vocabulary, with no new threshold
+invented: the level is above its band and the trend is positive, or — for
+calcium and magnesium, which already compute it — `nearEdge` reads `"upper"`.
+Alkalinity has no near-edge notion of its own and is tested on band position
+alone.
+
+### What it costs, measured
+
+Against the 5,940-case golden sweep: 1,206 assessments produce a negative
+consumption. **60 change** — 14 calcium and 46 magnesium, every one of them
+`decrease → hold`, and nothing else in the sweep moves. 732 already held for
+another reason and are untouched. 746 keep their reduction under the
+qualification above, because the level is out of band or at its upper edge and
+still climbing.
+
+**The golden fingerprint moves with this, by design:** `37ded9064e91e80e →
+372fcda432be5bcf`, re-recorded through `golden.js`'s own documented `UPDATE=1`
+mechanism after the diff was audited row by row. `37ded9064e91e80e` was also
+the proof that the port matched `legacy/` byte for byte; it no longer does, and
+the 60 rows above are the whole of the difference. `legacy/` itself is
+untouched.
+
+### Surfaces
+
+`doseStatus`'s two idle cards both say the dose is matching consumption, which
+is the one thing this case knows to be untrue — "nothing to do, keep testing on
+your usual schedule" printed under a wizard asking for a retest in two days is
+a direct contradiction. A hold reached this way is marked, and the card echoes
+the wizard's words instead (`wizard-states.md` §0.3). The `state` stays
+`"idle"`: no dose change is being asked for, which is what every consumer of
+that field reads it to mean.
+
+### Enforced by
+
+Per §14, named rather than asserted:
+
+- `src/test/defects/negative-consumption.test.js` — all four parts, in all
+  three engines, plus the qualification and the dose card. 13 assertions;
+  12 of them fail against the code as it stood before this rule.
+- `tests/legacy-port/invariants.js` — `consumption` and `maintenanceDose` are
+  never negative (the clamp survives; the earlier attempt broke this by
+  returning before it).
+- `tests/legacy-port/protocols.js` — Mg §61 holds, Mg §56 still decreases.
+- `tests/legacy-port/golden.js` — the 60 changed rows, pinned.
+
+### In plain terms
+
+Sometimes a tank shows more alkalinity, calcium or magnesium than your dose can
+explain. That is not the app breaking and it is not always a mistake — a water
+change with a richer salt, a correction you added, your corals eating less, a
+wrong bottle strength in Setup, or simply a duff test will all do it.
+
+What the app used to do was treat the impossible sum as though it meant "you
+are dosing too much", and quietly recommend cutting your dose by about a
+quarter — with nothing on the screen saying the maths had just implied your
+tank was making alkalinity out of nothing. That cut was the problem.
+
+Now it holds your dose where it is and tells you what it actually saw: the
+level is climbing faster than your dose accounts for, and the dose has not been
+changed. It does not guess why, because it cannot. It asks the one thing it
+cannot see for itself — did you do a water change or add a one-off correction?
+— and if you did, and logged it, it says so and moves on. If you did not, it
+suggests testing again in two days, because a bad test result is the cheapest
+explanation to rule out.
+
+If it happens three readings running with nothing logged against any of them,
+that stops being one odd result. Then it says so plainly: most likely the
+strength you entered in Setup is wrong, or your tank's demand really has fallen
+away. It still does not change your dose.
+
+The one exception: if the level is already at or over the top of your range and
+still climbing, you do get told to dose less — because at that point it is the
+level telling you, not the arithmetic, and a tank going high needs an answer.

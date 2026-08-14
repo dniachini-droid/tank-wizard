@@ -479,6 +479,23 @@ export function doseStatus(a, def, todayIso, settings, latestByParam, doseLog, w
         : `The dose is matching what the tank uses, so ${label} is holding at ${fmtVal(def, shown)}${def.unit} rather than falling further. Raising it is a separate correction rather than a bigger daily dose.` };
   }
 
+  /* reef-chemistry.md §24. A hold reached because consumption came out
+     negative is not the same hold as every other one here, and both idle cards
+     below say the dose is matching consumption — which is the one thing this
+     case knows to be untrue. The wizard has just declined to size a change and
+     asked for a retest in two days; a card reading "nothing to do, keep
+     testing on your usual schedule" underneath it contradicts it outright.
+
+     It echoes the wizard rather than writing its own verdict (wizard-states.md
+     §0.3), and it names no cause, for the same reason the wizard names none.
+     The state stays "idle": no dose change is being asked for, which is what
+     every consumer of this field reads it to mean. */
+  if (a.gainingHold) {
+    return { ...doseFacts, state: "idle", tone: "#A2621B", short: "Rising unexplained",
+      headline: `${def.label} is rising faster than your dose accounts for`,
+      detail: `The dose is unchanged — a rise the dose cannot explain is not a reason to cut it. Check whether a water change or a one-off correction is missing from the log, then test ${label} again in two days.` };
+  }
+
   /* Idle means the dose is right, which is not the same as the level being
      right. A tank sitting outside its band with a perfectly matched dose was
      told "nothing to do" — true of the dose, misleading about the tank. */

@@ -4,7 +4,7 @@ import { minutesOf, nowTime } from '../analytics/time-of-day.js'
 import { dayNum } from '../analytics/water-changes.js'
 import { todayStr } from '../dates.js'
 import { repeatedCorrections } from './calcium.js'
-import { bracketDose, capDoseStep, correctionPlanFor, correctionProgress, doseDriftedFrom, doseObservations, dosePlausible, missingDoseInputs, pendingCorrection } from './helpers.js'
+import { bracketDose, capDoseStep, correctionPlanFor, correctionProgress, doseDriftedFrom, doseObservations, dosePlausible, gainingHold, missingDoseInputs, pendingCorrection } from './helpers.js'
 import { strengthPlausible } from './magnesium.js'
 
 /* --- Alkalinity dosing assessment ---
@@ -819,6 +819,19 @@ export function assessAlkalinity({ readings, doseLog = [], waterChanges = [], se
     out.explanation = `Alkalinity is ${above ? "above" : "below"} your range at ${fmtVal(def, out.current.value)}${def.unit} and moving ${trend < 0 ? "down" : "up"} toward it at ${fmtAmount(Math.abs(trend))} dKH a day. That is the direction you want, so changing the dose now would work against it. Reassess once it reaches the range.`;
     out.nextCheck = `Recalculate once alkalinity is back inside ${fmtVal(def, def.min)}–${fmtVal(def, def.max)}${def.unit}.`;
     return out;
+  }
+
+  /* §24 — a negative consumption never sizes a dose change. The exemption is
+     the level itself: above the range and still rising is the rescue case
+     below, which must keep firing (Decision 3 named suppressing it as the one
+     concrete regression risk here). Alkalinity has no near-edge notion of its
+     own, so `above` is the whole test — inventing one would be a new
+     threshold. */
+  if (out.gaining) {
+    const levelWantsLess = above && trend > 0;
+    if (!levelWantsLess) {
+      return gainingHold(out, def, { intervals, waterChanges, corrections });
+    }
   }
 
   /* Step 17 — size the correction. If a plan is already running and its
