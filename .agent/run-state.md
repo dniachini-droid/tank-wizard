@@ -2,47 +2,52 @@ run: 2026-08-14-phase6-bugs
 routine: routine 15 — phase 6: the known bugs
 started: 2026-08-14T00:00:00Z
 status: interrupted
-last completed step: bug 3 — dose-gap halving removed (3a) + stability
-  grading fixed (3b), shipped together per §7/§11. `doseDriftedFrom`
-  (helpers.js) no longer halves its trigger out of band; the `outOfBand`
-  parameter is gone, not just unused. `alkBandOf`/`caBandOf`/`mgBandOf` now
-  take a second `outOfBandWorsening` argument (a shared helper in helpers.js,
-  looks up STABILITY_RULES[key].noiseFloor itself) and promote a rate-only
-  "stable" grade to the next band up only when the level is outside its band,
-  still moving away, and the movement clears the §5 noise floor over the
-  fitted window. Confirmed magnesium is not exempt — grading is its *only*
-  guard, since doseDriftedFrom is permanently false for it (§10, no trigger
-  key). blockdup (ceiling 10, baseline exactly 10) failed twice during
-  implementation from incidental new duplication between calcium.js and
-  helpers.js; resolved by extracting the shared helper and by keeping the
-  original provisional out.band assignment in place (promoted later) rather
-  than deleting it — both real fixes, not workarounds, confirmed via a
-  differential region diff. npm run verify GREEN on every blocking check.
-  golden re-recorded (372fcda432be5bcf -> ae3b6189dd1ac438) after auditing
-  all 441 changed rows: 365 are the intended band promotion (14 of those
-  still hold, via the pre-existing "mild, one interval" gate — safe, bounded);
-  71 are wording-only (a hold explanation changing which of two legitimate
-  hold branches fires, action unchanged); the last 5 are a genuine finding —
-  under an active correction, doseDriftedFrom's removed raw-position check
-  and grading's fitted-position check can disagree, so a ~7-8.7% alkalinity
-  dose gap goes uncaught by either mechanism until the correction ends. Not
-  authorised to fix — written up in full (options, not a recommendation) at
-  .agent/needs-dan.md item 3. vitest 69 failed / 252 passed — same 69
-  pre-existing [chem] failures as the bug-2 baseline, spot-checked by name,
-  none related to this bug.
-next step: bug 4 — alkalinity band 1.0 -> 0.6 (constants.js PARAM_DEFS,
-  min: 8.2, max: 8.8). Branch fresh from origin/main once bug 3's PR exists.
-  Read routine section 4 in full before starting. Report, do not fix,
-  magnesium's own uncredited off-centre band (min 1250/max 1400 vs target
-  1350 -> should be 1275-1425) found while reading — same rule 7 shape as
-  bug 2 and bug 3's needs-dan.md item, a second thing found, not authorised.
-  band-edges.test.js is already red (pre-existing, part of the 69) and may
-  reference a different concept ("§3 default coral-mix target") — read what
-  it actually asserts before assuming this fix closes it; write a new,
-  narrower defects test if it doesn't match §2.
-in-flight: none — bug 3 shipped and pushed, PR #22 opened
-  (https://github.com/dniachini-droid/tank-wizard/pull/22), working tree clean
-branch: claude/bug3-halving-and-grading (pushed)
+last completed step: bug 6 — TW-019, remove magnesium from
+  DOSE_ADVICE_RULES, shipped. `drift.js`'s `DOSE_ADVICE_RULES` magnesium
+  entry deleted (§10: maintenance dose never tuned from readings, magnesium
+  exempt). `computeDoseAdvice` iterates Object.keys generically, no
+  special-casing needed. Traced (not assumed) the one live consumer,
+  `previewStrengthChange`, and confirmed its two `adv.advice[key]` reads
+  are already guard-clause-safe against the key being absent. Checked
+  Insights.jsx:108/Dashboard.jsx:298-300 (TW-022 dead code) — already
+  guarded, left alone. Found and fixed in the same PR, not a scope
+  expansion: tests/legacy-port/husbandry.js's settling-window check
+  unconditionally indexed DOSE_ADVICE_RULES[key].minDaysSinceChange for
+  all three elements — confirmed a genuine TypeError after rebuilding the
+  engine bundle, narrowed the check to elements that still have an entry.
+  npm run verify GREEN on every blocking check, including
+  legacy-port:husbandry (crashed before that fix). golden unaffected —
+  DOSE_ADVICE_RULES isn't read by any assess* engine. vitest: differential
+  diff shows 70/70 both before and after, empty diff — no existing red
+  test asserted this one (unlike TW-016), this bug's own defects test is
+  the only coverage. PR:
+  https://github.com/dniachini-droid/tank-wizard/pull/26
+next step: bug 7 — TW-020, arrival zone vs full band
+  (`correctionProgress`, src/lib/dosing/helpers.js:273-279). Branch fresh
+  from origin/main. Read routine section 7 in full before starting.
+  Depends on bug 4 (alkalinity's band) for its worked example numbers
+  (8.40-8.60 dKH assumes 8.2-8.8 is in force) — bug 4's own PR (#23) is
+  NOT merged as of this write, so per the routine's own dependency note,
+  build this bug's test against an explicit local `def` fixture (band
+  values passed directly, not read from the live PARAM_DEFS import) so
+  this PR does not implicitly depend on #23 having merged — the fix
+  itself is band-relative by construction (§9: "the zone is computed from
+  whatever band is in force and must never be hardcoded"). Use §5's kit
+  noise floor (STABILITY_RULES in src/lib/stability-engine.js — 0.1 dKH /
+  10 ppm / 30 ppm), NOT the _TREND.stable family bugs 2/3 use — same
+  caution as those bugs, opposite direction (habit might reach for
+  ALK_TREND.stable here by mistake). Must NOT change `passed`
+  (helpers.js:316) or the `arrived || passed` correction-done trigger
+  (state.js:227) — check call sites that branch on `cp.arrived`
+  specifically for wording, not necessarily code. `inBand` may be used
+  elsewhere in the same function for band membership, not arrival — check
+  every call site before narrowing it globally; add a new `inZone`-style
+  check if shared rather than redefining what `inBand` means everywhere.
+in-flight: none — this run has shipped bugs 3-6 as four independent PRs
+  against `main` (#22, #23, #25, #26), none merged as of this write. Bug 7
+  is the last of the seven; branch it from `main` as-is per the dependency
+  note above, don't wait for #23.
+branch: claude/bug6-mg-dose-advice (pushed)
 uncommitted work: no
 
 <!--

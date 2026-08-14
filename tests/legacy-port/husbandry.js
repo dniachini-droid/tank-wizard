@@ -418,10 +418,15 @@ if (bad) process.exit(1);
  *
  * There were three. settleWindow computes it from what the tank supplies and
  * how precise the kit is; DOSE_ADVICE_RULES carried a fixed minDaysSinceChange
- * that disagreed with it on every element — 7 days against 3 for alkalinity,
- * 14 against 30 for magnesium. Same failure as SAFE_DAILY_RISE and
- * CORRECTION_MAX_RATE claiming different daily limits: one fact, two tables,
- * and nothing forcing them to agree.
+ * that disagreed with it — 7 days against 3 for alkalinity. Same failure as
+ * SAFE_DAILY_RISE and CORRECTION_MAX_RATE claiming different daily limits:
+ * one fact, two tables, and nothing forcing them to agree.
+ *
+ * Magnesium dropped out of this comparison per reef-chemistry.md §10 (bug 6,
+ * routine 15): DOSE_ADVICE_RULES no longer carries a magnesium entry at all
+ * — the maintenance dose is never tuned from readings for magnesium, so
+ * there is no second "how long to wait" answer left to disagree with
+ * settleWindow. settleWindow itself is unaffected and still checked below.
  */
 {
   let bad = 0;
@@ -431,10 +436,11 @@ if (bad) process.exit(1);
 
   for (const key of ['alkalinity', 'calcium', 'magnesium']) {
     const w = L.settleWindow(key, supply[key], S);
+    if (w < 1) { console.log(`  FAIL ${key}: settling window is ${w} days`); bad++; }
+    if (!L.DOSE_ADVICE_RULES[key]) continue;
     const floor = L.DOSE_ADVICE_RULES[key].minDaysSinceChange;
     /* The fixed figure survives only as a floor, so a coarse kit on a slow
        tank still gets the longer wait it needs. It must never be the ceiling. */
-    if (w < 1) { console.log(`  FAIL ${key}: settling window is ${w} days`); bad++; }
     if (floor > 60) { console.log(`  FAIL ${key}: floor of ${floor} days is not a floor`); bad++; }
   }
 
