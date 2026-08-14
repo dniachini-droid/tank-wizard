@@ -90,3 +90,15 @@ it's safe to drop.
 confidence: high for "unused" (mechanical, cross-checked against every `className` in
 `src/`); medium for "the modal focus ring is a real a11y gap" — worth a11y-reviewer's eyes
 before triage, not asserted as certain here.
+
+### history-truth-auditor / 2026-08-14 / status-of-priors
+TW-013 (no persisted classification / target-change event) — UNCHANGED. src/test/spec/history: 4 fail / 11 pass, identical to 2026-08-13. WaterLog.jsx:186, Dashboard.jsx:145,612 still classify live against customRanges merged every render (App.jsx:415-418); no target-change event exists.
+TW-014 (overrides not stored with recommendation) — UNCHANGED. DoseChangeSheet.jsx:63 onSave(ml,date,time) only; export-csv.js:20-21 has no recommended/override column.
+position-is-last-reading (d050fc8) touched only the dosing engines, not history rendering. New durability code (idb.js/auto-backup.js) never touches readings/dose-log; restore merges by natural key without overwriting rows — except the finding below.
+
+### history-truth-auditor / 2026-08-14 / S1
+what: The new snapshot-restore feature opens a second, silent door to TW-013's exact bug. Restoring any daily snapshot unconditionally overwrites live `custom-ranges` (targets) with the snapshot's copy — and because band classification is computed live against `custom-ranges` everywhere in history (WaterLog rows, chart shading, tooltips), a restore instantly and silently reclassifies every reading in the log, including ones logged after the snapshot was taken. The confirmation message is false for this field: it says "nothing was overwritten," true for readings/dose-log (additive merge) but not for targets (full replace).
+evidence: src/lib/backup.jsx:170-172 — unconditional `saveKey("custom-ranges", b["custom-ranges"])`, no merge, not gated by any applySettings flag. Restore entry: src/components/Setup.jsx:722-728 ("Snapshot restored — anything missing was added, nothing was overwritten."). buildBackup (backup.jsx:32) confirms every daily ring snapshot carries custom-ranges. Static trace unambiguous; dynamic repro UNVERIFIED this run (read-only — no test file could be written into the discovery path).
+impact: In plain terms: use the undo feature to recover a few lost readings, and as a side effect every historical test result quietly re-labels itself against whatever target band was set on the snapshot's day — months of history relabeled, no warning, and the on-screen message explicitly claims nothing was overwritten.
+suggested fix: root fix is TW-013 (persist classification at log time); until then restoreBackup should merge custom-ranges rather than replace, or the restore confirmation must name the overwrite.
+confidence: medium (mechanism confirmed by code reading; not exercised live)

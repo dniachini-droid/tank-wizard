@@ -36,3 +36,13 @@ message-consistency-auditor, terminology-auditor, history-truth-auditor.
 All briefed: read-only, verify prior backlog items (fixed/unchanged/changed)
 rather than re-report, full blocks only for new/changed findings, findings
 returned to orchestrator for serial append to findings.md.
+
+### history-truth-auditor — complete (1st to report)
+Priors: TW-013 unchanged (history suite still 4 fail / 11 pass, identical
+failures), TW-014 unchanged. Durability code reviewed: idb.js/auto-backup.js
+never touch readings/dose-log; restore merges rows additively — good.
+NEW S1: snapshot restore unconditionally overwrites `custom-ranges`
+(backup.jsx:170-172) → restoring a daily snapshot silently reclassifies all
+history against that day's targets, while Setup.jsx:722-728 tells the user
+"nothing was overwritten". Second door to TW-013's failure mode. Appended to
+findings.md. 3xS1 total (2 unchanged priors + 1 new).
