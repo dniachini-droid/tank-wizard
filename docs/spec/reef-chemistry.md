@@ -4,7 +4,10 @@
 and `legacy/protocol/dosing-spec.txt`. **Amended 14 August 2026** on the spec
 owner's authority — §6, §7, §8 and §9; the decisions and their reasoning are
 recorded in `.agent/needs-dan.md`. **Became this file on 14 August 2026**, when
-Part II below carried forward everything the merge had left behind.
+Part II below carried forward everything the merge had left behind. **§25 added
+14 August 2026** on the spec owner's authority — the Reef Chemistry Engine,
+folded in from `docs/spec/DECISION-reef-chemistry-engine.md` (now deleted). Its
+surfaces and notice halves are `wizard-states.md` §19 and §20.
 
 > Agents never edit this file. Disagreements → `.agent/spec-challenges.md`.
 
@@ -731,6 +734,8 @@ This replaces the dose-gap halving (§7), which was a patch for this fault.
 - Extrapolate a trend from fewer than 3 readings (§22)
 - Substitute a default for a missing measurement without saying so (§16)
 - Tell a user their test kit is wrong (§19)
+- Judge one parameter by another parameter's thresholds, trend logic or
+  evidence bar (§25)
 
 ---
 
@@ -744,7 +749,10 @@ the bottle in hand before trusting either.**
 
 **13.2 Notifications.** The app currently waits to be opened.
 `correctionProgress` already computes `dueNow`, `overrun` and `stalled`. A
-push layer on top of those is a separate design conversation.
+push layer on top of those is a separate design conversation. **Narrowed
+14 Aug:** what a notice *contains*, how many there are, and what hiding one
+does are no longer open — §25 and `wizard-states.md` §20 settle them. Only the
+push layer itself remains open here.
 
 **13.3 `classifyReading`'s duties.** The two previous canon documents disagreed
 on whether it validates band/alert consistency. **Answered 14 Aug: it does** —
@@ -1186,3 +1194,152 @@ away. It still does not change your dose.
 The one exception: if the level is already at or over the top of your range and
 still climbing, you do get told to dose less — because at that point it is the
 level telling you, not the arithmetic, and a tank going high needs an answer.
+
+---
+
+## 25. The Reef Chemistry Engine
+
+**Decided 14 Aug (Dan, spec owner): one engine assesses every parameter. Every
+surface renders its verdict. No surface forms its own opinion.** It is called
+the **Reef Chemistry Engine**.
+
+This section is what the engine must assess and with what reasoning. The
+surfaces half of the same decision — which screen shows which verdict, and how
+a notice behaves once shown — is `wizard-states.md` §19 and §20. Folded in here
+on 14 August from `docs/spec/DECISION-reef-chemistry-engine.md`, which this
+section and those two replace; that file is deleted, not superseded in place.
+
+**This is the third time the single-source principle has been arrived at
+independently on this project** — after the dose engines (§7,
+`wizard-states.md` §0.3) and the classifiers (`wizard-states.md` §11). It is
+the same rule again, applied to assessment.
+
+### One engine, not two
+
+An earlier proposal was two engines — one for the dosed elements, one for
+everything else, sharing a rule between them. Rejected:
+
+> *"What about the dosing wizard and notifications just coming from one
+> location? The engine measures the alkalinity, calcium and magnesium levels,
+> but everything else as well, including phosphate — it just doesn't display
+> that in the dosing wizard. That way it's all coming from one spot and the
+> wizard doesn't have to compete with anything."*
+
+Two engines with one rule between them are still two engines that can drift.
+One engine has nothing to drift against.
+
+**The dosing wizard is a screen, not the source.** It displays alkalinity,
+calcium and magnesium because those are the three that are dosed (§16, scope).
+The engine assesses phosphate, nitrate, salinity and the rest in the same pass
+and simply does not display them there. That is the point of the change: there
+is nothing for the wizard to compete with, because there is no second opinion
+anywhere.
+
+### One engine does not mean one set of rules
+
+**Per-parameter logic, inside one engine.** Alkalinity, phosphate and salinity
+behave differently and need different reasoning, and this document already
+says so element by element — §4's cadences and windows, §5's noise floors,
+§3's rails and §10's magnesium exemption are all statements that one
+parameter's reasoning is not another's.
+
+The current app has the opposite arrangement, and it is a defect:
+
+> *"I have noticed silly notifications of phosphate coming up and silly
+> notifications of nitrate coming up, which don't make sense, because the wrong
+> measurements are being applied to them — it's the same measurements as
+> alkalinity and calcium."*
+
+Phosphate bounces. It genuinely does. Applying alkalinity's trend logic and
+thresholds to it produces noise dressed as findings. **That is a real defect,
+not a display problem** — the notices are wrong, not merely unhelpful — and it
+is filed as `.agent/backlog.md` TW-029.
+
+Added to §12's refusals: **the app does not judge one parameter by another
+parameter's thresholds, trend logic or evidence bar.**
+
+### Parameters the engine must cover
+
+| Group | Parameters | Where its reasoning is written |
+|---|---|---|
+| Dosed, and already assessed | alkalinity, calcium, magnesium | §1–§11, §16–§24 — in full |
+| Assessed with borrowed and wrong reasoning | phosphate, nitrate | **nowhere** — TW-029 |
+| Needs its own treatment; not assessed at all today | salinity | **nowhere** — TW-030 |
+| Different data source entirely | ICP panels | **nowhere** — not scheduled |
+
+**Naming a parameter in this table does not authorise inventing its
+thresholds.** Each of the last three needs its own reasoning written into this
+document first, sourced the way §2, §3 and §5 are sourced, before it can be
+assessed properly. Until then the engine covering a parameter means covering
+it correctly or not at all — a borrowed threshold is what this decision
+removes, not what it extends. This is Phase 8b, item 4 of the five unspecified
+areas.
+
+Salinity has one figure here already — the 0.5 ppt/day rail in §3, carried
+forward from the previous canon — and nothing else. A rail is not an
+assessment.
+
+### Not a rebuild
+
+`deriveTankState` (`src/App.jsx:67`), `assessAlkalinity`, `assessCalcium`,
+`assessMagnesium` and `doseStatus` already exist and are the best-tested code
+in the app — 5,940 pinned golden cases and three-year simulations behind them.
+**The engine is those consolidated and extended to the parameters they do not
+currently cover, not something new written from scratch.** A rewrite would put
+that corpus at risk to gain nothing this decision asks for.
+
+**`deriveTankState` remains the function that runs it.** *Reef Chemistry
+Engine* is the name of the thing, usable in this document, in the code and in
+describing the app to someone else. It is not the name of a new call.
+
+### What this settles, and what it does not
+
+Settled here: that there is one assessment step; that every parameter goes
+through it; that the wizard is a display of three of its verdicts and not their
+source; that per-parameter reasoning lives inside the one engine; and that
+phosphate and nitrate carrying alkalinity's reasoning today is a defect.
+
+Not settled here, and not to be inferred from it:
+
+- the actual reasoning for phosphate, nitrate and salinity — thresholds,
+  windows, noise floors and what counts as movement for each. None of it
+  exists yet in this document and none of it may be minted from this section.
+- the evidence rules `docs/journeys/journey-4b-notification-matrix.md` asks
+  for — how many readings establish movement, how far apart, and how much
+  movement contradicts a dose change. §22 sets minimum evidence for a
+  *consumption rate* only. 4b's open questions 2–5 are still Dan's.
+- ICP panels, which have a different data source and no reasoning written at
+  all.
+
+### Enforced by
+
+Per §14, named rather than asserted: **nothing asserts any of this today.**
+`scripts/verify/wordingcheck.mjs` checks that one loop in one function repeats
+the wizard's headline, which is a fraction of the rule. The enforcement this
+section needs is `.agent/backlog.md` TW-028, and until it exists this section
+describes an intention.
+
+### In plain terms
+
+One part of the app works out what is going on with your tank, and it does it
+for everything you test — not just the three you dose. Every screen then shows
+what that one part concluded. Nothing else in the app gets to have its own
+opinion, so two screens cannot tell you different things about the same
+reading.
+
+The dosing wizard only shows alkalinity, calcium and magnesium because those
+are the three you pour. Phosphate, nitrate and salinity are worked out in
+exactly the same breath — they just are not printed on that screen.
+
+Working everything out in one place does not mean judging everything by the
+same yardstick. Phosphate bounces around in a way alkalinity never does, and
+measuring it as though it were alkalinity is what produces the daft phosphate
+and nitrate warnings you have been seeing. Those warnings are wrong, not just
+annoying, and fixing them is a job of its own. Salinity is not assessed at all
+today. Both need their own proper rules written down here first — this
+decision says they must be covered, not what the numbers are.
+
+None of this is a rewrite. The existing dosing engines are the best-tested
+thing in the app, with nearly six thousand pinned cases behind them; the engine
+is those tidied into one place and stretched to cover the parameters they
+currently ignore.

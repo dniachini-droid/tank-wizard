@@ -9,6 +9,335 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       spec: docs/spec/reef-chemistry.md#17-net-volume
       owner: implementer
 
+<!-- 2026-08-14: TW-026, TW-027 and TW-028 moved here from "Needs Dan's
+     approval" and marked [approved]. The only blocker recorded against all
+     three was the missing canon entry, and Dan wrote it — the Reef Chemistry
+     Engine, now reef-chemistry.md §25 and wizard-states.md §19/§20, folded in
+     from docs/spec/DECISION-reef-chemistry-engine.md (deleted; it was never
+     canon while it sat loose in docs/spec/). Their full text is unchanged
+     below apart from the spec:, owner: and UNBLOCKED lines — everything each
+     item established about the code still holds and is still the starting
+     point. Still phase 8b: approved, ordered 026 → 027 → 028, not next.
+     Note what the canon entry does NOT settle, because both items lean on it:
+     journey 4b's evidence figures (three readings for movement; two readings
+     24 h apart and 0.2-0.3 dKH to contradict a dose change) are journey
+     material, not canon, and §25 says so in as many words. Neither item
+     carries [chem], deliberately — the routing, the states and the
+     enforcement may be built; a new chemistry constant may not be minted from
+     them (AGENTS.md rule 3). If one turns out to be unavoidable, escalate to
+     .agent/needs-dan.md with 4b's open questions 2-5 attached. -->
+
+- [ ] [approved] TW-026 `doseStatus` cannot express four cells of the journey-4b matrix
+      phase: 8b — approved, first of the three, not next.
+      UNBLOCKED 2026-08-14 — canon exists. wizard-states.md §19 puts these
+      states in the engine rather than the notification layer, and §11's new
+      single-source row makes `deriveTankState` the one place a parameter is
+      assessed. The four cells are states of the engine's verdict, which is
+      what this item always argued.
+      why: journey 4b lays out a three-dimensional matrix — position (below /
+      in / above band) × movement (falling / stable / rising / **not
+      established**) × dose state (no recent change / behaving as expected /
+      **contradicting the expectation**). Four cells have no state in
+      `doseStatus` at all, and `doseStatus` is the verdict every other surface
+      is meant to echo (wizard-states.md §7, now §19), so a cell it cannot
+      express is a sentence no surface in the app can say:
+        - dose raised, still falling
+        - dose lowered, still rising
+        - dose changed, no movement at all (either direction)
+        - movement not established — fewer readings than it takes to claim a
+          direction, said out loud rather than guessed at or hidden
+      wizard-states.md §3 tabulates 17 state/label rows and none of them is any
+      of these four. 4b's own summary of the gap: *"There is no 'despite your
+      dose change' anywhere. A falling level reads the same whether you just
+      raised the dose or did nothing."*
+      check first — do `fell-short` and `overshot` already cover this?
+      They express something close and MUST be settled before any new branch is
+      added, or this lands a fifth engine on top of two that nearly work.
+      What the code says today (src/lib/dosing/state.js:318-332):
+        - `fell-short` is "still moving the way it was and the engine still
+          wants more of the same"; `overshot` is anything else after a change.
+          Direction is read off `a.trendPerDay` against `a.action`, and the
+          truth table is pinned by src/test/defects/dose-state-direction.test.js.
+          That is exactly 4b's "dose raised, still falling" and "dose lowered,
+          still rising", in the app's own words.
+        - But both sit inside `if (plan && plan.appliedAt)` (state.js:278) and
+          behind three further gates: `tested` = at least two readings dated
+          after the change AND `daysSince >= settleDays` (:284); not `steady`
+          (:306-317); and `a.action` still "increase" or "decrease" (:318).
+          `plan` is `a.activePlan`, set only from a stored `alk-plan` / `ca-plan`
+          / `mg-plan` (helpers.js:725, alkalinity.js:437, calcium.js:255), which
+          only `applyDoseChange` writes (App.jsx:730-750) and `clearAlkPlan` and
+          its siblings delete. `doseStatus` then expires it after 30 days
+          (:274-277).
+        - So a dose changed in Setup rather than through the wizard reaches
+          neither branch, and a plan that has been cleared or aged out cannot
+          either. NOTE the framing this item was filed under — "only reachable
+          behind a staged plan" — is not quite what the code does:
+          `applyDoseChange` writes a plan for *every* wizard dose change, with
+          `stage: 1, stages: 1` for an unstaged one, so a single-step change
+          does get a plan. The real gate is having gone through the wizard at
+          all, and the three conditions above. Establishing which of those gates
+          is intended and which is accident is the first job of this item, and
+          the answer decides whether 4b's two "still moving" cells are new
+          states or an existing pair with its preconditions widened. The two
+          "no movement at all" cells and "not established" have no candidate
+          either way — nothing in state.js expresses them.
+        - "not established" today collapses into `settling` / "needs another
+          reading" (state.js:417-437), which TW-009 already records as saying
+          the wrong thing when the cause is a missing Setup field rather than a
+          missing reading. Whatever this item does must not make TW-009 worse.
+      the evidence rules 4b attaches, which are the substance of the item —
+      and which are **journey material, not canon** (reef-chemistry.md §25,
+      "what this does not settle"). They may shape the design; they may not be
+      minted as constants without Dan settling 4b's open questions 2-5 first:
+        - to establish movement from nothing: **three** readings, one
+          direction, clearing the kit noise floor. *"If my alkalinity was 9.0
+          and the next reading was 9.3, that's only two readings. We can't
+          really say it's rising."* Two is a difference; three is a trend.
+        - to claim a dose change is being contradicted (or confirmed): **two**
+          readings, all four conditions — both dated after the change; at least
+          **24 hours apart** (*"not taken the next day at a different time"*);
+          movement substantial, Dan's figure 0.2-0.3 dKH; direction opposite to
+          (or with) what the change intended. A deliberately lower bar: the
+          change created an expectation, so breaking it is informative at once.
+        - the 0.2-0.3 dKH figure is 2-3x `KIT_PRECISION.hanna.alkalinity`
+          (0.10, src/lib/findings.js:59), which is what 4b means by "roughly
+          2-3x the kit noise floor" — so the rule may be expressible against
+          `kitNoise()` rather than as a fourth hardcoded alkalinity constant.
+          Worth checking before a new number is minted.
+        - none of this exists as a gate today. `doseStatus` reads `a.band` and
+          `a.trendPerDay`, whose thresholds (ALK_TREND at alkalinity.js:28,
+          CA_TREND at calcium.js:27, MG_TREND at magnesium.js:15) are
+          magnitude bands over a fitted slope, with no reading count and no
+          minimum spacing. TW-007 is the same absence one layer down — it has
+          `assessDrift` and `assessAlkalinity` producing dose-affecting
+          verdicts without reef-chemistry.md §22's minimum-evidence gate.
+          These two items should be read together; they may share one fix.
+        - 4b also asks for wording relative to the target when out of band
+          ("coming back toward it", not "rising"). `recovering` / `worsening`
+          (state.js:465-471) already do exactly this and need no change — but
+          wizard-states.md §10 records that nothing asserts those two states
+          exist, so a refactor here could delete them silently.
+      spec: docs/spec/wizard-states.md §19 (the engine owns the verdict; the
+      states belong in it), §11's parameter-assessment row, §3's state table —
+      which gains a row per new state, and a state that is not in that table
+      does not exist; docs/spec/reef-chemistry.md §25. Still open and NOT
+      settled by that canon entry: the evidence figures above, and 4b's open
+      questions 2 (how long "recent dose change" lasts), 3 (24 h or 48), 4
+      (whether calcium and magnesium use the same wording at their own scales)
+      and 5 (whether these belong in the wizard's own states — *"Get it wrong
+      and this builds a sixth engine"*). Questions 2-5 are Dan's.
+      journey: docs/journeys/journey-4b-notification-matrix.md — "The three
+      dimensions", "Evidence rules", "The matrix — dose changed, contradicting
+      the expectation" (*"The most important row in the document, and the one
+      the app cannot produce today"*), and "What the app cannot do today"
+      items 1-3. The "no movement" cells are Dan's own reasoning, quoted there
+      from journey 1: *"I know that's within test variation, but now that's two
+      days of an increased dose. It hasn't actually moved. So at that point I
+      would increase the dose further."* An expected response that does not
+      arrive is itself evidence.
+      owner: implementer
+
+- [ ] [approved] TW-027 Every notification surface renders `doseStatus`'s verdict; one live notice per parameter
+      phase: 8b — approved, second of the three. Depends on TW-026 for the
+      states; the routing and identity work is separable from it.
+      UNBLOCKED 2026-08-14 — canon exists, and it answers this item's two
+      open questions. wizard-states.md §19 names the surfaces and says every
+      one of them renders the engine's verdict; §20 settles notice identity
+      (one live notice per parameter), supersession (a new verdict replaces
+      the old notice rather than joining it), hiding scope (global), and
+      journey 4's open question 4 — **every notice can be hidden, safe-bounds
+      excursions included**, with a confirmation on serious ones (TW-031).
+      why: journey 4 records the app holding two opinions about one parameter
+      at once — *"There should be another notification which says your calcium
+      is increasing, but you've just changed the dose, so this is expected to
+      go down"* — and asks for one engine every surface reads from. That is
+      wizard-states.md §7 and §11 applied to a layer that has never had a
+      specification. §7 already names the rule ("all three echo the wizard or
+      say nothing") and §7's own note admits it "describes an intention, not a
+      guarantee"; §19 now widens it to every surface and every parameter.
+      what is actually wired today, surface by surface:
+        - **tank summary** (`buildBriefing`, src/lib/narrative-engine.js:329) is
+          the closest to right: every dose claim in the `ds` loop renders
+          `d.headline` and `sentenceCase(firstSentence(d.detail))` verbatim
+          (:428-535). Two exceptions. First, `correction-done` writes its own
+          support sentence — `Set the dose back to ${fmtAmount(d.returnDose)}
+          mL/day to hold it there.` (:474) — against §7's "renders the wizard's
+          headline and the first sentence of its detail". Second, the loop has
+          branches for 12 of `doseStatus`'s states and **none** for `emergency`,
+          `blocked`, `idle`, `recovering` or `worsening`, all five of which are
+          in wizard-states.md §3's table. §7 permits silence, so this is not a
+          §7 breach on its face — but journey 4 says *"The tank summary is the
+          complete list"*, and §19's surface table now says the same thing in
+          canon: the summary shows every parameter. Today it does not.
+          `emergency` reaches the summary only via a separately computed
+          `far-out-<key>` finding, which is the second-classifier problem
+          TW-002 already tracks.
+        - **parameter card** (`ParamCard`, src/components/DoseExpectation.jsx:219)
+          holds three verdicts about one reading in one render: its headline
+          colour and status from `paramStatus` (:220), a findings badge from
+          `findingsFor` (:223), and `dose.short` from `doseStatus` (:290-296).
+          This is the 90-pixel card §7 calls out by name.
+        - **parameter graph panel** (`ParamHistoryModal`, Dashboard.jsx:335-353)
+          renders `dose.headline` and `dose.detail` faithfully, then writes its
+          own eyebrow label from a ternary over `dose.state` covering 7 of the
+          17 states, with everything else falling through to the literal "Dose
+          suggestion" — so a running correction, an emergency and a recovering
+          level are all labelled as a dose suggestion.
+        - **Insights** (src/components/Insights.jsx:85) is handed `findings` and
+          never receives `doseStates` at all. It renders no dose verdict, which
+          means journey 4's third surface — and §19's fourth row — currently
+          cannot echo the wizard even if it wanted to.
+      one live notice per parameter — not the case today, and now canon (§20).
+      `buildBriefing` can emit a `finding:<id>` claim, a `dose:<key>` claim, a
+      `drift|<key>` claim and a `moving-out|<key>` claim about the same element
+      in one render; the `spokenFor` set (:537-543) suppresses only sections 3
+      and later, and there is one hardcoded pairwise exception (:450-453,
+      dropping a level-ish dose claim when a `far-out-` finding exists).
+      Supersession is not a concept: `add()` (:356) pushes, it never replaces.
+      check what already exists before designing anything — journey 4 is right
+      that someone started this, and the difference between "never built" and
+      "built and not wired up" is weeks versus days. Concretely:
+        - `findingKey(f)` (DoseExpectation.jsx:134) is `"finding|" + f.id` — a
+          stable identity for the life of the finding. This is the topic key.
+        - `findingSignature(f)` (:141) is `id|title` — plus `|value` when the
+          finding is severity `act` and carries a reading, so a worse number
+          brings a hidden notice straight back. This is "what would make it
+          count as a different notice".
+        - `findingHidden(f, dismissed)` (:148) hides only while the stored
+          signature still equals the current one, and treats a bare-date entry
+          (the old format) as lapsed. **This is §20's resurfacing rule already
+          working**, for findings.
+        - it is genuinely global for findings: one `dismissed` map, one storage
+          key `findings-dismissed`, and both `dismissFinding` (App.jsx:586) and
+          the summary's finding claims (narrative-engine.js:395) key on
+          `findingKey(f)`, so hiding on the card hides in the summary.
+        - claims that are not findings carry their own `dismissKey` /
+          `dismissSignature` (`worked|<key>`, `dose|<key>`, `drift|<key>`,
+          `moving-out|<key>`, `parked`, `solid`) into the same map via
+          `dismissNote` (App.jsx:598). Same mechanism, different namespace.
+        So the model §20 now requires is largely built. What is missing is
+        that it stops at the summary: no surface other than `FindingList` and
+        `Briefing` consults `findingHidden`, so a dose verdict rendered by
+        `ParamCard` or `ParamHistoryModal` has no hide control and no hidden
+        state to consult. Which is journey 4's problem 2 exactly.
+      every notice can be hidden — five dose claims are built with no
+      `dismissible: true` at all (`correcting-dose` :457, `correction-due` :464,
+      `correction-done` :471, `correction-stalled` :478, `correcting` :485), and
+      findings of severity `act` and scope `chemistry` are non-dismissible by
+      rule (:394). Both have stated reasons in the code — hiding a correction
+      leaves the tank being deliberately pushed with nothing on screen saying
+      so; hiding "ammonia is dangerously high" is the one thing the summary must
+      not allow. **Settled 14 Aug against both**: §20 says every notice can be
+      hidden, no exceptions, because the user may have a reason the app cannot
+      see. The confirmation on serious notices is the speed bump that makes
+      that safe, and it is TW-031 — build them together or the guard lands
+      after the thing it guards.
+      the hidden list growing without bound (journey 4's problem 3) falls out of
+      supersession and needs no separate mechanism: `findingHidden` already
+      lapses an entry the moment the signature moves. What does not yet happen
+      is any pruning of the stored map, so `findings-dismissed` keeps entries
+      for notices that no longer exist. Setup lists them (Setup.jsx:484) from
+      `dismissedList`, which is computed against live findings only
+      (App.jsx:140), so the *display* is already bounded — the storage is not.
+      spec: docs/spec/wizard-states.md §19 (the surface table, and the rule
+      that a surface computing its own verdict is an S1 defect), §20 (notice
+      identity, supersession, global hiding, resurfacing), §11's
+      parameter-assessment row, §7, §12, §17; docs/spec/reef-chemistry.md §25.
+      Journey 4's open question 1 — what counts as one topic — is answered by
+      §20: one notice per parameter, whose content is the engine's current
+      verdict, so "alkalinity is falling" and "alkalinity is out of band" are
+      one topic and the newer verdict supersedes.
+      journey: docs/journeys/journey-4-notifications.md — "What is wrong — five
+      things" (all five), "What Dan wants — the model", "What already exists"
+      (*"Before designing anything, find out what those three do today"*), and
+      "What this means for the spec" points 1-6. Point 6 is the load-bearing
+      one and is now canon in §19. Also
+      docs/journeys/journey-4b-notification-matrix.md open question 1.
+      related: TW-002 (no `classifyReading`; the same 6.9 dKH reading getting
+      three severities in one card is the band-classification half of this
+      item's parameter-card finding). TW-015 and TW-016 are wording drift in
+      the same surfaces. TW-029 and TW-030 are the parameters this routing will
+      carry once they have reasoning of their own. This item is the routing;
+      those are the vocabulary and the content.
+      owner: implementer
+
+- [ ] [approved] TW-028 Extend `wordingcheck` past one function and one field, or TW-027 drifts back
+      phase: 8b — approved, third of the three. **Lands in the same change as
+      TW-027, not after it** — §7 reached its current state precisely because
+      the rule was written and never asserted, and §19/§20 are now two more
+      rules in exactly that position (both say so, under "Enforced by").
+      UNBLOCKED 2026-08-14 — the list of surfaces this must assert against now
+      exists: wizard-states.md §19's surface table and §11's
+      parameter-assessment row.
+      correction to the premise this was filed under: `wordingcheck.py` **did**
+      survive the Phase 5 conversion. It is `scripts/verify/wordingcheck.mjs`,
+      ported unchanged, wired into `npm run verify` as **blocking**
+      (scripts/verify/run.mjs:35), passing today (`OK — dose claims repeat the
+      engine's wording (11 checked)`), and mutation-tested — `node
+      scripts/verify/mutate.mjs` lists "dose claim writes its own words → caught
+      by wordingcheck.mjs" (.agent/phase5-gate.md §6, and §2's table records it
+      as the one checker ported with no material change). The rest of the
+      premise holds exactly: .agent/phase5-gate.md §3 calls it *"the only
+      automated enforcement wizard-states.md §7/§12 has ever had"*, and
+      wizard-states.md §10 says no rule in that document may be described as
+      enforced until a test asserts it. So the item is not a port. It is that
+      the guard covers a fraction of what TW-027 would create, and the
+      uncovered fraction is where §7 already leaks.
+      why: what the checker actually asserts is one thing — inside
+      `buildBriefing` in src/lib/narrative-engine.js, an `add({...})` block whose
+      `id:` contains the literal `"dose:"` must have `claim:` matching exactly
+      `d.headline`. Everything else is outside it:
+        - **one file, one function.** The path is hardcoded (wordingcheck.mjs:15)
+          and the function is found by name (:18). Nothing checks
+          `ParamHistoryModal` (Dashboard.jsx:335-353), `ParamCard`
+          (DoseExpectation.jsx:290-296), `Insights.jsx` or
+          `ReadingConfirmation.jsx` — three of which §7 names explicitly and all
+          of which §19's table now covers.
+        - **one field.** `claim:` is checked, `support:` is not — which is why
+          `correction-done`'s hand-written support sentence
+          (narrative-engine.js:474) passes a blocking check while §7 asks for
+          "the first sentence of its detail". A live §7 violation the gate is
+          green on.
+        - **no floor on coverage.** `checked` is counted and printed, never
+          asserted. If the `add({...})` blocks were reformatted so the regex
+          (`add\(\{[\s\S]{0,600}?\}\);`, with `claim:` required at end of line)
+          stopped matching, the script prints `OK ... (0 checked)` and exits 0.
+          run.mjs's own header states the third rule it carried forward from the
+          old gate: *"A check that cannot fail is worse than no check."* This one
+          can be silenced by a whitespace change.
+        - **cannot see a missing branch.** It checks the wording of claims that
+          exist. The five `doseStatus` states with no `add()` in the loop at all
+          (`emergency`, `blocked`, `idle`, `recovering`, `worsening` — see
+          TW-027) are invisible to it, and `recovering` / `worsening` are the
+          two states wizard-states.md §10 explicitly says nothing prevents
+          vanishing in a refactor.
+      what it would take: a checker (or checkers) that assert, per surface named
+      in §19's table, that a verdict is rendered from the engine's own fields
+      and not written locally; that every state in wizard-states.md §3's table
+      is reachable on the surfaces canon says it appears on; and a minimum
+      `checked` count so the check cannot pass by matching nothing. §10's "what
+      still needs building" list already names two of these — a `matrix.js`
+      equivalent driving `doseStatus` through all its states asserting
+      first-match-wins order, and a `summary.js` equivalent asserting no surface
+      emits language contradicting the wizard's state for the same element in
+      the same render. This item is those two plus the coverage floor.
+      spec: docs/spec/wizard-states.md §19 (the surfaces to assert against),
+      §20 (the notice rules that need their own assertions — one live notice
+      per parameter, supersession, resurfacing), §7, §10, §12;
+      docs/spec/reef-chemistry.md §25 ("Enforced by": nothing asserts any of
+      this today).
+      journey: docs/journeys/journey-4-notifications.md — "What this means for
+      the spec" point 6, and the observation that this is *"not a separate
+      problem from the wizard one. It is the same rule, applied to a layer that
+      has never had a specification."* A rule with no checker is the state §10
+      describes as "an intention".
+      repro: `node scripts/verify/wordingcheck.mjs` → `OK dose claims repeat the
+      engine's wording (11 checked)`, exit 0, while narrative-engine.js:474
+      writes its own support sentence and Insights.jsx receives no `doseStates`
+      prop at all.
+      owner: implementer
+
 ## Needs Dan's approval
 
 <!-- triage-analyst files items here. Dan promotes by adding [approved]. -->
@@ -372,309 +701,192 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       Setup question — now answered yes, offer it.
       owner: Dan for the spec entry first, then implementer
 
-<!-- 2026-08-14, from journeys 4 and 4b (notifications). Three items, TW-026 to
-     TW-028, all phase 8b, all needing a canon entry before they are
-     implementable — a journey may motivate an item, never authorise one
-     (docs/journeys/README.md rule 3). They are one piece of work in three
-     parts and are ordered: TW-026 gives the verdict its missing states,
-     TW-027 makes every surface render that verdict instead of its own, and
-     TW-028 is the enforcement that stops TW-027 rotting. Doing 27 without 28
-     is how §7 got into its current state. -->
+<!-- 2026-08-14, the new work created by the Reef Chemistry Engine decision
+     (reef-chemistry.md §25, wizard-states.md §19/§20). Three items. TW-029 is
+     filed as a **defect**, not an enhancement — the decision is explicit that
+     the current phosphate and nitrate notices are wrong rather than merely
+     unhelpful. TW-030 and TW-031 are the two other things §25 and §20 name as
+     needing building.
+     TW-029 and TW-030 both need Dan to write per-parameter reasoning into
+     reef-chemistry.md before they are implementable in full: §25 covers the
+     parameters and forbids borrowing another parameter's thresholds, but it
+     deliberately mints no phosphate, nitrate or salinity figures, and says so
+     under "what this does not settle". Each therefore has a part that can be
+     built today (removing wrong reasoning; wiring salinity into the engine)
+     and a part that cannot (what the right reasoning is). Neither is
+     [approved]; both are split so the buildable half is obvious once it is.
+     TW-031 is fully specified by §20 except for one line, flagged in the item. -->
 
-- [ ] TW-026 `doseStatus` cannot express four cells of the journey-4b matrix
-      phase: 8b — needs canon first, not next.
-      why: journey 4b lays out a three-dimensional matrix — position (below /
-      in / above band) × movement (falling / stable / rising / **not
-      established**) × dose state (no recent change / behaving as expected /
-      **contradicting the expectation**). Four cells have no state in
-      `doseStatus` at all, and `doseStatus` is the verdict every other surface
-      is meant to echo (wizard-states.md §7), so a cell it cannot express is a
-      sentence no surface in the app can say:
-        - dose raised, still falling
-        - dose lowered, still rising
-        - dose changed, no movement at all (either direction)
-        - movement not established — fewer readings than it takes to claim a
-          direction, said out loud rather than guessed at or hidden
-      wizard-states.md §3 tabulates 17 state/label rows and none of them is any
-      of these four. 4b's own summary of the gap: *"There is no 'despite your
-      dose change' anywhere. A falling level reads the same whether you just
-      raised the dose or did nothing."*
-      check first — do `fell-short` and `overshot` already cover this?
-      They express something close and MUST be settled before any new branch is
-      added, or this lands a fifth engine on top of two that nearly work.
-      What the code says today (src/lib/dosing/state.js:318-332):
-        - `fell-short` is "still moving the way it was and the engine still
-          wants more of the same"; `overshot` is anything else after a change.
-          Direction is read off `a.trendPerDay` against `a.action`, and the
-          truth table is pinned by src/test/defects/dose-state-direction.test.js.
-          That is exactly 4b's "dose raised, still falling" and "dose lowered,
-          still rising", in the app's own words.
-        - But both sit inside `if (plan && plan.appliedAt)` (state.js:278) and
-          behind three further gates: `tested` = at least two readings dated
-          after the change AND `daysSince >= settleDays` (:284); not `steady`
-          (:306-317); and `a.action` still "increase" or "decrease" (:318).
-          `plan` is `a.activePlan`, set only from a stored `alk-plan` / `ca-plan`
-          / `mg-plan` (helpers.js:725, alkalinity.js:437, calcium.js:255), which
-          only `applyDoseChange` writes (App.jsx:730-750) and `clearAlkPlan` and
-          its siblings delete. `doseStatus` then expires it after 30 days
-          (:274-277).
-        - So a dose changed in Setup rather than through the wizard reaches
-          neither branch, and a plan that has been cleared or aged out cannot
-          either. NOTE the framing this item was filed under — "only reachable
-          behind a staged plan" — is not quite what the code does:
-          `applyDoseChange` writes a plan for *every* wizard dose change, with
-          `stage: 1, stages: 1` for an unstaged one, so a single-step change
-          does get a plan. The real gate is having gone through the wizard at
-          all, and the three conditions above. Establishing which of those gates
-          is intended and which is accident is the first job of this item, and
-          the answer decides whether 4b's two "still moving" cells are new
-          states or an existing pair with its preconditions widened. The two
-          "no movement at all" cells and "not established" have no candidate
-          either way — nothing in state.js expresses them.
-        - "not established" today collapses into `settling` / "needs another
-          reading" (state.js:417-437), which TW-009 already records as saying
-          the wrong thing when the cause is a missing Setup field rather than a
-          missing reading. Whatever this item does must not make TW-009 worse.
-      the evidence rules 4b attaches, which are the substance of the item:
-        - to establish movement from nothing: **three** readings, one
-          direction, clearing the kit noise floor. *"If my alkalinity was 9.0
-          and the next reading was 9.3, that's only two readings. We can't
-          really say it's rising."* Two is a difference; three is a trend.
-        - to claim a dose change is being contradicted (or confirmed): **two**
-          readings, all four conditions — both dated after the change; at least
-          **24 hours apart** (*"not taken the next day at a different time"*);
-          movement substantial, Dan's figure 0.2-0.3 dKH; direction opposite to
-          (or with) what the change intended. A deliberately lower bar: the
-          change created an expectation, so breaking it is informative at once.
-        - the 0.2-0.3 dKH figure is 2-3x `KIT_PRECISION.hanna.alkalinity`
-          (0.10, src/lib/findings.js:59), which is what 4b means by "roughly
-          2-3x the kit noise floor" — so the rule may be expressible against
-          `kitNoise()` rather than as a fourth hardcoded alkalinity constant.
-          Worth checking before a new number is minted.
-        - none of this exists as a gate today. `doseStatus` reads `a.band` and
-          `a.trendPerDay`, whose thresholds (ALK_TREND at alkalinity.js:28,
-          CA_TREND at calcium.js:27, MG_TREND at magnesium.js:15) are
-          magnitude bands over a fitted slope, with no reading count and no
-          minimum spacing. TW-007 is the same absence one layer down — it has
-          `assessDrift` and `assessAlkalinity` producing dose-affecting
-          verdicts without reef-chemistry.md §22's minimum-evidence gate.
-          These two items should be read together; they may share one fix.
-        - 4b also asks for wording relative to the target when out of band
-          ("coming back toward it", not "rising"). `recovering` / `worsening`
-          (state.js:465-471) already do exactly this and need no change — but
-          wizard-states.md §10 records that nothing asserts those two states
-          exist, so a refactor here could delete them silently.
-      spec: none yet, and this is the whole blocker. reef-chemistry.md §22 sets
-      minimum evidence for a *consumption rate* (3 readings over >=6 days), not
-      for claiming movement, and nothing anywhere sets an evidence bar for
-      contradicting a dose change or a minimum spacing between two readings.
-      wizard-states.md §3's state table would need four new rows with tones,
-      and §3 is canon — a state that is not in that table does not exist. A
-      canon entry is required before this is implementable.
-      journey: docs/journeys/journey-4b-notification-matrix.md — "The three
-      dimensions", "Evidence rules", "The matrix — dose changed, contradicting
-      the expectation" (*"The most important row in the document, and the one
-      the app cannot produce today"*), and "What the app cannot do today"
-      items 1-3. The "no movement" cells are Dan's own reasoning, quoted there
-      from journey 1: *"I know that's within test variation, but now that's two
-      days of an increased dose. It hasn't actually moved. So at that point I
-      would increase the dose further."* An expected response that does not
-      arrive is itself evidence. Also 4b's open questions 2 (how long "recent
-      dose change" lasts), 3 (whether 24 hours is enough given Dan always tests
-      at 9am, or whether 48 is safer), 4 (whether calcium and magnesium use the
-      same wording at their own scales) and 5 (whether these belong in the
-      wizard's own states — *"Get it wrong and this builds a sixth engine"*),
-      all of which are Dan's to answer and all of which change the shape of the
-      canon entry.
-      owner: Dan for the spec entry first, then implementer
+- [ ] [chem] TW-029 DEFECT — phosphate and nitrate are assessed with alkalinity's reasoning
+      phase: 8b — the defect half of reef-chemistry.md §25.
+      why: Dan's 14 August decision, in his own words: *"I have noticed silly
+      notifications of phosphate coming up and silly notifications of nitrate
+      coming up, which don't make sense, because the wrong measurements are
+      being applied to them — it's the same measurements as alkalinity and
+      calcium."* §25 records this as **a real defect, not a display problem**:
+      the notices are wrong, not merely unhelpful. Phosphate bounces; applying
+      alkalinity's trend logic and thresholds to it produces noise dressed as
+      findings. §12 gains the matching refusal — the app does not judge one
+      parameter by another parameter's thresholds, trend logic or evidence bar.
+      what is actually shared today — three generic loops in
+      src/lib/findings.js run over every entry in `paramDefs` with one set of
+      rules, and phosphate and nitrate go through all three:
+        - **`far-out-<key>`** (findings.js:218-251). Threshold is a full band
+          outside the band — `outBy >= (def.max - def.min)`, i.e. two half-bands
+          — with severity raised to `act` only when also outside SAFE_BOUNDS
+          (:87-111). Scaling an alarm to the width of the user's own band is
+          alkalinity's logic. Verified arithmetic at the default bands
+          (constants.js:33-34): phosphate 0.03-0.10 flags high at >=0.170 ppm
+          and low at <=**-0.040 ppm**; nitrate 5-15 flags high at >=25 ppm and
+          low at <=**-5 ppm**. Both low thresholds are negative, so **neither
+          parameter can ever produce a far-out-low finding at any reading a kit
+          can return** — including 0.00 ppm phosphate, which SAFE_BOUNDS itself
+          calls out of bounds (min 0.01, :102) and which reading-meaning.js:51
+          describes as starving corals and inviting dinoflagellates. Alkalinity
+          at the same defaults flags at >=9.4 / <=7.6, which is the behaviour
+          the rule was written for. One rule, sensible on one parameter,
+          unreachable on another.
+        - **`heading-out-<key>`** (findings.js:424-510). A 30-day linear
+          regression, slope > 2x its own standard error, a noise-floor gate off
+          STABILITY_RULES, `directional()` (:118-132, needs >=4 rows) and a
+          45-day projection horizon. Nitrate and phosphate are 7-day-cadence
+          parameters (constants.js:33-34 `freqDays: 7`), so a 30-day window
+          holds about 4-5 readings and the required `rows.length >= 5` is
+          barely met — a regression over four intervals of a bouncing
+          parameter. Alkalinity tests every 2 days (:26) and gets ~15. The
+          file's own comment at :453-459 records the symptom already: phosphate
+          *"being projected to leave its range in 34 days on a trend of 0.006
+          ppm a week, against a kit that resolves 0.02 ppm and readings that
+          swing six times that between tests. The regression was confident
+          about a movement nobody could have measured."* The noise-floor gate
+          added there is a patch on the borrowed rule, not per-parameter
+          reasoning.
+        - **`paramStatus`** (src/lib/dates.js:24-29) — a bare min/max/ok test
+          against the same band, the gate that decides whether `heading-out`
+          is even considered (:428-429).
+      what already is per-parameter, and should be read before anything is
+      designed: STABILITY_RULES (src/lib/stability-engine.js:47-52) gives
+      phosphate a 14-day window in **percent** mode with a 0.02 noise floor and
+      nitrate a 28-day window in percent mode with a 1.0 floor — i.e. the
+      stability layer already knows these two are proportional, bouncy and
+      slow-cadence, while the findings layer does not. measurement-noise.js:12
+      and time-in-range.js:17,75 carry their own per-parameter figures again.
+      Whether the right fix is to teach the findings loops what those layers
+      already know, or to move the whole judgement into the engine per §25, is
+      the first question of this item.
+      scope note — this is not "delete the phosphate notices". Removing the
+      wrong reasoning is buildable now; **what the right reasoning is is not
+      yet canon** and may not be invented here (§25, "naming a parameter in
+      this table does not authorise inventing its thresholds"). Expect this to
+      split: a change that stops the borrowed rules producing wrong notices,
+      and a canon entry from Dan giving phosphate and nitrate their own
+      thresholds, windows and noise floors, sourced the way §2, §3 and §5 are.
+      spec: docs/spec/reef-chemistry.md §25 (the coverage table, "one engine
+      does not mean one set of rules"), §12's new refusal, §5 (noise floors as
+      a per-parameter concept), §4 (cadences and windows likewise)
+      repro: none written yet. A test that pins the two negative thresholds
+      above — that no phosphate or nitrate reading, at any value >= 0, can
+      reach `far-out-low` — would have caught this and is the obvious first
+      artefact of the item.
+      owner: Dan for the phosphate/nitrate reasoning first, then implementer
 
-- [ ] TW-027 Every notification surface renders `doseStatus`'s verdict; one live notice per parameter
-      phase: 8b — needs canon first, not next. Depends on TW-026 for the
-      states, but the routing and identity work below is separable from it.
-      why: journey 4 records the app holding two opinions about one parameter
-      at once — *"There should be another notification which says your calcium
-      is increasing, but you've just changed the dose, so this is expected to
-      go down"* — and asks for one engine every surface reads from. That is
-      wizard-states.md §7 and §11 applied to a layer that has never had a
-      specification. §7 already names the rule ("all three echo the wizard or
-      say nothing") and §7's own note admits it "describes an intention, not a
-      guarantee".
-      what is actually wired today, surface by surface:
-        - **tank summary** (`buildBriefing`, src/lib/narrative-engine.js:329) is
-          the closest to right: every dose claim in the `ds` loop renders
-          `d.headline` and `sentenceCase(firstSentence(d.detail))` verbatim
-          (:428-535). Two exceptions. First, `correction-done` writes its own
-          support sentence — `Set the dose back to ${fmtAmount(d.returnDose)}
-          mL/day to hold it there.` (:474) — against §7's "renders the wizard's
-          headline and the first sentence of its detail". Second, the loop has
-          branches for 12 of `doseStatus`'s states and **none** for `emergency`,
-          `blocked`, `idle`, `recovering` or `worsening`, all five of which are
-          in wizard-states.md §3's table. §7 permits silence, so this is not a
-          §7 breach on its face — but journey 4 says *"The tank summary is the
-          complete list"*, and today it is not. `emergency` reaches the summary
-          only via a separately computed `far-out-<key>` finding, which is the
-          second-classifier problem TW-002 already tracks.
-        - **parameter card** (`ParamCard`, src/components/DoseExpectation.jsx:219)
-          holds three verdicts about one reading in one render: its headline
-          colour and status from `paramStatus` (:220), a findings badge from
-          `findingsFor` (:223), and `dose.short` from `doseStatus` (:290-296).
-          This is the 90-pixel card §7 calls out by name.
-        - **parameter graph panel** (`ParamHistoryModal`, Dashboard.jsx:335-353)
-          renders `dose.headline` and `dose.detail` faithfully, then writes its
-          own eyebrow label from a ternary over `dose.state` covering 7 of the
-          17 states, with everything else falling through to the literal "Dose
-          suggestion" — so a running correction, an emergency and a recovering
-          level are all labelled as a dose suggestion.
-        - **Insights** (src/components/Insights.jsx:85) is handed `findings` and
-          never receives `doseStates` at all. It renders no dose verdict, which
-          means journey 4's third surface currently cannot echo the wizard even
-          if it wanted to.
-      one live notice per parameter — not the case today. `buildBriefing` can
-      emit a `finding:<id>` claim, a `dose:<key>` claim, a `drift|<key>` claim
-      and a `moving-out|<key>` claim about the same element in one render; the
-      `spokenFor` set (:537-543) suppresses only sections 3 and later, and there
-      is one hardcoded pairwise exception (:450-453, dropping a level-ish dose
-      claim when a `far-out-` finding exists). Supersession is not a concept:
-      `add()` (:356) pushes, it never replaces.
-      check what already exists before designing anything — journey 4 is right
-      that someone started this, and the difference between "never built" and
-      "built and not wired up" is weeks versus days. Concretely:
-        - `findingKey(f)` (DoseExpectation.jsx:134) is `"finding|" + f.id` — a
-          stable identity for the life of the finding. This is the topic key.
-        - `findingSignature(f)` (:141) is `id|title` — plus `|value` when the
-          finding is severity `act` and carries a reading, so a worse number
-          brings a hidden notice straight back. This is "what would make it
-          count as a different notice".
-        - `findingHidden(f, dismissed)` (:148) hides only while the stored
-          signature still equals the current one, and treats a bare-date entry
-          (the old format) as lapsed. **This is supersession-clears-hidden
-          already working**, for findings.
-        - it is genuinely global for findings: one `dismissed` map, one storage
-          key `findings-dismissed`, and both `dismissFinding` (App.jsx:586) and
-          the summary's finding claims (narrative-engine.js:395) key on
-          `findingKey(f)`, so hiding on the card hides in the summary.
-        - claims that are not findings carry their own `dismissKey` /
-          `dismissSignature` (`worked|<key>`, `dose|<key>`, `drift|<key>`,
-          `moving-out|<key>`, `parked`, `solid`) into the same map via
-          `dismissNote` (App.jsx:598). Same mechanism, different namespace.
-        So the model journey 4 asks for is largely built. What is missing is
-        that it stops at the summary: no surface other than `FindingList` and
-        `Briefing` consults `findingHidden`, so a dose verdict rendered by
-        `ParamCard` or `ParamHistoryModal` has no hide control and no hidden
-        state to consult. Which is journey 4's problem 2 exactly.
-      every notice can be hidden — five dose claims are built with no
-      `dismissible: true` at all (`correcting-dose` :457, `correction-due` :464,
-      `correction-done` :471, `correction-stalled` :478, `correcting` :485), and
-      findings of severity `act` and scope `chemistry` are non-dismissible by
-      rule (:394). Both have stated reasons in the code — hiding a correction
-      leaves the tank being deliberately pushed with nothing on screen saying
-      so; hiding "ammonia is dangerously high" is the one thing the summary must
-      not allow. Journey 4's point 4 says everything can be hidden, and its own
-      open question 4 asks whether a level outside safe bounds should be the
-      exception. Those two positions are in direct conflict and Dan settles it,
-      not this item.
-      the hidden list growing without bound (journey 4's problem 3) falls out of
-      supersession and needs no separate mechanism: `findingHidden` already
-      lapses an entry the moment the signature moves. What does not yet happen
-      is any pruning of the stored map, so `findings-dismissed` keeps entries
-      for notices that no longer exist. Setup lists them (Setup.jsx:484) from
-      `dismissedList`, which is computed against live findings only
-      (App.jsx:140), so the *display* is already bounded — the storage is not.
-      spec: none yet. wizard-states.md §7, §11, §12 and §17 all state the
-      single-source rule and §7 names the summary, the reading confirmation and
-      the findings list as the three surfaces that must echo it — but no section
-      specifies notice identity, supersession, hiding scope, or which surfaces
-      carry a hide control. §3's state table is the verdict vocabulary and does
-      not say which surface renders what. A canon entry is required before this
-      is implementable, and it needs to answer journey 4's open question 1 —
-      what counts as one topic, since "alkalinity is falling" and "alkalinity is
-      out of band" being one topic or two decides how much supersession actually
-      happens — before any of the above can be sized.
-      journey: docs/journeys/journey-4-notifications.md — "What is wrong — five
-      things" (all five), "What Dan wants — the model", "What already exists"
-      (*"Before designing anything, find out what those three do today"*), and
-      "What this means for the spec" points 1-6. Point 6 is the load-bearing
-      one: *"No surface computes its own notice — same rule as wizard-states.md
-      §7, which says the wizard owns the verdict and other surfaces echo it."*
-      Also docs/journeys/journey-4b-notification-matrix.md open question 1,
-      which asks whether the notice replaces itself as the parameter moves cell
-      — *"Confirming this is what makes the model work."*
-      related: TW-002 (no `classifyReading`; the same 6.9 dKH reading getting
-      three severities in one card is the band-classification half of this
-      item's parameter-card finding). TW-015 and TW-016 are wording drift in
-      the same surfaces. This item is the routing; those are the vocabulary.
-      owner: Dan for the spec entry first, then implementer
+- [ ] TW-030 Salinity is not assessed at all
+      phase: 8b — the second thing reef-chemistry.md §25 names as missing.
+      why: §25's coverage table lists salinity as **needs its own treatment**,
+      and §19's engine assesses every parameter. Today salinity has no
+      assessment of any kind: `deriveTankState` (src/App.jsx:142-162) calls
+      `assess()` for alkalinity, calcium and magnesium only, and builds
+      `doseStates` from those three, so salinity reaches no wizard state, no
+      verdict, and nothing for a surface to echo under §19.
+      what salinity does have today, which is four disconnected fragments:
+        - a band, 34-36 ppt (src/lib/constants.js:27), and therefore a
+          `paramStatus` low/ok/high and the generic `far-out-salinity` finding
+          from the loop TW-029 describes.
+        - a bespoke `salinity-off` finding (src/lib/findings.js:568-587) that
+          fires when salinity is far enough from **35** to skew other readings
+          — a good piece of reasoning, hardcoded against a literal 35 (:584),
+          suppressed when `far-out-salinity` already fired (:579).
+        - a rail — 0.5 ppt/day, reef-chemistry.md §3, carried forward from the
+          previous canon and enforced nowhere for salinity, since nothing
+          proposes a salinity change.
+        - a role inside magnesium's assessment: `out.salinityShift`
+          (src/lib/dosing/helpers.js:762-780, surfaced at :1118) converts a
+          salinity move into the magnesium ppm it explains. Magnesium already
+          treats salinity as a cause; nothing treats it as a subject.
+      three different reference points for the same number, none of them
+      canon: the 34-36 band (constants.js:27), the literal 35 in the skew
+      finding (findings.js:584), SAFE_BOUNDS 32-37 (findings.js:106), plus
+      `salt-baseline.js:4` (35) and `icp-reference.js:74` (ideal 35, range
+      31.5-38.5). Any assessment has to settle which one it is measured
+      against, and that is a canon question, not an implementation one.
+      why it matters beyond tidiness: salinity is the one parameter that
+      changes what every other reading means — everything dissolved scales
+      with it, which is what the skew finding already says. A tank whose
+      salinity is drifting produces alkalinity, calcium and magnesium
+      verdicts built on a moving baseline, and the engine currently has no way
+      to say so.
+      scope note — same split as TW-029. Wiring salinity into the engine is
+      buildable; **what its reasoning is is not yet canon.** §25 mints no
+      salinity figures deliberately. Needed from Dan: what salinity is judged
+      against, what counts as movement (its noise floor is 0.2 ppt in
+      stability-engine.js:47 and 0.2 in measurement-noise.js:12 — consistent,
+      but unsourced in canon), and what the app should say, given it never
+      doses salinity and the answer is always top-off or a water change.
+      spec: docs/spec/reef-chemistry.md §25 (coverage table), §3 (the existing
+      rail); docs/spec/wizard-states.md §19 (every parameter has a verdict
+      every surface renders)
+      owner: Dan for the salinity reasoning first, then implementer
 
-- [ ] TW-028 Extend `wordingcheck` past one function and one field, or TW-027 drifts back
-      phase: 8b — needs canon first, not next.
-      correction to the premise this was filed under: `wordingcheck.py` **did**
-      survive the Phase 5 conversion. It is `scripts/verify/wordingcheck.mjs`,
-      ported unchanged, wired into `npm run verify` as **blocking**
-      (scripts/verify/run.mjs:35), passing today (`OK — dose claims repeat the
-      engine's wording (11 checked)`), and mutation-tested — `node
-      scripts/verify/mutate.mjs` lists "dose claim writes its own words → caught
-      by wordingcheck.mjs" (.agent/phase5-gate.md §6, and §2's table records it
-      as the one checker ported with no material change). The rest of the
-      premise holds exactly: .agent/phase5-gate.md §3 calls it *"the only
-      automated enforcement wizard-states.md §7/§12 has ever had"*, and
-      wizard-states.md §10 says no rule in that document may be described as
-      enforced until a test asserts it. So the item is not a port. It is that
-      the guard covers a fraction of what TW-027 would create, and the
-      uncovered fraction is where §7 already leaks.
-      why: what the checker actually asserts is one thing — inside
-      `buildBriefing` in src/lib/narrative-engine.js, an `add({...})` block whose
-      `id:` contains the literal `"dose:"` must have `claim:` matching exactly
-      `d.headline`. Everything else is outside it:
-        - **one file, one function.** The path is hardcoded (wordingcheck.mjs:15)
-          and the function is found by name (:18). Nothing checks
-          `ParamHistoryModal` (Dashboard.jsx:335-353), `ParamCard`
-          (DoseExpectation.jsx:290-296), `Insights.jsx` or
-          `ReadingConfirmation.jsx` — three of which §7 names explicitly.
-        - **one field.** `claim:` is checked, `support:` is not — which is why
-          `correction-done`'s hand-written support sentence
-          (narrative-engine.js:474) passes a blocking check while §7 asks for
-          "the first sentence of its detail". A live §7 violation the gate is
-          green on.
-        - **no floor on coverage.** `checked` is counted and printed, never
-          asserted. If the `add({...})` blocks were reformatted so the regex
-          (`add\(\{[\s\S]{0,600}?\}\);`, with `claim:` required at end of line)
-          stopped matching, the script prints `OK ... (0 checked)` and exits 0.
-          run.mjs's own header states the third rule it carried forward from the
-          old gate: *"A check that cannot fail is worse than no check."* This one
-          can be silenced by a whitespace change.
-        - **cannot see a missing branch.** It checks the wording of claims that
-          exist. The five `doseStatus` states with no `add()` in the loop at all
-          (`emergency`, `blocked`, `idle`, `recovering`, `worsening` — see
-          TW-027) are invisible to it, and `recovering` / `worsening` are the
-          two states wizard-states.md §10 explicitly says nothing prevents
-          vanishing in a refactor.
-      what it would take: a checker (or checkers) that assert, per surface named
-      in canon, that a dose verdict is rendered from `doseStatus`'s own fields
-      and not written locally; that every state in wizard-states.md §3's table
-      is reachable on the surfaces canon says it appears on; and a minimum
-      `checked` count so the check cannot pass by matching nothing. §10's "what
-      still needs building" list already names two of these — a `matrix.js`
-      equivalent driving `doseStatus` through all its states asserting
-      first-match-wins order, and a `summary.js` equivalent asserting no surface
-      emits language contradicting the wizard's state for the same element in
-      the same render. This item is those two plus the coverage floor.
-      spec: wizard-states.md §7, §10 and §12 are the rules being enforced, so
-      the enforcement itself needs no new canon — but *what* it enforces does.
-      The list of surfaces, and which states each must render, is TW-027's canon
-      entry. Until that exists there is nothing to assert, which is why this is
-      third and not first. It should land in the same change as TW-027, not
-      after it: §7 reached its current state precisely because the rule was
-      written and never asserted.
-      journey: docs/journeys/journey-4-notifications.md — "What this means for
-      the spec" point 6, and the observation that this is *"not a separate
-      problem from the wizard one. It is the same rule, applied to a layer that
-      has never had a specification."* A rule with no checker is the state §10
-      describes as "an intention".
-      repro: `node scripts/verify/wordingcheck.mjs` → `OK dose claims repeat the
-      engine's wording (11 checked)`, exit 0, while narrative-engine.js:474
-      writes its own support sentence and Insights.jsx receives no `doseStates`
-      prop at all.
-      owner: implementer, once TW-027's canon entry names the surfaces
+- [ ] TW-031 Confirmation before hiding a serious notice; every notice becomes hideable
+      phase: 8b — the third thing the decision creates. **Build with TW-027**,
+      not after it: TW-027 makes the notices hideable and this is the guard
+      that makes that safe.
+      why: wizard-states.md §20, decided 14 August. Every notice can be
+      hidden, **no exceptions, including safe-bounds excursions** — *"If
+      someone wants to hide a notification, they can hide a notification.
+      There might be a reason the app doesn't know about."* Serious notices
+      get a confirmation first, with the settled wording:
+        "This is flagged as a serious notification. Are you sure you wish to
+        hide it?"
+      plus a line noting hidden notices can be brought back from the tank
+      summary. The confirmation is a speed bump, not an exception — it creates
+      no class of notice that cannot be hidden.
+      what changes in code:
+        - `dismissible: !(f.severity === "act" && f.scope === "chemistry")`
+          (src/lib/narrative-engine.js:394) becomes unconditional. Its stated
+          reason — that hiding "ammonia is dangerously high" is the one thing
+          the summary must not allow — is overruled by §20.
+        - the five dose claims built with no `dismissible` flag at all
+          (`correcting-dose` :457, `correction-due` :464, `correction-done`
+          :471, `correction-stalled` :478, `correcting` :485-492) gain one.
+          Their stated reason — hiding a correction leaves the tank being
+          deliberately pushed with nothing on screen saying so — is likewise
+          overruled, and the confirmation is what answers it.
+        - a confirmation step in front of the hide control on every surface
+          that carries one, which after TW-027 is more surfaces than today.
+          §18's accessibility floor applies: 44 px targets, keyboard
+          reachable, and it must be usable one-handed with wet fingers.
+        - the "bring it back from the tank summary" line must be true —
+          `dismissedList` (App.jsx:140) and Setup.jsx:484 already list hidden
+          findings; check the summary itself does, and that the route back is
+          where the sentence says it is before shipping the sentence.
+      resurfacing needs no new mechanism: a hidden notice returns on the next
+      reading that would trigger it, because the new verdict supersedes the
+      hidden one (§20). `findingHidden` (DoseExpectation.jsx:148) already
+      implements exactly this for findings — an entry stays hidden only while
+      the stored signature still equals the current one — so this is a routing
+      job, not a new rule.
+      the one open line: **what counts as "serious".** Dan's decision does not
+      define it. §20 maps it to the app's existing severity vocabulary — a
+      finding of severity `act`, or a wizard state whose §3 tone is red
+      (`blocked`, `emergency`) — and flags in the section itself that this
+      mapping is the spec's inference and not the owner's words. Correcting it
+      is a one-line change to §20. Worth Dan's nod before this ships, since it
+      decides how often the confirmation appears; everything else in the item
+      is settled.
+      spec: docs/spec/wizard-states.md §20 (hiding, the wording, resurfacing),
+      §19 (the surfaces that carry a hide control), §18 (accessibility floor)
+      owner: implementer, once Dan confirms the "serious" mapping in §20
 
 ## Blocked
 
