@@ -23,8 +23,8 @@ last completed step: bug 4 — alkalinity band, 1.0 -> 0.6 dKH, shipped.
   row. Found and filed, not fixed (rule 7 — out of this bug's citation):
   TW-026, magnesium's own PARAM_DEFS band is centred on 1325 ppm, not the
   1350 target §2 gives it — same off-centre shape as alkalinity's bug, filed
-  to .agent/backlog.md "Needs Dan's approval". PR number recorded in a
-  follow-up commit once opened, per the bug-3 precedent.
+  to .agent/backlog.md "Needs Dan's approval". PR:
+  https://github.com/dniachini-droid/tank-wizard/pull/23
   IMPORTANT for whoever resumes: this branch was cut fresh from `main`, which
   does NOT yet include bug 3's changes (PR #22, not merged as of this run) —
   bugs 3 and 4 are independent PRs against the same base, per rule 1. Bug 5
@@ -41,10 +41,9 @@ next step: bug 5 — TW-016, magnesium correction rail 100 -> 25
   the fix, confirm rails.test.js's calcium assertions pass for a reason
   already true before this fix (code was already right) and magnesium's pass
   for the new reason, not just that the file goes green as a whole.
-in-flight: bug 4 committed on claude/bug4-alkalinity-band, about to push and
-  open the PR in the same breath, per rule 8.
-branch: claude/bug4-alkalinity-band
-uncommitted work: no (this file's own edit is part of the commit being made)
+in-flight: none — bug 4 shipped and pushed, PR #23 opened, working tree clean
+branch: claude/bug4-alkalinity-band (pushed)
+uncommitted work: no
 
 <!--
 This file is the resume point. Every routine reads it first and writes it
