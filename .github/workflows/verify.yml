@@ -1,0 +1,37 @@
+name: verify
+
+# The gate. Nothing merges unless this exits 0. One job, one required check —
+# Dan reads one red or green, and the log says which step failed. See
+# .agent/phase5-gate.md for what each step ports from legacy/verify.sh and why.
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # build/ is gitignored — a generated artifact, not checked in. The exact
+      # esbuild command from .agent/phase3-conformance.md §0: the `window`
+      # stub in its banner is what makes tests/legacy-port/ runnable at all.
+      # `npm run verify` rebuilds it too, but doing it here first means a
+      # bundle failure is reported as its own step rather than buried inside
+      # the gate's own output.
+      - run: >
+          npx esbuild src/test-surface.js --bundle --platform=node --format=cjs
+          --outfile=build/engines-new.cjs
+          --banner:js='global.window=global.window||{storage:null,localStorage:null,matchMedia:()=>({matches:false})};'
+          --loader:.jsx=jsx
+
+      - run: npm run verify

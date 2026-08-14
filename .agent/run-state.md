@@ -1,11 +1,11 @@
-run: 2026-08-13-consistency-sweep
-routine: routine 5 — consistency sweep
-started: 2026-08-13T08:20:31Z
+run: 2026-08-14-phase5-gate
+routine: routine 13 — phase 5: the gate
+started: 2026-08-14T05:01:19Z
 status: complete
-last completed step: Wave D step 3 complete (morning brief written) — run finished
-next step: none — run complete
+last completed step: committed, pushed, PR #9 opened (https://github.com/dniachini-droid/tank-wizard/pull/9). Run complete.
+next step: none — awaiting Dan's review. Never merge (AGENTS.md #13).
 in-flight: none
-branch: claude/2026-08-13-consistency-sweep
+branch: claude/eloquent-hypatia-dlftze
 uncommitted work: no
 
 <!--
