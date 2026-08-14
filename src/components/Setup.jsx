@@ -507,13 +507,22 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
       <InfoBlock icon={Download} eyebrow="Your data" title="Backup & export" tone="#45605F"
         collapsible
         defaultOpen={backupAge == null || backupAge > 14}
-        summary={backupAge == null ? "No backup saved yet"
+        summary={backupAge == null ? "No backup recorded on this device"
           : backupAge > 14 ? `Last backup ${backupAge} days ago`
           : `Backed up ${backupAge === 0 ? "today" : `${backupAge}d ago`} · ${readings.length} readings`}>
         <div className="rounded-xl p-3 mb-3" style={{ background: backupAge == null || backupAge > 14 ? "#A2621B15" : "#0B7C8612" }}>
           <p className="text-[13px] text-ink font-medium leading-relaxed">
+            {/* Not "you haven't saved a backup yet" — the app cannot know that.
+                `last-backup` lives in the same storage as everything else, so a
+                browser that clears its data erases the record of the backup
+                along with the data the backup was protecting. Saying no backup
+                exists would be a guess, and it would be wrong at exactly the
+                moment it matters most: a user with a good file in iCloud Drive,
+                told by the only screen that could help them that there is
+                nothing to recover. Report the missing record, and point at
+                restore. */}
             {backupAge == null
-              ? `You haven't saved a backup yet. Browser storage isn't permanent — clearing Safari, or not opening the app for a week, can erase everything. A backup file is the only copy that survives that.`
+              ? `This device has no record of a backup. That record is erased along with everything else when a browser clears its storage, so if you saved a file before, it may still be there — restore it below rather than starting again. Browser storage isn't permanent: clearing Safari, or not opening the app for a week, can erase everything, and a backup file is the only copy that survives that.`
               : backupAge > 14
               ? `Your last backup was ${backupAge} days ago. Worth saving a fresh one.`
               : `Last backup ${backupAge === 0 ? "today" : backupAge === 1 ? "yesterday" : `${backupAge} days ago`}.`}

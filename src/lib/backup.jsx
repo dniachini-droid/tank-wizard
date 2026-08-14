@@ -179,8 +179,27 @@ export function downloadJson(obj, filename) {
 
 /* Ask the browser not to evict this site's data. Apple doesn't document whether
    this overrides the seven-day rule, but it costs nothing to request and
-   developers report it helping. */
+   developers report it helping.
+
+   Asked once per page load, and the answer is remembered. This used to be
+   called only from Setup's mount effect, which meant two things: a user who
+   never opened that tab never asked at all, and one who opened it repeatedly
+   asked on every visit. The app now asks at launch (src/App.jsx) and Setup
+   reads the same answer to explain it, so the request happens exactly once
+   however many times either caller runs.
+
+   The memo is deliberately per page load rather than persisted. A reload is
+   the natural moment to re-ask — the user may have installed the app to the
+   home screen since, which is precisely what flips the answer on the
+   platforms where it matters. */
+let persistenceAsked = null;
+
 export async function requestPersistence() {
+  if (!persistenceAsked) persistenceAsked = askForPersistence();
+  return persistenceAsked;
+}
+
+async function askForPersistence() {
   try {
     if (!navigator.storage || !navigator.storage.persist) return { supported: false };
     const already = navigator.storage.persisted ? await navigator.storage.persisted() : false;
