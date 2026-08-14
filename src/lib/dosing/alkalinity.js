@@ -588,18 +588,26 @@ export function assessAlkalinity({ readings, doseLog = [], waterChanges = [], se
   const trend = fit ? fit.slope : intervals[intervals.length - 1].perDay;
   out.trendPerDay = trend;
 
-  /* Where alkalinity sits, judged from the fitted line rather than the last
-     number: one low titration on a tank that has held 9.0 for a fortnight is a
-     test result, not a tank at 8.2. */
+  /* The fitted line at the last timestamp, correction-adjusted. It sizes a
+     one-off correction below; it does not say where alkalinity is. */
   const fittedNow = (fit && used.length >= 3)
     ? used.reduce((a, r) => a + r.value, 0) / used.length
       + fit.slope * (alkStamp(used[used.length - 1])
         - used.reduce((a, r) => a + alkStamp(r), 0) / used.length)
     : out.current.value;
   out.fittedNow = fittedNow;
-  const inRange = fittedNow >= def.min && fittedNow <= def.max;
-  const above = fittedNow > def.max;
-  const below = fittedNow < def.min;
+  /* §26, decided 14 Aug: position is the last reading. In band, out of band or
+     at which edge is answered by the most recent measurement and never by a
+     fitted value. This was `fittedNow`, on the argument that one low titration
+     on a tank that had held 9.0 for a fortnight is a test result rather than a
+     tank at 8.2 — but the sentence reporting it quotes `out.current.value`, so
+     the app printed "alkalinity is below your range at 8.5dKH" against a band
+     starting at 8.2. A position no measurement supports is not a safer answer
+     for being smoother. */
+  const posNow = out.current.value;
+  const inRange = posNow >= def.min && posNow <= def.max;
+  const above = posNow > def.max;
+  const below = posNow < def.min;
   /* §11's grading fix — see `outOfBandWorsening` above `doseDriftedFrom` in
      helpers.js for the two qualifiers and why this is shared across all
      three engines rather than copied per file. */
@@ -708,8 +716,8 @@ export function assessAlkalinity({ readings, doseLog = [], waterChanges = [], se
   /* Step 6 — do not react to small movements, unless alkalinity is already
      outside the band and still drifting further out. A trend below the noise
      floor still empties a tank given enough weeks. */
-  const alkClearlyOut = above ? (fittedNow - def.max) > 0.2
-    : below ? (def.min - fittedNow) > 0.2 : false;
+  const alkClearlyOut = above ? (posNow - def.max) > 0.2
+    : below ? (def.min - posNow) > 0.2 : false;
   const alkRepeats = repeatedCorrections(corrections, "alkalinity", nowStamp);
   const alkWorsening = alkClearlyOut
     && (Math.abs(trend) >= ALK_TREND.stable || alkRepeats >= 2)
