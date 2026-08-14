@@ -1272,7 +1272,7 @@ export function ReefConsoleInner() {
           <DoseChangePopup result={doseResult} onClose={() => setDoseResult(null)} />
           <LogResultPopup key={logResult ? logResult.at : "none"} result={logResult}
             onClose={() => setLogResult(null)} readings={readings}
-            onOpenDosing={(key) => goTo({ tab: "dosing", key })} />
+            onOpenDosing={() => setTab("dosing")} />
           <IcpResultPopup key={icpResult ? "icp" + icpResult.at : "icpnone"} result={icpResult}
             onClose={() => setIcpResult(null)} icps={icpResult ? icpResult.priorPanels : []} />
           <TaskDonePopup key={taskResult ? "task" + taskResult.at : "tasknone"} result={taskResult}

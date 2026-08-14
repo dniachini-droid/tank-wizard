@@ -195,7 +195,7 @@ export function Tasks({ allTasks, taskLog, onAddCustom, onDeleteCustom, onMarkDo
         <ReminderSheet rem={sheetRem} state={sheetState} onClose={closeSheet}
           onSetDue={(id, d) => { onSetReminderDue(id, d); closeSheet(); }}
           onSetInterval={(id, n) => { onSetReminderInterval(id, n); closeSheet(); }}
-          onComplete={(id) => { onComplete(id); closeSheet(); }}
+          onComplete={(id) => { onMarkDone(id); closeSheet(); }}
           onSkip={(id) => { onSkipReminder(id); closeSheet(); }}
           onToggleEnabled={(id, on) => { onUpdateReminder(id, { enabled: on }); closeSheet(); }}
           onDelete={(id) => { onDeleteReminder(id); closeSheet(); }} />

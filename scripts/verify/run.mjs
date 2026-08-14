@@ -24,8 +24,8 @@ import { execFileSync } from 'node:child_process';
 import { ROOT } from './util.mjs';
 
 const STATIC_CHECKS = [
-  ['linkcheck', 'scripts/verify/linkcheck.mjs', 'advisory'],
-  ['propcheck', 'scripts/verify/propcheck.mjs', 'advisory'],
+  ['linkcheck', 'scripts/verify/linkcheck.mjs', 'blocking'],
+  ['propcheck', 'scripts/verify/propcheck.mjs', 'blocking'],
   ['scopecheck', 'scripts/verify/scopecheck.mjs', 'blocking'],
   ['hookcheck', 'scripts/verify/hookcheck.mjs', 'blocking'],
   ['rootprops', 'scripts/verify/rootprops.mjs', 'blocking'],
