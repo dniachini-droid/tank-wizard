@@ -1,3 +1,8 @@
+import {
+  PHOTO_KEY, announceFallbackOnce, attachPhotos, collectOrphans, detachPhotos,
+  needsMigration, photosAreInline,
+} from './photo-store.js';
+
 /* ---------------------------------- storage helpers ---------------------------------- */
 
 /* Two storage backends, tried in order. The host bridge is preferred where it
@@ -94,13 +99,25 @@ export function drainLegacyStore() {
   return tally;
 }
 
-export async function loadKey(key, fallback) {
+function readKey(key, fallback) {
   try {
     if (window.storage && window.storage.get) {
-      const res = await window.storage.get(key, false);
-      if (res && res.value) return JSON.parse(res.value);
+      /* The bridge is synchronous only in shape; the caller awaits this. */
+      return window.storage.get(key, false).then((res) => {
+        /* The parse is inside the fallback, not outside it: a bridge that
+           hands back something unparseable must land on local storage the
+           same way one that throws does, rather than rejecting the load. */
+        try {
+          if (res && res.value) return JSON.parse(res.value);
+        } catch { /* fall through to local storage */ }
+        return readLocal(key, fallback);
+      }, () => readLocal(key, fallback));
     }
   } catch (e) { /* fall through to local storage */ }
+  return Promise.resolve(readLocal(key, fallback));
+}
+
+function readLocal(key, fallback) {
   /* A key the drain could not finish still lives under the legacy prefix, and
      that copy is the newer of the two. Empty on every device the drain
      completed on, which is all of them but one that was out of space at load. */
@@ -112,6 +129,35 @@ export async function loadKey(key, fallback) {
   }
   const local = lsGet(key);
   return local === undefined ? fallback : local;
+}
+
+export async function loadKey(key, fallback) {
+  const value = await readKey(key, fallback);
+
+  /* ICP report photos are the one thing not kept in localStorage — see
+     src/lib/photo-store.js for why, and for the shape on each side. From here
+     out the row looks exactly as it always did, with the photo inline on it,
+     which is what lets every caller of this function stay unchanged. */
+  if (key !== PHOTO_KEY || !Array.isArray(value)) return value;
+
+  const attached = await attachPhotos(value);
+  if (attached.missing > 0) {
+    /* A row that claims a photo the database does not have. Rendering the
+       panel with a blank space where the picture was is the one outcome this
+       whole phase exists to prevent, so it is said out loud. */
+    report(`${attached.missing === 1 ? "A report photo" : `${attached.missing} report photos`} could not be read back` +
+      (attached.reason ? ` (${attached.reason})` : "") +
+      ". The panel's readings are unaffected. Restoring a backup file will bring the photo back.");
+  }
+
+  /* Photos still sitting inline in localStorage have not been moved yet: this
+     is an install from before the change, or one where an earlier attempt had
+     nowhere to write. Moving them is exactly what saving them does, so that is
+     what happens — and it inherits the same guarantee, that a photo which
+     cannot be written stays where it already works. A later load retries. */
+  if (needsMigration(attached.rows)) await saveKey(PHOTO_KEY, attached.rows);
+
+  return attached.rows;
 }
 /* Storage failures used to be swallowed, which made a full quota look like a
    successful save until the next reload. Surface them instead. */
@@ -132,7 +178,27 @@ export function isQuotaError(e) {
          /quota|exceeded|storage is full|too large/i.test(m);
 }
 
+function report(message) { if (storageErrorHandler) storageErrorHandler(message); }
+
 export async function saveKey(key, value) {
+  /* Photos out of the row and into IndexedDB before the row is serialised.
+     Anything that cannot be moved stays inline and is written to localStorage
+     exactly as it was before this existed. */
+  if (key === PHOTO_KEY && Array.isArray(value)) {
+    const detached = await detachPhotos(value);
+    /* A fallback that works is not worth a red banner on every save, but it is
+       worth one — the photos are going somewhere much smaller than they would
+       otherwise, and that is the user's business. */
+    if (detached.inline > 0 && announceFallbackOnce()) {
+      report("Report photos are being kept in browser storage on this device" +
+        (detached.reason ? ` (${detached.reason})` : "") +
+        ", which holds far less than the photo store does. Your data is saved. " +
+        "Keeping fewer photos, or saving a backup file, will keep it that way.");
+    }
+    if (detached.moved > 0 || detached.inline === 0) await collectOrphans(detached.rows);
+    value = detached.rows;
+  }
+
   let bridgeError = null;
   try {
     if (window.storage && window.storage.set) {
@@ -155,8 +221,15 @@ export async function saveKey(key, value) {
   const e = bridgeError || lastLocalError;
   if (storageErrorHandler) {
     storageErrorHandler(
+      /* What to delete depends on where the photos ended up. Naming them is
+         only useful advice while they are still in this store; once they are
+         in the photo database, telling someone to remove a few would send
+         them after space that was never the problem. */
       isQuotaError(e)
-        ? "Storage is full, so that change was not saved. ICP report photos use the most space — remove a few, then try again. Save a backup file first if you need one."
+        ? "Storage is full, so that change was not saved. " + (photosAreInline()
+            ? "ICP report photos use the most space on this device — remove a few, then try again."
+            : "Removing some older entries will make room.") +
+          " Save a backup file first if you need one."
         : "That change could not be saved (" + (e && e.message ? e.message : "unknown error") + ")."
     );
   }
