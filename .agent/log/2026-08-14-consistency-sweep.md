@@ -82,3 +82,39 @@ invents six categories not in §13 and its "drifting" means the OPPOSITE band
 position of §13's; S2 ICP popup unit-less+no aria; S2 chart axis/tooltip
 unit-less at 3 call sites; S3 the "notice" concept ships under three words
 today with a fourth coming (TW-031). Appended. Run totals: 3xS1, 6xS2, 3xS3.
+
+### band-classifier-auditor — complete (5th)
+The run's two most load-bearing verifications: (1) position-is-last-reading
+(§26) LANDED CLEANLY — 17/17 defect tests pass, engines + doseStatus read the
+last reading, and no new fitted-vs-last split exists because every other
+classifier already read raw values; (2) §19's engine decision is DOCS-ONLY —
+deriveTankState still assesses only alk/Ca/Mg and every other surface still
+bypasses it. Classifier census: canon says "ten", this run enumerates
+THIRTEEN by file:line (new #13: StabilityStrip, TodayPanel.jsx:314 — own
+band test for its colour, filed as new S2). Boundary matrix: band edges
+inclusive/correct in paramStatus; alert-low edge NON-inclusive at
+state.js:189-206 (7.0 exactly = off-target, not emergency — violates §13);
+§13's "drifting" implemented by NOTHING (reading-meaning's "drifting" is the
+opposite meaning). TW-005/007/010 unchanged with fresh evidence. Appended.
+Run totals: 3xS1, 7xS2, 3xS3.
+
+### wizard-dose-auditor — complete (6th, closes Wave A)
+Priors TW-003/005/009/012/006 all UNCHANGED (TW-003 re-reproduced live —
+both refusal shapes still crash at ErrorBoundary.jsx:279; TW-012 widened to
+the correction-start path). §26 verified from the wizard side: no new
+staleness. Full branch table in findings. NEW S2, reproduced live with real
+rendered components: staged-plan shortcuts share one unkeyed DoseChangeSheet
+whose amount never re-syncs — tap "Step to 7.50" then "Go to 9.90" and the
+field still says 7.5; the recorded dose is not the one the last tap asked
+for. Appended. Run totals: 3xS1, 8xS2, 3xS3.
+
+## Wave A complete
+All six surface auditors reported. Zero prior findings fixed, zero
+regressed-worse; every previously filed consistency defect reconfirmed live.
+Two genuine verifications of recent work: position-is-last-reading landed
+cleanly everywhere it claims to; the durability restore path merges history
+rows additively. New this sweep: 1xS1 (snapshot restore overwrites targets →
+silent retroactive reclassification of all history), 8xS2, 3xS3 across six
+agents. Cross-cutting theme unchanged from yesterday and now sharper:
+single-source rule still violated everywhere (13 named classifiers, §19
+engine decision wired to nothing). Proceeding to Wave B.

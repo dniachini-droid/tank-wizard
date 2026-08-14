@@ -181,3 +181,35 @@ what: ZoomableLineChart never receives or displays a unit or parameter name — 
 evidence: ZoomableChart.jsx:69 prop signature (no unit/label/def), :202 tickFormatter, :209 tooltip formatter (niceAxis :47-61 never appends a unit); callers Dashboard.jsx:612, IcpPanel.jsx:168, AllParametersSheet.jsx:285 pass nothing.
 impact: In plain terms: every gridline and tooltip on every history chart is unit-less — is that 8.2 dKH, ppm or ppt? A screen reader announces context-free numbers. suggested fix: add unit/label props, append in axis formatters, aria-label the container — one component fix clears all three call sites.
 confidence: high
+
+### band-classifier-auditor / 2026-08-14 / status-of-priors
+classifyReading — still does not exist (grep: only test-file references). Canon §11 itself now names "ten" divergent classifiers; this run enumerates THIRTEEN by file:line: paramStatus (dates.js:24), paramContext (reading-meaning.js:17), computeControl (reading-meaning.js:89), readingVerdict + inline SAFE_BOUNDS (ReadingConfirmation.jsx:20,45,149-155), findings.js far-out loop (:87,218-251), findings.js heading-out regression classifier (:424-510), assessDrift/DRIFT_GUIDE (drift.js), state.js inline emergency check (:189-206), alkalinity.js:608-610,719-720, calcium.js:413-415,477-478, helpers.js:916-918,968-969, computeIonicBalance (drift.js:277), and NEW #13 StabilityStrip (TodayPanel.jsx:314, see block below).
+TW-010 — UNCHANGED (ReadingConfirmation.jsx:409 unconditional green Saved fallback).
+TW-007 — UNCHANGED (rounding-vs-stored + min-evidence suites: same 6 failures as yesterday).
+Boundary matrix: paramStatus band edges inclusive and CORRECT (verified live at exact edge and ±ε). alert-low edge WRONG: value exactly 7.0 = SAFE_BOUNDS.min classifies off-target not emergency (non-inclusive, violates §13 "exactly equal to alert-low is alert-low"); alert-high inferred same (state.js:195 > not >=). §13's drifting: no code implements it at all (reading-meaning.js:218's "drifting" = out-of-band bouncing median, opposite meaning). insufficient-data: detected correctly at classifier layer (paramStatus → "unknown"), destroyed at render (TW-010).
+TW-005 — UNCHANGED (alert-thresholds + ca-alk-coupling suites still fail identically).
+POSITION-IS-LAST-READING (§26) — LANDED, VERIFIED: 17/17 pass; engines + doseStatus read out.current.value; fittedNow survives only for one-off sizing (§26 explicitly defers that). NO new fitted-vs-last split: every other classifier already read raw last values.
+§19 deriveTankState — still assesses only alk/Ca/Mg (App.jsx:142-162), still bypassed by ParamCard/TodayPanel/findings.js/drift.js/Insights. The 14 Aug engine decision is docs-only; nothing in code enforces it. TW-029/TW-030 unchanged.
+
+### band-classifier-auditor / 2026-08-14 / S2
+what: StabilityStrip (today-panel spread bar, every parameter) computes its own in/out-of-band test straight off def.min/def.max to choose its colour — a thirteenth independent classifier, never before named by file:line in backlog or canon's "ten".
+evidence: TodayPanel.jsx:314 `const outside = stab.p05 < def.min || stab.p95 > def.max;` → :328 picks "#A2621B" vs def.color. Predates the Vite conversion (git log confirms untouched since 0637695) — pre-existing, newly catalogued.
+impact: In plain terms: the little spread bar on the today screen forms its own opinion about whether your readings straddle the band, independent of the verdict shown on the card next to it — matching today by coincidence, and silently free to disagree after the next band change.
+suggested fix: colour off the engine's band once classifyReading/the Reef Chemistry Engine exists; fold into TW-002's classifier census either way.
+confidence: high
+
+### wizard-dose-auditor / 2026-08-14 / status-of-priors
+TW-003 — UNCHANGED, reproduced live: both refusal shapes throw TypeError at ErrorBoundary.jsx:279 (a.current.value unguarded; sibling read :262 guards correctly).
+TW-005 — UNCHANGED (engine signatures alkalinity.js:429/calcium.js:199 take no Mg/sibling channel; same 3 test failures today).
+TW-009 — UNCHANGED (refusals.test.js both cases fail identically).
+TW-012 — UNCHANGED, WIDENED: closure-built next state + no disabled-while-saving confirmed on BOTH dose apply (App.jsx:425-431, DoseChangeSheet.jsx:63) and correction start (App.jsx:717-737, CorrectionPanel).
+TW-006 — UNCHANGED (multiday-plan-parity: expected 8.4 to be 7.5).
+§26 position-is-last-reading — implemented and verified from the wizard side too (17/17; wizard reads a.current.value, never fitted — no new staleness).
+Branch table highlights: refusal branches crash the UI (TW-003) or mis-word (TW-009); Mg gate + precipitation guard branches structurally unreachable (TW-005); <2-days-apart readings get a confident "hold" instead of a refusal (parity test still failing); abandonment/back-navigation traced clean (assessments recomputed fresh via useMemo, sheet state unmounts cleanly).
+
+### wizard-dose-auditor / 2026-08-14 / S2
+what: In a staged multi-day plan, "Step to X" and "Go to Y" both open the same already-mounted DoseChangeSheet; the amount field is seeded once (useState) and never re-syncs to a changed recommended prop. Tap one shortcut, then the other without closing the sheet → the field keeps the FIRST figure while the button just pressed claims the second.
+evidence: DoseChangeSheet.jsx:17 (useState seeded once); ErrorBoundary.jsx:209,212 → :249 (same unkeyed sheet instance, React reuses it). REPRODUCED LIVE (jsdom + react-dom, real components, no mocks): staged plan [7.5, 8.4, 9.9]; "Step to 7.50" → field 7.5; "Go to 9.90" with sheet open → field still 7.5. General case also confirmed: recommended changing 9.9→14.2 while sheet open leaves input at 9.9.
+impact: In plain terms: consider the small step, change your mind and tap "go straight to the full dose" — the entry box quietly keeps the small number, and unless you notice, the dose you record is not the one you just asked for.
+suggested fix: key DoseChangeSheet off prefill/recommended (or useEffect resync when not hand-edited) so the amount always reflects the last selection.
+confidence: high
