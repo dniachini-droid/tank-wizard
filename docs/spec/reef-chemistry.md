@@ -9,6 +9,11 @@ Part II below carried forward everything the merge had left behind. **§25 added
 folded in from `docs/spec/DECISION-reef-chemistry-engine.md` (now deleted). Its
 surfaces and notice halves are `wizard-states.md` §19 and §20. **§26 added 14
 August 2026** on the spec owner's authority — position is the last reading.
+**§3 amended 14 August 2026** on the spec owner's authority — the rails are
+fixed; the "user may tighten a rail" clause is withdrawn, and
+tighten-never-loosen is recorded against §2's bands, where it belongs. The
+three companion decisions of the same authorisation are `wizard-states.md`
+§15, §20 and the new §22.
 
 > Agents never edit this file. Disagreements → `.agent/spec-challenges.md`.
 
@@ -112,8 +117,41 @@ might administer at once.
 | Salinity | 0.5 ppt / day | carried forward from the previous canon |
 | Temperature | 0.5 °C / day | carried forward from the previous canon |
 
-`[user]` may **tighten** a rail. **The app never permits loosening beyond the
-figure above.**
+**Decided 14 Aug: the rails are fixed. There is no user rail.** One figure per
+element, the same for every user. No setting tightens a rail and none loosens
+one. The clause that stood here — `[user]` may tighten a rail, the app never
+permits loosening — is **withdrawn**.
+
+It contradicted `wizard-states.md` §21, settled the same day, which holds that
+**Setup asks for facts, not judgements** and names a rate tolerance
+specifically as a non-fact, pointing at this section's ceiling as the answer
+the app already has. A rail is reasoning this document has done, with a source
+in the table above. A tighten-only dial would replace it with a number typed by
+someone who has been using the app for four minutes, and would give one input
+three arrival points — the dose-gap trigger (§7), the staging fractions (§8.1)
+and the rate ceiling (§8.5). That shape is the defect this project spent two
+days removing.
+
+**Nothing is withdrawn from a user in practice: no mechanism ever existed.**
+`rateLimitDose` (`src/lib/dosing/alkalinity.js:351-379`) reads settings only
+for plausibility, `safeDoseBand` (`src/lib/analytics/safe-rate.js:43-48`) reads
+the hardcoded constant, and `src/components/Setup.jsx` has no rate field at all
+(`grep -rn "maxDailyRise\|tighten\|rateLimit" src/components/Setup.jsx` → no
+matches). The clause described an intention, not a behaviour.
+
+**Tighten-never-loosen still applies — to bands, where it belongs.** §2's
+layers are its home: the user's band (layer 2) may be as tight as they like
+inside the safe bounds (layer 1), and the app refuses a target outside them
+(§12). A band is the user's judgement about their own corals and their own
+tank. A rail is a limit on how fast the app may move a live tank. They are not
+the same kind of number, and only one of them is the user's to set.
+
+**If 0.5 dKH/day proves too fast for a real tank, this paragraph is where it
+changes** — for everyone, with the reasoning written down and arguable, exactly
+as the magnesium rail moved on 14 August. Per `wizard-states.md` §21, a setting
+earns its place by solving a problem someone actually hit: a keeper reporting
+that their corals react badly to a 0.5 dKH day **is** that problem, and the
+setting can be added then. It is not being added in advance of one.
 
 **Decided 14 Aug: the magnesium rail is 25 ppm/day.** This settles a conflict
 the canon swap surfaced — the document this file replaced said 50 ppm/day, set

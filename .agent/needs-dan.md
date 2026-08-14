@@ -6,7 +6,47 @@ Decisions no agent may make. Newest at top. Dan clears this file.
 
 ## Open
 
-### 8. §3's "user may tighten a rail" vs §21's rejection of a rate-tolerance Setup field — same-day self-contradiction
+### 9. `PARAM_DEFS.alkalinity.color` is byte-identical to `STATUS_COLOR.ok` — the mirror of the phosphate fault
+
+Found 2026-08-14 while applying the colour half of decision 4, and **not covered by
+it**. That decision named phosphate (`#C4285B` = danger red) and potassium (`#926A09`
+= low amber) and both are settled. A third collision is live and was not named:
+`PARAM_DEFS.alkalinity.color` (`src/lib/constants.js:26`) is `#0B7C86`, byte-identical
+to `STATUS_COLOR.ok` (`src/lib/dates.js:31`).
+
+The direction of harm is the **opposite** of phosphate's, which is why it is asked
+rather than assumed. Phosphate's fault makes a healthy chart look like an alarm;
+alkalinity's makes every alkalinity chart carry the colour that means "in range",
+including on a tank whose alkalinity is at alert-low. Decision 4's stated reason —
+"so a healthy chart cannot look like an alarm" — does not reach this one, and the
+reverse ("an alarming chart must not look healthy") is arguably the worse of the two,
+so it is not for an agent to extend the decision by analogy.
+
+Two nearby cases, listed so the question is asked once: `PARAM_DEFS.nitrate.color`
+`#2A8050` equals the `controlled` verdict tone and `PARAM_DEFS.salinity.color`
+`#1D6FA5` equals the `steady-off` tone (`reading-meaning.js:211,215`). Those are
+verdict tones rather than `STATUS_COLOR` entries, so they sit outside the registry
+rule as written in §15.
+
+**Options:** (a) leave all three — brand colours are identity, not status, and the
+badge beside the chart already carries the status; (b) move alkalinity only, on the
+"alarming chart must not look healthy" ground, which needs a colour clear of teal,
+cyan (`ph` `#2AA7B0`) and the ok teal at once; (c) extend §15's colour registry to
+verdict tones as well as `STATUS_COLOR`, which pulls in nitrate and salinity and is
+three more colours to choose.
+
+**In plain terms.** Your alkalinity chart is drawn in exactly the same green-blue the
+app uses to say "this is in range" — so it is drawn that way even when your
+alkalinity is not. Phosphate had the same fault pointing the other way and you have
+fixed that one. This one you did not mention, and guessing which way you would go on
+it is exactly what these notes are for.
+
+### ~~8. §3's "user may tighten a rail" vs §21's rejection of a rate-tolerance Setup field~~ — closed 2026-08-14, see Decisions
+
+Resolved as option (b): §21 wins, §3's clause is withdrawn, and the tighten-never-loosen
+rule is recorded against §2's bands instead. The workup below is left in place because
+the decision's cost — a keeper with fast-swing-sensitive corals has no path today —
+is real and stated in the decision rather than glossed.
 
 Found 2026-08-14 (manual-dose-auditor, adjudicator-confirmed). `reef-chemistry.md` §3
 states a user may tighten (never loosen) a dosing rail, but no mechanism exists in code
@@ -71,7 +111,12 @@ repro: `grep -rn "maxDailyRise\|tighten\|rateLimit" src/components/Setup.jsx` �
 matches; `npx vitest run src/test/spec/dosing/rate-rails.test.js` — "a tighter
 user-configured alkalinity rail is not honoured" → FAIL.
 
-### 7. reading-meaning.js's invented vocabulary vs §13's band words — does "consistency over time" get its own registry, or fold into §13's seven?
+### ~~7. reading-meaning.js's invented vocabulary vs §13's band words~~ — closed 2026-08-14, see Decisions
+
+Resolved as option (a): the six get registered in canon as a second vocabulary
+(`wizard-states.md` §22), not folded into §13's seven and not removed. The decision
+also settled two things this item did not ask about — an alert tier over the verdicts,
+and a refusal where consistency cannot be graded. Workup left in place below.
 
 Found 2026-08-14 (terminology-auditor, contradiction-hunter, adjudicator-confirmed).
 `reading-meaning.js`'s `computeControl` invents six headline categories with no entry in
@@ -122,23 +167,18 @@ testing pattern steady" deserves its own words at all, not just a rename.
 Blocks `.agent/backlog.md` TW-037 (code-side fix), filed `[blocked]` pending this
 decision.
 
-### 6. One-line notes — 2026-08-14
+### 6. One-line notes — 2026-08-14 — two of three closed
 
-Three small items, flagged rather than filed, each too small for its own workup:
-
-- **Colour-registry gap** (contradiction-hunter). `PARAM_DEFS.phosphate.color`
-  (`constants.js:33`) equals the app-wide danger red (`#C4285B`) — phosphate's header cap
-  tints "danger" regardless of the actual reading. `PARAM_DEFS.potassium.color` equals
-  `STATUS_COLOR.low` (`#926A09`) — same shape. Same kind of problem as §15's word
-  registry, one level down (colours instead of words); worth a colour-registry entry the
-  day §15 gets touched again.
-- **"Notice" wording** (terminology-auditor). The same on-screen concept ships today as
-  "Worth knowing about" (`Dashboard.jsx:619-620`), "Got it — hide this"
-  (`DoseExpectation.jsx:175`, no noun), and "Hidden notes"/"Notes" (`Setup.jsx:478-491`) —
-  and `TW-031`'s settled confirmation sentence will add a fourth ("notification").
-  Reconcile Setup's "notes" and `TW-031`'s "notification" together when §15 next gains an
-  entry.
-- **"Target" rename** (terminology-auditor). "Target" is used for four structurally
+- ~~**Colour-registry gap**~~ — **closed 2026-08-14.** §15 gained the colour registry
+  and both named collisions are settled: phosphate `#9B3A8C`, potassium `#5F7A12`.
+  The severity colours are unchanged. A third collision the note did not name
+  (`alkalinity` = `ok`) is **open item 9** above.
+- ~~**"Notice" wording**~~ — **closed 2026-08-14.** `notice` is registered in §15 as
+  the single term; "Worth knowing about", "Hidden notes"/"Notes" and "notification"
+  are banned, TW-031's confirmation sentence is restated, and "Got it — hide this"
+  is recorded as a non-violation (no noun).
+- **"Target" rename** (terminology-auditor) — **still open, parked by the owner
+  2026-08-14 pending a review of all four uses.** "Target" is used for four structurally
   different concepts in one modal: the value the user types, the app's computed aim
   point, the whole band, and a synonym for in-band. A rename needs your sign-off before
   anything ships — noted here rather than filed as backlog work, since it's a
@@ -312,7 +352,114 @@ column — where naming the banned term is the point.
 
 ## Decisions
 
-### 2026-08-14 (latest) — Dan, spec owner: position is always the last reading
+### 2026-08-14 (latest) — Dan, spec owner: four decisions — fixed rails, two vocabularies, the tier and the refusal, one word for a notice
+
+Authorised as owner, **spec only — no application code was touched.** Resolves open
+items 8, 7 and two of the three one-line notes in 6. The resulting code work is filed
+untagged in `.agent/backlog.md` — **TW-037** rescoped and unblocked, **TW-039**
+extended, **TW-043 to TW-045** new. Per AGENTS.md, untagged means the implementer may
+not act on it: these need `[approved]` from you before any of it ships.
+(Filed as TW-042/043/044; renumbered on merge, because `main`'s run-state
+restructure had already taken TW-042 — for the item about `.agent/backlog.md`
+being the next shared-singleton conflict, which is what just happened.)
+
+**1. The rails are fixed. There is no user rail.** (Open item 8, option (b).) §3's
+`[user]` may tighten a rail clause is **withdrawn**; one figure per element, the same
+for every user, no setting either way. §21 wins the same-day contradiction on its own
+reasoning — Setup asks facts, not judgements, and it names a rate tolerance
+specifically. Nothing is withdrawn in practice: no mechanism ever existed
+(`rateLimitDose` reads settings only for plausibility, `safeDoseBand` reads a hardcoded
+constant, `Setup.jsx` has no rate field). **Tighten-never-loosen survives on bands**,
+where §2's layers already put it: the user's band may be as tight as they like inside
+safe bounds the app refuses to let them leave. The cost this item named is accepted and
+written into §3 rather than glossed — a keeper whose corals react badly to fast swings
+has no path today. **If 0.5 dKH/day proves too fast on a real tank, §3 is the paragraph
+to change, for everyone**; per §21 a setting earns its place by solving a problem
+someone actually hit, and that report would be the problem. Recorded at
+`reef-chemistry.md` §3, cross-referenced from `wizard-states.md` §21.
+
+One consequence, filed not fixed: `src/test/spec/dosing/rate-rails.test.js`'s
+`describe('§6 — a user may tighten a rail; the app must honour it')` block now asserts
+withdrawn canon. It is a failing test asserting a rule that no longer exists, which is
+not the same thing as a failing test finding a bug. Folded into TW-039, which is
+already open against the same file for the same reason.
+
+**2. Two vocabularies, both registered.** (Open item 7, option (a).) The six
+consistency verdicts in `reading-meaning.js` stay and are **registered in canon** as
+`wizard-states.md` §22, separate from §13's seven bands. The bands answer *where is
+this reading*; the verdicts answer *how steady has this been over time*, which the
+bands have no words for. Six verdicts, seven bands, nothing else — a seventh verdict is
+a finding on the same terms as an invented band.
+
+**3. `drifting` → `unsettled`, plus a tier and a refusal.** The verdict is renamed:
+canon's `drifting` means **inside** the band sliding toward an edge, the verdict fired
+on the **median outside** the band with moderate spread, and near-opposites may not
+share a word. No threshold or condition moves with the rename. Two further fixes the
+open item did not ask about:
+- **The alert tier.** The six graded movement and nothing else, so a lethal value and a
+  mildly-off one both read `sliding` in the same colour. Every verdict now carries the
+  tier of the **latest reading's** §13 band (§26 — position is the last reading),
+  renders no calmer than it, and at the alert tier leads with the position before the
+  steadiness. The verdict word does not change; only its tone and the order of its
+  sentence. **A steadiness verdict must never mask a dangerous position.**
+- **Unknown refuses.** `consistency` initialises to `"unknown"` and every branch
+  testing it fails open, so an ungradeable parameter still reaches `controlled` or
+  `unsettled` on the median test alone. Per §13's last row it must **refuse and name
+  what is missing** instead.
+
+**4. One word for a notice, and two brand colours.** `notice` is registered in §15 as
+the single term; **"Worth knowing about", "Hidden notes"/"Notes" and "notification" are
+banned**, and §20's confirmation sentence is restated as *"This is flagged as a serious
+notice. Are you sure you wish to hide it?"* (TW-031 updated to quote it). "Got it —
+hide this" carries no noun and is recorded as a non-violation. §15 gains a **colour
+registry**: the severity colours are reserved and **unchanged**, and no parameter's
+brand colour may be byte-identical to one. The two that were: **phosphate `#C4285B` →
+`#9B3A8C`** (plum), **potassium `#926A09` → `#5F7A12`** (olive). Measured rather than
+eyeballed — contrast against the `#F3F7F6` page 5.76:1 and 4.54:1 against §18's 4.5:1
+text floor; CIE76 separation from the severity colour each replaces 37.9 and 32.7; the
+palette's tightest pair is unchanged at 16.4 (alkalinity/pH, untouched) and
+calcium/potassium improves from 29.3.
+
+**Not settled, and named as such.** The four-way use of "target" is **parked pending a
+review of all four uses** — recorded in §22 and left open in item 6. A third
+brand/severity colour collision found while applying decision 4 —
+`alkalinity` `#0B7C86` = `STATUS_COLOR.ok` — was **not** named in the decision and its
+harm points the other way (an alarming chart that looks healthy), so it is **open item
+9** rather than an extension by analogy.
+
+**Verification.** Spec-only change; no code, no test and no chemistry constant was
+touched, so no behavioural claim is made and none is verified. The colour figures above
+were computed (`scratchpad/colour.mjs`, `scratchpad/pairs.mjs`: sRGB → CIE L\*a\*b\*,
+WCAG 2.x relative luminance). `npm run verify` and `npx vitest run` are unchanged by
+this branch by construction — the tree's only edits are Markdown — and TW-038's
+now-stale test still fails exactly as it did before, for the opposite reason.
+
+**In plain terms.** Four things, all writing rather than app changes.
+
+The app will not grow a knob for how fast it is allowed to move your tank. There is one
+speed limit per parameter and it is the same for everyone; the knob was written down as
+a promise months ago and never actually built, so nothing you have today goes away. The
+"you may tighten it, never loosen it" idea does still apply to your target ranges,
+which is where it belongs — those are yours to set as tightly as you like, inside
+limits the app will not let you past. If half a dKH a day turns out to be too fast for
+your corals, that is a real report and the number gets changed for everybody, with the
+reasoning written down.
+
+The app has two sets of words about a parameter and now admits it. One set says where
+your reading is right now; the other says how steady it has been over the last few
+weeks. They are different questions and the second one was never written down until
+now. One of its words, "drifting", meant nearly the opposite of the same word on the
+other badge — that one is now "unsettled". And two rules that were missing: however
+steady something has been, if your last test is at a level that needs attention the
+app may no longer show it in a calm colour, and where the app has no yardstick for what
+steady means it now says so instead of quietly grading you against nothing.
+
+Lastly, the thing the app shows you about a parameter is a **notice** — one word, not
+four. And your phosphate chart is no longer drawn in the exact red the app uses for
+danger, nor potassium in the exact amber it uses for low, so a perfectly healthy
+phosphate no longer looks like an alarm. The danger colours themselves have not moved.
+
+### 2026-08-14 (previously latest) — Dan, spec owner: position is always the last reading
 
 **Supersedes open item 3's option (b)**, which offered a choice between the two
 measures and noted that unifying on `fittedNow` was probably the smaller
@@ -395,7 +542,7 @@ above the top of its range. It now holds. Where your tank is comes from your
 last test, every time, on every screen; how fast it is moving and what to pour
 still come from the whole history, because one test cannot tell you those.
 
-### 2026-08-14 (previously latest) — Dan, spec owner: the calcium suggested default stays 425 ±25
+### 2026-08-14 — Dan, spec owner: the calcium suggested default stays 425 ±25
 
 **No spec change, no code change, no backlog item.** `reef-chemistry.md` §2
 layer 3 keeps calcium at **425 ppm, 50 total (±25)** — 400–450. It is correct as

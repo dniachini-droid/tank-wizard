@@ -469,7 +469,52 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       suggested fix: split the field (targetDose / targetLevel).
       owner: implementer
 
-- [ ] [blocked] TW-037 reading-meaning.js's six invented headline categories disagree with §13, and one of them ("drifting") means the opposite word for word
+- [ ] TW-037 Implement §22 — rename `drifting` to `unsettled`, give the verdicts an alert tier, make "unknown" refuse
+      UNBLOCKED 2026-08-14 by Dan's four-decision authorisation (.agent/needs-dan.md,
+      "four decisions"). The registry question this was blocked on is settled: the six
+      verdicts are **registered**, not removed — docs/spec/wizard-states.md §22 is new
+      canon and §13/§15 cross-reference it. Untagged deliberately: the direction is
+      settled but the code has not been authorised, and one part of it changes what
+      colour a reading renders in. Needs [approved] before anything ships. NOT [chem]:
+      no threshold, window, formula or constant moves under this item, and if one turns
+      out to be unavoidable, stop and escalate (AGENTS.md rule 3).
+      what changes in code, three parts, all in src/lib/analytics/reading-meaning.js
+      unless noted:
+        (1) RENAME. `verdict = "drifting"` (:218) becomes `"unsettled"`; headline
+            `Drifting ${bias}` becomes `Unsettled ${bias}`. Nothing else in the branch
+            moves — same condition, same tone (before part 2), same note text apart from
+            the word. Check every consumer of `verdict`: `suggestWorth` (:227) reads
+            `steady-off` not this one, but grep before assuming — Dashboard.jsx:467 and
+            Insights.jsx:133 both consume the object.
+        (2) ALERT TIER. `tone` is fixed per verdict (:196-220), so an alert-low reading
+            and a mildly-off one render identically. Every verdict must carry the tier
+            of the LATEST reading's §13 band and render no calmer than it, and at the
+            alert tier the note must lead with the position before the steadiness. The
+            latest reading, not p50 and not a fitted value — reef-chemistry.md §26. The
+            verdict word does not change; only tone and sentence order.
+        (3) UNKNOWN REFUSES. `consistency` initialises to "unknown" (:141) and every
+            branch that tests it fails open, so a parameter with no CONSISTENCY_RULES
+            entry still reaches `controlled` (:210) or `unsettled` (:217) on the median
+            test alone. Per §13's last row it must refuse and name what is missing.
+            All nine PARAM_DEFS keys have a rule today (time-in-range.js:66-85), so this
+            is a latent path, not a live user-visible one — say so in the test rather
+            than claiming a live repro.
+      in plain terms: the app's steadiness note gets the word that stops it meaning the
+      opposite of the same word on the badge next to it; it stops showing calm colours
+      over a level that needs attention; and where it has no yardstick for steadiness it
+      says so instead of grading you against nothing.
+      spec: docs/spec/wizard-states.md §22 (all three parts), §13 (the band words and
+      the refusal row), §15 (the drifting/unsettled ban), reef-chemistry.md §26 (which
+      reading the tier is read from)
+      repro: reading-meaning.js:196-220 (fixed tone per verdict, no tier); :141 with
+      :210/:217 (the unknown fall-through); Dashboard.jsx:467 (both badges in one modal);
+      live repro of the pre-rename collision: scratchpad/drift-collision3.mjs
+      tests it needs: the collision script as a permanent regression test; a verdict-set
+      test (exactly six, no seventh); a tier test (a steady tank at alert-low does not
+      render calmer than its band); a refusal test (a def with no consistency rule
+      refuses and names what is missing)
+      owner: implementer, once [approved]
+      original finding, unchanged, for the evidence:
       why: reading-meaning.js's computeControl invents six headline categories not in
       §13's band table — sliding/"Moving fast", loose/"Wide swing", dialled/"Dialled in",
       controlled/"Well controlled", steady-off/"Steady, running high/low", drifting/
@@ -489,21 +534,24 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       you're still in range but sliding toward the edge. Tap a card that says you're fine
       and the very next screen says you're running low, for a reading inside the range
       you set.
-      blocked on: needs-dan escalation (see .agent/needs-dan.md, "reading-meaning
-      vocabulary vs §13's band words") — whether consistency-over-time gets its own
-      registry entries distinct from §13's bands, or folds into the existing seven. This
-      mixes rate-of-change grading with band position and needs chemistry judgement, not
-      a bare rename.
+      was blocked on: needs-dan escalation — whether consistency-over-time gets its own
+      registry entries distinct from §13's bands, or folds into the existing seven.
+      SETTLED 2026-08-14: its own registry (option (a)), §22. Contradiction (2) above —
+      "steady-off" leading a modal in blue over a current reading that is in band — is
+      NOT a bug under §22: the verdict grades the window and the badge grades the
+      reading, and the two are allowed to differ. What §22 forbids is the verdict
+      rendering CALMER than the reading's band, which is part (2) of the fix above; a
+      calmer badge beside a soberer verdict is the vocabulary working.
       related: TW-016 (the word "drift" used for three meanings across Dashboard/
       Insights/reading-meaning) is the wording-drift half of the same surfaces; this item
       is reading-meaning's own invented-category system and its two concrete
       contradictions.
-      spec: docs/spec/wizard-states.md §13 (band-verdict definitions), §5 (no invented
-      or reused vocabulary)
-      repro: reading-meaning.js:196-219; Dashboard.jsx:467 (terminology-auditor); live
-      repro script scratchpad/drift-collision3.mjs against the real computeControl module
-      (contradiction-hunter, 2026-08-14, adjudicator-confirmed)
-      owner: blocked on Dan's registry decision; implementer once unblocked
+      original spec refs: docs/spec/wizard-states.md §13 (band-verdict definitions), §5
+      (no invented or reused vocabulary)
+      original repro: reading-meaning.js:196-219; Dashboard.jsx:467
+      (terminology-auditor); live repro script scratchpad/drift-collision3.mjs against
+      the real computeControl module (contradiction-hunter, 2026-08-14,
+      adjudicator-confirmed)
 
 - [ ] TW-038 buildOverview computes a real cross-parameter narrative every render and shows it nowhere; wiring it in without unifying first creates two landmines
       why: buildOverview's cross-parameter narrative (narrative-engine.js:1220-1343) —
@@ -567,6 +615,25 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       suggested fix: update the test's expectations (Ca->20, Mg->25) and its citation to
       §3 — same-shape follow-up to the closed TW-016 rail fix, not a new chemistry
       decision, so no [chem] tag needed.
+      2026-08-14, SECOND STALE BLOCK IN THE SAME FILE, same fix pass: the whole
+      `describe('§6 — a user may tighten a rail; the app must honour it')` block
+      (rate-rails.test.js:74-94) now asserts **withdrawn** canon. Dan's four-decision
+      authorisation removed §3's "[user] may tighten a rail" clause outright — the rails
+      are fixed, one figure per element for everyone, and there is no user rail to
+      honour. Its single test, "a tighter user-configured alkalinity rail is not
+      honoured", fails today for the right reason and the wrong rule: the code is
+      correct, the canon it cites no longer exists.
+      Do NOT simply delete it (AGENTS.md rule 4). Invert it: the assertion §3 now
+      supports is that `settings.maxDailyRiseDKH` (or any other name) changes nothing,
+      because no user value may tighten a rail — same inputs, opposite expectation, and
+      it becomes the regression test for the decision. Retitle the describe to §3 and
+      drop the "spec requires the tighter ceiling to win" comment at :89-91, which now
+      states the opposite of canon.
+      in plain terms: the same checklist also still says you are allowed to ask the app
+      for a gentler daily limit. You are not, as of the 14 August decision, and nothing
+      in the app ever offered it — so the check should now be that asking changes
+      nothing, not that it should have worked.
+      spec (second block): docs/spec/reef-chemistry.md §3, docs/spec/wizard-states.md §21
       owner: implementer
 
 - [ ] [schema] TW-042 `.agent/backlog.md` is the next shared-singleton conflict, surviving on luck
@@ -1140,9 +1207,11 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       hidden, **no exceptions, including safe-bounds excursions** — *"If
       someone wants to hide a notification, they can hide a notification.
       There might be a reason the app doesn't know about."* Serious notices
-      get a confirmation first, with the settled wording:
-        "This is flagged as a serious notification. Are you sure you wish to
-        hide it?"
+      get a confirmation first, with the settled wording — **restated
+      2026-08-14** when §15 registered "notice" as the one word for the concept
+      and banned "notification" (the sentence, not the decision, changed):
+        "This is flagged as a serious notice. Are you sure you wish to hide
+        it?"
       plus a line noting hidden notices can be brought back from the tank
       summary. The confirmation is a speed bump, not an exception — it creates
       no class of notice that cannot be hidden.
@@ -1182,6 +1251,99 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       spec: docs/spec/wizard-states.md §20 (hiding, the wording, resurfacing),
       §19 (the surfaces that carry a hide control), §18 (accessibility floor)
       owner: implementer, once Dan confirms the "serious" mapping in §20
+
+<!-- 2026-08-14: TW-043, TW-044 and TW-045 filed from Dan's four-decision
+     authorisation (.agent/needs-dan.md, "four decisions"). Spec-only that
+     night — §15's registry and colour registry, §20's word, §22 — so all
+     three are untagged and need [approved] before any code moves. TW-043 and
+     TW-044 are copy and colour, not chemistry; TW-045 is the checker that
+     stops §22 eroding the way §7 did. -->
+
+- [ ] TW-043 "Notice" is the one word; three others ship today
+      why: docs/spec/wizard-states.md §15 now registers **notice** as the single
+      term for the thing the app shows about a parameter, and bans the three
+      that ship alongside it. Live strings, all user-facing:
+        - "Worth knowing about {parameter}" — src/components/Dashboard.jsx:619-620
+        - "Hidden notes" / "{n} note{s} hidden" / "Notes you hide will be listed
+          here" — src/components/Setup.jsx:478-491
+        - "notification" in the hide confirmation — the sentence TW-031 builds;
+          §20 restates it as "This is flagged as a serious notice. Are you sure
+          you wish to hide it?" **Build that half with TW-031**, not separately,
+          or the string lands twice.
+      not in scope: `finding`, `claim` and `dose state` in narrative-engine.js are
+      internal code names, not user-facing words — §20 says so explicitly.
+      Renaming them is tidiness and is not authorised here. "Got it — hide this"
+      (DoseExpectation.jsx:175) carries no noun and needs no change; §20 records
+      it as a non-violation so it does not get re-filed.
+      in plain terms: the app calls the same thing a note, a notification and
+      something worth knowing about, on three screens. It is a notice, on all of
+      them.
+      spec: docs/spec/wizard-states.md §15 (the registry row and the ban), §20
+      (the word, and the restated confirmation sentence)
+      repro: grep -rn "Worth knowing about" src/components/Dashboard.jsx;
+      grep -rn "Hidden notes\|note\b" src/components/Setup.jsx
+      tests it needs: extend scripts/verify/wordingcheck.mjs to fail the build on
+      the banned nouns in user-facing strings — this is TW-028's job and should
+      land with it rather than as a second checker.
+      owner: implementer, once [approved]
+
+- [ ] TW-044 Phosphate and potassium brand colours are byte-identical to severity colours
+      why: docs/spec/wizard-states.md §15's colour registry, decided 2026-08-14.
+      PARAM_DEFS.phosphate.color (src/lib/constants.js:33) is #C4285B, byte-identical
+      to STATUS_COLOR.high (src/lib/dates.js:31) — the danger red. PARAM_DEFS.
+      potassium.color (:32) is #926A09, byte-identical to STATUS_COLOR.low. Phosphate's
+      chart stroke and header cap therefore render in the alarm colour at every value,
+      a perfect reading included.
+      what changes: exactly two string literals. phosphate #C4285B -> **#9B3A8C**
+      (plum), potassium #926A09 -> **#5F7A12** (olive). The severity colours do not
+      move — that is stated in the decision, and changing one instead would be a
+      different item.
+      the values are already justified in canon, measured not eyeballed: contrast
+      against the #F3F7F6 page 5.76:1 and 4.54:1 (§18 floor 4.5:1 for text, 3:1 for a
+      chart stroke); CIE76 separation from the severity colour each replaces 37.9 and
+      32.7; palette's tightest pair unchanged at 16.4 (alkalinity/pH, untouched);
+      calcium/potassium improves from 29.3. Re-derive before shipping rather than
+      trusting this line — scratchpad/colour.mjs and scratchpad/pairs.mjs.
+      watch for: hardcoded copies. grep the literals across src/ and legacy exports
+      before assuming constants.js is the only site; legacy/ is read-only (rule 9).
+      NOT in scope: PARAM_DEFS.alkalinity.color #0B7C86 == STATUS_COLOR.ok. Found in
+      the same pass, not named in the decision, and its harm points the other way (an
+      alarming chart that looks healthy). It is open item 9 in .agent/needs-dan.md and
+      must not be swept in with these two.
+      in plain terms: your phosphate chart is drawn in the exact red the app uses to
+      mean danger, so a perfect phosphate reading still looks like an alarm. Potassium
+      is drawn in the exact amber that means low. Two colour changes; the danger
+      colours themselves stay put.
+      spec: docs/spec/wizard-states.md §15 (the colour registry), §18 (contrast floor)
+      repro: grep -n "color:" src/lib/constants.js against grep -n "STATUS_COLOR"
+      src/lib/dates.js — run 2026-08-14, the literals match byte for byte
+      (constants.js:32 #926A09 == dates.js:31 low; constants.js:33 #C4285B ==
+      dates.js:31 high).
+      tests it needs: a registry test that no PARAM_DEFS colour equals any
+      STATUS_COLOR value, which would have caught both and will catch the next one.
+      owner: implementer, once [approved]
+
+- [ ] TW-045 Nothing asserts §22 — the consistency verdicts have no checker
+      why: docs/spec/wizard-states.md §22 says so in its own Enforced-by section. Per
+      §10, a rule with no checker is an intention, and §7 is what that erodes into.
+      Three checks, all cheap:
+        (1) the verdict set is exactly {dialled, controlled, steady-off, unsettled,
+            loose, sliding} — a seventh verdict fails the build, exactly as an
+            invented band does under §13;
+        (2) no verdict renders calmer than its own reading's §13 band — the alert-tier
+            rule, and the one with a livestock consequence;
+        (3) an ungradeable parameter refuses and names what is missing, rather than
+            grading.
+      ordering: (1) can land before TW-037; (2) and (3) assert behaviour TW-037
+      creates and must land with it or immediately after, not before, or they are red
+      on arrival for a reason nobody will remember.
+      in plain terms: the rules about the steadiness words are written down but
+      nothing in the build checks them, so they will quietly stop being true. This is
+      the check.
+      spec: docs/spec/wizard-states.md §22 (Enforced by), §10 (a rule with no checker)
+      related: TW-028 extends wordingcheck for §19/§20; this is the §22 half and the
+      two should be looked at together to avoid two checkers over one file.
+      owner: implementer, once [approved]
 
 ## Blocked
 
