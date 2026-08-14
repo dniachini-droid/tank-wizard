@@ -59,7 +59,7 @@ const MUTATIONS = [
   {
     label: 'the dose-gap check removed',
     file: 'src/lib/dosing/alkalinity.js',
-    old: '  if (out.band === "stable" && !alkWorsening\n      && !doseDriftedFrom(out.maintenanceDose, out.currentDose, def.key,\n        out.current != null && (out.current.value < def.min || out.current.value > def.max))) {',
+    old: '  if (out.band === "stable" && !alkWorsening\n      && !doseDriftedFrom(out.maintenanceDose, out.currentDose, def.key)) {',
     neu: '  if (out.band === "stable" && !alkWorsening) {',
     suites: [{ kind: 'legacy', name: 'protocols' }, { kind: 'legacy', name: 'sim/years' }],
   },
