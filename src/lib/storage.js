@@ -1,3 +1,4 @@
+import { noteCount } from './install-witness.js';
 import {
   PHOTO_KEY, announceFallbackOnce, attachPhotos, collectOrphans, detachPhotos,
   needsMigration, photosAreInline,
@@ -199,6 +200,13 @@ export async function saveKey(key, value) {
     value = detached.rows;
   }
 
+  /* How much this device has ever held, recorded as it is written rather than
+     only at startup — a session that adds 40 readings and is wiped before the
+     next launch should still be able to say so. Kept in IndexedDB, so it
+     survives a clear that takes only localStorage; it can never make a save
+     fail, and a device with no IndexedDB simply records nothing. */
+  const witnessed = Array.isArray(value) ? noteCount(key, value.length) : null;
+
   let bridgeError = null;
   try {
     if (window.storage && window.storage.set) {
@@ -206,6 +214,7 @@ export async function saveKey(key, value) {
       /* Mirror to local storage as well, so a later bridge failure can still
          read back what was written. */
       lsSet(key, value);
+      await witnessed;
       return true;
     }
   } catch (e) {
@@ -216,7 +225,7 @@ export async function saveKey(key, value) {
   /* Bridge unavailable or failed — write locally instead. In the shipped PWA
      this is the only path, so the local failure is the one worth reporting;
      with a bridge in play its failure came first and explains more. */
-  if (lsSet(key, value)) return true;
+  if (lsSet(key, value)) { await witnessed; return true; }
 
   const e = bridgeError || lastLocalError;
   if (storageErrorHandler) {
