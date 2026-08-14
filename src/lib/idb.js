@@ -16,13 +16,18 @@
  * Version history:
  *   1  icp-photos       (c7ed9d0)
  *   2  install-witness  — what this device held, so a wipe is detectable
+ *   3  backup-ring, backup-meta — snapshots, and the file handle they rewrite
+ *   4  keyvalue         — everything loadKey/saveKey store, out of localStorage
  */
 
 export const DB_NAME = "tank-wizard";
-export const DB_VERSION = 2;
+export const DB_VERSION = 4;
 export const PHOTO_STORE = "icp-photos";
 export const WITNESS_STORE = "install-witness";
-const STORES = [PHOTO_STORE, WITNESS_STORE];
+export const RING_STORE = "backup-ring";
+export const META_STORE = "backup-meta";
+export const KV_STORE = "keyvalue";
+const STORES = [PHOTO_STORE, WITNESS_STORE, RING_STORE, META_STORE, KV_STORE];
 
 /* An open that neither succeeds nor fails is a real state, not a hypothetical:
    `onblocked` fires when another tab holds an older version of the database

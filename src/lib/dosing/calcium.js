@@ -396,19 +396,23 @@ export function assessCalcium({ readings, doseLog = [], waterChanges = [], setti
     return out;
   }
 
-  /* Section 37: judge where calcium sits from the pattern, not from the last
-     number alone. A single reading dropping to 445 on a tank that has held 470
-     for a month is a test result, not a tank at 445 — and treating it as the
-     latter is how the engine ended up adjusting a correct dose. */
+  /* The fitted line at the last timestamp, correction-adjusted. It sizes a
+     one-off correction below; it does not say where calcium is. */
   const fittedNow = (fit && maths.length >= 3)
     ? maths.reduce((a, r) => a + r.value, 0) / maths.length
       + fit.slope * (alkStamp(maths[maths.length - 1])
         - maths.reduce((a, r) => a + alkStamp(r), 0) / maths.length)
     : out.current.value;
   out.fittedNow = fittedNow;
-  const inRange = fittedNow >= def.min && fittedNow <= def.max;
-  const above = fittedNow > def.max;
-  const below = fittedNow < def.min;
+  /* §26, decided 14 Aug: position is the last reading — see the same block in
+     `alkalinity.js`. Section 37's "judge where calcium sits from the pattern"
+     is superseded: a single reading dropping to 445 on a tank that has held 470
+     for a month is still where the only measurement puts it, and the engine
+     said "calcium is below your range at 405ppm" against a band of 400–450. */
+  const posNow = out.current.value;
+  const inRange = posNow >= def.min && posNow <= def.max;
+  const above = posNow > def.max;
+  const below = posNow < def.min;
   /* §11's grading fix — see `outOfBandWorsening` above `doseDriftedFrom` in
      helpers.js for the two qualifiers and why this is shared across all
      three engines rather than copied per file. Only ever promotes away from
@@ -426,8 +430,8 @@ export function assessCalcium({ readings, doseLog = [], waterChanges = [], setti
      inside it and 462 comfortably outside it, which matches the protocol's own
      examples. And it only counts when the trend is heading toward that edge:
      490 falling is moving away from the top, not toward it. */
-  const nearLower = inRange && (fittedNow - def.min) < bandWidth * 0.12;
-  const nearUpper = inRange && (def.max - fittedNow) < bandWidth * 0.12;
+  const nearLower = inRange && (posNow - def.min) < bandWidth * 0.12;
+  const nearUpper = inRange && (def.max - posNow) < bandWidth * 0.12;
   const headingDown = out.trendPerDay < 0, headingUp = out.trendPerDay > 0;
   out.nearEdge = (nearLower && headingDown) ? "lower"
     : (nearUpper && headingUp) ? "upper" : null;
@@ -470,8 +474,8 @@ export function assessCalcium({ readings, doseLog = [], waterChanges = [], setti
   /* Sections 9, 27 and 48: hold unless the movement is credible — unless
      calcium is already outside the range and still moving away from it, where
      even a small persistent trend needs answering (section 24). */
-  const caClearlyOut = above ? (fittedNow - def.max) > CA_TREND.stable
-    : below ? (def.min - fittedNow) > CA_TREND.stable : false;
+  const caClearlyOut = above ? (posNow - def.max) > CA_TREND.stable
+    : below ? (def.min - posNow) > CA_TREND.stable : false;
   const caRepeats = repeatedCorrections(corrections, "calcium", nowStamp);
   const caWorsening = caClearlyOut
     && (Math.abs(out.trendPerWeek) >= CA_TREND.stable || caRepeats >= 2)
