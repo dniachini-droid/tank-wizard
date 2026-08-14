@@ -2,10 +2,9 @@ run: 2026-08-14-phase6-bugs
 routine: routine 15 — phase 6: the known bugs
 started: 2026-08-14T00:00:00Z
 status: interrupted
-last completed step: bugs 3 and 4 — both now on this branch, bug 3 via a
-  merge of `main` into `claude/bug4-alkalinity-band` (see the log's "Merge —
-  bugs 3 and 4 composed" section). Listed oldest first; bug 4 is the genuine
-  last completed step.
+last completed step: bugs 3, 4 and 5 — all three now on this branch, composed
+  in bug order rather than merged independently (see the log's "Merge" sections).
+  Listed oldest first; bug 5 is the genuine last completed step.
 
   bug 3 — dose-gap halving removed (3a) + stability
   grading fixed (3b), shipped together per §7/§11. `doseDriftedFrom`
@@ -85,21 +84,68 @@ last completed step: bugs 3 and 4 — both now on this branch, bug 3 via a
   in full. Bugs 5, 6 and 7 were each also cut from a `main` that predates bug
   4, per rule 1; they are composed onto this branch in bug order, each
   regenerating the fingerprint against everything applied so far.
-next step: bug 5 — TW-016, magnesium correction rail 100 -> 25
-  (src/lib/analytics/correction.js:20, CORRECTIONS.magnesium.maxPerDay).
-  Branch fresh from origin/main. Read routine section 5 in full before
-  starting. rails.test.js's SPEC_RAIL constant needs re-pointing to
-  {0.5, 20, 25} as part of this fix (the backlog item TW-016 explicitly
-  names this file's constant, not just its assertions — not a rule-4
-  violation), and its header comment's "§6, lines 149-166" citation is stale
-  (now §3 after the 14 Aug canon swap) — correct both in the same PR. After
-  the fix, confirm rails.test.js's calcium assertions pass for a reason
-  already true before this fix (code was already right) and magnesium's pass
-  for the new reason, not just that the file goes green as a whole.
-in-flight: none — bugs 3 and 4 both shipped; bug 3 merged (PR #22), bug 4's
-  PR #23 updated with `main` merged in and its conflicts resolved, working
-  tree clean
-branch: claude/bug4-alkalinity-band (pushed, PR #23)
+
+  bug 5 — TW-016, magnesium correction rail 100 -> 25,
+  shipped. `src/lib/analytics/correction.js:20`
+  `CORRECTIONS.magnesium.maxPerDay`: 100 -> 25; `safe-rate.js`'s
+  `CORRECTION_MAX_RATE.magnesium` (25) confirmed already correct, untouched.
+  The test was already there per TW-016's own text — `rails.test.js`'s
+  `SPEC_RAIL` re-pointed from the pre-13-Aug canon {0.5,25,100} to
+  {0.5,20,25}, header comment corrected from stale "§6" to §3 — confirmed
+  6/12 red before, 12/12 green after, calcium's three passing for the reason
+  they always should have (code was already right) and magnesium's for the
+  new reason. `tests/parity/correction-calculator-vs-rail.test.js` needed
+  the same treatment (found via TW-016's own repro: line) — two of its four
+  assertions hardcoded the *buggy* 100/4x figures as ground truth; its real
+  SPEC VIOLATION assertion passes unedited now (the fix's own effect), the
+  two stale ones re-pointed to the corrected figures. Left alone, confirmed
+  unrelated via a differential failure-list diff: rate-rails.test.js's two
+  magnesium/calcium failures (same stale-canon shape, but reads only
+  safe-rate.js/rateLimitDose, neither touched here) — present unchanged in
+  both the pre-fix and post-fix run. golden.json unaffected — CORRECTIONS
+  isn't read by any assess* engine, only by Setup's calculator and
+  proposeCorrection, neither exercised by golden.js's sweep; confirmed via
+  legacy-port:golden passing with no digest-mismatch output. npm run verify
+  GREEN on every blocking check. vitest: baseline 70 / post-fix 63, diff
+  shows exactly the 7 closed assertions removed, zero added. PR:
+  https://github.com/dniachini-droid/tank-wizard/pull/25
+
+  COMPOSITION NOTE, replacing bug 4's note above where the two disagree: bugs
+  4-7 were each branched fresh from a `main` that predates the others, per
+  rule 1, and all four PRs went conflicted at once — against `main` (PR #24
+  moved it under them) and against each other, on this file, the run log,
+  .agent/backlog.md and tests/legacy-port/golden.json. They are being composed
+  in bug order, each branch merging the one before it, so that the PRs merge
+  cleanly in that order: #23, then #25, then #26, then #27. Each step
+  re-derives the golden fingerprint against every fix applied so far —
+  regenerating it where the tree moves it, auditing the diff by element and
+  direction — rather than choosing a side, because the bugs interact (bug 4's
+  narrower alkalinity band moves which cases fall into bug 3's promotion
+  window). At this step, bugs 3 + 4 + 5, the digest is unchanged at
+  fbac65244f00ac9b: bug 5's constant lives in `analytics/correction.js`, which
+  nothing in the sweep reads. Measured on the composed tree, not assumed from
+  the absence of a git conflict — golden.json did not conflict here, and that
+  is exactly when the check matters. See the log's "Merge — bug 5 composed onto
+  bugs 3 + 4" section.
+next step: bug 6 — TW-019, remove magnesium from DOSE_ADVICE_RULES
+  (src/lib/analytics/drift.js:40-57). Branch fresh from origin/main. Read
+  routine section 6 in full before starting. The fix itself is a straight
+  deletion (delete the `magnesium: {...}` entry — computeDoseAdvice iterates
+  Object.keys(DOSE_ADVICE_RULES) generically, no special-casing needed
+  elsewhere). The real work is the trace the routine calls for:
+  `previewStrengthChange` (corrected-strength.js:43-44, rendered live at
+  Insights.jsx:697-720) consumes computeDoseAdvice's result and must be
+  checked that it doesn't unconditionally index a now-absent `.magnesium`
+  key — verify this before/after, don't assume. Insights.jsx:108 and
+  Dashboard.jsx:298-300 are TW-022 (separate, already-tracked dead code) —
+  leave them alone, don't expand into that item.
+  Bug 6 is already implemented on `claude/bug6-mg-dose-advice` (PR #26,
+  branched from `main` before this branch existed); it is composed onto this
+  branch next rather than branched fresh.
+in-flight: none — bugs 3, 4 and 5 all shipped. Bug 3 merged (PR #22); bug 4
+  (PR #23) carries bug 3 and the canon run; this branch (PR #25) carries bugs
+  3, 4 and 5. Working tree clean.
+branch: claude/bug5-magnesium-rail (pushed, PR #25)
 uncommitted work: no
 
 <!--
@@ -109,7 +155,7 @@ next run must resume before starting anything new. See AGENTS.md, "Checkpoint
 and resume contract".
 
 status is "interrupted" rather than "complete" because the routine (seven
-bugs) is not finished — bugs 1-4 are done, bugs 5-7 remain. This is a clean
+bugs) is not finished — bugs 1-5 are done, bugs 6-7 remain. This is a clean
 stopping point per rule 6 (stop at a bug boundary), not a crash: nothing is
 half-edited, nothing needs reverting.
 
@@ -129,4 +175,14 @@ note it left that is still live rather than run-specific is carried below.
 Found while reading and deliberately not fixed: .agent/backlog.md has two items
 numbered TW-016. Renumbering one is Dan's call, not a tidy-up — an ID is cited
 from run notes and PRs.
+
+The same has now happened a second time, and composing the branches is what
+made it visible: there are two items numbered TW-026 — `[approved] TW-026
+doseStatus cannot express four cells of the journey-4b matrix` (journeys 4/4b,
+approved by the canon run) and `[chem] TW-026 magnesium's default band is
+off-centre` (filed by bug 4). Bug 4 minted its number against a backlog that
+did not yet carry the other; neither branch could see the clash on its own.
+Left alone for the reason above — both IDs are already cited from run notes
+and PRs, so renumbering is Dan's call. TW-032 is the first free number if he
+wants one.
 -->
