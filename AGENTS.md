@@ -25,6 +25,13 @@ safety property, not a quality property.
 6. **No new runtime dependencies** without an item tagged `[approved][deps]`.
 7. **No network calls added to the app.** It is offline-first by design.
 8. **No secrets, keys, tokens, or personal data** committed. Ever.
+9. **Never edit anything under `legacy/`.** It is the original single-file Tank
+   Wizard repo, preserved on 14 August 2026 with its full test suite passing —
+   41 checks, 5,940 golden cases, fingerprint `37ded9064e91e80e`. It is a
+   reference and a source of tests to port, **not live code**. Read from it,
+   copy out of it, cite it — never write to it. To port a test, change the copy
+   in the root `tests/` tree and leave the original untouched. See
+   `legacy/README-LEGACY.md`.
 
 ## Definition of done
 
