@@ -23,7 +23,8 @@
 import { IDBFactory } from 'fake-indexeddb'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { buildBackup, restoreBackup } from '../../lib/backup.jsx'
-import { closePhotoStore, photoIds } from '../../lib/photo-store.js'
+import { KV_STORE, run } from '../../lib/idb.js'
+import { closePhotoStore, deletePhoto, photoIds } from '../../lib/photo-store.js'
 import { loadKey, lsGet, onStorageError, saveKey } from '../../lib/storage.js'
 
 /* Not a real JPEG, but exactly the size of the largest one the app can store:
@@ -40,6 +41,18 @@ const panel = (id, date, image) => ({
 
 const said = []
 
+/* Where the rows themselves live changed under this suite's feet: piece three
+   of routine 16 (TW-D11) moved every loadKey/saveKey key — `icp-tests`
+   included — from localStorage into IndexedDB's key-value store. Every
+   property these tests pin survives; the ADDRESS several of them read the row
+   store at did not, so those assertions read the row store where it now is.
+   The fallback cases, where IndexedDB is unusable and rows genuinely stay in
+   localStorage, still read localStorage — that is the point of them. */
+const storedRows = async () => {
+  const res = await run(KV_STORE, 'readonly', (s) => s.get('icp-tests'))
+  return typeof res.value === 'string' ? JSON.parse(res.value) : undefined
+}
+
 beforeEach(() => {
   window.localStorage.clear()
   delete window.storage
@@ -51,19 +64,21 @@ beforeEach(() => {
 })
 
 describe('where a photo ends up', () => {
-  it('is not written into localStorage', async () => {
+  it('is not written into the row store, or anywhere in localStorage', async () => {
     await saveKey('icp-tests', [panel('a', '2026-01-01', PHOTO)])
 
-    const stored = lsGet('icp-tests')
+    const stored = await storedRows()
     expect(stored).toHaveLength(1)
     expect(stored[0].image).toBeUndefined()
     expect(JSON.stringify(stored)).not.toContain('AAAA')
+    /* Since the row move, localStorage holds nothing for this key at all. */
+    expect(window.localStorage.getItem('danstank:icp-tests')).toBeNull()
   })
 
-  it('leaves everything else on the row in localStorage, unchanged', async () => {
+  it('leaves everything else on the row in the row store, unchanged', async () => {
     await saveKey('icp-tests', [panel('a', '2026-01-01', PHOTO)])
 
-    expect(lsGet('icp-tests')[0]).toMatchObject({
+    expect((await storedRows())[0]).toMatchObject({
       id: 'a', date: '2026-01-01', note: 'Quarterly panel',
       elements: { calcium: 420, magnesium: 1350 },
     })
@@ -92,14 +107,16 @@ describe('where a photo ends up', () => {
     expect(await photoIds()).toEqual([])
   })
 
-  it('shrinks what localStorage holds by the whole size of the photo', async () => {
+  it('shrinks what the row store holds by the whole size of the photo', async () => {
     const inline = JSON.stringify([panel('a', '2026-01-01', PHOTO)]).length
 
     await saveKey('icp-tests', [panel('a', '2026-01-01', PHOTO)])
-    const after = window.localStorage.getItem('danstank:icp-tests').length
+    const res = await run(KV_STORE, 'readonly', (s) => s.get('icp-tests'))
 
     expect(inline).toBeGreaterThan(293000)
-    expect(after).toBeLessThan(300)
+    expect(res.value.length).toBeLessThan(300)
+    /* And localStorage's share of it is now zero rather than merely small. */
+    expect(window.localStorage.getItem('danstank:icp-tests')).toBeNull()
   })
 })
 
@@ -116,7 +133,7 @@ describe('photos already stored inline, on an existing install', () => {
 
     expect(back[0].image).toBe(PHOTO)
     expect(await photoIds()).toEqual(['a'])
-    expect(lsGet('icp-tests')[0].image).toBeUndefined()
+    expect((await storedRows())[0].image).toBeUndefined()
   })
 
   it('are readable, and still only in one place, on every load after that', async () => {
@@ -125,7 +142,8 @@ describe('photos already stored inline, on an existing install', () => {
 
     expect((await loadKey('icp-tests', []))[0].image).toBe(PHOTO)
     expect(await photoIds()).toEqual(['a'])
-    expect(window.localStorage.getItem('danstank:icp-tests').length).toBeLessThan(300)
+    expect((await storedRows())[0].image).toBeUndefined()
+    expect(window.localStorage.getItem('danstank:icp-tests')).toBeNull()
   })
 
   it('stay where they are, and stay readable, when they cannot be written', async () => {
@@ -153,7 +171,7 @@ describe('photos already stored inline, on an existing install', () => {
 
     expect(back[0].image).toBe(PHOTO)
     expect(await photoIds()).toEqual(['a'])
-    expect(lsGet('icp-tests')[0].image).toBeUndefined()
+    expect((await storedRows())[0].image).toBeUndefined()
   })
 })
 
@@ -228,6 +246,14 @@ describe('the message shown when localStorage is full', () => {
 
   it('does not blame photos once they are out of localStorage', async () => {
     await saveKey('icp-tests', [panel('a', '2026-01-01', PHOTO)])
+    /* Since the row move a full localStorage cannot fail a save while
+       IndexedDB works — the save simply lands there, which is the point of
+       the move. The message under test is only reachable when BOTH stores
+       refuse, so IndexedDB is broken here after the photos got out. The
+       property is unchanged: with the photos moved, the failure message must
+       not send the user after space that was never the problem. */
+    window.indexedDB = undefined
+    closePhotoStore()
     said.length = 0
 
     const msg = await whenFull()
@@ -261,10 +287,13 @@ describe('a bridge that hands back something unreadable', () => {
 describe('a photo that should be in IndexedDB but is not', () => {
   it('does not silently show a panel with no photo', async () => {
     await saveKey('icp-tests', [panel('a', '2026-01-01', PHOTO)])
-    /* The database is wiped from under the app — the row still says it has a
-       photo, and the photo is gone. */
-    window.indexedDB = new IDBFactory()
-    closePhotoStore()
+    /* The photo is gone from under the row — the row still claims one. Before
+       the row move this test wiped the whole database, but the rows live
+       there too now, so a whole-database wipe takes the claim with the photo
+       and there is nothing left to report on. Losing one store's entry while
+       the row survives is the shape that remains reachable — a partial
+       corruption, or an engine evicting blob data first. */
+    await deletePhoto('a')
     said.length = 0
 
     const back = await loadKey('icp-tests', [])
@@ -308,7 +337,7 @@ describe('backups', () => {
     expect(merged['icp-tests'][0].image).toBe(PHOTO)
     expect((await loadKey('icp-tests', []))[0].image).toBe(PHOTO)
     expect(await photoIds()).toEqual(['a'])
-    expect(lsGet('icp-tests')[0].image).toBeUndefined()
+    expect((await storedRows())[0].image).toBeUndefined()
   })
 
   it('restore from a file written before the move, whose rows are plain inline photos', async () => {
