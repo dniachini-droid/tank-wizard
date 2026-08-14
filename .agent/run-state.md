@@ -1,3 +1,32 @@
+run: 2026-08-14-failure-replay
+routine: routines/17-failure-replay.md
+started: 2026-08-14T00:00:00Z
+status: complete
+last completed step: committed, pushed, PR #38 opened (https://github.com/dniachini-droid/tank-wizard/pull/38) — never merged, per AGENTS.md #13
+next step: none — routine finished
+in-flight: none
+branch: claude/stoic-carson-i9416q
+uncommitted work: no
+
+notes:
+  - read-only routine: no application code, spec, test, or constant changed.
+    verified via git status before commit — only .agent files touched.
+  - scratch work happened outside the repo tree, in the session scratchpad
+    (<scratchpad>/failure-replay/legacy-run, current-run). Never committed.
+  - headline finding: current, in 2 of 24 simulated three-year runs, opens
+    a calcium correction plan just before a neglect spell and overshoots
+    further than legacy does in the same circumstance (836.8 / 710.6 ppm
+    vs legacy's worst 518.2 ppm) — above the documented F3 figure of
+    702 ppm. Attributed, not proven, to Bug 3's grading sensitivity change
+    increasing how often a plan is open going into a testing gap. Full
+    detail in .agent/failure-replay.md's "New failures" section.
+  - previous run-state content (routine 16, durability remainder, status
+    "piece one complete") was superseded by this run at the start; that
+    routine's own branches/PRs are untouched by this one and its log
+    survives independently at .agent/log/2026-08-14-durability-remainder.md.
+
+---
+
 run: 2026-08-14-durability-remainder
 routine: routines/16-durability-remainder.md (PR #30)
 started: 2026-08-14T11:30:00Z
@@ -62,3 +91,81 @@ notes:
 
      Nothing here changes routine 15's state or its composed PRs. This branch
      was cut from `main`, which carries bugs 1-7. -->
+
+---
+
+run: 2026-08-14-real-history-replay
+routine: routines/18-real-history-replay.md
+started: 2026-08-14T12:20:00Z
+status: complete
+last completed step: report written (all 11 sections), log written, committed,
+  pushed, PR opened: https://github.com/dniachini-droid/tank-wizard/pull/37
+next step: none — Dan reviews and merges (or not). Follow-ups are filed inside
+  the report, §8 (other owners) and §9 (questions for Dan).
+in-flight: nothing
+branch: claude/hopeful-bohr-yc58vu
+uncommitted work: no
+
+what shipped:
+  .agent/real-history-replay.md          — the full report, sections 1-11
+  .agent/log/2026-08-14-real-history-replay.md
+  .agent/run-state.md                    — this file
+
+nothing else in the tree moved. The replay harness lived in the session
+scratchpad and dies with the session; its core loop is preserved in the
+report's appendix (§10).
+
+notes for whoever runs this next:
+  - npm ci first; node_modules is empty in a fresh clone and the engine cannot
+    be imported without it.
+  - The engine modules cannot be imported by plain Node: src/lib/constants.js
+    imports ../icons.jsx. A node --import loader that transpiles .jsx through
+    the esbuild vendored with vite fixes it (report §10.1). Do not work around
+    it by stubbing PARAM_DEFS.
+  - The clock fake is not optional. Verify todayStr() returns the step date
+    before trusting one line of output; computeStability alone flips green to
+    amber on the system clock (report §8, finding O2).
+  - Key everything by (param, date, value). Reading ids do not survive an
+    export/restore round trip (report §1).
+
+---
+
+run: 2026-08-14-engine-decision
+routine: routines/19-engine-decision.md
+started: 2026-08-14T15:20:00Z
+status: complete
+last completed step: full report written (parts 1-6, open questions, appendix, plain
+  layer), log written
+next step: none — commit, push and PR happen in the same breath as this update
+in-flight: nothing
+branch: claude/busy-gates-xs4f5v (harness-designated; routine's claude/<date>-engine-decision name
+  overridden by the session's branch requirement — noted in the log)
+uncommitted work: yes (this file)
+
+notes for resume:
+  - npm ci is required before verify/vitest on a fresh container.
+  - Measured this run: verify ALL BLOCKING PASS (advisory deadcode+csscheck fail, baseline);
+    vitest 62 failed / 352 passed, 30/59 files; dupcheck 67 pairs 188 fns no unexplained dup;
+    blockdup 9 (ceiling 10); golden 83780c1728b67ca6 5940 rows 30 fields;
+    legacy golden 37ded9064e91e80e; routine 18 report absent on every branch.
+  - src/tests/docs identical to 480b086 (git diff --stat empty); only routines/ moved.
+  - A partial report ships WITHOUT part six (routine rule 10).
+
+<!-- Previous run record (2026-08-14-durability-remainder, PRs #30-#33) closed complete;
+     see .agent/log/ for its trail. -->
+
+---
+
+run: 2026-08-14-consistency-sweep
+routine: routines/05-consistency-sweep.md
+started: 2026-08-14T (scheduled fire)
+status: complete
+last completed step: all waves (A: 6 auditors; B: dose-parity-checker, 3 new test files; C: contradiction-hunter; D: adjudicator 19/19 confirmed → triage TW-033..041 + needs-dan 6/7/8 → reporter/morning brief)
+next step: none — run finished. Next sweep starts fresh per STEP ZERO.
+in-flight: none
+branch: claude/2026-08-14-consistency-sweep (pushed; PR #41 — body is the morning brief)
+uncommitted work: no
+
+carried forward, not this run's scope:
+  durability piece three (TW-D11, keys to IndexedDB) — not started, see
+  .agent/log/2026-08-14-durability-remainder.md for the resume notes.
