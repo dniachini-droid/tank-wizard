@@ -40,11 +40,10 @@ next step: bug 4 — alkalinity band 1.0 -> 0.6 (constants.js PARAM_DEFS,
   reference a different concept ("§3 default coral-mix target") — read what
   it actually asserts before assuming this fix closes it; write a new,
   narrower defects test if it doesn't match §2.
-in-flight: none — bug 3 committed on claude/bug3-halving-and-grading, not yet
-  pushed/PR'd as of this write; push + PR happen in the same breath as this
-  commit, per rule 8, before bug 4 starts.
-branch: claude/bug3-halving-and-grading
-uncommitted work: no (this file's own edit is part of the commit being made)
+in-flight: none — bug 3 shipped and pushed, PR #22 opened
+  (https://github.com/dniachini-droid/tank-wizard/pull/22), working tree clean
+branch: claude/bug3-halving-and-grading (pushed)
+uncommitted work: no
 
 <!--
 This file is the resume point. Every routine reads it first and writes it
