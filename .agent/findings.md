@@ -102,3 +102,23 @@ evidence: src/lib/backup.jsx:170-172 — unconditional `saveKey("custom-ranges",
 impact: In plain terms: use the undo feature to recover a few lost readings, and as a side effect every historical test result quietly re-labels itself against whatever target band was set on the snapshot's day — months of history relabeled, no warning, and the on-screen message explicitly claims nothing was overwritten.
 suggested fix: root fix is TW-013 (persist classification at log time); until then restoreBackup should merge custom-ranges rather than replace, or the restore confirmation must name the overwrite.
 confidence: medium (mechanism confirmed by code reading; not exercised live)
+
+### manual-dose-auditor / 2026-08-14 / status-of-priors
+TW-004 — UNCHANGED. DoseChangeSheet.jsx:1-69 imports no rail primitive; Save enabled for any val >= 0 (lines 21,63); Setup.jsx:105-111 saveDose checks only isNaN. Live: tests/parity/manual-override-rail-check.test.js still fails (70 mL vs 49.4 mL rail, no warning text).
+TW-012 — UNCHANGED, and reaches a third control: App.jsx:425-431 addDoseChange, :731-736 startCorrection, :741-766 cancel/finish all build next state from closed-over arrays; no disabled-while-saving guard on DoseChangeSheet.jsx:63 Record, DosingWizard.jsx:186 Start the correction, Setup.jsx:234 Save dose change.
+TW-014 — UNCHANGED. onSave(ml,date,time) only; App.jsx:816-826 writes {date,time,ml,element,note}; the recommended figure lives only in the transient doseResult popup and is discarded on close. History tests still fail as before.
+UNVERIFIED this run: real-browser paste/locale behaviour of number inputs; live double-tap reproduction (structural trace only, relied on last sweep's live repro).
+
+### manual-dose-auditor / 2026-08-14 / S2
+what: src/test/spec/dosing/rate-rails.test.js still asserts the PRE-14-Aug rail canon (calcium 25, magnesium 100 ppm/day) as "the canon table verbatim". The rail-constant fix (backlog, 2026-08-13, closed) updated correction.js and the sibling rails tests to current canon (reef-chemistry.md §3: alk 0.5, Ca 20, Mg 25) but missed this file. A red test now sits in the tree asserting numbers wrong per current canon, next to code that correctly implements the canon (safe-rate.js:27).
+evidence: npx vitest run src/test/spec/dosing/rate-rails.test.js → FAIL "calcium default rail is 25 ppm/24h per canon (code enforces 20)"; FAIL "magnesium default rail is 100 ppm/24h per canon (code enforces 25)". File header cites "reef-chemistry.md §6, lines 149-166" — a section/line range that no longer exists (rails now §3, ~107-113).
+impact: No wrong number today — the app enforces the correct rails. The risk: anyone who trusts this red test as "code is out of spec" and "fixes" safe-rate.js would reintroduce the 4x-too-loose magnesium rail. In plain terms: a leftover checklist still says magnesium may rise 100 a day when the decided safe ceiling is 25; if someone ever "fixes" the app to match the leftover, magnesium could be pushed four times faster than corals can tolerate.
+suggested fix: update rate-rails.test.js expectations (Ca→20, Mg→25) and its stale citation to §3 — same-shape follow-up to the closed rail item, not a new chemistry decision.
+confidence: high
+
+### manual-dose-auditor / 2026-08-14 / S3
+what: reef-chemistry.md §3 explicitly permits the user to TIGHTEN a rail ("never loosen"), but no mechanism exists anywhere: no Setup field, and neither rateLimitDose (alkalinity.js:351-379, reads settings only for dosePlausible) nor safeDoseBand (safe-rate.js:43-48, hardcoded SAFE_DAILY_RISE) consults any user value.
+evidence: grep for maxDailyRise/tighten/rateLimit in Setup.jsx → no matches. Live: rate-rails.test.js "a tighter user-configured alkalinity rail is not honoured" fails — settings.maxDailyRiseDKH: 0.2 silently ignored, clamped at hardcoded 0.5.
+impact: In plain terms: a keeper who knows their corals react badly to fast alkalinity swings has no way to ask the app for a gentler daily limit — the spec promises that control, the app silently ignores it and always runs at the full default rate.
+suggested fix: per-element rate-cap field (or existing rail-adjacent settings surface) threaded as min(default, userValue) through rateLimitDose/safeDoseBand. UI-and-wiring, not a chemistry change. NOTE for triage: check against wizard-states.md §21 (Setup asks facts, not judgements — a rate tolerance is named there as a NON-fact); the spec may be in self-tension here → possible needs-dan rather than backlog.
+confidence: high

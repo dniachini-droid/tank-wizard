@@ -46,3 +46,15 @@ NEW S1: snapshot restore unconditionally overwrites `custom-ranges`
 history against that day's targets, while Setup.jsx:722-728 tells the user
 "nothing was overwritten". Second door to TW-013's failure mode. Appended to
 findings.md. 3xS1 total (2 unchanged priors + 1 new).
+
+### manual-dose-auditor — complete (2nd)
+Priors TW-004/TW-012/TW-014 all UNCHANGED (verified live: parity rail test and
+both history tests still fail identically; TW-012 shown to reach a third
+control, Setup's "Save dose change"). NEW: S2 — rate-rails.test.js still
+asserts the pre-14-Aug rail canon (Ca 25/Mg 100) as "canon verbatim", red in
+tree, citing a spec section that no longer exists; the dangerous direction is
+someone "fixing" the code to match it (would reintroduce the 4x magnesium
+rail). S3 — §3's "user may tighten a rail" has no implementation anywhere;
+flagged for triage that §21 (facts-not-judgements) may put the spec in
+self-tension → candidate needs-dan. Appended. Run total so far: 3xS1, 1xS2,
+1xS3.
