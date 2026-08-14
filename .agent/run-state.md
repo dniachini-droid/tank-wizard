@@ -2,9 +2,9 @@ run: 2026-08-14-consistency-sweep
 routine: routines/05-consistency-sweep.md
 started: 2026-08-14T (scheduled fire)
 status: in-progress
-last completed step: Wave A complete (all 6 auditors reported, findings appended + pushed; 1 new S1, 8 new S2, 3 new S3; all priors reconfirmed unchanged)
-next step: Wave B — dose-parity-checker (writes under tests/parity/ only), then Wave C contradiction-hunter, then Wave D
-in-flight: Wave B — dose-parity-checker (if this run dies mid-Wave-B: check tests/parity/ for uncommitted test files; run npx vitest run tests/parity — commit if green-or-documented-failure pattern, revert if broken)
+last completed step: Wave B complete (3 parity files added + verified 53/8, committed 326605c; new S1 target-field semantics, S2 StabilityStrip live disagreement)
+next step: Wave C — contradiction-hunter (read-only, works §17 matrix over Wave A+B findings), then Wave D (adjudicator → triage → reporter → PR)
+in-flight: Wave C — contradiction-hunter (read-only; if run dies here, nothing to revert — re-dispatch)
 branch: claude/2026-08-14-consistency-sweep
 uncommitted work: yes (this file)
 

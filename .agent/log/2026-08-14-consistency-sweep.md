@@ -118,3 +118,23 @@ silent retroactive reclassification of all history), 8xS2, 3xS3 across six
 agents. Cross-cutting theme unchanged from yesterday and now sharper:
 single-source rule still violated everywhere (13 named classifiers, §19
 engine decision wired to nothing). Proceeding to Wave B.
+
+## Wave B — dose-parity-checker (complete)
+Baseline drift check first: parity suite was 39 pass/6 fail at start (vs 13
+Aug's 38/7) — fully explained by fd82363 (magnesium rail 100→25), a real fix
+whose spec assertion now passes; the 6 remaining failures verified identical
+BY CONTENT to the documented violations. Added 3 permanent files (all
+verified by the orchestrator's own re-run — 11 files, 61 tests, 53/8):
+- dose-status-target-field-semantics.test.js — S1: doseStatus.target is
+  mL/day in the MAJORITY of branches (suggested/settling/due/worked) and a
+  concentration in one (emergency). Latent (no generic consumer today), now
+  pinned.
+- stability-strip-vs-param-status.test.js — S2: live repro of the strip
+  showing its "outside" colour while the current reading is in-band on every
+  other surface (spread statistic vs last reading, §26).
+- position-is-last-reading-cross-engine.test.js — S3 positive: cross-engine
+  guard, 3/3 pass.
+Full suite 430 tests 366/64 — reconciles exactly with the 414/352/62
+baseline (+16 tests, +2 documented failures). Nothing outside tests/parity/
+touched (verified by exclusion runs). Committed 326605c. Proceeding to
+Wave C.
