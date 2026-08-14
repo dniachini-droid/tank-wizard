@@ -32,6 +32,28 @@ safety property, not a quality property.
    copy out of it, cite it — never write to it. To port a test, change the copy
    in the root `tests/` tree and leave the original untouched. See
    `legacy/README-LEGACY.md`.
+10. **Never resolve a contradiction, but always work it up.** When two live
+    behaviours conflict, or a document and the code disagree, do not choose
+    between them. But do not merely report the conflict either. Give it the full
+    treatment: two or three options with reasoning that can be checked, which
+    direction being wrong hurts, whether something in the app already does the
+    job, what else must change alongside, and what would make each option wrong.
+    Present the decision fully prepared and leave the choosing to Dan.
+    "Do not decide" does not mean "do not think."
+11. **Every prose report gets a plain-language layer.** This covers
+    `.agent/findings.md`, `.agent/needs-dan.md`, `.agent/spec-challenges.md`,
+    morning briefs and phase reports. Each must state its findings twice: the
+    precise version (figures, units, `file:line`), then the same thing in plain
+    reef-keeping terms — no code identifiers, no camelCase, no test names. Dan
+    keeps a reef tank; he does not write code. If the plain version is hard to
+    write, the finding is muddled, and that is worth reporting. This is a
+    writing requirement, not an extra agent. Structured files are exempt:
+    `.agent/backlog.md` keeps the item format above, where the `why:` line
+    carries the plain meaning and the identifiers are the point.
+12. **Dispatch `domain-verifier` only for chemistry.** Use it when a finding
+    changes a chemistry constant, changes what the app tells the user to dose,
+    or contradicts something settled in `docs/spec/`. Not for terminology, dead
+    code, formatting, test structure, performance or accessibility.
 
 ## Definition of done
 
