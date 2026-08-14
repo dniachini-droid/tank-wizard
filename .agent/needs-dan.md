@@ -6,75 +6,145 @@ Decisions no agent may make. Newest at top. Dan clears this file.
 
 ## Open
 
-### 3. §7's composition claim doesn't fully hold during an active correction
+### 5. `caClearlyOut`/`clearlyOut` compare a distance against a rate
 
-Bug 3 (`routines/15-phase6-bugs.md`) removed the out-of-band halving in
-`doseDriftedFrom` (§7) and fixed stability grading to catch a level outside
-its band and still worsening regardless of rate (§11), on §7's own stated
-premise: "with grading fixed, the app catches a slow decline directly and the
-hair-trigger is no longer doing any work." The golden sweep (5 of 5,940 rows,
-all alkalinity, all with a correction logged) shows one narrow case where that
-premise doesn't hold.
+Found while implementing §26 (position is the last reading) and left alone:
+not authorised, and wrong in a way that predates the decision.
 
-**The mechanism.** `doseDriftedFrom`'s (now-removed) `outOfBand` argument was
-computed from `out.current.value` — the last **raw** reading. Grading's new
-`outOfBandWorsening` check (this bug) is computed from `fittedNow` — the
-**correction-adjusted** fitted position, which was already what `alkWorsening`
-used pre-fix. During an active correction these two can disagree at the
-margin: the raw last reading sits just outside the band while the
-correction-adjusted fit sits just inside it. Before this bug, a real ~7-8.7%
-dose gap in that state was caught by the halved 6% out-of-band trigger (using
-the raw position). After this bug, the same gap is under the full 12% trigger
-(halving gone) and grading doesn't promote the band away from "stable" either
-(the fitted position reads in-band, so the two qualifiers never engage). The
-result: a real, moderate dose gap that used to prompt a recalculation now
-holds silently until it either clears 12% on its own or the correction ends
-and the raw and fitted positions converge again.
+`calcium.js`'s `caClearlyOut` and `helpers.js`'s magnesium `clearlyOut` ask
+whether the level is far enough past its band edge to count as "clearly" out:
 
-**Reproduce:** `routines/15-phase6-bugs.md` bug 3's golden audit,
-`alkalinity|0.8|-0.02|7|false|true` through `|0.8|0|20|false|true` in
-`tests/legacy-port/golden.js`'s sweep (offset 0.8, near-zero slope, an active
-correction). `action: "increase" -> "hold"`, no `band` change, `doseDriftedFrom`
-flips from true (halved, raw-position out-of-band) to false (un-halved, and
-grading sees the fitted in-band position).
+```js
+const caClearlyOut = above ? (posNow - def.max) > CA_TREND.stable
+  : below ? (def.min - posNow) > CA_TREND.stable : false;
+```
+
+The left side is a **distance in ppm**. `CA_TREND.stable` is **5 ppm per week**
+and `MG_TREND.stable` is **10 ppm per week** — rate constants, declared as such
+in each engine's own comment (`calcium.js:28`, "ppm/week — below this, treat as
+test variation"). The comparison is dimensionally wrong whichever measure of
+position feeds it, so §26 neither caused it nor fixed it.
+
+Alkalinity does not have the fault: `alkClearlyOut` compares against a literal
+`0.2`, which is a dKH distance and is right.
+
+**Not a recommendation, three options:** (a) leave it — the numbers happen to
+be in a workable range for a ppm distance, and 5 ppm / 10 ppm past the edge is
+not an unreasonable "clearly out" margin; the fault is that nothing says so and
+the next person to move `CA_TREND.stable` for rate reasons will move this too,
+silently. (b) Give each element its own named out-of-band margin constant, set
+to today's effective values so nothing moves, which makes the coupling visible
+without changing behaviour. (c) Point it at §5's kit noise floor instead
+(10 ppm calcium, 30 ppm magnesium) — dimensionally correct and already the
+constant family the app uses for "can the kit even see this", but it **triples
+magnesium's margin** and is a real behavioural change needing its own sweep.
+
+**In plain terms:** for calcium and magnesium, the app decides "this is clearly
+outside your range, not just a hair over" by comparing how far past the edge
+the level sits against a number that actually means "how fast it is moving in a
+week". The two are different kinds of measurement, and comparing them is a
+category error even though the numbers it picks are not silly. Nothing is
+visibly wrong on screen today. The risk is future: someone adjusting how fast
+counts as "moving" would, without knowing, also change how far counts as "out".
+
+### 4. The one-off correction is still sized from the fitted value
+
+`reef-chemistry.md` §26 moved every side-of-band question to the last reading.
+It deliberately did **not** move `toMid` — the distance from the level to the
+band midpoint that sizes a one-off correction — because that is a dose figure,
+not a position test, and dose figures need their own authorisation
+(AGENTS.md #3). Raised here rather than buried in the change.
+
+`alkalinity.js:750`, `calcium.js:495` and `helpers.js:978`, same shape in each:
+
+```js
+const toMid = Math.abs(mid - fittedNow);
+const oneOff = Math.round((toMid / effect) * 10) / 10;
+```
+
+**Why it is now inconsistent.** The card these figures print on states the
+position from the last reading, quotes the last reading, and computes the gap
+to the band edge from the last reading — then quotes a millilitre figure
+measured from a different position. Two numbers in one paragraph, from two
+places.
+
+**Why it was fitted in the first place**, and the argument is a real one
+(recorded at `alkalinity.js:743-749`): on a kit with 25 ppm of noise, whether
+the last reading landed on the high or low side of the sawtooth moved the
+correction by a third — 112 ppm against 85. A correction is a single act sized
+once, so a noisy endpoint has nowhere to average out.
+
+**What it would cost, measured.** Moving `toMid` to the last reading changes
+**39 further golden rows** beyond §26's 172 — 211 against 172 — every one of
+them a one-off correction volume. Worked examples from the sweep: alkalinity
+18.5 → 13.9 mL, 20.4 → 14.1 mL, 12.0 → 7.40 mL. That is up to about a 40%
+change in what a keeper is told to pour in one go.
 
 **Options, not a recommendation:**
 
-(a) **Leave it.** The window is narrow — needs a dose gap in roughly the 6-12%
-band (30-60% for calcium, since its trigger is 30%), a level within about a
-kit-noise-floor's width of the band edge, and an active correction running.
-It resolves itself once the correction completes (raw and fitted positions
-reconverge) or the gap grows past 12%/30% on its own. Cost: a real gap sits
-uncorrected for the life of the correction, which could be days.
+(a) **Move it, for consistency.** §26's principle reads naturally onto it — the
+distance is measured from a position, and the position is the last reading. The
+card becomes internally consistent. Cost: corrections get noisier, by exactly
+the sawtooth argument above, and the noise lands on a single pour rather than
+being averaged away.
 
-(b) **Make `doseDriftedFrom`'s out-of-band-ness (if the halving is ever
-reconsidered) or `outOfBandWorsening`'s position test use the same measure of
-"where the level is."** Whichever of `out.current.value` (raw) or `fittedNow`
-(correction-adjusted) is chosen as the single source of truth, use it
-everywhere a "which side of the band" question is asked. This is bigger than
-bug 3's citation — `alkClearlyOut`/`caClearlyOut`/`clearlyOut` (the
-`alkWorsening` family) already use `fittedNow` exclusively, so unifying on
-`fittedNow` is probably the smaller change, but it's a live behavioural
-change to more than the two things this bug touched and needs its own
+(b) **Leave it, and say so on the card.** Keep the fitted sizing and its noise
+argument, but stop the paragraph reading as though both numbers came from the
+same place — the correction is sized from the trend, and the card can say that
+in a clause. No dose figure moves. Cost: two measures stay live in one screen,
+which is the shape of problem §26 exists to remove.
+
+(c) **Size it from the last reading but keep a floor on how much a single
+noisy endpoint may move it** — e.g. clamp `toMid` to within one kit noise floor
+of the fitted distance. Cost: a new constant and a new rule, in a place that
+currently has neither; worth being explicit that this is a third mechanism,
+not a tidy-up.
+
+**Which direction hurts.** (a) over-corrects on a high reading and
+under-corrects on a low one, once, by up to a third on a noisy kit; magnesium
+is worst, alkalinity least. (b) hurts nobody today and leaves a live
+contradiction for the next person to find. (c) is the most correct and the most
+code.
+
+**In plain terms:** when the app tells you to add a one-off amount to bring a
+level back into range, it works out how far there is to go from the trend line
+through your recent tests, not from your last test. Everything else on that
+screen now comes from your last test. So the sentence can say your level is
+8.9 and 0.1 above your range, and then quote a millilitre figure worked out
+from 8.6. Nothing is dangerous about it and the trend-line version is arguably
+the steadier number — a single duff test cannot send you pouring a third too
+much. But it is two different answers to "where is my tank" in one paragraph,
+which is the exact thing the last decision was about.
+
+### ~~3. §7's composition claim doesn't fully hold during an active correction~~ — closed 2026-08-14, see Decisions
+
+Superseded rather than chosen between. The item offered three options and noted
+that option (b) — unify the two disagreeing measures of position, probably on
+`fittedNow` — was likely the smaller change. Dan's answer was that direction is
+wrong and size is not the deciding factor: **position is always the last
+reading** (`docs/spec/reef-chemistry.md` §26), implemented under that
 authorisation.
 
-(c) **Widen `outOfBandWorsening` to also fire on a large `doseDriftedFrom`-
-style gap even when `fittedNow` reads in-band**, reasoning that a real
-double-digit-percent dose/consumption mismatch is itself evidence worth
-acting on independent of band position. This reintroduces something
-halving-shaped, just gated differently — worth being explicit that's what it
-is before choosing it.
+**What that settles, precisely.** The mechanism this item described was two
+measures answering one question — `doseDriftedFrom`'s (since-removed) raw
+out-of-band check against grading's fitted `outOfBandWorsening`. There is now
+one measure, so the disagreement cannot recur. On this item's own cited rows,
+the app also stops being silent: `alkalinity|0.8|-0.02|7|false|true` held with
+"Your current dose is matching consumption. Keep testing on your usual
+schedule" against a maintenance figure of 9.72 vs a current 9.0 — the 8.0% gap
+this item is about — and now adds "But it is holding at 8.9dKH, which is
+0.108dKH above your range: a steady dose will keep it there indefinitely rather
+than bring it back," with the matching next step.
 
-**In plain terms:** a very specific, narrow situation — the tank's true
-alkalinity is right at the edge of its healthy range, a manual top-up
-correction is running, and the daily dose is off by a moderate amount (not a
-lot, not a little) — used to get flagged for a dose recalculation and, after
-this fix, doesn't get flagged until either the correction finishes or the
-mismatch grows larger. Nothing crashes and nothing dangerous is missed (an
-emergency — the level actually past its safe edge and still heading the wrong
-way — is caught by a separate, unaffected check), but a real, moderate dosing
-error can sit unflagged for the life of a correction. Found by machine-testing
-thousands of synthetic scenarios, not observed on the real tank.
+**What it does not settle, stated rather than glossed.** The 12% dose-gap
+trigger is untouched, so that 8.0% gap still does not prompt a dose
+recalculation — the keeper is now told about the level, not about the dose.
+Options (a) and (c) of this item were about the trigger, not the measure, and
+§26 does not decide between them. If a moderate gap under a running correction
+should itself force a recalculation, that is a separate authorisation and this
+paragraph is where it starts. Filed here as the residue rather than left
+implied by a closed item.
+
 
 ### ~~2. Negative-consumption refusal~~ — closed 2026-08-14, see Decisions
 
@@ -104,7 +174,90 @@ column — where naming the banned term is the point.
 
 ## Decisions
 
-### 2026-08-14 (latest) — Dan, spec owner: the calcium suggested default stays 425 ±25
+### 2026-08-14 (latest) — Dan, spec owner: position is always the last reading
+
+**Supersedes open item 3's option (b)**, which offered a choice between the two
+measures and noted that unifying on `fittedNow` was probably the smaller
+change. **It is the wrong direction, and size is not the deciding factor.**
+Recorded at `docs/spec/reef-chemistry.md` §26 and implemented under this
+authorisation.
+
+**The rule.** Whether a level is in band, out of band, or at which edge is
+answered by the most recent measurement, never by a fitted or projected value.
+If the last reading says 8.5 and the band starts at 8.2, the level is in band —
+on the upper edge, but in band. History is for trend, direction, consumption
+and dose; it is never used to assert where the level is now. The app must never
+state a position that no measurement supports.
+
+**What was wrong, in the app's own words.** Every side-of-band test read
+`fittedNow` while the sentence reporting it quoted the last raw reading, so the
+shipped code produced "Alkalinity is below your range at 8.5dKH" against a band
+of 8.2–8.8, "Calcium is below your range at 405ppm" against 400–450, and
+"Magnesium is below your range at 1260ppm" against 1250–1400. The reverse ran
+silently: a newest reading outside its band with a fitted value inside it
+reached the "dose is matching consumption" card.
+
+**What moved.** `inRange`/`above`/`below` in all three engines; `nearEdge`;
+`alkClearlyOut`/`caClearlyOut`/`clearlyOut`; §11's grading, through the
+position triple it takes; and `doseStatus`'s two position tests. **No threshold
+moved** — the 0.2 dKH / `CA_TREND.stable` / `MG_TREND.stable` margins, the
+12%-of-band edge proximity and every trigger percentage are untouched and are
+simply measured from the last reading now. Already compliant and left alone:
+each engine's emergency check, `correctionProgress`'s arrival zone, and
+`proposeCorrection`.
+
+**What it costs, measured against the 5,940-case golden sweep.** 172 rows
+change — 163 alkalinity, 8 calcium, 1 magnesium — and **every one has a logged
+correction**, the state that makes the two measures diverge. 54 rows go
+`increase → hold`, and **29 of those have a last reading above the band**: the
+app was recommending a larger alkalinity dose (9.0 → 10.6 mL/day, an 18% raise)
+for a tank whose newest reading was 8.87 dKH. 40 rows change band grade, 36 of
+them `mild → stable` and 4 `stable → mild` — those four all above band and
+still rising, so grading got stricter where the reading is the worse news. One
+card moves `idle → off-target`. **0 rows move the dose away from the band its
+last reading is on**, in either direction, for any element. Fingerprint
+`fbac65244f00ac9b → 83780c1728b67ca6`, re-recorded through `golden.js`'s
+`UPDATE=1` after a row-by-row audit.
+
+**One thing removed.** `doseStatus`'s "dose right, level off" card. It said what
+the "steady, off target" branch above it already says and existed only because
+the two branches measured position differently; with one measure the earlier
+branch always returns first and the condition became unreachable. Proved
+unreachable rather than assumed, and confirmed against the sweep: the single
+card that changed state is one of these, and it now reads "Calcium is steady but
+above your range" instead of "Calcium dose is matching consumption at 451ppm".
+
+**Two things flagged, not changed** — both now open items 4 and 5 above. The
+one-off correction volume (`toMid`) is still sized from the fitted value, which
+is a dose figure and needs its own authorisation; moving it would change 39
+further golden rows by up to about 40% of a pour. And `caClearlyOut`/
+`clearlyOut` compare a ppm distance against a ppm-per-week rate constant, which
+is dimensionally wrong whichever measure of position feeds it.
+
+**Verification.** `npm run verify` green on every blocking check, including
+`legacy-port:golden`, `legacy-port:protocols` and `legacy-port:invariants`
+(6,000 assessments, 0 properties violated). `npx vitest run`: 62 failed / 313
+passed against a measured baseline of 62 / 313 on the same tree — the failure
+set compared by name, not by count: 0 new, 0 fixed.
+`src/test/defects/position-is-last-reading.test.js` has 17 assertions; **all 17
+fail against the code as it stood before the rule.** One test mirror moved with
+the code and says so in place: `tests/legacy-port/invariants.js`'s "idle while
+out of range" property measured "out of range" on `fittedNow` by design, and
+that design is what changed — the property itself is unaltered.
+
+**In plain terms.** If your test says 8.5, your alkalinity is 8.5. The app drew
+a line through your recent readings to work out which way things were heading —
+that part is right — but it was also using that line to decide where your tank
+is *now*, and the line and the last test do not always agree. So it would tell
+you "alkalinity is below your range at 8.5" when your range starts at 8.2, with
+both halves of the sentence coming out of the same app. Worse, across the test
+tanks it keeps, that mistake had it telling people to increase their alkalinity
+dose — by nearly a fifth in one case — on a tank whose latest test was already
+above the top of its range. It now holds. Where your tank is comes from your
+last test, every time, on every screen; how fast it is moving and what to pour
+still come from the whole history, because one test cannot tell you those.
+
+### 2026-08-14 (previously latest) — Dan, spec owner: the calcium suggested default stays 425 ±25
 
 **No spec change, no code change, no backlog item.** `reef-chemistry.md` §2
 layer 3 keeps calcium at **425 ppm, 50 total (±25)** — 400–450. It is correct as

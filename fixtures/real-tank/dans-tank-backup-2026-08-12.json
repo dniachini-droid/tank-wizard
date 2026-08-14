@@ -1,0 +1,2980 @@
+{
+ "format": "dans-tank-backup",
+ "version": 1,
+ "createdAt": "2026-08-12T13:53:47.198Z",
+ "counts": {
+  "readings": 336,
+  "icps": 2,
+  "waterChanges": 25,
+  "doseChanges": 2,
+  "taskLog": 13,
+  "lighting": 1
+ },
+ "data": {
+  "readings": [
+   {
+    "id": "r4dunaymmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.3,
+    "date": "2026-08-09",
+    "note": ""
+   },
+   {
+    "id": "xy035x6zmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.2,
+    "date": "2026-08-08",
+    "note": ""
+   },
+   {
+    "id": "dsfjvbchmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9,
+    "date": "2026-08-06",
+    "note": ""
+   },
+   {
+    "id": "22mejsedmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9,
+    "date": "2026-08-05",
+    "note": ""
+   },
+   {
+    "id": "ppul9docmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9,
+    "date": "2026-08-04",
+    "note": ""
+   },
+   {
+    "id": "9rnlf8f5msmxw6qu",
+    "param": "alkalinity",
+    "value": 8.7,
+    "date": "2026-08-02",
+    "note": ""
+   },
+   {
+    "id": "f3a0g2qcmsmxw6qu",
+    "param": "alkalinity",
+    "value": 8.7,
+    "date": "2026-08-01",
+    "note": ""
+   },
+   {
+    "id": "5nub6qicmsmxw6qu",
+    "param": "alkalinity",
+    "value": 8.7,
+    "date": "2026-07-30",
+    "note": ""
+   },
+   {
+    "id": "bdi1uj8qmsmxw6qu",
+    "param": "alkalinity",
+    "value": 8.6,
+    "date": "2026-07-28",
+    "note": ""
+   },
+   {
+    "id": "a6kqao9tmsmxw6qu",
+    "param": "alkalinity",
+    "value": 8.6,
+    "date": "2026-07-27",
+    "note": ""
+   },
+   {
+    "id": "bgstpzrcmsmxw6qu",
+    "param": "alkalinity",
+    "value": 8.9,
+    "date": "2026-07-25",
+    "note": ""
+   },
+   {
+    "id": "crfv4gxxmsmxw6qu",
+    "param": "alkalinity",
+    "value": 8.9,
+    "date": "2026-07-23",
+    "note": ""
+   },
+   {
+    "id": "mzgx3wupmsmxw6qu",
+    "param": "alkalinity",
+    "value": 8.9,
+    "date": "2026-07-21",
+    "note": ""
+   },
+   {
+    "id": "jz0ulzscmsmxw6qu",
+    "param": "alkalinity",
+    "value": 8.7,
+    "date": "2026-07-20",
+    "note": ""
+   },
+   {
+    "id": "3j8p1rxwmsmxw6qu",
+    "param": "alkalinity",
+    "value": 8.9,
+    "date": "2026-07-19",
+    "note": ""
+   },
+   {
+    "id": "ilno0f6qmsmxw6qu",
+    "param": "alkalinity",
+    "value": 8.8,
+    "date": "2026-07-18",
+    "note": ""
+   },
+   {
+    "id": "544enm7gmsmxw6qu",
+    "param": "alkalinity",
+    "value": 8.6,
+    "date": "2026-07-17",
+    "note": ""
+   },
+   {
+    "id": "eb8pe6obmsmxw6qu",
+    "param": "alkalinity",
+    "value": 8.6,
+    "date": "2026-07-16",
+    "note": ""
+   },
+   {
+    "id": "nzh1d8jgmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.1,
+    "date": "2026-07-14",
+    "note": ""
+   },
+   {
+    "id": "ixzdy69nmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.1,
+    "date": "2026-07-13",
+    "note": ""
+   },
+   {
+    "id": "vte4gzbgmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.2,
+    "date": "2026-07-12",
+    "note": ""
+   },
+   {
+    "id": "qnt05c2wmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.3,
+    "date": "2026-07-11",
+    "note": ""
+   },
+   {
+    "id": "yi3fxda7msmxw6qu",
+    "param": "alkalinity",
+    "value": 9.6,
+    "date": "2026-07-10",
+    "note": ""
+   },
+   {
+    "id": "55e85docmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.5,
+    "date": "2026-07-09",
+    "note": ""
+   },
+   {
+    "id": "ue8qfa8ymsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.8,
+    "date": "2026-07-08",
+    "note": ""
+   },
+   {
+    "id": "glz0u9s7msmxw6qu",
+    "param": "alkalinity",
+    "value": 9.2,
+    "date": "2026-07-07",
+    "note": ""
+   },
+   {
+    "id": "t1mc8e8jmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9,
+    "date": "2026-07-06",
+    "note": ""
+   },
+   {
+    "id": "qq4i21z0msmxw6qu",
+    "param": "alkalinity",
+    "value": 9.4,
+    "date": "2026-07-05",
+    "note": ""
+   },
+   {
+    "id": "unyv6if0msmxw6qu",
+    "param": "alkalinity",
+    "value": 9.2,
+    "date": "2026-07-04",
+    "note": ""
+   },
+   {
+    "id": "j9aq4x3umsmxw6qu",
+    "param": "alkalinity",
+    "value": 9,
+    "date": "2026-07-03",
+    "note": ""
+   },
+   {
+    "id": "aiel4ptxmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9,
+    "date": "2026-07-02",
+    "note": ""
+   },
+   {
+    "id": "ff2qgti4msmxw6qu",
+    "param": "alkalinity",
+    "value": 9.3,
+    "date": "2026-07-01",
+    "note": ""
+   },
+   {
+    "id": "4k0tt3mbmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.3,
+    "date": "2026-06-30",
+    "note": ""
+   },
+   {
+    "id": "yp9250f7msmxw6qu",
+    "param": "alkalinity",
+    "value": 9.3,
+    "date": "2026-06-29",
+    "note": ""
+   },
+   {
+    "id": "lcqzqwcsmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.4,
+    "date": "2026-06-28",
+    "note": ""
+   },
+   {
+    "id": "yk3kxt4zmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.5,
+    "date": "2026-06-27",
+    "note": ""
+   },
+   {
+    "id": "3i1qnzimmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.6,
+    "date": "2026-06-26",
+    "note": ""
+   },
+   {
+    "id": "adxr0ca8msmxw6qu",
+    "param": "alkalinity",
+    "value": 9.7,
+    "date": "2026-06-25",
+    "note": ""
+   },
+   {
+    "id": "1crhyvcdmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.5,
+    "date": "2026-06-24",
+    "note": ""
+   },
+   {
+    "id": "tlcpyo8amsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.4,
+    "date": "2026-06-23",
+    "note": ""
+   },
+   {
+    "id": "grkgmcq5msmxw6qu",
+    "param": "alkalinity",
+    "value": 9.5,
+    "date": "2026-06-22",
+    "note": ""
+   },
+   {
+    "id": "6r1pyvp6msmxw6qu",
+    "param": "alkalinity",
+    "value": 9.5,
+    "date": "2026-06-21",
+    "note": ""
+   },
+   {
+    "id": "4lodtlfmmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.2,
+    "date": "2026-06-20",
+    "note": ""
+   },
+   {
+    "id": "frtnyj0kmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.2,
+    "date": "2026-06-18",
+    "note": ""
+   },
+   {
+    "id": "7njx647fmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.1,
+    "date": "2026-06-17",
+    "note": ""
+   },
+   {
+    "id": "j7tnooicmsmxw6qu",
+    "param": "alkalinity",
+    "value": 8.9,
+    "date": "2026-06-15",
+    "note": ""
+   },
+   {
+    "id": "7lzmoh30msmxw6qu",
+    "param": "alkalinity",
+    "value": 9,
+    "date": "2026-06-14",
+    "note": ""
+   },
+   {
+    "id": "1in63149msmxw6qu",
+    "param": "alkalinity",
+    "value": 9.2,
+    "date": "2026-06-12",
+    "note": ""
+   },
+   {
+    "id": "o3omq951msmxw6qu",
+    "param": "alkalinity",
+    "value": 9.3,
+    "date": "2026-06-10",
+    "note": ""
+   },
+   {
+    "id": "wz4e2mfumsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.3,
+    "date": "2026-06-08",
+    "note": ""
+   },
+   {
+    "id": "27tgwsmomsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.5,
+    "date": "2026-06-07",
+    "note": ""
+   },
+   {
+    "id": "rid2l83mmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.4,
+    "date": "2026-06-06",
+    "note": ""
+   },
+   {
+    "id": "0jvvojlvmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9,
+    "date": "2026-06-03",
+    "note": ""
+   },
+   {
+    "id": "jp9uvfermsmxw6qu",
+    "param": "alkalinity",
+    "value": 8.8,
+    "date": "2026-06-02",
+    "note": ""
+   },
+   {
+    "id": "ltiu2ksmmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9,
+    "date": "2026-06-01",
+    "note": ""
+   },
+   {
+    "id": "hbjp6hhpmsmxw6qu",
+    "param": "alkalinity",
+    "value": 8.9,
+    "date": "2026-05-30",
+    "note": ""
+   },
+   {
+    "id": "m8ug4x27msmxw6qu",
+    "param": "alkalinity",
+    "value": 8.9,
+    "date": "2026-05-28",
+    "note": ""
+   },
+   {
+    "id": "s67eikg4msmxw6qu",
+    "param": "alkalinity",
+    "value": 9.1,
+    "date": "2026-05-26",
+    "note": ""
+   },
+   {
+    "id": "hzq1amemmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.1,
+    "date": "2026-05-25",
+    "note": ""
+   },
+   {
+    "id": "l3yayf14msmxw6qu",
+    "param": "alkalinity",
+    "value": 10,
+    "date": "2026-05-24",
+    "note": ""
+   },
+   {
+    "id": "l1hbmpb5msmxw6qu",
+    "param": "alkalinity",
+    "value": 9.9,
+    "date": "2026-05-23",
+    "note": ""
+   },
+   {
+    "id": "mj6yl538msmxw6qu",
+    "param": "alkalinity",
+    "value": 9.8,
+    "date": "2026-05-22",
+    "note": ""
+   },
+   {
+    "id": "0ozr2hycmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.5,
+    "date": "2026-05-21",
+    "note": ""
+   },
+   {
+    "id": "bcmbahv4msmxw6qu",
+    "param": "alkalinity",
+    "value": 9.6,
+    "date": "2026-05-20",
+    "note": ""
+   },
+   {
+    "id": "lz3b4ojmmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.6,
+    "date": "2026-05-19",
+    "note": ""
+   },
+   {
+    "id": "ao069sdxmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.4,
+    "date": "2026-05-18",
+    "note": ""
+   },
+   {
+    "id": "ljuuksi2msmxw6qu",
+    "param": "alkalinity",
+    "value": 9.6,
+    "date": "2026-05-17",
+    "note": ""
+   },
+   {
+    "id": "3vn361ovmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.7,
+    "date": "2026-05-16",
+    "note": ""
+   },
+   {
+    "id": "yh1uon4lmsmxw6qu",
+    "param": "alkalinity",
+    "value": 10,
+    "date": "2026-05-15",
+    "note": ""
+   },
+   {
+    "id": "lprcpdy3msmxw6qu",
+    "param": "alkalinity",
+    "value": 10,
+    "date": "2026-05-14",
+    "note": ""
+   },
+   {
+    "id": "osbg5fqhmsmxw6qu",
+    "param": "alkalinity",
+    "value": 10.2,
+    "date": "2026-05-13",
+    "note": ""
+   },
+   {
+    "id": "1g3hlojdmsmxw6qu",
+    "param": "alkalinity",
+    "value": 10.4,
+    "date": "2026-05-12",
+    "note": ""
+   },
+   {
+    "id": "8559dr56msmxw6qu",
+    "param": "alkalinity",
+    "value": 10.4,
+    "date": "2026-05-11",
+    "note": ""
+   },
+   {
+    "id": "fq1dxfy2msmxw6qu",
+    "param": "alkalinity",
+    "value": 9.9,
+    "date": "2026-05-10",
+    "note": ""
+   },
+   {
+    "id": "odqz7racmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.6,
+    "date": "2026-05-08",
+    "note": ""
+   },
+   {
+    "id": "ywj4vsj4msmxw6qu",
+    "param": "alkalinity",
+    "value": 9.4,
+    "date": "2026-05-07",
+    "note": ""
+   },
+   {
+    "id": "6yma08mpmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.4,
+    "date": "2026-05-06",
+    "note": ""
+   },
+   {
+    "id": "cis9yq4umsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.3,
+    "date": "2026-05-05",
+    "note": ""
+   },
+   {
+    "id": "dltsikbdmsmxw6qu",
+    "param": "alkalinity",
+    "value": 9.3,
+    "date": "2026-05-04",
+    "note": ""
+   },
+   {
+    "id": "3aqcdkpnmsmxw6qu",
+    "param": "calcium",
+    "value": 430,
+    "date": "2026-08-04",
+    "note": ""
+   },
+   {
+    "id": "b30fj1ovmsmxw6qu",
+    "param": "calcium",
+    "value": 440,
+    "date": "2026-07-27",
+    "note": ""
+   },
+   {
+    "id": "d8ogn9i0msmxw6qu",
+    "param": "calcium",
+    "value": 460,
+    "date": "2026-07-20",
+    "note": ""
+   },
+   {
+    "id": "e6gy9mr6msmxw6qu",
+    "param": "calcium",
+    "value": 450,
+    "date": "2026-07-19",
+    "note": ""
+   },
+   {
+    "id": "dbic8y6kmsmxw6qu",
+    "param": "calcium",
+    "value": 460,
+    "date": "2026-07-13",
+    "note": ""
+   },
+   {
+    "id": "i2pfnhrvmsmxw6qu",
+    "param": "calcium",
+    "value": 460,
+    "date": "2026-07-06",
+    "note": ""
+   },
+   {
+    "id": "fukwd4rymsmxw6qu",
+    "param": "calcium",
+    "value": 445,
+    "date": "2026-06-29",
+    "note": ""
+   },
+   {
+    "id": "g63y9o6emsmxw6qu",
+    "param": "calcium",
+    "value": 450,
+    "date": "2026-06-24",
+    "note": ""
+   },
+   {
+    "id": "8fvxhl7imsmxw6qu",
+    "param": "calcium",
+    "value": 450,
+    "date": "2026-06-21",
+    "note": ""
+   },
+   {
+    "id": "pk3ow79dmsmxw6qu",
+    "param": "calcium",
+    "value": 450,
+    "date": "2026-06-17",
+    "note": ""
+   },
+   {
+    "id": "xhjopbz2msmxw6qu",
+    "param": "calcium",
+    "value": 470,
+    "date": "2026-06-15",
+    "note": ""
+   },
+   {
+    "id": "hwgkbt77msmxw6qu",
+    "param": "calcium",
+    "value": 470,
+    "date": "2026-06-14",
+    "note": ""
+   },
+   {
+    "id": "ym1v06hrmsmxw6qu",
+    "param": "calcium",
+    "value": 500,
+    "date": "2026-06-08",
+    "note": ""
+   },
+   {
+    "id": "0fohbihjmsmxw6qu",
+    "param": "calcium",
+    "value": 490,
+    "date": "2026-06-07",
+    "note": ""
+   },
+   {
+    "id": "yae0r2cdmsmxw6qu",
+    "param": "calcium",
+    "value": 465,
+    "date": "2026-05-30",
+    "note": ""
+   },
+   {
+    "id": "xzgqm8ijmsmxw6qu",
+    "param": "calcium",
+    "value": 450,
+    "date": "2026-05-24",
+    "note": ""
+   },
+   {
+    "id": "thx89vzgmsmxw6qu",
+    "param": "calcium",
+    "value": 495,
+    "date": "2026-05-22",
+    "note": ""
+   },
+   {
+    "id": "5rj8v3ggmsmxw6qu",
+    "param": "calcium",
+    "value": 490,
+    "date": "2026-05-18",
+    "note": ""
+   },
+   {
+    "id": "dewfpptamsmxw6qu",
+    "param": "calcium",
+    "value": 485,
+    "date": "2026-05-14",
+    "note": ""
+   },
+   {
+    "id": "oeq8oujtmsmxw6qu",
+    "param": "calcium",
+    "value": 450,
+    "date": "2026-05-10",
+    "note": ""
+   },
+   {
+    "id": "l63tosi3msmxw6qu",
+    "param": "calcium",
+    "value": 445,
+    "date": "2026-05-06",
+    "note": ""
+   },
+   {
+    "id": "1ar9wqaumsmxw6qu",
+    "param": "calcium",
+    "value": 455,
+    "date": "2026-05-03",
+    "note": ""
+   },
+   {
+    "id": "178b37qimsmxw6qu",
+    "param": "calcium",
+    "value": 440,
+    "date": "2026-04-30",
+    "note": ""
+   },
+   {
+    "id": "79g0kh88msmxw6qu",
+    "param": "calcium",
+    "value": 455,
+    "date": "2026-04-28",
+    "note": ""
+   },
+   {
+    "id": "niwma9ndmsmxw6qu",
+    "param": "calcium",
+    "value": 405,
+    "date": "2026-04-27",
+    "note": ""
+   },
+   {
+    "id": "9u1qmrptmsmxw6qu",
+    "param": "calcium",
+    "value": 445,
+    "date": "2026-04-25",
+    "note": ""
+   },
+   {
+    "id": "uqnnhu1xmsmxw6qu",
+    "param": "calcium",
+    "value": 470,
+    "date": "2026-04-23",
+    "note": ""
+   },
+   {
+    "id": "zz6ye3xzmsmxw6qu",
+    "param": "calcium",
+    "value": 485,
+    "date": "2026-04-19",
+    "note": ""
+   },
+   {
+    "id": "u4fdqac1msmxw6qu",
+    "param": "calcium",
+    "value": 435,
+    "date": "2026-04-18",
+    "note": ""
+   },
+   {
+    "id": "oys9qt7jmsmxw6qu",
+    "param": "calcium",
+    "value": 415,
+    "date": "2026-04-11",
+    "note": ""
+   },
+   {
+    "id": "w9om0jfdmsmxw6qu",
+    "param": "calcium",
+    "value": 420,
+    "date": "2026-04-06",
+    "note": ""
+   },
+   {
+    "id": "lfrh5jw1msmxw6qu",
+    "param": "calcium",
+    "value": 450,
+    "date": "2026-04-04",
+    "note": ""
+   },
+   {
+    "id": "yi9vqxg7msmxw6qu",
+    "param": "calcium",
+    "value": 440,
+    "date": "2026-04-01",
+    "note": ""
+   },
+   {
+    "id": "l5flgu3mmsmxw6qu",
+    "param": "calcium",
+    "value": 435,
+    "date": "2026-03-30",
+    "note": ""
+   },
+   {
+    "id": "8gcumecdmsmxw6qu",
+    "param": "calcium",
+    "value": 425,
+    "date": "2026-03-29",
+    "note": ""
+   },
+   {
+    "id": "dish1n4xmsmxw6qu",
+    "param": "calcium",
+    "value": 425,
+    "date": "2026-03-26",
+    "note": ""
+   },
+   {
+    "id": "ydbbrlfgmsmxw6qu",
+    "param": "calcium",
+    "value": 440,
+    "date": "2026-03-24",
+    "note": ""
+   },
+   {
+    "id": "yt0f1pe1msmxw6qu",
+    "param": "calcium",
+    "value": 450,
+    "date": "2026-03-23",
+    "note": ""
+   },
+   {
+    "id": "96qhcft5msmxw6qu",
+    "param": "calcium",
+    "value": 450,
+    "date": "2026-03-22",
+    "note": ""
+   },
+   {
+    "id": "8hvcq6g9msmxw6qu",
+    "param": "magnesium",
+    "value": 1520,
+    "date": "2026-08-04",
+    "note": ""
+   },
+   {
+    "id": "h9wzl9h3msmxw6qu",
+    "param": "magnesium",
+    "value": 1560,
+    "date": "2026-07-27",
+    "note": ""
+   },
+   {
+    "id": "d6zw4uabmsmxw6qu",
+    "param": "magnesium",
+    "value": 1560,
+    "date": "2026-07-20",
+    "note": ""
+   },
+   {
+    "id": "hsdf3dhzmsmxw6qu",
+    "param": "magnesium",
+    "value": 1560,
+    "date": "2026-07-19",
+    "note": ""
+   },
+   {
+    "id": "81u09r8zmsmxw6qu",
+    "param": "magnesium",
+    "value": 1520,
+    "date": "2026-07-13",
+    "note": ""
+   },
+   {
+    "id": "yxwavtg7msmxw6qu",
+    "param": "magnesium",
+    "value": 1520,
+    "date": "2026-07-06",
+    "note": ""
+   },
+   {
+    "id": "taehm2r6msmxw6qu",
+    "param": "magnesium",
+    "value": 1500,
+    "date": "2026-07-01",
+    "note": ""
+   },
+   {
+    "id": "k7gdsuxsmsmxw6qu",
+    "param": "magnesium",
+    "value": 1400,
+    "date": "2026-06-29",
+    "note": ""
+   },
+   {
+    "id": "2hug2wmkmsmxw6qu",
+    "param": "magnesium",
+    "value": 1400,
+    "date": "2026-06-26",
+    "note": ""
+   },
+   {
+    "id": "7m5aveeqmsmxw6qu",
+    "param": "magnesium",
+    "value": 1400,
+    "date": "2026-06-21",
+    "note": ""
+   },
+   {
+    "id": "w15kwdycmsmxw6qu",
+    "param": "magnesium",
+    "value": 1400,
+    "date": "2026-06-17",
+    "note": ""
+   },
+   {
+    "id": "vx7n3ew9msmxw6qu",
+    "param": "magnesium",
+    "value": 1400,
+    "date": "2026-06-15",
+    "note": ""
+   },
+   {
+    "id": "i7d0l7s5msmxw6qu",
+    "param": "magnesium",
+    "value": 1400,
+    "date": "2026-06-08",
+    "note": ""
+   },
+   {
+    "id": "bewnycm1msmxw6qu",
+    "param": "magnesium",
+    "value": 1360,
+    "date": "2026-06-07",
+    "note": ""
+   },
+   {
+    "id": "o6qoo1mxmsmxw6qu",
+    "param": "magnesium",
+    "value": 1290,
+    "date": "2026-05-30",
+    "note": ""
+   },
+   {
+    "id": "0fokectumsmxw6qu",
+    "param": "magnesium",
+    "value": 1350,
+    "date": "2026-05-24",
+    "note": ""
+   },
+   {
+    "id": "vkjydgmlmsmxw6qu",
+    "param": "magnesium",
+    "value": 1320,
+    "date": "2026-05-22",
+    "note": ""
+   },
+   {
+    "id": "8ijnqw30msmxw6qu",
+    "param": "magnesium",
+    "value": 1350,
+    "date": "2026-05-15",
+    "note": ""
+   },
+   {
+    "id": "oc6x3umtmsmxw6qu",
+    "param": "magnesium",
+    "value": 1350,
+    "date": "2026-05-10",
+    "note": ""
+   },
+   {
+    "id": "rjml799cmsmxw6qu",
+    "param": "magnesium",
+    "value": 1350,
+    "date": "2026-05-06",
+    "note": ""
+   },
+   {
+    "id": "utvcr4fkmsmxw6qu",
+    "param": "magnesium",
+    "value": 1350,
+    "date": "2026-05-03",
+    "note": ""
+   },
+   {
+    "id": "wbfwgqnzmsmxw6qu",
+    "param": "magnesium",
+    "value": 1350,
+    "date": "2026-04-30",
+    "note": ""
+   },
+   {
+    "id": "6bikln4hmsmxw6qu",
+    "param": "magnesium",
+    "value": 1380,
+    "date": "2026-04-27",
+    "note": ""
+   },
+   {
+    "id": "oi2i1v74msmxw6qu",
+    "param": "magnesium",
+    "value": 1320,
+    "date": "2026-04-25",
+    "note": ""
+   },
+   {
+    "id": "ojrwe8lrmsmxw6qu",
+    "param": "magnesium",
+    "value": 1380,
+    "date": "2026-04-23",
+    "note": ""
+   },
+   {
+    "id": "aes6az7dmsmxw6qu",
+    "param": "magnesium",
+    "value": 1395,
+    "date": "2026-04-18",
+    "note": ""
+   },
+   {
+    "id": "w4xuly3dmsmxw6qu",
+    "param": "magnesium",
+    "value": 1455,
+    "date": "2026-04-11",
+    "note": ""
+   },
+   {
+    "id": "8i4oqj3pmsmxw6qu",
+    "param": "magnesium",
+    "value": 1455,
+    "date": "2026-04-09",
+    "note": ""
+   },
+   {
+    "id": "fh7szzcamsmxw6qu",
+    "param": "magnesium",
+    "value": 1270,
+    "date": "2026-04-06",
+    "note": ""
+   },
+   {
+    "id": "zkbjgnx1msmxw6qu",
+    "param": "magnesium",
+    "value": 1260,
+    "date": "2026-04-04",
+    "note": ""
+   },
+   {
+    "id": "25n8t840msmxw6qu",
+    "param": "magnesium",
+    "value": 1305,
+    "date": "2026-03-31",
+    "note": ""
+   },
+   {
+    "id": "xa8072asmsmxw6qu",
+    "param": "magnesium",
+    "value": 1330,
+    "date": "2026-03-24",
+    "note": ""
+   },
+   {
+    "id": "6r17we32msmxw6qu",
+    "param": "magnesium",
+    "value": 1290,
+    "date": "2026-03-23",
+    "note": ""
+   },
+   {
+    "id": "5lj69r62msmxw6qu",
+    "param": "magnesium",
+    "value": 1305,
+    "date": "2026-03-21",
+    "note": ""
+   },
+   {
+    "id": "q2185y78msmxw6qu",
+    "param": "magnesium",
+    "value": 1320,
+    "date": "2026-03-20",
+    "note": ""
+   },
+   {
+    "id": "g6b0nyx0msmxw6qu",
+    "param": "magnesium",
+    "value": 1260,
+    "date": "2026-03-19",
+    "note": ""
+   },
+   {
+    "id": "t141ig50msmxw6qu",
+    "param": "magnesium",
+    "value": 1290,
+    "date": "2026-03-17",
+    "note": ""
+   },
+   {
+    "id": "vvgr0hlemsmxw6qu",
+    "param": "magnesium",
+    "value": 1290,
+    "date": "2026-03-14",
+    "note": ""
+   },
+   {
+    "id": "u6edu0q8msmxw6qu",
+    "param": "magnesium",
+    "value": 1230,
+    "date": "2026-03-10",
+    "note": ""
+   },
+   {
+    "id": "4ogqx0zemsmxw6qu",
+    "param": "magnesium",
+    "value": 1230,
+    "date": "2026-03-09",
+    "note": ""
+   },
+   {
+    "id": "86gazmy1msmxw6qu",
+    "param": "nitrate",
+    "value": 11.3,
+    "date": "2026-08-04",
+    "note": ""
+   },
+   {
+    "id": "b716uw23msmxw6qu",
+    "param": "nitrate",
+    "value": 13.5,
+    "date": "2026-07-27",
+    "note": ""
+   },
+   {
+    "id": "xss3yi76msmxw6qu",
+    "param": "nitrate",
+    "value": 10.9,
+    "date": "2026-07-20",
+    "note": ""
+   },
+   {
+    "id": "yg29gd7kmsmxw6qu",
+    "param": "nitrate",
+    "value": 13.7,
+    "date": "2026-07-13",
+    "note": ""
+   },
+   {
+    "id": "awlrmkdcmsmxw6qu",
+    "param": "nitrate",
+    "value": 12.6,
+    "date": "2026-07-06",
+    "note": ""
+   },
+   {
+    "id": "4v4mi7r7msmxw6qu",
+    "param": "nitrate",
+    "value": 13,
+    "date": "2026-06-29",
+    "note": ""
+   },
+   {
+    "id": "m15hvtdwmsmxw6qu",
+    "param": "nitrate",
+    "value": 12,
+    "date": "2026-06-21",
+    "note": ""
+   },
+   {
+    "id": "6uwh95ygmsmxw6qu",
+    "param": "nitrate",
+    "value": 11.3,
+    "date": "2026-06-15",
+    "note": ""
+   },
+   {
+    "id": "5nzgcgbvmsmxw6qu",
+    "param": "nitrate",
+    "value": 12.6,
+    "date": "2026-06-08",
+    "note": ""
+   },
+   {
+    "id": "pok3n3k4msmxw6qu",
+    "param": "nitrate",
+    "value": 11.7,
+    "date": "2026-05-30",
+    "note": ""
+   },
+   {
+    "id": "6saebxubmsmxw6qu",
+    "param": "nitrate",
+    "value": 9.5,
+    "date": "2026-05-23",
+    "note": ""
+   },
+   {
+    "id": "emcdoh9smsmxw6qu",
+    "param": "nitrate",
+    "value": 9.4,
+    "date": "2026-05-17",
+    "note": ""
+   },
+   {
+    "id": "x4f4yw98msmxw6qu",
+    "param": "nitrate",
+    "value": 9.9,
+    "date": "2026-05-10",
+    "note": ""
+   },
+   {
+    "id": "zp7r6jm2msmxw6qu",
+    "param": "nitrate",
+    "value": 10.6,
+    "date": "2026-05-04",
+    "note": ""
+   },
+   {
+    "id": "6e68vknumsmxw6qu",
+    "param": "nitrate",
+    "value": 9.6,
+    "date": "2026-04-28",
+    "note": ""
+   },
+   {
+    "id": "h4jx7u1jmsmxw6qu",
+    "param": "nitrate",
+    "value": 10.1,
+    "date": "2026-04-24",
+    "note": ""
+   },
+   {
+    "id": "f3tmkktqmsmxw6qu",
+    "param": "nitrate",
+    "value": 12.1,
+    "date": "2026-04-17",
+    "note": ""
+   },
+   {
+    "id": "zrd4uof9msmxw6qu",
+    "param": "nitrate",
+    "value": 12.2,
+    "date": "2026-04-11",
+    "note": ""
+   },
+   {
+    "id": "bw1e2koomsmxw6qu",
+    "param": "nitrate",
+    "value": 11.9,
+    "date": "2026-04-06",
+    "note": ""
+   },
+   {
+    "id": "75p5fp0pmsmxw6qu",
+    "param": "nitrate",
+    "value": 10,
+    "date": "2026-03-31",
+    "note": ""
+   },
+   {
+    "id": "uyrtwdlpmsmxw6qu",
+    "param": "nitrate",
+    "value": 12.2,
+    "date": "2026-03-28",
+    "note": ""
+   },
+   {
+    "id": "estcbz6gmsmxw6qu",
+    "param": "nitrate",
+    "value": 11.5,
+    "date": "2026-03-26",
+    "note": ""
+   },
+   {
+    "id": "iw3f10i9msmxw6qu",
+    "param": "nitrate",
+    "value": 8.5,
+    "date": "2026-03-24",
+    "note": ""
+   },
+   {
+    "id": "ly8kbq2rmsmxw6qu",
+    "param": "nitrate",
+    "value": 11.8,
+    "date": "2026-03-20",
+    "note": ""
+   },
+   {
+    "id": "s93uzjnemsmxw6qu",
+    "param": "nitrate",
+    "value": 11.5,
+    "date": "2026-03-19",
+    "note": ""
+   },
+   {
+    "id": "z3eupxp1msmxw6qu",
+    "param": "nitrate",
+    "value": 10.5,
+    "date": "2026-03-18",
+    "note": ""
+   },
+   {
+    "id": "u6q2vlbimsmxw6qu",
+    "param": "nitrate",
+    "value": 12,
+    "date": "2026-03-17",
+    "note": ""
+   },
+   {
+    "id": "9vvthfb8msmxw6qu",
+    "param": "nitrate",
+    "value": 11.7,
+    "date": "2026-03-16",
+    "note": ""
+   },
+   {
+    "id": "cahv8pd9msmxw6qu",
+    "param": "nitrate",
+    "value": 11.9,
+    "date": "2026-03-15",
+    "note": ""
+   },
+   {
+    "id": "l5d3vtl3msmxw6qu",
+    "param": "nitrate",
+    "value": 11.8,
+    "date": "2026-03-13",
+    "note": ""
+   },
+   {
+    "id": "1zpz20oemsmxw6qu",
+    "param": "nitrate",
+    "value": 10.5,
+    "date": "2026-03-11",
+    "note": ""
+   },
+   {
+    "id": "joqccgiemsmxw6qu",
+    "param": "nitrate",
+    "value": 12.8,
+    "date": "2026-03-10",
+    "note": ""
+   },
+   {
+    "id": "iq8irelpmsmxw6qu",
+    "param": "nitrate",
+    "value": 12.2,
+    "date": "2026-03-09",
+    "note": ""
+   },
+   {
+    "id": "b0m20347msmxw6qu",
+    "param": "nitrate",
+    "value": 12.8,
+    "date": "2026-03-07",
+    "note": ""
+   },
+   {
+    "id": "qmd3g7b2msmxw6qu",
+    "param": "nitrate",
+    "value": 10.1,
+    "date": "2026-03-05",
+    "note": ""
+   },
+   {
+    "id": "m0yy5dj9msmxw6qu",
+    "param": "nitrate",
+    "value": 13.1,
+    "date": "2026-03-04",
+    "note": ""
+   },
+   {
+    "id": "x7tmsy7omsmxw6qu",
+    "param": "nitrate",
+    "value": 8.7,
+    "date": "2026-02-19",
+    "note": ""
+   },
+   {
+    "id": "yuza8iq0msmxw6qu",
+    "param": "nitrate",
+    "value": 11.8,
+    "date": "2026-02-18",
+    "note": ""
+   },
+   {
+    "id": "ujhtr5kemsmxw6qu",
+    "param": "nitrate",
+    "value": 10.4,
+    "date": "2026-02-17",
+    "note": ""
+   },
+   {
+    "id": "vjoh5044msmxw6qu",
+    "param": "nitrate",
+    "value": 9.2,
+    "date": "2026-02-13",
+    "note": ""
+   },
+   {
+    "id": "tfaz6erdmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.12,
+    "date": "2026-08-04",
+    "note": ""
+   },
+   {
+    "id": "dubwfm2lmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.12,
+    "date": "2026-08-02",
+    "note": ""
+   },
+   {
+    "id": "9bnvcqajmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.15,
+    "date": "2026-07-30",
+    "note": ""
+   },
+   {
+    "id": "upgtlceymsmxw6qu",
+    "param": "phosphate",
+    "value": 0.19,
+    "date": "2026-07-27",
+    "note": ""
+   },
+   {
+    "id": "4g8bkwkamsmxw6qu",
+    "param": "phosphate",
+    "value": 0.16,
+    "date": "2026-07-23",
+    "note": ""
+   },
+   {
+    "id": "rpwdajp2msmxw6qu",
+    "param": "phosphate",
+    "value": 0.12,
+    "date": "2026-07-18",
+    "note": ""
+   },
+   {
+    "id": "coc4b206msmxw6qu",
+    "param": "phosphate",
+    "value": 0.14,
+    "date": "2026-07-16",
+    "note": ""
+   },
+   {
+    "id": "hakykm92msmxw6qu",
+    "param": "phosphate",
+    "value": 0.11,
+    "date": "2026-07-14",
+    "note": ""
+   },
+   {
+    "id": "xm74zmi4msmxw6qu",
+    "param": "phosphate",
+    "value": 0.14,
+    "date": "2026-07-13",
+    "note": ""
+   },
+   {
+    "id": "lcdj3ancmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.1,
+    "date": "2026-07-12",
+    "note": ""
+   },
+   {
+    "id": "opx4kmq0msmxw6qu",
+    "param": "phosphate",
+    "value": 0.13,
+    "date": "2026-07-11",
+    "note": ""
+   },
+   {
+    "id": "fcss43j8msmxw6qu",
+    "param": "phosphate",
+    "value": 0.23,
+    "date": "2026-07-10",
+    "note": ""
+   },
+   {
+    "id": "zzar59f0msmxw6qu",
+    "param": "phosphate",
+    "value": 0.16,
+    "date": "2026-07-09",
+    "note": ""
+   },
+   {
+    "id": "7vzx7faamsmxw6qu",
+    "param": "phosphate",
+    "value": 0.15,
+    "date": "2026-07-08",
+    "note": ""
+   },
+   {
+    "id": "1w27zf3vmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.07,
+    "date": "2026-07-07",
+    "note": ""
+   },
+   {
+    "id": "k04lvir4msmxw6qu",
+    "param": "phosphate",
+    "value": 0.09,
+    "date": "2026-07-06",
+    "note": ""
+   },
+   {
+    "id": "zfhvneeimsmxw6qu",
+    "param": "phosphate",
+    "value": 0.11,
+    "date": "2026-07-05",
+    "note": ""
+   },
+   {
+    "id": "7xsvls7fmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.17,
+    "date": "2026-07-04",
+    "note": ""
+   },
+   {
+    "id": "ov335wyhmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.08,
+    "date": "2026-07-03",
+    "note": ""
+   },
+   {
+    "id": "52rvvaksmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.1,
+    "date": "2026-07-02",
+    "note": ""
+   },
+   {
+    "id": "jc2hnxo0msmxw6qu",
+    "param": "phosphate",
+    "value": 0.12,
+    "date": "2026-07-01",
+    "note": ""
+   },
+   {
+    "id": "vnashijfmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.1,
+    "date": "2026-06-30",
+    "note": ""
+   },
+   {
+    "id": "bonguzmzmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.1,
+    "date": "2026-06-29",
+    "note": ""
+   },
+   {
+    "id": "s1v8ssz9msmxw6qu",
+    "param": "phosphate",
+    "value": 0.11,
+    "date": "2026-06-28",
+    "note": ""
+   },
+   {
+    "id": "cyim60kfmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.09,
+    "date": "2026-06-27",
+    "note": ""
+   },
+   {
+    "id": "t6rconfhmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.09,
+    "date": "2026-06-26",
+    "note": ""
+   },
+   {
+    "id": "po1a4pdsmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.11,
+    "date": "2026-06-25",
+    "note": ""
+   },
+   {
+    "id": "z8pt03gwmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.08,
+    "date": "2026-06-24",
+    "note": ""
+   },
+   {
+    "id": "yz47huzmmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.06,
+    "date": "2026-06-23",
+    "note": ""
+   },
+   {
+    "id": "fts9viakmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.07,
+    "date": "2026-06-22",
+    "note": ""
+   },
+   {
+    "id": "ao4or8bvmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.07,
+    "date": "2026-06-21",
+    "note": ""
+   },
+   {
+    "id": "vblvl9u8msmxw6qu",
+    "param": "phosphate",
+    "value": 0.09,
+    "date": "2026-06-20",
+    "note": ""
+   },
+   {
+    "id": "rhykrya4msmxw6qu",
+    "param": "phosphate",
+    "value": 0.04,
+    "date": "2026-06-19",
+    "note": ""
+   },
+   {
+    "id": "opoim8x3msmxw6qu",
+    "param": "phosphate",
+    "value": 0.08,
+    "date": "2026-06-18",
+    "note": ""
+   },
+   {
+    "id": "t3p8gsn3msmxw6qu",
+    "param": "phosphate",
+    "value": 0.06,
+    "date": "2026-06-15",
+    "note": ""
+   },
+   {
+    "id": "wmzjpenymsmxw6qu",
+    "param": "phosphate",
+    "value": 0.06,
+    "date": "2026-06-14",
+    "note": ""
+   },
+   {
+    "id": "10taklxfmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.05,
+    "date": "2026-06-12",
+    "note": ""
+   },
+   {
+    "id": "7pd9p3ydmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.06,
+    "date": "2026-06-10",
+    "note": ""
+   },
+   {
+    "id": "0i5ar58ymsmxw6qu",
+    "param": "phosphate",
+    "value": 0.09,
+    "date": "2026-06-08",
+    "note": ""
+   },
+   {
+    "id": "h1t0bkb2msmxw6qu",
+    "param": "phosphate",
+    "value": 0.06,
+    "date": "2026-06-06",
+    "note": ""
+   },
+   {
+    "id": "dg2ova1omsmxw6qu",
+    "param": "phosphate",
+    "value": 0.06,
+    "date": "2026-06-01",
+    "note": ""
+   },
+   {
+    "id": "dxnr3g6cmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.06,
+    "date": "2026-05-29",
+    "note": ""
+   },
+   {
+    "id": "ct4eeqnlmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.09,
+    "date": "2026-05-24",
+    "note": ""
+   },
+   {
+    "id": "zgcf72lumsmxw6qu",
+    "param": "phosphate",
+    "value": 0.08,
+    "date": "2026-05-23",
+    "note": ""
+   },
+   {
+    "id": "qpir25sjmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.1,
+    "date": "2026-05-22",
+    "note": ""
+   },
+   {
+    "id": "mg601im5msmxw6qu",
+    "param": "phosphate",
+    "value": 0.16,
+    "date": "2026-05-21",
+    "note": ""
+   },
+   {
+    "id": "qsn9hdl1msmxw6qu",
+    "param": "phosphate",
+    "value": 0.14,
+    "date": "2026-05-20",
+    "note": ""
+   },
+   {
+    "id": "0lib0o4ymsmxw6qu",
+    "param": "phosphate",
+    "value": 0.14,
+    "date": "2026-05-19",
+    "note": ""
+   },
+   {
+    "id": "45p4ohzcmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.15,
+    "date": "2026-05-18",
+    "note": ""
+   },
+   {
+    "id": "0a3fv2rnmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.13,
+    "date": "2026-05-17",
+    "note": ""
+   },
+   {
+    "id": "kd5d6txomsmxw6qu",
+    "param": "phosphate",
+    "value": 0.13,
+    "date": "2026-05-16",
+    "note": ""
+   },
+   {
+    "id": "w2mzr9csmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.13,
+    "date": "2026-05-15",
+    "note": ""
+   },
+   {
+    "id": "y6mlirfsmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.12,
+    "date": "2026-05-14",
+    "note": ""
+   },
+   {
+    "id": "8m68ul9gmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.1,
+    "date": "2026-05-13",
+    "note": ""
+   },
+   {
+    "id": "wecr8blgmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.11,
+    "date": "2026-05-12",
+    "note": ""
+   },
+   {
+    "id": "zfzmq1c6msmxw6qu",
+    "param": "phosphate",
+    "value": 0.12,
+    "date": "2026-05-11",
+    "note": ""
+   },
+   {
+    "id": "e9wmmfbkmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.11,
+    "date": "2026-05-10",
+    "note": ""
+   },
+   {
+    "id": "sgnotquzmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.18,
+    "date": "2026-05-08",
+    "note": ""
+   },
+   {
+    "id": "6bmlegczmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.09,
+    "date": "2026-05-07",
+    "note": ""
+   },
+   {
+    "id": "nivlbj77msmxw6qu",
+    "param": "phosphate",
+    "value": 0.07,
+    "date": "2026-05-06",
+    "note": ""
+   },
+   {
+    "id": "2f5s091lmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.095,
+    "date": "2026-05-05",
+    "note": ""
+   },
+   {
+    "id": "yf9568p5msmxw6qu",
+    "param": "phosphate",
+    "value": 0.1,
+    "date": "2026-05-04",
+    "note": ""
+   },
+   {
+    "id": "wpjqjfaemsmxw6qu",
+    "param": "phosphate",
+    "value": 0.14,
+    "date": "2026-05-01",
+    "note": ""
+   },
+   {
+    "id": "evze4juxmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.05,
+    "date": "2026-04-30",
+    "note": ""
+   },
+   {
+    "id": "w11of36amsmxw6qu",
+    "param": "phosphate",
+    "value": 0.03,
+    "date": "2026-04-29",
+    "note": ""
+   },
+   {
+    "id": "xrbqyw25msmxw6qu",
+    "param": "phosphate",
+    "value": 0.04,
+    "date": "2026-04-28",
+    "note": ""
+   },
+   {
+    "id": "wwsqqgwnmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.01,
+    "date": "2026-04-26",
+    "note": ""
+   },
+   {
+    "id": "eegyz2t6msmxw6qu",
+    "param": "phosphate",
+    "value": 0.03,
+    "date": "2026-04-25",
+    "note": ""
+   },
+   {
+    "id": "wiefkn2rmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.01,
+    "date": "2026-04-24",
+    "note": ""
+   },
+   {
+    "id": "1uwfr2mrmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.06,
+    "date": "2026-04-22",
+    "note": ""
+   },
+   {
+    "id": "ezpfn132msmxw6qu",
+    "param": "phosphate",
+    "value": 0.06,
+    "date": "2026-04-21",
+    "note": ""
+   },
+   {
+    "id": "6j0xjz9bmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.01,
+    "date": "2026-04-20",
+    "note": ""
+   },
+   {
+    "id": "gi4g2fi5msmxw6qu",
+    "param": "phosphate",
+    "value": 0.01,
+    "date": "2026-04-19",
+    "note": ""
+   },
+   {
+    "id": "aa2d8onumsmxw6qu",
+    "param": "phosphate",
+    "value": 0.03,
+    "date": "2026-04-18",
+    "note": ""
+   },
+   {
+    "id": "8gmvpjahmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.02,
+    "date": "2026-04-17",
+    "note": ""
+   },
+   {
+    "id": "w9fg3pnemsmxw6qu",
+    "param": "phosphate",
+    "value": 0.05,
+    "date": "2026-04-15",
+    "note": ""
+   },
+   {
+    "id": "uif58z10msmxw6qu",
+    "param": "phosphate",
+    "value": 0.05,
+    "date": "2026-04-13",
+    "note": ""
+   },
+   {
+    "id": "ys9chuagmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.07,
+    "date": "2026-04-12",
+    "note": ""
+   },
+   {
+    "id": "w8f8ux1zmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.04,
+    "date": "2026-04-11",
+    "note": ""
+   },
+   {
+    "id": "kxhch5mpmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.07,
+    "date": "2026-04-09",
+    "note": ""
+   },
+   {
+    "id": "tle396d4msmxw6qu",
+    "param": "phosphate",
+    "value": 0.11,
+    "date": "2026-04-06",
+    "note": ""
+   },
+   {
+    "id": "ox0tyktvmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.07,
+    "date": "2026-04-04",
+    "note": ""
+   },
+   {
+    "id": "ndh9reykmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.07,
+    "date": "2026-04-03",
+    "note": ""
+   },
+   {
+    "id": "6n5qqkdlmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.08,
+    "date": "2026-04-02",
+    "note": ""
+   },
+   {
+    "id": "ruebdzpsmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.05,
+    "date": "2026-04-01",
+    "note": ""
+   },
+   {
+    "id": "d7m6woqvmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.05,
+    "date": "2026-03-31",
+    "note": ""
+   },
+   {
+    "id": "vs3f8zjmmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.1,
+    "date": "2026-03-30",
+    "note": ""
+   },
+   {
+    "id": "2lixct6omsmxw6qu",
+    "param": "phosphate",
+    "value": 0.07,
+    "date": "2026-03-29",
+    "note": ""
+   },
+   {
+    "id": "nwhfo2zlmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.08,
+    "date": "2026-03-28",
+    "note": ""
+   },
+   {
+    "id": "bqkhapdrmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.08,
+    "date": "2026-03-27",
+    "note": ""
+   },
+   {
+    "id": "1a3vjelfmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.03,
+    "date": "2026-03-26",
+    "note": ""
+   },
+   {
+    "id": "qzclrv55msmxw6qu",
+    "param": "phosphate",
+    "value": 0.08,
+    "date": "2026-03-24",
+    "note": ""
+   },
+   {
+    "id": "ii9opvwzmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.14,
+    "date": "2026-03-22",
+    "note": ""
+   },
+   {
+    "id": "4jvgw1z1msmxw6qu",
+    "param": "phosphate",
+    "value": 0.09,
+    "date": "2026-03-20",
+    "note": ""
+   },
+   {
+    "id": "ana7ifu9msmxw6qu",
+    "param": "phosphate",
+    "value": 0.08,
+    "date": "2026-03-19",
+    "note": ""
+   },
+   {
+    "id": "x9ggq93lmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.1,
+    "date": "2026-03-18",
+    "note": ""
+   },
+   {
+    "id": "egs1m7i4msmxw6qu",
+    "param": "phosphate",
+    "value": 0.11,
+    "date": "2026-03-17",
+    "note": ""
+   },
+   {
+    "id": "d9tak7g6msmxw6qu",
+    "param": "phosphate",
+    "value": 0.12,
+    "date": "2026-03-16",
+    "note": ""
+   },
+   {
+    "id": "tm6uv40ymsmxw6qu",
+    "param": "phosphate",
+    "value": 0.12,
+    "date": "2026-03-15",
+    "note": ""
+   },
+   {
+    "id": "kmp9auikmsmxw6qu",
+    "param": "phosphate",
+    "value": 0.1,
+    "date": "2026-03-13",
+    "note": ""
+   },
+   {
+    "id": "pzytuxa3msmxw6qu",
+    "param": "potassium",
+    "value": 420,
+    "date": "2026-07-20",
+    "note": ""
+   },
+   {
+    "id": "afcog1ovmsmxw6qu",
+    "param": "potassium",
+    "value": 410,
+    "date": "2026-07-06",
+    "note": ""
+   },
+   {
+    "id": "zgrttmojmsmxw6qu",
+    "param": "potassium",
+    "value": 405,
+    "date": "2026-07-01",
+    "note": ""
+   },
+   {
+    "id": "3szjaq28msmxw6qu",
+    "param": "potassium",
+    "value": 390,
+    "date": "2026-06-29",
+    "note": ""
+   },
+   {
+    "id": "i41j0rrwmsmxw6qu",
+    "param": "potassium",
+    "value": 390,
+    "date": "2026-06-26",
+    "note": ""
+   },
+   {
+    "id": "3avtrpwvmsmxw6qu",
+    "param": "potassium",
+    "value": 400,
+    "date": "2026-06-15",
+    "note": ""
+   },
+   {
+    "id": "9qpe6t8amsmxw6qu",
+    "param": "potassium",
+    "value": 410,
+    "date": "2026-06-08",
+    "note": ""
+   },
+   {
+    "id": "5hsokvsxmsmxw6qu",
+    "param": "potassium",
+    "value": 410,
+    "date": "2026-05-30",
+    "note": ""
+   },
+   {
+    "id": "6315pzpfmsmxw6qu",
+    "param": "potassium",
+    "value": 410,
+    "date": "2026-05-22",
+    "note": ""
+   },
+   {
+    "id": "ry6tynqsmsmxw6qu",
+    "param": "potassium",
+    "value": 390,
+    "date": "2026-05-17",
+    "note": ""
+   },
+   {
+    "id": "e0hwatzzmsmxw6qu",
+    "param": "potassium",
+    "value": 370,
+    "date": "2026-05-15",
+    "note": ""
+   },
+   {
+    "id": "1wl9mpgxmsmxw6qu",
+    "param": "potassium",
+    "value": 380,
+    "date": "2026-05-06",
+    "note": ""
+   },
+   {
+    "id": "gzna2q70msmxw6qu",
+    "param": "ph",
+    "value": 8,
+    "date": "2026-06-29",
+    "note": ""
+   },
+   {
+    "id": "9pgmifnbmsmxw6qu",
+    "param": "ph",
+    "value": 8.1,
+    "date": "2026-06-15",
+    "note": ""
+   },
+   {
+    "id": "714fftl9msmxw6qu",
+    "param": "ph",
+    "value": 8.1,
+    "date": "2026-06-08",
+    "note": ""
+   },
+   {
+    "id": "g3t8m3jzmsmxw6qu",
+    "param": "ph",
+    "value": 8.1,
+    "date": "2026-05-30",
+    "note": ""
+   },
+   {
+    "id": "yjy8sqicmsmxw6qu",
+    "param": "ph",
+    "value": 8.2,
+    "date": "2026-04-30",
+    "note": ""
+   },
+   {
+    "id": "5csxlt3pmsmxw6qu",
+    "param": "ph",
+    "value": 8.1,
+    "date": "2026-04-11",
+    "note": ""
+   },
+   {
+    "id": "jg5p89kymsmxw6qu",
+    "param": "ph",
+    "value": 8,
+    "date": "2026-04-01",
+    "note": ""
+   },
+   {
+    "id": "jav122tbmsmxw6qu",
+    "param": "ph",
+    "value": 8,
+    "date": "2026-03-24",
+    "note": ""
+   },
+   {
+    "id": "6kntpm2ymsmxw6qu",
+    "param": "ph",
+    "value": 8.1,
+    "date": "2026-03-23",
+    "note": ""
+   },
+   {
+    "id": "y2thbuqfmsmxw6qu",
+    "param": "ph",
+    "value": 8.1,
+    "date": "2026-03-20",
+    "note": ""
+   },
+   {
+    "id": "mhx8lg0rmsmxw6qu",
+    "param": "ph",
+    "value": 8.1,
+    "date": "2026-03-19",
+    "note": ""
+   },
+   {
+    "id": "f9upyjxrmsmxw6qu",
+    "param": "ph",
+    "value": 8.1,
+    "date": "2026-03-18",
+    "note": ""
+   },
+   {
+    "id": "btcs3fpgmsmxw6qu",
+    "param": "ph",
+    "value": 8.1,
+    "date": "2026-03-17",
+    "note": ""
+   },
+   {
+    "id": "xth2wrnpmsmxw6qu",
+    "param": "ph",
+    "value": 8.2,
+    "date": "2026-03-11",
+    "note": ""
+   },
+   {
+    "id": "tqnpri8imsmxw6qu",
+    "param": "ph",
+    "value": 8.2,
+    "date": "2026-03-09",
+    "note": ""
+   },
+   {
+    "id": "8ykrmiurmsmxz3xp",
+    "param": "alkalinity",
+    "value": 9,
+    "date": "2026-08-10",
+    "time": "18:00",
+    "note": ""
+   },
+   {
+    "id": "xfjnayuemsmy1n5y",
+    "param": "salinity",
+    "value": 34.6,
+    "date": "2026-08-10",
+    "time": "18:00",
+    "note": ""
+   },
+   {
+    "id": "6j0itytlmsmy1vo5",
+    "param": "calcium",
+    "value": 400,
+    "date": "2026-08-10",
+    "time": "18:00",
+    "note": ""
+   },
+   {
+    "id": "8eumwsxrmsmy2aft",
+    "param": "magnesium",
+    "value": 1520,
+    "date": "2026-08-10",
+    "time": "18:00",
+    "note": ""
+   },
+   {
+    "id": "c3cbdjslmsmy2q22",
+    "param": "phosphate",
+    "value": 0.13,
+    "date": "2026-08-10",
+    "time": "18:00",
+    "note": ""
+   },
+   {
+    "id": "yfqwiyprmsmy31wx",
+    "param": "nitrate",
+    "value": 8.7,
+    "date": "2026-08-10",
+    "time": "18:00",
+    "note": ""
+   },
+   {
+    "id": "yfak6lxmmsmz5rgk",
+    "param": "potassium",
+    "value": 410,
+    "date": "2026-08-10",
+    "time": "18:33",
+    "note": ""
+   },
+   {
+    "id": "iy9j7qqhmsmzgxzc",
+    "param": "ph",
+    "value": 8.2,
+    "date": "2026-08-10",
+    "time": "18:42",
+    "note": ""
+   },
+   {
+    "id": "w87eovukmsnszlau",
+    "param": "alkalinity",
+    "value": 8.7,
+    "date": "2026-08-11",
+    "time": "08:24",
+    "note": ""
+   },
+   {
+    "id": "plad4bwpmsp7pbhb",
+    "param": "salinity",
+    "value": 34.6,
+    "date": "2026-08-12",
+    "time": "08:08",
+    "note": ""
+   },
+   {
+    "id": "uahlmscdmspafw44",
+    "param": "alkalinity",
+    "value": 8.8,
+    "date": "2026-08-12",
+    "time": "09:24",
+    "note": ""
+   }
+  ],
+  "icp-tests": [
+   {
+    "id": "icp-2026-07-26",
+    "date": "2026-07-26",
+    "lab": "Triton",
+    "ref": "B-l8j2NQ",
+    "elements": {
+     "aluminium": 0.001,
+     "antimony": 0,
+     "arsenic": 0,
+     "lead": 0,
+     "cadmium": 0,
+     "copper": 0,
+     "lanthanum": 0,
+     "mercury": 0,
+     "scandium": 0,
+     "selenium": 0,
+     "titanium": 0,
+     "tungsten": 0,
+     "tin": 0,
+     "chloride": 20075,
+     "sodium": 11010,
+     "calcium": 435,
+     "magnesium": 1407,
+     "potassium": 421,
+     "bromide": 66,
+     "boron": 5,
+     "fluoride": 0.61,
+     "strontium": 8,
+     "sulphur": 920,
+     "lithium": 0.195,
+     "nickel": 0,
+     "molybdenum": 0.006,
+     "vanadium": 0.001,
+     "zinc": 0,
+     "manganese": 0.001,
+     "iodine": 0.033,
+     "chromium": 0,
+     "cobalt": 0,
+     "iron": 0,
+     "barium": 0.021,
+     "beryllium": 0,
+     "silicon": 0.146,
+     "phosphorus": 0.012,
+     "phosphate": 0.037,
+     "salinity": 35.514
+    }
+   },
+   {
+    "id": "icp-2026-06-14",
+    "date": "2026-06-14",
+    "lab": "Triton",
+    "ref": "B-ovXZ3O",
+    "elements": {
+     "aluminium": 0.006,
+     "antimony": 0,
+     "arsenic": 0,
+     "lead": 0,
+     "cadmium": 0,
+     "copper": 0,
+     "lanthanum": 0,
+     "mercury": 0,
+     "scandium": 0,
+     "selenium": 0,
+     "titanium": 0,
+     "tungsten": 0,
+     "tin": 0,
+     "chloride": 19574,
+     "sodium": 10795,
+     "calcium": 438,
+     "magnesium": 1349,
+     "potassium": 397,
+     "bromide": 66,
+     "boron": 5,
+     "fluoride": 0.67,
+     "strontium": 7,
+     "sulphur": 912,
+     "lithium": 0.192,
+     "nickel": 0,
+     "molybdenum": 0.007,
+     "vanadium": 0,
+     "zinc": 0,
+     "manganese": 0.001,
+     "iodine": 0.013,
+     "chromium": 0,
+     "cobalt": 0,
+     "iron": 0,
+     "barium": 0.026,
+     "beryllium": 0,
+     "silicon": 0.16,
+     "phosphorus": 0.015,
+     "phosphate": 0.046,
+     "salinity": 34.713
+    }
+   }
+  ],
+  "tasks-custom": null,
+  "task-log": [
+   {
+    "id": "6vty7ekymspafw59",
+    "taskId": "rem-alkalinity",
+    "date": "2026-08-12",
+    "auto": true
+   },
+   {
+    "id": "h7u4ngr1msp7pbia",
+    "taskId": "rem-salinity",
+    "date": "2026-08-12",
+    "auto": true
+   },
+   {
+    "id": "t1amm3k8msnszlce",
+    "taskId": "rem-alkalinity",
+    "date": "2026-08-11",
+    "auto": true
+   },
+   {
+    "id": "20czqxu6msmz5rh7",
+    "taskId": "rem-potassium",
+    "date": "2026-08-10",
+    "auto": true
+   },
+   {
+    "id": "458q0weqmsmydowa",
+    "taskId": "carbon",
+    "date": "2026-08-10"
+   },
+   {
+    "id": "mog8vkmtmsmydbdz",
+    "taskId": "waterchange",
+    "date": "2026-08-10"
+   },
+   {
+    "id": "19lfd1htmsmybn53",
+    "taskId": "rem-icp",
+    "date": "2026-08-10"
+   },
+   {
+    "id": "bg7jov3tmsmy31xh",
+    "taskId": "rem-nitrate",
+    "date": "2026-08-10",
+    "auto": true
+   },
+   {
+    "id": "6dyu92ghmsmy2q2o",
+    "taskId": "rem-phosphate",
+    "date": "2026-08-10",
+    "auto": true
+   },
+   {
+    "id": "ee0mukq8msmy2agg",
+    "taskId": "rem-magnesium",
+    "date": "2026-08-10",
+    "auto": true
+   },
+   {
+    "id": "tzb823uhmsmy1vos",
+    "taskId": "rem-calcium",
+    "date": "2026-08-10",
+    "auto": true
+   },
+   {
+    "id": "uxkb86ffmsmy1n6n",
+    "taskId": "rem-salinity",
+    "date": "2026-08-10",
+    "auto": true
+   },
+   {
+    "id": "8xovzi55msmxz3yh",
+    "taskId": "rem-alkalinity",
+    "date": "2026-08-10",
+    "auto": true
+   }
+  ],
+  "lighting-log": [
+   {
+    "id": "light-2026-08-05",
+    "date": "2026-08-05",
+    "note": "UV 66% · V 72% · RY 93% · B 93% · CW 20%"
+   }
+  ],
+  "custom-ranges": {
+   "magnesium": {
+    "min": 1520,
+    "max": 1560
+   },
+   "calcium": {
+    "min": 400,
+    "max": 450
+   },
+   "nitrate": {
+    "min": 6,
+    "max": 15
+   },
+   "phosphate": {
+    "min": 0.11,
+    "max": 0.19
+   }
+  },
+  "tank-settings": {
+   "volumeL": 77,
+   "dailyDoseMl": 10,
+   "dkhPerMlPer100L": 0.0533,
+   "calciumDoseMl": 12,
+   "caPpmPerMlPer100L": 0.3611,
+   "magDoseMl": 8,
+   "mgPpmPerMlPer100L": 0.024,
+   "waterChangeL": 10
+  },
+  "dose-log": [
+   {
+    "id": "6t1ubqmxmsoedvaf",
+    "date": "2026-08-10",
+    "time": "09:00",
+    "ml": 12,
+    "element": "calcium",
+    "note": "set from the dosing wizard"
+   },
+   {
+    "id": "q6nuo0eumso53jw8",
+    "date": "2026-08-11",
+    "time": "09:00",
+    "ml": 10,
+    "element": "alkalinity",
+    "note": "set from the dosing wizard"
+   }
+  ],
+  "water-changes": [
+   {
+    "id": "wc-2026-08-03",
+    "date": "2026-08-03",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-07-27",
+    "date": "2026-07-27",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-07-20",
+    "date": "2026-07-20",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-07-13",
+    "date": "2026-07-13",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-07-06",
+    "date": "2026-07-06",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-06-29",
+    "date": "2026-06-29",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-06-22",
+    "date": "2026-06-22",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-06-15",
+    "date": "2026-06-15",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-06-08",
+    "date": "2026-06-08",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-06-01",
+    "date": "2026-06-01",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-05-25",
+    "date": "2026-05-25",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-05-18",
+    "date": "2026-05-18",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-05-11",
+    "date": "2026-05-11",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-05-04",
+    "date": "2026-05-04",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-04-27",
+    "date": "2026-04-27",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-04-20",
+    "date": "2026-04-20",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-04-13",
+    "date": "2026-04-13",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-04-06",
+    "date": "2026-04-06",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-03-30",
+    "date": "2026-03-30",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-03-23",
+    "date": "2026-03-23",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-03-16",
+    "date": "2026-03-16",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-03-09",
+    "date": "2026-03-09",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-03-02",
+    "date": "2026-03-02",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-02-23",
+    "date": "2026-02-23",
+    "litres": 10,
+    "note": ""
+   },
+   {
+    "id": "wc-2026-02-16",
+    "date": "2026-02-16",
+    "litres": 10,
+    "note": ""
+   }
+  ],
+  "reminders": [
+   {
+    "id": "rem-alkalinity",
+    "label": "Test alkalinity",
+    "paramKey": "alkalinity",
+    "kind": "test",
+    "intervalDays": 2,
+    "startDate": "2026-08-10",
+    "enabled": true,
+    "builtin": true,
+    "dueOverride": "2026-08-13",
+    "dueTime": null,
+    "adjustDays": 0,
+    "dueReason": "manual"
+   },
+   {
+    "id": "rem-phosphate",
+    "label": "Test phosphate",
+    "paramKey": "phosphate",
+    "kind": "test",
+    "intervalDays": 7,
+    "startDate": "2026-08-10",
+    "enabled": true,
+    "builtin": true,
+    "adjustDays": 0
+   },
+   {
+    "id": "rem-salinity",
+    "label": "Test salinity",
+    "paramKey": "salinity",
+    "kind": "test",
+    "intervalDays": 3,
+    "startDate": "2026-08-10",
+    "enabled": true,
+    "builtin": true
+   },
+   {
+    "id": "rem-nitrate",
+    "label": "Test nitrate",
+    "paramKey": "nitrate",
+    "kind": "test",
+    "intervalDays": 7,
+    "startDate": "2026-08-10",
+    "enabled": true,
+    "builtin": true
+   },
+   {
+    "id": "rem-calcium",
+    "label": "Test calcium",
+    "paramKey": "calcium",
+    "kind": "test",
+    "intervalDays": 7,
+    "startDate": "2026-08-10",
+    "enabled": true,
+    "builtin": true,
+    "dueOverride": "2026-08-17",
+    "dueTime": "09:00",
+    "dueReason": "dose",
+    "adjustDays": 0
+   },
+   {
+    "id": "rem-magnesium",
+    "label": "Test magnesium",
+    "paramKey": "magnesium",
+    "kind": "test",
+    "intervalDays": 7,
+    "startDate": "2026-08-10",
+    "enabled": true,
+    "builtin": true
+   },
+   {
+    "id": "rem-potassium",
+    "label": "Test potassium",
+    "paramKey": "potassium",
+    "kind": "test",
+    "intervalDays": 30,
+    "startDate": "2026-08-10",
+    "enabled": true,
+    "builtin": true
+   },
+   {
+    "id": "rem-icp",
+    "label": "Send ICP sample",
+    "paramKey": null,
+    "kind": "icp",
+    "intervalDays": 42,
+    "startDate": "2026-09-07",
+    "enabled": true,
+    "builtin": true,
+    "adjustDays": 0,
+    "dueOverride": "2026-09-07",
+    "dueReason": "manual"
+   },
+   {
+    "id": "waterchange",
+    "label": "Water change",
+    "paramKey": null,
+    "kind": "water",
+    "intervalDays": 7,
+    "startDate": "2026-08-10",
+    "enabled": true,
+    "builtin": true,
+    "needsVolume": true,
+    "adjustDays": 0
+   },
+   {
+    "id": "carbon",
+    "label": "Replace carbon",
+    "paramKey": null,
+    "kind": "task",
+    "intervalDays": 28,
+    "startDate": "2026-08-10",
+    "enabled": true,
+    "builtin": true,
+    "adjustDays": 0,
+    "dueOverride": "2026-09-03",
+    "dueReason": "manual"
+   },
+   {
+    "id": "purigen",
+    "label": "Replace Purigen",
+    "paramKey": null,
+    "kind": "task",
+    "intervalDays": 28,
+    "startDate": "2026-09-07",
+    "enabled": true,
+    "builtin": true,
+    "adjustDays": 0,
+    "dueOverride": "2026-09-03",
+    "dueReason": "manual"
+   }
+  ],
+  "kit-changes": null,
+  "findings-dismissed": {
+   "kit-phosphate|kit reads high 222%": "2026-08-10",
+   "heading-out-phosphate|phosphate is heading out of range": "2026-08-10",
+   "equilibrium-phosphate|phosphate settles near 0.18ppm": "2026-08-10",
+   "ionic|calcium and alkalinity are out of step": "2026-08-10",
+   "strength-unverified|dose strengths not yet confirmed": "2026-08-10",
+   "kit-magnesium|kit reads high 7%": "2026-08-10",
+   "far-out-calcium|calcium is a long way below range": "2026-08-10",
+   "equilibrium-phosphate|phosphate settles near 0.19ppm": "2026-08-10",
+   "sparse|ph is tested rarely": "2026-08-10",
+   "equilibrium-nitrate|nitrate settles near 9.8ppm": "2026-08-10",
+   "heading-out-nitrate|nitrate is heading out of range": "2026-08-11",
+   "finding|kit-phosphate": {
+    "at": "2026-08-12",
+    "sig": "kit-phosphate|kit reads high 222%",
+    "times": 1
+   },
+   "finding|kit-magnesium": {
+    "at": "2026-08-12",
+    "sig": "kit-magnesium|kit reads high 7%",
+    "times": 1
+   },
+   "finding|ionic": {
+    "at": "2026-08-12",
+    "sig": "ionic|calcium and alkalinity are out of step",
+    "times": 1
+   },
+   "finding|heading-out-calcium": {
+    "at": "2026-08-12",
+    "sig": "heading-out-calcium|calcium has drifted to the edge of your range",
+    "times": 1
+   },
+   "finding|heading-out-nitrate": {
+    "at": "2026-08-12",
+    "sig": "heading-out-nitrate|nitrate is heading out of range",
+    "times": 1
+   },
+   "finding|icp-offrange": {
+    "at": "2026-08-12",
+    "sig": "icp-offrange|5 elements outside reference",
+    "times": 1
+   },
+   "finding|strength-unverified": {
+    "at": "2026-08-12",
+    "sig": "strength-unverified|dose strengths not yet confirmed",
+    "times": 1
+   },
+   "finding|sparse": {
+    "at": "2026-08-12",
+    "sig": "sparse|ph is tested rarely",
+    "times": 1
+   },
+   "finding|equilibrium-nitrate": {
+    "at": "2026-08-12",
+    "sig": "equilibrium-nitrate|nitrate settles near 9.8ppm",
+    "times": 1
+   },
+   "finding|equilibrium-phosphate": {
+    "at": "2026-08-12",
+    "sig": "equilibrium-phosphate|phosphate settles near 0.18ppm",
+    "times": 1
+   },
+   "solid": {
+    "at": "2026-08-12",
+    "sig": "3/8",
+    "times": 1
+   }
+  },
+  "alk-plan": {
+   "appliedDose": 10,
+   "appliedAt": "2026-08-11 09:00",
+   "target": 10,
+   "stage": 1,
+   "stages": 1,
+   "nextTestAt": "2026-08-13",
+   "nextTestTime": "09:00"
+  },
+  "corrections": null,
+  "ca-plan": {
+   "appliedDose": 12,
+   "appliedAt": "2026-08-10 09:00",
+   "target": 22.2,
+   "stage": 1,
+   "stages": 3,
+   "nextTestAt": "2026-08-17",
+   "nextTestTime": "09:00"
+  },
+  "mg-plan": null
+ }
+}
