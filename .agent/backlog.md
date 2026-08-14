@@ -723,6 +723,33 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
         - **`paramStatus`** (src/lib/dates.js:24-29) — a bare min/max/ok test
           against the same band, the gate that decides whether `heading-out`
           is even considered (:428-429).
+      added 2026-08-14, after bug 7 (TW-020) merged — **a fourth borrowed rule,
+      latent rather than live, and a unit error rather than a threshold one**.
+      `correctionProgress` (src/lib/dosing/helpers.js:280) now reads
+      `STABILITY_RULES[def.key].noiseFloor` and uses it as an absolute value in
+      the parameter's own unit: `zoneWidth = min(bandWidth, max(bandWidth/3,
+      2*noiseFloor))`. That is correct for the three `mode: "absolute"`
+      elements and was verified against §9's worked table when it was written
+      (alkalinity 8.40-8.60, calcium 415-435). It is wrong for the only two
+      entries in **percent** mode — phosphate `noiseFloor: 0.02, unit: "%"`
+      and nitrate `1.0, "%"` (stability-engine.js:51-52) — where the figure is
+      a proportion, not ppm. Arithmetic at the default bands: phosphate
+      `bandWidth/3` = 0.0233 against `2*noiseFloor` = 0.04, so the misread
+      constant **binds** and sets the zone at 0.045-0.085 — 57% of the band,
+      where §9 asks for a middle third. Nitrate's 3.33 beats its 2, so the
+      misread constant is inert there and the zone is the intended 8.33-11.67.
+      latent, not live: `correctionProgress` is called only from
+      alkalinity.js:480,644, calcium.js:233,354 and helpers.js:734,863
+      (magnesium). Phosphate never reaches it today. It goes live the moment
+      this item gives phosphate an engine, which is the reason it is recorded
+      here rather than as a bug of its own — whoever writes phosphate's
+      reasoning has to decide whether that noise floor is a proportion or a
+      ppm figure before anything reads it, and §5 is where that belongs.
+      no fix proposed, deliberately: reading the percent floor as a percentage
+      of the band, giving `correctionProgress` its own per-parameter floor, and
+      giving phosphate an absolute floor in `STABILITY_RULES` are three
+      different chemistry decisions (AGENTS.md rule 3, and §25's "naming a
+      parameter in this table does not authorise inventing its thresholds").
       what already is per-parameter, and should be read before anything is
       designed: STABILITY_RULES (src/lib/stability-engine.js:47-52) gives
       phosphate a 14-day window in **percent** mode with a 0.02 noise floor and
@@ -901,6 +928,46 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       owner: Dan approves the dependency; implementer wires it in once approved
 
 ## Done
+
+- [x] [schema] TW-032 `drainLegacyStore` was written, tested, and never called
+      why: Dan reported a phosphate band that had "shifted from around 0.10 to 0.03"
+      with nothing in `PARAM_DEFS` to explain it — `constants.js:33` has read
+      `min: 0.03, max: 0.10` unchanged since `0637695`, and the day's whole `src/`
+      diff contains no phosphate line at all. The mechanism that can produce that
+      symptom without a code change is a lost `custom-ranges` entry: `App.jsx:388`
+      falls back to `PARAM_DEFS` silently, so a custom band that goes missing
+      reappears as the shipped default with nothing on screen to say so.
+      what was actually broken: `ee64a23` removed the storage shim, which moved
+      every read from the legacy `reefconsole:` prefix to the `danstank:` mirror.
+      `drainLegacyStore` (storage.js:71) was written in that same change to carry an
+      install's data across the move, and `src/test/defects/storage-double-write.test.js`
+      pins its behaviour in six cases — but the only references to it anywhere were
+      that test file and `src/test-surface.js:276`. Nothing in `App.jsx` or
+      `main.jsx` ever ran it, so it passed its own tests on every run while doing
+      nothing on a real device.
+      why that loses data rather than merely wasting a function: the pre-shim
+      `saveKey` ignored the mirror's return value (`lsSet(key, value); return true;`),
+      so a quota failure left the legacy copy correct and the mirror stale, silently
+      — and ICP report photos sat inline in localStorage until `c7ed9d0`, which is
+      exactly the pressure that produces those failures. Every such key now reads
+      its older copy. Not phosphate-specific: `readings`, `dose-log`, `corrections`
+      and `correction-plans` are all reachable the same way.
+      fix: `src/App.jsx:431` calls `drainLegacyStore()` synchronously at the top of
+      the startup effect, before the `Promise.all` of `loadKey`s. Ordering is the
+      point and not incidental — the drain records the keys it could not finish and
+      `loadKey` consults that record to keep preferring the legacy copy for them, so
+      both halves must run before the first read. The drain itself is unchanged.
+      repro: `src/test/defects/legacy-drain-wiring.test.jsx` — four cases through a
+      real `ReefConsoleInner` mount, not against the drain directly, because the
+      wiring is the whole defect: a custom phosphate band of 0.05-0.12 behind a
+      stale mirror, the same band read off the dashboard card's gauge, a legacy key
+      with no mirror at all, and a clean install left untouched. 3 of the 4
+      confirmed red against the pre-fix `App.jsx` (the fourth is the no-op case and
+      passes either way).
+      authorised by Dan directly on 2026-08-14, in session — AGENTS.md rule 5
+      reserves storage-schema work for a `[schema]` item, and this is that item,
+      filed with the work rather than before it.
+      owner: implementer
 
 - [x] [chem] TW-016 correction.js allows magnesium at 4x the rail; rails.test.js asserted the old canon
       why: Dan settled the magnesium rail at 25 ppm/24 h on 2026-08-14 (§3), closing
