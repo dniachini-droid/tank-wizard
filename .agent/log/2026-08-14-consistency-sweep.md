@@ -160,3 +160,19 @@ S2 restore×TW-013×TW-014 compound ("why did I raise this dose" becomes
 unanswerable, unflagged); S3 priority-sentence vs Briefing latent landmine.
 Two new unpinned colour coincidences (phosphate=danger red, potassium=low
 amber) — colour-registry gap, note for Dan. Appended. Proceeding to Wave D.
+
+## Wave D step 1 — adjudicator (complete)
+19/19 new findings CONFIRMED from scratch (own repros, own fixtures), 0
+refuted, 0 downgraded — an accurate night, not just a confident one. Key
+adjudications: custom-ranges overwrite verified dynamically and UPGRADED
+(not gated by applySettings at all — even manual file restore overwrites
+targets); rate-rails fix direction triple-checked against §3 canon (fix the
+TEST — no repeat of the 13 Aug reversed-direction near-miss); the two
+phase5-gate S1s in findings.md are ALREADY FIXED (704cc69, verified
+root-cause fixes with passing regression tests) — flagged so triage doesn't
+promote closed bugs. Clusters prescribed: backup/restore family (one root
+cause, three consequences), StabilityStrip (merge two agents), reading-
+meaning vocabulary family, buildOverview dead-narrative family. Escalations
+for needs-dan: §3-vs-§21 rail-tightening same-day spec self-contradiction
+(new), reading-meaning vocabulary registry question. Arithmetic re-verified
+exact. Appended to findings.md. Proceeding to triage.
