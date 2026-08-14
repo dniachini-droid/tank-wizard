@@ -79,3 +79,46 @@ Notices a wipe; does not prevent one, does not survive a full clear, does not
 recover anything, and does not act on a partial loss (one key going missing
 while the rest survive). The last is visible in principle from the high-water
 marks and is deliberately not acted on.
+
+## Step 3 — piece two, automatic backup, TW-D12
+
+PR for piece one: #31 (base `main`; the API refused the routine branch as a
+base twice with a 422 on `base`, so stacking is by branch parentage and noted
+in each PR body). Routine PR: #30.
+
+Test first. `src/test/defects/automatic-backup.test.js`, 12 cases, red before
+`src/lib/auto-backup.js` existed (import failure — the same shape of red the
+photo suite started from). All 12 green after.
+
+Written:
+
+- `src/lib/auto-backup.js` — the ring (7, prunes oldest, refuses
+  empty-over-good), the handle (persist, query/request permission split so
+  `requestPermission` only ever runs from a tap), the share sheet (never
+  writes `last-backup`), and `maybeAutoBackup` (daily cadence, skips a
+  wiped/suspect device entirely — on those the current state is the thing
+  that must NOT be preserved).
+- `src/lib/idb.js` — `DB_VERSION` 2 → 3, stores `backup-ring` + `backup-meta`.
+- `src/App.jsx` — schedule runs once loaded and again on visibilitychange →
+  hidden, with piece one's verdict as the `suspectWipe` input.
+- `src/components/Setup.jsx` — share button (feature-detected), the file
+  handle chooser / re-grant button, and the snapshot list with per-row
+  restore through `restoreBackup`. The ring is described as an undo history
+  in as many words.
+
+The version bump caught `wipe-detection.test.jsx`'s raw-IndexedDB helper
+opening the shared database at a hardcoded 2 — the exact `VersionError` trap
+the routine's piece-three section warns about, demonstrated a piece early.
+The helper now imports `DB_VERSION`; no assertion changed.
+
+Confirmed: automatic-backup 12/12, `src/test/defects/` 140/140,
+`npm run verify` ALL BLOCKING CHECKS PASSED, advisory deadcode back at its
+baseline 3, `npx vitest run` 62 failed / 335 passed (baseline 62/323 after
+piece one — the 12 new tests, no new failures).
+
+### What piece two does not do
+
+The ring dies with the origin. The handle does not exist off Chromium and
+cannot tell a synced folder from a local one. The share sheet needs a tap and
+cannot confirm a save. The only copy that survives losing the phone is still
+a file somewhere else — the module header and the PR both say so.

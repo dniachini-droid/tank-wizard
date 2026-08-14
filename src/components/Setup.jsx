@@ -8,6 +8,7 @@ import { CORRECTIONS, computeCorrection, fmtDoseMass } from '../lib/analytics/co
 import { kitSigma } from '../lib/analytics/measurement-noise.js'
 import { fmtAmount } from '../lib/analytics/time-in-range.js'
 import { byNewest } from '../lib/analytics/time-of-day.js'
+import { fileHandleSupported, loadFileHandle, regrantAndWrite, restoreSnapshot, ringList, saveFileHandle, shareBackup, shareSupported, writeBackupToHandle } from '../lib/auto-backup.js'
 import { BACKUP_LABELS, buildBackup, downloadCsv, downloadJson, inspectBackup, requestPersistence, restoreBackup } from '../lib/backup.jsx'
 import { daysBetween, fmtDate, fmtShort, todayStr } from '../lib/dates.js'
 import { buildCsv } from '../lib/export-csv.js'
@@ -29,6 +30,23 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
   const [pending, setPending] = useState(null);
   const [persistState, setPersistState] = useState(null);
 
+  /* The automatic side of backup: the snapshots this device holds, and the
+     file handle if one was chosen. Loaded here so the panel shows what is
+     actually protecting the user rather than what ought to be. */
+  const [snapshots, setSnapshots] = useState([]);
+  const [fileState, setFileState] = useState(null);
+
+  const refreshAuto = async () => {
+    setSnapshots(await ringList());
+    const handle = await loadFileHandle();
+    if (!handle) { setFileState(null); return; }
+    let needsTap = false;
+    try {
+      if (handle.queryPermission) needsTap = (await handle.queryPermission({ mode: "readwrite" })) !== "granted";
+    } catch { needsTap = true; }
+    setFileState({ handle, needsTap });
+  };
+
   /* Ask for durable storage on arrival, and find out when the last backup was,
      so the reminder can be honest rather than nagging on every visit. */
   useEffect(() => {
@@ -38,6 +56,7 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
       if (live) setPersistState(p);
       const last = await loadKey("last-backup", null);
       if (live) setBackupAt(last);
+      if (live) await refreshAuto();
     })();
     return () => { live = false; };
   }, []);
@@ -549,6 +568,23 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
           <span className="flex items-center justify-center gap-1.5"><Save size={14} /> Save backup file</span>
         </Btn>
 
+        {/* One tap to Files, iCloud Drive or Mail, on the platforms where the
+            automatic file below does not exist. Not recorded as a backup: the
+            share sheet reports dismissal and success identically in practice,
+            so a `last-backup` written here would sometimes claim a copy that
+            was cancelled. */}
+        {shareSupported() && (
+          <Btn variant="ghost" className="w-full mb-2" onClick={async () => {
+            const res = await shareBackup(await buildBackup());
+            setRestoreMsg(res.ok
+              ? "Backup shared. If you saved it to Files or iCloud Drive, it will survive anything that happens to this browser."
+              : "Sharing was cancelled — nothing was saved.");
+            setTimeout(() => setRestoreMsg(null), 8000);
+          }}>
+            <span className="flex items-center justify-center gap-1.5"><Upload size={14} /> Share a backup file</span>
+          </Btn>
+        )}
+
         <label className="block">
           <span className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl border-2 border-app px-4 py-2.5 text-[13px] font-extrabold text-ink2 cursor-pointer active:bg-app">
             <Upload size={14} /> Restore from a backup
@@ -625,6 +661,77 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
 
         {restoreMsg && (
           <p className="text-[12px] font-bold text-ink mt-2 leading-relaxed">{restoreMsg}</p>
+        )}
+
+        {/* The automatic backup file — Chromium only, which is why the share
+            button above exists. Once a file is chosen the app rewrites it
+            daily with no further prompts; a lapsed permission degrades to a
+            tap here rather than failing silently. */}
+        {fileHandleSupported() && (
+          <div className="mt-4 pt-3 border-t border-app">
+            <p className="text-[13px] text-ink font-medium leading-relaxed mb-2">
+              {fileState
+                ? fileState.needsTap
+                  ? "A backup file is set up, but the browser needs your permission again to keep writing it."
+                  : "This browser rewrites your chosen backup file automatically, about once a day. If the file lives in a synced folder, it survives anything that happens to this device."
+                : "This browser can keep one backup file up to date by itself — choose where once, and the app rewrites it about once a day with no further steps."}
+            </p>
+            {fileState && fileState.needsTap ? (
+              <Btn className="w-full sm:w-auto" onClick={async () => {
+                const res = await regrantAndWrite(fileState.handle, await buildBackup());
+                setRestoreMsg(res.ok ? "Backup file updated." : "The browser did not allow it — the file was not written.");
+                setTimeout(() => setRestoreMsg(null), 8000);
+                await refreshAuto();
+              }}>Allow updates again</Btn>
+            ) : (
+              <Btn variant="ghost" className="w-full sm:w-auto" onClick={async () => {
+                try {
+                  const handle = await window.showSaveFilePicker({
+                    suggestedName: "dans-tank-backup.json",
+                    types: [{ description: "Tank backup", accept: { "application/json": [".json"] } }],
+                  });
+                  await saveFileHandle(handle);
+                  await writeBackupToHandle(handle, await buildBackup());
+                  setRestoreMsg("Backup file created. The app will keep it up to date from here.");
+                  setTimeout(() => setRestoreMsg(null), 8000);
+                  await refreshAuto();
+                } catch { /* picker dismissed — nothing chosen, nothing changed */ }
+              }}>{fileState ? "Choose a different file" : "Choose where to keep it"}</Btn>
+            )}
+          </div>
+        )}
+
+        {/* The snapshot ring. Deliberately described as what it is: it lives
+            in the same origin as the data it copies and dies with it, so
+            calling it a backup would promise a protection it cannot give. */}
+        {snapshots.length > 0 && (
+          <div className="mt-4 pt-3 border-t border-app">
+            <p className="text-[13px] text-ink font-medium leading-relaxed mb-2">
+              The app also keeps its own last {snapshots.length === 1 ? "snapshot" : `${snapshots.length} daily snapshots`} of
+              everything, on this device. They undo a mistake — a bad restore, an accidental
+              delete — but they are erased along with everything else if the browser clears
+              its storage, so they are not a backup.
+            </p>
+            <div className="space-y-1">
+              {snapshots.map((s) => (
+                <div key={s.key} className="flex items-center justify-between gap-2">
+                  <span className="text-[12px] font-bold text-ink2">
+                    {fmtDate(s.key.slice(0, 10))} · {s.counts.readings || 0} readings
+                  </span>
+                  <Btn variant="ghost" onClick={async () => {
+                    const merged = await restoreSnapshot(s.key, {
+                      "readings": readings, "icp-tests": icps, "water-changes": waterChanges,
+                      "dose-log": doseLog, "lighting-log": lighting, "task-log": taskLog,
+                      "tasks-custom": customTasks,
+                    }, true);
+                    if (merged) onRestored(merged);
+                    setRestoreMsg(merged ? "Snapshot restored — anything missing was added, nothing was overwritten." : "That snapshot could not be read.");
+                    setTimeout(() => setRestoreMsg(null), 8000);
+                  }}>Restore</Btn>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         <div className="mt-4 pt-3 border-t border-app">
