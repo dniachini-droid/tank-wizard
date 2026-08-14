@@ -271,12 +271,24 @@ export function correctionProgress(plan, def, readings, today, maintenanceNow) {
   }
 
   const up = plan.target > plan.startValue;
-  const inBand = (v) => v >= def.min && v <= def.max;
-  /* Two consecutive readings inside the band. A single one can be a bad
-     endpoint, and dropping back to maintenance on it leaves the tank sagging
-     straight out again. */
+  /* §9, decided 14 Aug: arrival is the middle third of the band, floored so
+     the zone is never narrower than twice the element's own §5 noise floor
+     — reaching the band mid-climb is passing through, not arriving. Read
+     live from `def.min`/`def.max` on every call, never hardcoded (§9: "the
+     zone is computed from whatever band is in force"), so it moves with
+     whatever band — the shipped default or a user's own — is in force. */
+  const bandWidth = def.max - def.min;
+  const midpoint = (def.min + def.max) / 2;
+  const noiseFloor = (STABILITY_RULES[def.key] || {}).noiseFloor || 0;
+  const zoneWidth = Math.min(bandWidth, Math.max(bandWidth / 3, 2 * noiseFloor));
+  const zoneMin = midpoint - zoneWidth / 2;
+  const zoneMax = midpoint + zoneWidth / 2;
+  const inZone = (v) => v >= zoneMin && v <= zoneMax;
+  /* Two consecutive readings inside the arrival zone. A single one can be a
+     bad endpoint, and dropping back to maintenance on it leaves the tank
+     sagging straight out again. */
   const lastTwo = rows.slice(-2);
-  const arrived = lastTwo.length >= 2 && lastTwo.every((r) => inBand(r.value));
+  const arrived = lastTwo.length >= 2 && lastTwo.every((r) => inZone(r.value));
 
   const remaining = up
     ? Math.max(0, plan.target - latest.value)

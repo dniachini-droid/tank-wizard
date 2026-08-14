@@ -228,7 +228,7 @@ export function doseStatus(a, def, todayIso, settings, latestByParam, doseLog, w
       return { ...doseFacts, state: "correction-done", tone: "#0B7C86", short: "Target reached",
         headline: `${def.label} has reached ${fmtVal(def, cp.level)}${def.unit}`,
         detail: cp.arrived
-          ? `Two readings inside your range confirm it — one alone can be a bad endpoint. Set the dose back to ${fmtAmount(cp.returnDose)} mL/day to hold it there; ${fmtAmount(a.currentDose)} mL was only ever to get it here.`
+          ? `Two readings back near the middle of your range confirm it — one alone can be a bad endpoint. Set the dose back to ${fmtAmount(cp.returnDose)} mL/day to hold it there; ${fmtAmount(a.currentDose)} mL was only ever to get it here.`
           : `${label} has passed ${fmtVal(def, cp.target)}${def.unit}, so stop pushing now — set the dose back to ${fmtAmount(cp.returnDose)} mL/day. One reading can be a bad endpoint, so test again to confirm, but leaving ${fmtAmount(a.currentDose)} mL/day running while you wait is how a correction overshoots.`,
         correctionPlan: cp, returnDose: cp.returnDose };
     }

@@ -1,11 +1,11 @@
 run: 2026-08-14-phase6-bugs
 routine: routine 15 — phase 6: the known bugs
 started: 2026-08-14T00:00:00Z
-status: interrupted
-last completed step: bugs 3, 4, 5 and 6 — all four now on this branch,
+status: complete
+last completed step: bugs 3, 4, 5, 6 and 7 — all five now on this branch,
   composed in bug order rather than merged independently (see the log's
-  "Merge" sections). Listed oldest first; bug 6 is the genuine last completed
-  step.
+  "Merge" sections). Listed oldest first; bug 7 is the genuine last completed
+  step, and the last of the seven.
 
   bug 3 — dose-gap halving removed (3a) + stability
   grading fixed (3b), shipped together per §7/§11. `doseDriftedFrom`
@@ -132,6 +132,27 @@ last completed step: bugs 3, 4, 5 and 6 — all four now on this branch,
   the only coverage. PR:
   https://github.com/dniachini-droid/tank-wizard/pull/26
 
+
+  bug 7 — TW-020, arrival zone vs full band, shipped.
+  This was the seventh and last bug in the routine. `correctionProgress`
+  (helpers.js) now tests arrival against the §9 zone
+  (`max(bandWidth/3, 2×noiseFloor)`, clamped, centred on the midpoint),
+  computed live from `def.min`/`def.max` on every call — not the full
+  band. `noiseFloor` is §5's `STABILITY_RULES[key]`, confirmed the correct
+  family (not `_TREND.stable`, bugs 2/3's constant, same caution those
+  bugs needed in reverse). `passed` and the `arrived || passed`
+  correction-done trigger confirmed untouched — proved via a live
+  assessAlkalinity + doseStatus integration test, not just the raw
+  correctionProgress fields. Two call sites' wording ("inside your
+  band"/"inside your range") updated to "back near the middle of your
+  range" — still true either way, now precise about what arrived actually
+  means. npm run verify GREEN; golden UNCHANGED (golden.js's sweep never
+  sets up a correctionPlans entry, so correctionProgress is never
+  exercised by it — confirmed by reading golden.js, not assumed). vitest:
+  differential diff 70/70 before and after, empty — no existing red test
+  asserted this defect, this bug's own test is the coverage. PR:
+  https://github.com/dniachini-droid/tank-wizard/pull/27
+
   COMPOSITION NOTE, replacing bug 4's note above where the two disagree: bugs
   4-7 were each branched fresh from a `main` that predates the others, per
   rule 1, and all four PRs went conflicted at once — against `main` (PR #24
@@ -143,45 +164,49 @@ last completed step: bugs 3, 4, 5 and 6 — all four now on this branch,
   regenerating it where the tree moves it, auditing the diff by element and
   direction — rather than choosing a side, because the bugs interact (bug 4's
   narrower alkalinity band moves which cases fall into bug 3's promotion
-  window). At this step, bugs 3 + 4 + 5 + 6, the digest is still
-  fbac65244f00ac9b — bug 4's own composed figure, unmoved by bugs 5 and 6,
-  whose constants live in `analytics/correction.js` and `analytics/drift.js`
-  and are read by nothing in the sweep. Measured on each composed tree, not
-  assumed from the absence of a git conflict: golden.json conflicted at
-  neither step, which is exactly when the check matters, because git will
-  carry a stale snapshot forward without saying so. See the log's two "Merge —
-  bug N composed" sections.
-next step: bug 7 — TW-020, arrival zone vs full band
-  (`correctionProgress`, src/lib/dosing/helpers.js:273-279). Branch fresh
-  from origin/main. Read routine section 7 in full before starting.
-  Depends on bug 4 (alkalinity's band) for its worked example numbers
-  (8.40-8.60 dKH assumes 8.2-8.8 is in force) — bug 4's own PR (#23) is
-  NOT merged as of this write, so per the routine's own dependency note,
-  build this bug's test against an explicit local `def` fixture (band
-  values passed directly, not read from the live PARAM_DEFS import) so
-  this PR does not implicitly depend on #23 having merged — the fix
-  itself is band-relative by construction (§9: "the zone is computed from
-  whatever band is in force and must never be hardcoded"). Use §5's kit
-  noise floor (STABILITY_RULES in src/lib/stability-engine.js — 0.1 dKH /
-  10 ppm / 30 ppm), NOT the _TREND.stable family bugs 2/3 use — same
-  caution as those bugs, opposite direction (habit might reach for
-  ALK_TREND.stable here by mistake). Must NOT change `passed`
-  (helpers.js:316) or the `arrived || passed` correction-done trigger
-  (state.js:227) — check call sites that branch on `cp.arrived`
-  specifically for wording, not necessarily code. `inBand` may be used
-  elsewhere in the same function for band membership, not arrival — check
-  every call site before narrowing it globally; add a new `inZone`-style
-  check if shared rather than redefining what `inBand` means everywhere.
-  Bug 7 is already implemented on `claude/bug7-arrival-zone` (PR #27), and it
-  was built exactly as the note above asks — against an explicit local `def`
-  fixture rather than the live PARAM_DEFS import — so it does not implicitly
-  depend on #23 having merged. It is composed onto this branch next rather
-  than branched fresh, which is what makes bug 4's band and bug 7's zone
-  meet for the first time.
-in-flight: none — bugs 3, 4, 5 and 6 all shipped. Bug 3 merged (PR #22); this
-  branch (PR #26) carries bugs 3, 4, 5 and 6 and the canon run. Working tree
-  clean.
-branch: claude/bug6-mg-dose-advice (pushed, PR #26)
+  window). With all five fixes applied the digest is fbac65244f00ac9b, 5,940
+  rows — bug 4's own composed figure, re-recorded from scratch on the full
+  tree and byte-identical to it. Bugs 5, 6 and 7 move zero rows between them,
+  measured one composed tree at a time rather than inferred: their constants
+  live in `analytics/correction.js`, `analytics/drift.js` and
+  `correctionProgress`, none of which the sweep enters. golden.json did not
+  conflict at any of the three steps, which is exactly when the check matters,
+  because git carries a stale snapshot forward without saying so. Audited by
+  element and direction against the pre-bug-4 fingerprint: 1,950 rows differ,
+  all alkalinity, calcium 0, magnesium 0 — PR #23's own figure, reproduced.
+  Full audit in the log's "Merge — bug 7 composed" section.
+next step: none — routine 15 is complete. All seven bugs attempted (six
+  fixed and shipped, bug 2 fixed on its second pass after a first-pass
+  revert). Each bug is its own PR against `main`, independently branched
+  and independently verified per rule 1 — #12 (bug 1) and #14 + the
+  bug-2-second-pass PR are merged; #22 (bug 3), #23 (bug 4), #25 (bug 5),
+  #26 (bug 6) and #27 (bug 7) are open, unmerged as of this write. Merging
+  is Dan's alone (AGENTS.md #13) — nothing here waits on it.
+  Two things surfaced along the way that are Dan's to decide, not fixed
+  under this routine's authorisation: `.agent/needs-dan.md` item 3 (a
+  narrow alkalinity dose-gap coverage question found auditing bug 3's
+  golden diff) and TW-026 (magnesium's own off-centre PARAM_DEFS band,
+  found under bug 4) — filed to `.agent/backlog.md` "Needs Dan's
+  approval". Also found, not fixed: `.agent/backlog.md` now has **two**
+  different items both numbered TW-026 (mine, from bug 4; a
+  pre-existing one from an unrelated concurrent canon-sync run, "doseStatus
+  cannot express four cells of the journey-4b matrix") — a numbering
+  collision across two independent, concurrently-shipped PRs, not
+  something either session could have seen coming. Renumbering is Dan's
+  call, same as the pre-existing TW-016 collision this run already found
+  (see the log) — an ID is cited from run notes and PRs, so it is not a
+  tidy-up to do unilaterally.
+  `.agent/phase6-bugs.md` written this run, per the routine's closing
+  instructions — one section per bug, both the precise and plain layers.
+  Bug 7 was built against an explicit local `def` fixture rather than the live
+  PARAM_DEFS import, exactly as bug 6's note asked, so that it did not
+  implicitly depend on #23 having merged. Composing it here is the first time
+  bug 4's narrower alkalinity band and bug 7's arrival zone are in the same
+  tree, and the zone is band-relative by construction (§9), so the fingerprint
+  was re-derived and audited at this step rather than carried forward.
+in-flight: none — bugs 3, 4, 5, 6 and 7 all shipped. Bug 3 merged (PR #22);
+  this branch (PR #27) carries all five and the canon run. Working tree clean.
+branch: claude/bug7-arrival-zone (pushed, PR #27)
 uncommitted work: no
 
 <!--
@@ -190,10 +215,25 @@ throughout. If status is in-progress or interrupted, the last run died and the
 next run must resume before starting anything new. See AGENTS.md, "Checkpoint
 and resume contract".
 
-status is "interrupted" rather than "complete" because the routine (seven
-bugs) is not finished — bugs 1-6 are done, bug 7 remains. This is a clean
-stopping point per rule 6 (stop at a bug boundary), not a crash: nothing is
-half-edited, nothing needs reverting.
+status is "complete" — all seven bugs in routine 15 have been attempted, each
+as its own PR. "Complete" describes this routine's work, not the repo's
+overall state: none of bugs 3-7's PRs are merged as of this write (merging is
+Dan's alone), and a separate, unrelated run (2026-08-14-reef-chemistry-engine-
+canon, run by a different session concurrently with bugs 3-7) landed its own
+spec and backlog changes on `main` in between — those are that run's own
+record, not duplicated here.
+
+Two backlog numbering collisions found across concurrent work this run,
+neither renumbered — an ID is cited from run notes and PRs, so renumbering is
+Dan's call, not a tidy-up:
+- TW-016: one pre-existing ("drift"/"drifting" terminology) and one this
+  routine's bug 5 closed (magnesium correction rail). Found under bug 5.
+- TW-026: one pre-existing (from the concurrent canon-sync run, "doseStatus
+  cannot express four cells of the journey-4b matrix", now [approved]) and one
+  this routine filed (magnesium's off-centre PARAM_DEFS band, found under
+  bug 4, still needs Dan's approval). Found under bug 7, while writing this
+  file — the canon-sync run's TW-026 did not exist yet when bug 4 filed its
+  own.
 
 Bug 2 was closed twice. The first pass (PR #14) reported and reverted, because
 the option the routine authorised broke three blocking checks. Dan then
@@ -203,22 +243,15 @@ stays as the record of it; the rule itself is a separate change.
 
 The 2026-08-14-reef-chemistry-engine-canon run wrote its own `run: ` header
 here while routine 15 was mid-flight, and recorded itself complete with
-routine 15 named as "the older resume point". Merging it in restores routine
-15 as the current run, which is what this file is for. Nothing of that run is
-lost: its log file is merged intact, its backlog edits are merged, and the one
-note it left that is still live rather than run-specific is carried below.
+routine 15 named as "the older resume point". Merging it back in restores
+routine 15 as the current run, which is what this file is for. Nothing of that
+run is lost: its log file is merged intact and its backlog edits are merged.
 
-Found while reading and deliberately not fixed: .agent/backlog.md has two items
-numbered TW-016. Renumbering one is Dan's call, not a tidy-up — an ID is cited
-from run notes and PRs.
-
-The same has now happened a second time, and composing the branches is what
-made it visible: there are two items numbered TW-026 — `[approved] TW-026
-doseStatus cannot express four cells of the journey-4b matrix` (journeys 4/4b,
-approved by the canon run) and `[chem] TW-026 magnesium's default band is
-off-centre` (filed by bug 4). Bug 4 minted its number against a backlog that
-did not yet carry the other; neither branch could see the clash on its own.
-Left alone for the reason above — both IDs are already cited from run notes
-and PRs, so renumbering is Dan's call. TW-032 is the first free number if he
-wants one.
+The five PRs are no longer independent of each other, and this is the one
+place that fact is easy to miss. They conflicted on this file, the run log,
+.agent/backlog.md and tests/legacy-port/golden.json, so each has been merged
+into the next in bug order: #23 carries bugs 3-4, #25 carries 3-5, #26 carries
+3-6, #27 carries 3-7. Merge them in that order and each goes in clean; merge
+one out of order and it brings its predecessors with it. Independently branched
+per rule 1, as the entries above say — but no longer independently mergeable.
 -->
