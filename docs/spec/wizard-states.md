@@ -8,7 +8,8 @@ Part II carried forward the rest of `surfaces-and-messaging.md` and all of
 `app-contract.md`. **Part III added 14 August 2026** on the spec owner's
 authority — §19 and §20, the surfaces and notice halves of the Reef Chemistry
 Engine decision, folded in from `docs/spec/DECISION-reef-chemistry-engine.md`
-(now deleted). Its assessment half is `reef-chemistry.md` §25.
+(now deleted). Its assessment half is `reef-chemistry.md` §25. **§21 added
+14 August 2026** on the spec owner's authority — what Setup may ask for.
 
 > Agents never edit this file. Disagreements → `.agent/spec-challenges.md`.
 
@@ -17,8 +18,8 @@ number the app produces; this one to know why a particular card is showing,
 what words may go on it, and what the app must be true of as a program.
 
 Part I (§0–§10) is the wizard's state machine. Part II (§11–§18) is the surfaces
-and messaging canon plus the platform floor. Part III (§19–§20) is the Reef
-Chemistry Engine's surfaces and the notice model.
+and messaging canon plus the platform floor. Part III (§19–§21) is the Reef
+Chemistry Engine's surfaces, the notice model, and what Setup may ask for.
 
 ---
 
@@ -796,3 +797,117 @@ it.
 Per §10, named rather than asserted: **nothing asserts §19 or §20 today.**
 `scripts/verify/wordingcheck.mjs` covers one field of one loop in one function.
 TW-028 is the enforcement, and it should land with TW-027 rather than after it.
+
+---
+
+## 21. What Setup may ask for — facts, not judgements
+
+**Decided 14 Aug (Dan, spec owner).**
+
+> **Setup asks for facts, not judgements.**
+
+The app asks only for what it cannot know and cannot default. Everything else
+gets a sensible default and is changeable later.
+
+### The two kinds of input
+
+| | Facts | Judgements |
+|---|---|---|
+| What they are | properties of this tank and this shelf of bottles | opinions about how the app should behave |
+| Who can supply them | **only the user** — there is no default that is not a guess about someone else's tank | the app, from `reef-chemistry.md`, and better than a new user can |
+| Where they belong | Setup, asked up front | a default, visible and editable once the user has a reason to change it |
+| Examples | net volume; solution strengths; which parameters are dosed | band widths; rate tolerances; cadence; notification thresholds |
+
+The test for a fact is not that it is numeric or that it feels technical. It is
+that **the app cannot obtain it and cannot default it.** Net volume is a fact:
+no default is even approximately right, and `reef-chemistry.md` §17 shows every
+dose figure scaling off it. Solution strength is a fact: it is printed on a
+bottle the app cannot see, and §2 there records that everything downstream
+depends on it being right. Which parameters are dosed is a fact about the
+user's equipment.
+
+A rate tolerance is not a fact. `reef-chemistry.md` §3 already holds a defended
+rail per element, and §11 a stability grading. The app has an answer. Asking
+the user to supply one instead replaces reasoning the spec has done with a
+number typed by someone who has been using the app for four minutes.
+
+**The app must work well without being configured beyond the facts.** A user
+who enters net volume, strengths and their dosed parameters, and touches
+nothing else, gets the app working correctly. Not degraded, not in a reduced
+mode — correctly. If a default is not good enough to ship unattended, the
+defect is in the default, not in the absence of a question.
+
+### Why
+
+Every setting is a question someone must answer before the app is useful,
+usually without enough information to answer it well. "What daily alkalinity
+movement do you tolerate?" produces a guess, and the guess then behaves like a
+decision: the app acts on it, silently, for months, with the same weight as a
+measured fact.
+
+**A setting must earn its place by solving a problem someone actually hit.**
+Not a problem someone might hit; not a preference someone might have. The
+sequence is: the default is wrong for a real tank, that is observed, and the
+setting is added to fix it. A setting added before that has no evidence behind
+its own existence, let alone behind the value a user will type into it.
+
+This is the Setup-facing half of what §5 already says about the wizard: an app
+that always has an answer is not more useful than one that says what it is
+waiting for. The wizard refuses rather than guessing. Setup defaults rather
+than interrogating. Both are the same refusal to launder a guess into an
+authority.
+
+### Rejected — a Setup question for rate tolerance
+
+**Recorded so it is not revisited.** The proposal: ask the user in Setup for
+the daily movement they tolerate per element, and feed that figure into the
+dose-gap triggers, and possibly into the rate rails.
+
+Rejected on two independent grounds, either of which is sufficient:
+
+1. **It demands a judgement up front.** It asks a new user to decide the
+   app's sensitivity before they have seen it behave once — the exact failure
+   this section exists to prevent. `reef-chemistry.md` §3 and §11 already
+   answer the question with reasoning the user does not have.
+2. **One setting reaching into rails and staging fractions is the shape of the
+   defects this project has spent two days removing.** A single number
+   entering the dose-gap trigger (`reef-chemistry.md` §7), the staging
+   fractions (§8.1) and the rate ceiling (§3, §8.5) is one input with three
+   arrival points and no single owner. That is the same shape as the four
+   competing dose calculators (§0.3, §9.4 here), the ten divergent classifiers
+   (§7, §11), and the halving at `helpers.js:502-503` that exists only to
+   compensate for a grading fault elsewhere (§9.2, §9.3). Those cost two days
+   to find and remove. This would reintroduce the shape by hand, with a user
+   setting at the top of it so that no two tanks failed the same way.
+
+Rejection of the setting is not rejection of the underlying concern. If a
+tank's real behaviour shows a rail or a trigger is wrong, the fix is to change
+it in `reef-chemistry.md`, for everyone, with the reasoning written down —
+where it can be argued with and tested — not to expose it as a dial.
+
+### What this section does not say
+
+- It does not freeze the current Setup screen. Setup today also asks for test
+  kit precision and repeat-test spread; those are facts about the kit,
+  measured, not opinions about behaviour, and they are what `reef-chemistry.md`
+  §5's noise floors are built from.
+- It does not forbid settings. It orders them: default first, setting only once
+  a real tank has shown the default wrong.
+- It does not make defaults invisible or immovable. A default a user cannot see
+  or change is a different fault from the one this section prevents.
+- It does not decide which parameters the engine assesses. That is §19 and
+  `reef-chemistry.md` §25. This section governs only what the app asks a human
+  to supply.
+
+### Enforced by
+
+Per §10, named rather than asserted: **nothing asserts §21 today.** The check
+that would is a test over the Setup schema — every field is either on the facts
+list above or carries a recorded default and a recorded reason it needed to
+become a question. Until that exists this section is an intention, and a new
+Setup field can be added without anything objecting.
+
+### In plain terms
+
+Ask what only the user knows. Default everything else, and change a default
+when a real tank proves it wrong — not when a user might have had an opinion.
