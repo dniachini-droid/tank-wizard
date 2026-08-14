@@ -2,8 +2,8 @@ run: 2026-08-14-real-history-replay
 routine: routines/18-real-history-replay.md
 started: 2026-08-14T12:20:00Z
 status: complete
-last completed step: report written (all 11 sections), log written, committing
-  and opening the PR
+last completed step: report written (all 11 sections), log written, committed,
+  pushed, PR opened: https://github.com/dniachini-droid/tank-wizard/pull/37
 next step: none — Dan reviews and merges (or not). Follow-ups are filed inside
   the report, §8 (other owners) and §9 (questions for Dan).
 in-flight: nothing
