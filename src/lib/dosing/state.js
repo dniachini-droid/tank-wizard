@@ -51,6 +51,11 @@ export function doseStatus(a, def, todayIso, settings, latestByParam, doseLog, w
      when a perfectly good reading existed, simply because the dose maths had
      nothing to work with. */
   const known = (latestByParam && latestByParam[def.key]) || a.current || null;
+  /* Where the level is, for every branch below that asks which side of the band
+     it sits on. §26, decided 14 Aug: that is the last reading, never a fitted
+     value — and it is the same number the branches print, so a card can no
+     longer classify from one figure while quoting another. */
+  const nowLevel = known ? known.value : (a.current ? a.current.value : null);
 
   /* Everything the reading confirmation needs to talk about a dose change,
      computed once here rather than in the window. The window renders; it does
@@ -81,8 +86,7 @@ export function doseStatus(a, def, todayIso, settings, latestByParam, doseLog, w
        span of those readings does not work: the analysis window is only a
        fortnight wide, so a dose change from sixty days ago could never look
        settled and the app narrated it forever. */
-    const level = known ? known.value : null;
-    const inBand = level != null && level >= def.min && level <= def.max;
+    const inBand = nowLevel != null && nowLevel >= def.min && nowLevel <= def.max;
     const used = a.used || [];
     const allInBand = used.length >= 2
       && used.every((r) => r && r.value >= def.min && r.value <= def.max);
@@ -183,7 +187,7 @@ export function doseStatus(a, def, todayIso, settings, latestByParam, doseLog, w
      assessment, which may have nothing to work with. */
   {
     const bounds = SAFE_BOUNDS[def.key];
-    const nowVal = known ? known.value : null;
+    const nowVal = nowLevel;
     /* A correction already running says both things — the level is wrong and
        something is being done about it — so it stays in charge. Overriding it
        here replaced "on its way to 9.0, two days to go" with a bare alarm and
@@ -296,10 +300,11 @@ export function doseStatus(a, def, todayIso, settings, latestByParam, doseLog, w
         testOn, stage: plan.stage, stages: plan.stages, target: plan.target };
     }
 
-    /* Tested: did it work? Stable and in band is the answer we wanted. */
-    const inBand = a.fittedNow != null
-      ? (a.fittedNow >= def.min && a.fittedNow <= def.max)
-      : (a.current && a.current.value >= def.min && a.current.value <= def.max);
+    /* Tested: did it work? Stable and in band is the answer we wanted.
+       §26: in band is the last reading. Judged on the fit this branch told a
+       keeper whose reading said 8.5 that the level "is not where you want it"
+       and needed its own correction, against a band starting at 8.2. */
+    const inBand = nowLevel != null && nowLevel >= def.min && nowLevel <= def.max;
     const steady = a.band === "stable";
     const more = plan.target != null && Math.abs(plan.target - plan.appliedDose) > 0.5;
 
@@ -388,7 +393,6 @@ export function doseStatus(a, def, todayIso, settings, latestByParam, doseLog, w
        not. */
     const oneOff = a.targetCorrection.oneOffMl;
     const normal = a.maintenanceDose != null ? a.maintenanceDose : a.currentDose;
-    const nowLevel = known ? known.value : (a.current ? a.current.value : null);
     if (normal > 0 && oneOff > normal * 25) {
       return { ...doseFacts, state: "suggested", tone: "#45605F", short: "Wrong tool",
         /* The headline has to say where the level is, not only what the tool
@@ -419,7 +423,7 @@ export function doseStatus(a, def, todayIso, settings, latestByParam, doseLog, w
        the engine already keeps. There is no lastChange on the assessment. */
     const since = a.hoursOnDose != null && isFinite(a.hoursOnDose)
       ? Math.max(0, Math.floor(a.hoursOnDose / 24)) : null;
-    const shownNow = known ? known.value : null;
+    const shownNow = nowLevel;
     const outOfBandNow = shownNow != null && (shownNow < def.min || shownNow > def.max);
     return { ...doseFacts, state: "settling", tone: "#1D6FA5", short: "Change settling",
       /* Say where the level is even when the dose cannot be judged. Over three
@@ -441,12 +445,14 @@ export function doseStatus(a, def, todayIso, settings, latestByParam, doseLog, w
      matched dose has nothing to correct by dosing — you cannot add something
      to bring it down — but reporting that as "nothing to do" contradicted the
      explanation directly underneath it, which said the level was wrong. */
-  /* The fitted level decides whether the tank counts as out of range, because
-     it resists one noisy reading. What gets shown is always the measured
-     value: quoting a fitted 1540 to someone whose kit read 1520 is telling
-     them a number that does not exist. */
-  const level = a.fittedNow != null ? a.fittedNow : (a.current ? a.current.value : null);
-  const shown = a.current ? a.current.value : level;
+  /* §26: the last reading decides whether the tank counts as out of range, and
+     it is also what gets shown. These were two different numbers — the fitted
+     value classified, the measured value printed — so the card could say a
+     level was below the range and name a figure inside it in the same sentence.
+     Quoting a fitted 1540 to someone whose kit read 1520 tells them a number
+     that does not exist; classifying by it does the same thing less visibly. */
+  const level = nowLevel;
+  const shown = nowLevel;
   if (level != null && (level < def.min || level > def.max)) {
     const above = level > def.max;
 
@@ -496,16 +502,15 @@ export function doseStatus(a, def, todayIso, settings, latestByParam, doseLog, w
       detail: `The dose is unchanged — a rise the dose cannot explain is not a reason to cut it. Check whether a water change or a one-off correction is missing from the log, then test ${label} again in two days.` };
   }
 
-  /* Idle means the dose is right, which is not the same as the level being
-     right. A tank sitting outside its band with a perfectly matched dose was
-     told "nothing to do" — true of the dose, misleading about the tank. */
-  const idleLevel = known ? known.value : null;
-  const idleOut = idleLevel != null && (idleLevel < def.min || idleLevel > def.max);
-  if (idleOut) {
-    return { ...doseFacts, state: "idle", tone: "#45605F", short: "Dose right, level off",
-      headline: `${def.label} dose is matching consumption at ${fmtVal(def, idleLevel)}${def.unit}`,
-      detail: `The dose is holding ${label} steady, but steady ${idleLevel < def.min ? "below" : "above"} your range of ${fmtVal(def, def.min)}–${fmtVal(def, def.max)}${def.unit}. Moving it is a separate correction rather than a bigger daily dose — the dose is doing its job.` };
-  }
+  /* The "dose right, level off" card that stood here is gone with §26, and it
+     is worth saying why rather than leaving a gap. It said the same thing as
+     the "steady, off target" branch above and existed only because the two
+     branches measured position differently: that one classified on the fitted
+     value, this one on the last reading, so a level the fit called in-band and
+     the kit called out-of-band fell through to here. With both reading the last
+     reading the earlier branch always returns first and nothing can reach this
+     point out of band — the condition became unreachable, not merely rare.
+     Nothing a keeper used to see is lost; the surviving branch carries it. */
   return { ...doseFacts, state: "idle", tone: "#45605F", short: "No change needed",
     headline: `${def.label} dose is matching consumption`,
     detail: `Nothing to do — keep testing on your usual schedule.` };

@@ -900,16 +900,22 @@ export function assessMagnesium({ readings, doseLog = [], waterChanges = [], set
     return out;
   }
 
-  /* Section 48: position comes from the pattern, not the last number. */
+  /* The fitted line at the last timestamp, correction-adjusted. It sizes a
+     one-off correction below; it does not say where magnesium is. */
   const fittedNow = (fit && maths.length >= 3)
     ? maths.reduce((a, r) => a + r.value, 0) / maths.length
       + fit.slope * (alkStamp(maths[maths.length - 1])
         - maths.reduce((a, r) => a + alkStamp(r), 0) / maths.length)
     : out.current.value;
   out.fittedNow = fittedNow;
-  const inRange = fittedNow >= def.min && fittedNow <= def.max;
-  const above = fittedNow > def.max;
-  const below = fittedNow < def.min;
+  /* §26, decided 14 Aug: position is the last reading — see the same block in
+     `alkalinity.js`. Section 48's "position comes from the pattern" is
+     superseded; the engine said "magnesium is below your range at 1260ppm"
+     against a band of 1250–1400. */
+  const posNow = out.current.value;
+  const inRange = posNow >= def.min && posNow <= def.max;
+  const above = posNow > def.max;
+  const below = posNow < def.min;
   /* §11's grading fix (see `outOfBandWorsening` above `doseDriftedFrom`). Only
      ever promotes away from the provisional "stable" set above. Magnesium has
      no `DOSE_DRIFT_TRIGGER` key (§10), so this is the only guard standing
@@ -921,8 +927,8 @@ export function assessMagnesium({ readings, doseLog = [], waterChanges = [], set
   }
 
   const bandWidth = def.max - def.min;
-  const nearLower = inRange && (fittedNow - def.min) < bandWidth * 0.12;
-  const nearUpper = inRange && (def.max - fittedNow) < bandWidth * 0.12;
+  const nearLower = inRange && (posNow - def.min) < bandWidth * 0.12;
+  const nearUpper = inRange && (def.max - posNow) < bandWidth * 0.12;
   out.nearEdge = (nearLower && out.trendPerDay < 0) ? "lower"
     : (nearUpper && out.trendPerDay > 0) ? "upper" : null;
 
@@ -959,8 +965,8 @@ export function assessMagnesium({ readings, doseLog = [], waterChanges = [], set
      while the tank is inside its range, or heading back into it. Below range
      and still falling, even slowly, is a leak that never gets fixed if a
      sub-threshold trend always returns "hold" (section 29). */
-  const clearlyOut = above ? (fittedNow - def.max) > MG_TREND.stable
-    : below ? (def.min - fittedNow) > MG_TREND.stable : false;
+  const clearlyOut = above ? (posNow - def.max) > MG_TREND.stable
+    : below ? (def.min - posNow) > MG_TREND.stable : false;
   const mgRepeats = repeatedCorrections(corrections, "magnesium", nowStamp);
   /* Exposed so the wording can mention it: the count is computed here, and
      the branch that needs it returns before anything further down. */

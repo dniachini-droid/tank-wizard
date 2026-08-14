@@ -74,9 +74,14 @@ for (let i = 0; i < RUNS; i++) {
   }
   if (st) {
     if ((a.action === 'increase' || a.action === 'decrease') && st.state === 'idle') note('status contradicts action', k);
-    /* Range membership is judged on the fitted level by design, so one noisy
-       reading cannot flip the verdict. */
-    const level = a.fittedNow != null ? a.fittedNow : (a.current ? a.current.value : null);
+    /* Range membership is the last reading, never a fitted value
+       (reef-chemistry.md §26, decided 14 Aug). This read `a.fittedNow` and said
+       so — "judged on the fitted level by design, so one noisy reading cannot
+       flip the verdict" — which mirrored `doseStatus`'s own rule at the time.
+       The property being checked is unchanged: the app never says "nothing to
+       do" about a level that is outside its band. Only the measure of "outside
+       its band" moved, in the test as in the code. */
+    const level = a.current ? a.current.value : null;
     if (level != null && st.state === 'idle' && (level < def.min || level > def.max)) note('idle while out of range', k);
   }
   if (a.action === 'implausible' && a.recommendedDose != null) note('dose offered while setup is blocked', k);

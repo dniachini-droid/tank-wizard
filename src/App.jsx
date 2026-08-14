@@ -27,6 +27,7 @@ import { buildFindings } from './lib/findings.js'
 import { buildBriefing, buildOverview, explainScore } from './lib/narrative-engine.js'
 import { REMINDER_SEED, autoCompletions, computeReminders, intervalLabel, reminderState } from './lib/reminders.js'
 import { computeStability } from './lib/stability-engine.js'
+import { maybeAutoBackup } from './lib/auto-backup.js'
 import { assessInstall } from './lib/install-witness.js'
 import { drainLegacyStore, loadKey, notify, onStorageError, onToast, saveKey } from './lib/storage.js'
 
@@ -453,6 +454,22 @@ export function ReefConsoleInner() {
   };
 
   useEffect(() => { onStorageError((m) => setStorageMsg(m)); }, []);
+
+  /* The snapshot schedule: once the load has settled and the install check has
+     run, and again whenever the app is backgrounded — the moment most likely
+     to precede an eviction. At most one snapshot a day; maybeAutoBackup holds
+     the cadence itself. A device the check judged wiped is skipped entirely,
+     because on it the current state is the thing that must NOT be preserved —
+     snapshotting it, or writing it over the chosen backup file, would destroy
+     the last good copy at the moment it is needed. */
+  useEffect(() => {
+    if (!loaded || !install) return undefined;
+    const suspectWipe = install.state === "wiped" || install.state === "suspect";
+    maybeAutoBackup({ suspectWipe });
+    const onHide = () => { if (document.visibilityState === "hidden") maybeAutoBackup({ suspectWipe }); };
+    document.addEventListener("visibilitychange", onHide);
+    return () => document.removeEventListener("visibilitychange", onHide);
+  }, [loaded, install]);
 
   useEffect(() => {
     /* Carry an existing install's data out of the legacy `reefconsole:` prefix

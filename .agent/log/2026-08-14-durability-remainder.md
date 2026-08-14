@@ -79,3 +79,113 @@ Notices a wipe; does not prevent one, does not survive a full clear, does not
 recover anything, and does not act on a partial loss (one key going missing
 while the rest survive). The last is visible in principle from the high-water
 marks and is deliberately not acted on.
+
+## Step 3 — piece two, automatic backup, TW-D12
+
+PR for piece one: #31 (base `main`; the API refused the routine branch as a
+base twice with a 422 on `base`, so stacking is by branch parentage and noted
+in each PR body). Routine PR: #30.
+
+Test first. `src/test/defects/automatic-backup.test.js`, 12 cases, red before
+`src/lib/auto-backup.js` existed (import failure — the same shape of red the
+photo suite started from). All 12 green after.
+
+Written:
+
+- `src/lib/auto-backup.js` — the ring (7, prunes oldest, refuses
+  empty-over-good), the handle (persist, query/request permission split so
+  `requestPermission` only ever runs from a tap), the share sheet (never
+  writes `last-backup`), and `maybeAutoBackup` (daily cadence, skips a
+  wiped/suspect device entirely — on those the current state is the thing
+  that must NOT be preserved).
+- `src/lib/idb.js` — `DB_VERSION` 2 → 3, stores `backup-ring` + `backup-meta`.
+- `src/App.jsx` — schedule runs once loaded and again on visibilitychange →
+  hidden, with piece one's verdict as the `suspectWipe` input.
+- `src/components/Setup.jsx` — share button (feature-detected), the file
+  handle chooser / re-grant button, and the snapshot list with per-row
+  restore through `restoreBackup`. The ring is described as an undo history
+  in as many words.
+
+The version bump caught `wipe-detection.test.jsx`'s raw-IndexedDB helper
+opening the shared database at a hardcoded 2 — the exact `VersionError` trap
+the routine's piece-three section warns about, demonstrated a piece early.
+The helper now imports `DB_VERSION`; no assertion changed.
+
+Confirmed: automatic-backup 12/12, `src/test/defects/` 140/140,
+`npm run verify` ALL BLOCKING CHECKS PASSED, advisory deadcode back at its
+baseline 3, `npx vitest run` 62 failed / 335 passed (baseline 62/323 after
+piece one — the 12 new tests, no new failures).
+
+### What piece two does not do
+
+The ring dies with the origin. The handle does not exist off Chromium and
+cannot tell a synced folder from a local one. The share sheet needs a tap and
+cannot confirm a save. The only copy that survives losing the phone is still
+a file somewhere else — the module header and the PR both say so.
+
+## Step 4 — piece three, the remaining keys to IndexedDB, TW-D11
+
+PR for piece two: #33. Branch: claude/durability-keys-to-idb, from piece two's.
+
+Test first. `src/test/defects/keys-in-idb.test.js`, 10 cases, 7 red against
+the unmodified source for the right reasons (values not in IndexedDB,
+localStorage not emptied); the 3 green on both sides are the fallback-contract
+regression guards.
+
+Written, all inside `src/lib/storage.js` plus the version bump:
+
+- Values live in a `keyvalue` store as JSON strings — byte-for-byte what
+  localStorage held. Read order: IndexedDB, then the drain-aware localStorage
+  chain. A localStorage-only key migrates through `saveKey` on first load; a
+  key that cannot be written stays where it works and retries next load.
+- A confirmed IndexedDB write removes BOTH prefixes for the key and clears it
+  from `undrained` — rule (d) from the routine, pinned by the quota-blocked-
+  drain test: legacy value ends in IndexedDB, nothing left to resurrect,
+  second drain reports {0,0,0}.
+- Migration takes `readLocal`'s answer (legacy-preferring for undrained
+  keys) — rule (c); migrating the mirror would have made the TW-032 loss
+  permanent.
+- The no-IndexedDB fallback announces once, through the same gate as the
+  photo fallback — one banner per degraded device.
+- `DB_VERSION` 3 → 4.
+
+Knock-on, named in the PR: with working IndexedDB a full localStorage can no
+longer fail a save — the save lands in IndexedDB. The "storage is full"
+message is reachable only when both stores refuse.
+
+Test reconciliation — 14 collisions, all in the two files that install
+IndexedDB, all the same class (the row store's address moved; every pinned
+property survives), each commented in place:
+
+- `icp-photos-in-idb.test.js`: row-location assertions read the KV store via
+  a `storedRows()` helper; the photo-location checks got STRONGER
+  (localStorage now holds nothing for the key). Two scenario updates: the
+  "storage full" message tests break IndexedDB first (the failure is
+  otherwise unreachable, which is the point of the move), and the
+  missing-photo test deletes the one photo rather than wiping the whole
+  database (a whole-database wipe now takes the claiming row with the photo).
+- `wipe-detection.test.jsx`: the clean-install seed assertion reads through
+  `loadKey`.
+- Untouched and passing as the fallback regression suite (they run without
+  IndexedDB): `storage-double-write.test.js`, `legacy-drain-wiring.test.jsx`,
+  `seed-data.test.js`, `backup-absence-claim.test.js`,
+  `correction-plans-not-backed-up.test.js`.
+
+Confirmed: keys-in-idb 10/10, `src/test/defects/` 150/150, `npm run verify`
+ALL BLOCKING CHECKS PASSED (advisory deadcode 3 + csscheck 3, the baseline),
+`npx vitest run` 62 failed / 345 passed — the same 62 files/names
+spot-checked against the baseline list, the 10 new tests, no new failures.
+
+### What piece three does not do
+
+IndexedDB is evicted by the same clears and the same seven-day rule as
+localStorage — this is room (the 5 MB ceiling gone) and transactional writes,
+not durability. It does not make a wipe recoverable (pieces one and two). The
+migration is one-way: a device that migrates and then runs an older build
+reads an empty localStorage — accepted, per the routine, because the
+alternative recreates the double write ee64a23 removed; the ring holds a
+pre-migration copy on the daily cadence.
+
+## Routine complete
+
+All three pieces built, each test-first, each verified, each its own PR.
