@@ -199,5 +199,5 @@ rewritten. Health numbers cross-checked against orchestrator's own runs.
 All four waves ran to completion; nothing stalled, nothing reverted. Only
 tests/parity/ and .agent/ were written, per the routine's write policy.
 Deliverables: 3 permanent parity tests, 9 backlog items, 2 needs-dan
-workups + 3 notes, morning brief, this log. PR opened from
+workups + 3 notes, morning brief, this log. PR #41 (https://github.com/dniachini-droid/tank-wizard/pull/41) opened from
 claude/2026-08-14-consistency-sweep (see run-state / PR body = brief).
