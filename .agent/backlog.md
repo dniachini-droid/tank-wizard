@@ -351,6 +351,18 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
      on 2026-08-13 — see the Decisions section of that file. The code work those
      decisions create is TW-016 and TW-017 below. -->
 
+- [ ] [chem] TW-026 magnesium's default band is off-centre from its suggested target
+      why: found while fixing bug 4 (routine 15, alkalinity's band 1.0 -> 0.6).
+      reef-chemistry.md §2's Layer 3 table gives magnesium a suggested target of
+      1350 ppm with a 150-total (±75) band -> 1275-1425. `src/lib/constants.js`'s
+      PARAM_DEFS entry ships `{ min: 1250, max: 1400 }` — width 150 (correct), but
+      centred on 1325, not 1350 (min and target-75 coincide; the shipped band is
+      target-75-to-target+50, not target±75). Not authorised to fix under bug 4's
+      citation (alkalinity only) — reported per rule 7 rather than folded in.
+      spec: docs/spec/reef-chemistry.md#2-targets-three-layers
+      repro: PARAM_DEFS.find(d => d.key === 'magnesium') — (1250+1400)/2 = 1325, not 1350
+      owner: Dan approves the fix; implementer applies it once approved
+
 - [ ] [chem] TW-016 correction.js allows magnesium at 4x the rail; rails.test.js asserts the old canon
       why: Dan settled the magnesium rail at 25 ppm/24 h on 2026-08-14 (§3), closing
       the 25-vs-50 conflict the canon swap surfaced. Against that figure:

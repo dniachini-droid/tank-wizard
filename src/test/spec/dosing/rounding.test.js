@@ -14,7 +14,7 @@ import { describe, expect, it } from 'vitest'
 import { PARAM_DEFS } from '../../../lib/constants.js'
 import { assessAlkalinity } from '../../../lib/dosing/alkalinity.js'
 
-const alkDef = PARAM_DEFS.find((d) => d.key === 'alkalinity'); // min 8.5, max 9.5
+const alkDef = PARAM_DEFS.find((d) => d.key === 'alkalinity'); // min 8.2, max 8.8
 
 describe('§7.2 — round to the doser\'s minimum increment', () => {
   /* Grepped across src/lib and src/components/Setup.jsx: there is no settings
@@ -52,18 +52,21 @@ describe('§7.2 — round to the doser\'s minimum increment', () => {
 });
 
 describe('§7.3 — round DOWN on the first correction of any parameter', () => {
-  /* Fixture: alkalinity has been dead stable at 8.3726 dKH for six days (four
+  /* Fixture: alkalinity has been dead stable at 7.8726 dKH for six days (four
      readings, two days apart — spec-legal cadence per §4/§8) while the dose
      matches consumption exactly (zero trend => maintenanceDose === currentDose,
      so the dose itself has not drifted). The tank is simply parked below the
-     8.5-9.5 band. That is exactly the "steady, out of band" case the protocol
-     turns into a one-off, additive-only correction (`out.targetCorrection`) —
-     the FIRST correction for this parameter, so §7.3 requires it round down.
+     8.2-8.8 band (bug 4, routine 15 — the band tightened from 8.5-9.5 to
+     8.2-8.8; mid moved from 9.0 to 8.5, and LEVEL moved down by the same 0.5
+     dKH so `toMid`, and everything derived from it below, is unchanged). That
+     is exactly the "steady, out of band" case the protocol turns into a
+     one-off, additive-only correction (`out.targetCorrection`) — the FIRST
+     correction for this parameter, so §7.3 requires it round down.
      effect is set to a clean 0.02 dKH/mL so the raw, unrounded corretion
      (toMid / effect) lands on 31.37 mL — a fraction whose nearest-0.1 rounding
      (31.4) diverges from its floor (31.3), which is the number a red test
      needs to actually distinguish "round to nearest" from "round down". */
-  const LEVEL = 8.3726;
+  const LEVEL = 7.8726;
   const readings = [
     { id: '1', param: 'alkalinity', date: '2026-08-01', value: LEVEL },
     { id: '2', param: 'alkalinity', date: '2026-08-03', value: LEVEL },
@@ -84,7 +87,7 @@ describe('§7.3 — round DOWN on the first correction of any parameter', () => 
   });
 
   it('the raw correction is 31.37 mL, which nearest-0.1 and floor-to-0.1 disagree on', () => {
-    const toMid = Math.abs(9.0 - LEVEL);
+    const toMid = Math.abs(8.5 - LEVEL);
     const raw = toMid / 0.02;
     expect(raw).toBeCloseTo(31.37, 2);
   });
@@ -102,20 +105,21 @@ describe('§7.3 — round DOWN on the first correction of any parameter', () => 
 describe('§3 — the out-of-band edge is inclusive (worked example 9)', () => {
   /* "GIVEN alk exactly at the no-action lower edge (target 8.5, band ±0.5 ->
      8.0) THEN classified in range, not out of range (edges inclusive of
-     their band)." Using the real PARAM_DEFS band (8.5-9.5), a reading sitting
-     exactly on the lower edge (8.5) must classify as in-range. */
+     their band)." Using the real PARAM_DEFS band (8.2-8.8, bug 4 — routine
+     15), a reading sitting exactly on the lower edge (8.2) must classify
+     as in-range. */
   it('a reading exactly on the band\'s lower edge classifies as in range', () => {
     const readings = [
-      { id: '1', param: 'alkalinity', date: '2026-08-01', value: 8.5 },
-      { id: '2', param: 'alkalinity', date: '2026-08-03', value: 8.5 },
-      { id: '3', param: 'alkalinity', date: '2026-08-05', value: 8.5 },
+      { id: '1', param: 'alkalinity', date: '2026-08-01', value: 8.2 },
+      { id: '2', param: 'alkalinity', date: '2026-08-03', value: 8.2 },
+      { id: '3', param: 'alkalinity', date: '2026-08-05', value: 8.2 },
     ];
     const settings = { volumeL: 100, dkhPerMlPer100L: 0.02, dailyDoseMl: 8 };
     const out = assessAlkalinity({
       readings, doseLog: [], waterChanges: [], settings, def: alkDef, now: 20316,
     });
     expect(out.ok).toBe(true);
-    expect(out.fittedNow).toBe(8.5);
+    expect(out.fittedNow).toBe(8.2);
     /* No target correction should be offered for an in-range level. (The
        alkalinity engine's `out` initializer, unlike calcium's and
        magnesium's, does not default this field to null — it is simply never
@@ -127,13 +131,14 @@ describe('§3 — the out-of-band edge is inclusive (worked example 9)', () => {
 describe('§3 — classification uses the stored value, not the displayed one (worked example 10)', () => {
   /* "GIVEN target 8.5, upper edge 9.0, stored reading 9.049 displayed as 9.0
      THEN classified on 9.049 (out of range), not on the displayed 9.0." Using
-     PARAM_DEFS' real band (max 9.5), the equivalent probe is a value just
-     over 9.5 that would display, rounded to def.step (0.1), as exactly 9.5. */
-  it('a reading of 9.549 (displays as 9.5) is still classified above range', () => {
+     PARAM_DEFS' real band (max 8.8, bug 4 — routine 15), the equivalent probe
+     is a value just over 8.8 that would display, rounded to def.step (0.1),
+     as exactly 8.8. */
+  it('a reading of 8.849 (displays as 8.8) is still classified above range', () => {
     const readings = [
-      { id: '1', param: 'alkalinity', date: '2026-08-01', value: 9.549 },
-      { id: '2', param: 'alkalinity', date: '2026-08-03', value: 9.549 },
-      { id: '3', param: 'alkalinity', date: '2026-08-05', value: 9.549 },
+      { id: '1', param: 'alkalinity', date: '2026-08-01', value: 8.849 },
+      { id: '2', param: 'alkalinity', date: '2026-08-03', value: 8.849 },
+      { id: '3', param: 'alkalinity', date: '2026-08-05', value: 8.849 },
     ];
     const settings = { volumeL: 100, dkhPerMlPer100L: 0.02, dailyDoseMl: 8 };
     const out = assessAlkalinity({
@@ -142,8 +147,8 @@ describe('§3 — classification uses the stored value, not the displayed one (w
     expect(out.ok).toBe(true);
     /* fittedNow carries the un-rounded value through; a naive implementation
        that classified against a display-rounded figure would put this
-       reading (rounds to 9.5) right on the band edge and call it in-range. */
-    expect(out.fittedNow).toBeCloseTo(9.549, 5);
+       reading (rounds to 8.8) right on the band edge and call it in-range. */
+    expect(out.fittedNow).toBeCloseTo(8.849, 5);
     expect(out.fittedNow > alkDef.max).toBe(true);
   });
 });
