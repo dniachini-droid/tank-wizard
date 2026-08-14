@@ -34,6 +34,31 @@ column — where naming the banned term is the point.
 
 ## Decisions
 
+### 2026-08-14 (latest) — Dan, spec owner: the calcium suggested default stays 425 ±25
+
+**No spec change, no code change, no backlog item.** `reef-chemistry.md` §2
+layer 3 keeps calcium at **425 ppm, 50 total (±25)** — 400–450. It is correct as
+written and is not to be moved.
+
+**What this closes.** `docs/journeys/journey-2-calcium.md` flagged it as a
+possible mismatch: canon centres the suggestion "well below where he actually
+keeps it." That reading is resolved — it is not a mismatch. 400–450 is where
+most reefers target, and layer 3 exists to give a *new* user a sane starting
+point, not to describe the owner's tank.
+
+**What is recorded instead.** Dan runs **450–500** himself, and **anything up to
+500 is tolerated** — layer 1's hard limits already permit it (calcium 350–500;
+above 500 it starts pulling alkalinity down). But that is a **layer 2**
+preference inside a user-set band, and a user preference inside the band is not
+a reason to move the layer 3 suggestion. The two layers are doing different
+jobs; this is exactly the distinction Dan drew himself about magnesium in
+`journey-3-magnesium.md` — "up to 1500, even 1600 are safe, **but I wouldn't put
+that in the app**" — personal tolerance is not published guidance. Journeys
+README rule 4 (don't generalise from one tank) points the same way.
+
+The journey now carries a resolved note at the paragraph that raised it. **Do
+not re-raise.**
+
 ### 2026-08-14 (later still) — Dan, spec owner: negative consumption holds, it does not cut
 
 **Replaces `routines/15-phase6-bugs.md` bug 2's authorisation** — Decision 3's
