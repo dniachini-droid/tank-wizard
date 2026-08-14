@@ -7,10 +7,9 @@ pieces:
   routine file — PR #30 (claude/routines-durability-remainder-a6u43v)
   piece one, wipe detection (TW-D5) — PR #31 (claude/durability-wipe-detection)
   piece two, automatic backup (TW-D12) — PR #33 (claude/durability-automatic-backup)
-  piece three, keys to IndexedDB (TW-D11) — claude/durability-keys-to-idb,
-    PR number in the log once opened
+  piece three, keys to IndexedDB (TW-D11) — PR #36 (claude/durability-keys-to-idb)
 
-merge order: #30 → #31 → #33 → piece three's PR. Each branch is stacked on
+merge order: #30 → #31 → #33 → #36. Each branch is stacked on
 the previous; every PR targets main (the API refused a non-default base with
 a 422, twice), so each diff shows its ancestors until the ancestor merges.
 
