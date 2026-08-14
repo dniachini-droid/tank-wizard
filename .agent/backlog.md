@@ -336,24 +336,6 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
 
 ## Blocked
 
-- [ ] [blocked] TW-021 `verify:linkcheck` and `verify:propcheck` land advisory — two real
-      reference bugs to fix first
-      why: both checkers (scripts/verify/linkcheck.mjs, scripts/verify/propcheck.mjs — ported
-      from legacy/tools/validate.js and propcheck.py) currently fail on the real tree, not
-      on a false positive: `App.jsx:1275` calls `goTo(...)`, which exists only inside
-      `Dashboard`'s own body, and `Tasks.jsx:198` calls `onComplete(id)`, which `Tasks`
-      never receives (only `onMarkDone` is passed in). Both throw `ReferenceError` at
-      runtime on a real user action — see `.agent/findings.md` for the full trace. Making
-      either checker blocking today would make the required CI check red for a reason
-      unrelated to whatever a given PR touches.
-      what it would take to go blocking: fix both reference bugs (findings above), rerun
-      `npm run verify:linkcheck` and `npm run verify:propcheck`, confirm clean, then flip
-      the `mode` for `linkcheck` and `propcheck` from `'advisory'` to `'blocking'` in
-      scripts/verify/run.mjs.
-      owner: implementer — the two underlying bugs need [approved] first (they touch
-      src/App.jsx and src/components/Tasks.jsx; neither is chemistry, so AGENTS.md rule 3
-      doesn't gate them, but nothing in src/ is [approved] by default per the handoff format)
-
 - [ ] [blocked] TW-022 `verify:deadcode` lands advisory — three unread `useMemo` values
       why: scripts/verify/deadcode.mjs (ported from legacy/tools/deadcode.py, extended to
       catch component-local dead `useMemo` values, not just top-level dead code) finds
@@ -406,3 +388,17 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       owner: Dan approves the dependency; implementer wires it in once approved
 
 ## Done
+
+- [x] [approved] TW-021 `verify:linkcheck` and `verify:propcheck` flipped advisory -> blocking
+      why: both checkers were failing on real reference bugs, not false positives —
+      `App.jsx:1275` called `goTo(...)`, which only existed inside `Dashboard`'s own body,
+      and `Tasks.jsx:198` called `onComplete(id)`, which `Tasks` never received (only
+      `onMarkDone` is passed in). Both threw `ReferenceError` at runtime on a real user
+      action (tapping "Open the Dosing Wizard" from the log-result popup; tapping "Mark
+      done" in a reminder's reschedule sheet). Fixed both call sites, confirmed
+      `npm run verify:linkcheck` and `npm run verify:propcheck` clean, then flipped both
+      checkers' `mode` from `'advisory'` to `'blocking'` in `scripts/verify/run.mjs`.
+      spec: none — wiring bugs, no chemistry involved.
+      repro: src/test/defects/tab-navigation-crashes.test.jsx (both cases, RTL — a plain
+      pure-function test doesn't fit a UI-interaction bug)
+      owner: implementer — routine 15 (phase 6), bug 1
