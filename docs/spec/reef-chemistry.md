@@ -7,7 +7,8 @@ recorded in `.agent/needs-dan.md`. **Became this file on 14 August 2026**, when
 Part II below carried forward everything the merge had left behind. **§25 added
 14 August 2026** on the spec owner's authority — the Reef Chemistry Engine,
 folded in from `docs/spec/DECISION-reef-chemistry-engine.md` (now deleted). Its
-surfaces and notice halves are `wizard-states.md` §19 and §20.
+surfaces and notice halves are `wizard-states.md` §19 and §20. **§26 added 14
+August 2026** on the spec owner's authority — position is the last reading.
 
 > Agents never edit this file. Disagreements → `.agent/spec-challenges.md`.
 
@@ -1343,3 +1344,165 @@ None of this is a rewrite. The existing dosing engines are the best-tested
 thing in the app, with nearly six thousand pinned cases behind them; the engine
 is those tidied into one place and stretched to cover the parameters they
 currently ignore.
+
+---
+
+## 26. Position is the last reading
+
+**Decided 14 Aug (Dan, spec owner): position is always the last reading.
+Whether a level is in band, out of band, or at which edge — that question is
+answered by the most recent measurement, never by a fitted or projected value.
+History is for trend, direction, consumption and dose. It is never used to
+assert where the level is now. The app must never state a position that no
+measurement supports.**
+
+If the last reading says 8.5 and the band starts at 8.2, the level is in band.
+It is on the upper edge, but it is in band.
+
+This supersedes `.agent/needs-dan.md` item 3's option (b), which offered a
+choice of measure and observed that unifying on the fitted value was probably
+the smaller change. **It is the wrong direction, and size is not the deciding
+factor.**
+
+### What was wrong
+
+Every side-of-band question in the three engines was answered from `fittedNow`
+— the correction-adjusted least-squares value at the last timestamp — while the
+sentence reporting the answer quoted the last raw reading. The two disagree
+whenever the newest reading sits off the fitted line, which is exactly what a
+recovering tank and a running correction both produce. The app printed, from
+its own code and its own shipped bands:
+
+| What the app said | The band | The reading it named |
+|---|---|---|
+| "Alkalinity is below your range at 8.5dKH" | 8.2–8.8 | in band |
+| "Calcium is below your range at 405ppm" | 400–450 | in band |
+| "Calcium is above your range at 445ppm" | 400–450 | in band |
+| "Magnesium is below your range at 1260ppm" | 1250–1400 | in band |
+
+The reverse ran silently: a newest reading outside its band, with a fitted value
+inside it, reached the "dose is matching consumption" card and was reported as
+though the tank were in range.
+
+### What the rule covers
+
+Every test of which side of the band a level sits on, in all three engines and
+on the dose card:
+
+- `inRange` / `above` / `below` — the position triple each engine derives.
+- `nearEdge` (calcium and magnesium) — "at which edge", named in the decision.
+- `alkClearlyOut` / `caClearlyOut` / `clearlyOut` — position plus a margin
+  beyond the edge.
+- §11's grading qualifiers, which take their position from the triple above.
+- `doseStatus`'s two position tests — whether a settled dose change worked, and
+  whether the level is off target.
+
+**The measure moves; no threshold moves.** The 0.2 dKH / `CA_TREND.stable` /
+`MG_TREND.stable` margins, the 12%-of-band edge proximity, both §11 qualifiers
+and every trigger percentage are untouched. They are simply measured from the
+last reading now.
+
+### What the rule does not cover
+
+Trend, direction, consumption, the maintenance dose and every rate the app
+quotes stay fitted, over the correction-adjusted window (§6). Nothing in this
+decision touches them.
+
+Three position tests were already compliant and stay as they are: the emergency
+check in each engine (§2 layer 1 safe bounds), `correctionProgress`'s arrival
+zone (§9), and `proposeCorrection`'s in-band guard. So do statements about where
+a level *started* — "magnesium started this period below your range at 1100 ppm
+and has been moving up to 1260" is history, and history is what it is for.
+
+### What it costs, measured against the 5,940-case golden sweep
+
+**172 rows change.** 163 alkalinity, 8 calcium, 1 magnesium — and **every one
+of them has a logged correction**, which is the state that makes the fitted and
+measured positions diverge. Audited by element and by direction:
+
+- **54 rows, all alkalinity, `increase → hold`.** 29 of those have a last
+  reading *above* the band: the app was recommending a larger alkalinity dose
+  — 9.0 → 10.6 mL/day in one case, an 18% raise — for a tank whose newest
+  reading was 8.87 dKH against a range topping out at 8.8. That is the
+  direction that matters, and it now holds.
+- **40 rows change band grade**: 36 `mild → stable` (the fitted value said out
+  of band, the reading says in) and 4 `stable → mild` — those four all have a
+  last reading above the band and still rising, so §11's grading became
+  *stricter* where the reading is the worse news.
+- **1 row changes card state**, `idle → off-target`: calcium at 451 ppm against
+  a 400–450 band, previously "dose is matching consumption", now "steady but
+  above your range".
+- **41 further rows move `recommendedDose` without changing `action`** —
+  staging fractions responding to `nearEdge`.
+- **0 rows** move the dose away from the band its last reading is on, in either
+  direction, for any element.
+
+The golden fingerprint moves by design: `fbac65244f00ac9b → 83780c1728b67ca6`,
+re-recorded through `golden.js`'s documented `UPDATE=1` mechanism after the
+diff was audited row by row.
+
+### One consequence worth stating
+
+`doseStatus`'s "dose right, level off" card is removed. It said what the
+"steady, off target" branch above it already says, and existed only because the
+two branches measured position differently — one on the fitted value, one on
+the last reading — so a level the fit called in-band and the kit called
+out-of-band fell between them. With both reading the last reading the earlier
+branch always returns first and the condition became unreachable. Nothing a
+keeper used to see is lost; the surviving branch carries it, and says it more
+precisely.
+
+### Flagged, not changed — needs its own decision
+
+**The one-off correction is still sized from the fitted value.** `toMid`, in all
+three engines, measures the distance from the fitted position to the band
+midpoint and converts it to millilitres. It is not a side-of-band test, so it
+is outside what this decision authorises — but it is a distance measured from a
+position, and it now disagrees with the position the same card reports. Moving
+it to the last reading would change **39 further golden rows**, all of them
+one-off correction volumes: alkalinity 18.5 → 13.9 mL and 20.4 → 14.1 mL are
+real examples, so it is a change of up to about 30% in what a keeper is told to
+pour. That is a dose figure, and dose figures need their own authorisation
+(AGENTS.md #3). See `.agent/needs-dan.md`.
+
+Also flagged, separately: `caClearlyOut` and `clearlyOut` compare a **distance**
+in ppm against `CA_TREND.stable` (5 ppm/**week**) and `MG_TREND.stable` (10
+ppm/**week**), which are rate constants. The comparison is dimensionally wrong
+whichever measure feeds it, and predates this decision. Not touched here.
+
+### Enforced by
+
+Per §14, named rather than asserted:
+
+- `src/test/defects/position-is-last-reading.test.js` — both directions, all
+  three engines, the dose card and `nearEdge`. 17 assertions; **all 17 fail
+  against the code as it stood before this rule.**
+- `tests/legacy-port/invariants.js` — the app never says "nothing to do" about
+  a level outside its band. The property is unchanged; its measure of "outside
+  its band" moved from the fitted value to the last reading, in the test as in
+  the code.
+- `tests/legacy-port/golden.js` — the 172 changed rows, pinned.
+
+### In plain terms
+
+If your test says 8.5, your alkalinity is 8.5. That sounds too obvious to need
+writing down, and it was not what the app did.
+
+The app draws a line through your recent readings to work out which way things
+are heading, and how much your tank is using. That is the right way to answer
+those questions. But it was also using that line to decide *where your tank is
+right now* — and the line and the last test do not always agree, particularly
+while a correction is running or a level is climbing back. So it would tell you
+"alkalinity is below your range at 8.5" when your range starts at 8.2. Both
+halves of that sentence came out of the same app, and one of them was wrong.
+
+Worse, in the 5,940 test tanks it kept behind it, that mistake had the app
+telling people to *increase* their alkalinity dose — by nearly a fifth in one
+case — on a tank whose latest test was already above the top of its range. It
+now holds instead.
+
+From now on: where your tank is comes from your last test, every time, on every
+screen. How fast it is moving, what your corals are using, and what to pour
+still come from the whole history, because a single test cannot tell you those
+things. A test you actually did will never again be overruled about the one
+thing it is definitely qualified to answer.
