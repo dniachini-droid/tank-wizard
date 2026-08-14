@@ -44,16 +44,14 @@ export const DOSE_ADVICE_RULES = {
      can be judged, because the tank is still settling into it. */
   alkalinity: { minReadings: 3, minDaysSinceChange: 7,  meaningful: 0.3, unit: "dKH", dp: 2, window: 7,  maxWindow: 21 },
   calcium:    { minReadings: 3, minDaysSinceChange: 14, meaningful: 15,  unit: "ppm", dp: 0, window: 14, maxWindow: 35 },
-  /* Magnesium only gets advice when it is actually being dosed — otherwise the
-     movement is water changes, and telling someone to adjust a dose that does
-     not exist is worse than saying nothing. Longer window, bigger threshold,
-     because demand is roughly a tenth of calcium's. */
-  magnesium:  { minReadings: 3, minDaysSinceChange: 14, meaningful: 40,  unit: "ppm", dp: 0, window: 14, maxWindow: 35 },
-  /* `requiresDose: true` sat on magnesium here and was read by nothing —
-     not by the app, not even by a test. Removed rather than guessed at: if
-     magnesium should behave differently when no dose is configured, that is a
-     decision to make deliberately, not a flag to leave lying about looking
-     like it already does something. */
+  /* Magnesium has no entry here, deliberately (§10, decided 13 Aug: "the
+     maintenance dose is never tuned from readings... any answer the app
+     produced would be invented"). This table used to carry one, computing a
+     "suggested dose" from a trend window independently of `DOSE_DRIFT_TRIGGER`
+     (which correctly has no magnesium key) and independently of the real
+     dosing wizard — a second, uncoordinated implementation of exactly the
+     thing §10 exempts magnesium from. Removed rather than reconciled with
+     the wizard, per §10's own words: not delayed, not tuned, exempt. */
 };
 
 export function computeDoseAdvice(readings, doseLog, paramDefs, days = null, settings = DEFAULT_SETTINGS) {

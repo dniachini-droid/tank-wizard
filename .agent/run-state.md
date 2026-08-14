@@ -2,9 +2,10 @@ run: 2026-08-14-phase6-bugs
 routine: routine 15 — phase 6: the known bugs
 started: 2026-08-14T00:00:00Z
 status: interrupted
-last completed step: bugs 3, 4 and 5 — all three now on this branch, composed
-  in bug order rather than merged independently (see the log's "Merge" sections).
-  Listed oldest first; bug 5 is the genuine last completed step.
+last completed step: bugs 3, 4, 5 and 6 — all four now on this branch,
+  composed in bug order rather than merged independently (see the log's
+  "Merge" sections). Listed oldest first; bug 6 is the genuine last completed
+  step.
 
   bug 3 — dose-gap halving removed (3a) + stability
   grading fixed (3b), shipped together per §7/§11. `doseDriftedFrom`
@@ -110,6 +111,27 @@ last completed step: bugs 3, 4 and 5 — all three now on this branch, composed
   shows exactly the 7 closed assertions removed, zero added. PR:
   https://github.com/dniachini-droid/tank-wizard/pull/25
 
+  bug 6 — TW-019, remove magnesium from
+  DOSE_ADVICE_RULES, shipped. `drift.js`'s `DOSE_ADVICE_RULES` magnesium
+  entry deleted (§10: maintenance dose never tuned from readings, magnesium
+  exempt). `computeDoseAdvice` iterates Object.keys generically, no
+  special-casing needed. Traced (not assumed) the one live consumer,
+  `previewStrengthChange`, and confirmed its two `adv.advice[key]` reads
+  are already guard-clause-safe against the key being absent. Checked
+  Insights.jsx:108/Dashboard.jsx:298-300 (TW-022 dead code) — already
+  guarded, left alone. Found and fixed in the same PR, not a scope
+  expansion: tests/legacy-port/husbandry.js's settling-window check
+  unconditionally indexed DOSE_ADVICE_RULES[key].minDaysSinceChange for
+  all three elements — confirmed a genuine TypeError after rebuilding the
+  engine bundle, narrowed the check to elements that still have an entry.
+  npm run verify GREEN on every blocking check, including
+  legacy-port:husbandry (crashed before that fix). golden unaffected —
+  DOSE_ADVICE_RULES isn't read by any assess* engine. vitest: differential
+  diff shows 70/70 both before and after, empty diff — no existing red
+  test asserted this one (unlike TW-016), this bug's own defects test is
+  the only coverage. PR:
+  https://github.com/dniachini-droid/tank-wizard/pull/26
+
   COMPOSITION NOTE, replacing bug 4's note above where the two disagree: bugs
   4-7 were each branched fresh from a `main` that predates the others, per
   rule 1, and all four PRs went conflicted at once — against `main` (PR #24
@@ -121,31 +143,45 @@ last completed step: bugs 3, 4 and 5 — all three now on this branch, composed
   regenerating it where the tree moves it, auditing the diff by element and
   direction — rather than choosing a side, because the bugs interact (bug 4's
   narrower alkalinity band moves which cases fall into bug 3's promotion
-  window). At this step, bugs 3 + 4 + 5, the digest is unchanged at
-  fbac65244f00ac9b: bug 5's constant lives in `analytics/correction.js`, which
-  nothing in the sweep reads. Measured on the composed tree, not assumed from
-  the absence of a git conflict — golden.json did not conflict here, and that
-  is exactly when the check matters. See the log's "Merge — bug 5 composed onto
-  bugs 3 + 4" section.
-next step: bug 6 — TW-019, remove magnesium from DOSE_ADVICE_RULES
-  (src/lib/analytics/drift.js:40-57). Branch fresh from origin/main. Read
-  routine section 6 in full before starting. The fix itself is a straight
-  deletion (delete the `magnesium: {...}` entry — computeDoseAdvice iterates
-  Object.keys(DOSE_ADVICE_RULES) generically, no special-casing needed
-  elsewhere). The real work is the trace the routine calls for:
-  `previewStrengthChange` (corrected-strength.js:43-44, rendered live at
-  Insights.jsx:697-720) consumes computeDoseAdvice's result and must be
-  checked that it doesn't unconditionally index a now-absent `.magnesium`
-  key — verify this before/after, don't assume. Insights.jsx:108 and
-  Dashboard.jsx:298-300 are TW-022 (separate, already-tracked dead code) —
-  leave them alone, don't expand into that item.
-  Bug 6 is already implemented on `claude/bug6-mg-dose-advice` (PR #26,
-  branched from `main` before this branch existed); it is composed onto this
-  branch next rather than branched fresh.
-in-flight: none — bugs 3, 4 and 5 all shipped. Bug 3 merged (PR #22); bug 4
-  (PR #23) carries bug 3 and the canon run; this branch (PR #25) carries bugs
-  3, 4 and 5. Working tree clean.
-branch: claude/bug5-magnesium-rail (pushed, PR #25)
+  window). At this step, bugs 3 + 4 + 5 + 6, the digest is still
+  fbac65244f00ac9b — bug 4's own composed figure, unmoved by bugs 5 and 6,
+  whose constants live in `analytics/correction.js` and `analytics/drift.js`
+  and are read by nothing in the sweep. Measured on each composed tree, not
+  assumed from the absence of a git conflict: golden.json conflicted at
+  neither step, which is exactly when the check matters, because git will
+  carry a stale snapshot forward without saying so. See the log's two "Merge —
+  bug N composed" sections.
+next step: bug 7 — TW-020, arrival zone vs full band
+  (`correctionProgress`, src/lib/dosing/helpers.js:273-279). Branch fresh
+  from origin/main. Read routine section 7 in full before starting.
+  Depends on bug 4 (alkalinity's band) for its worked example numbers
+  (8.40-8.60 dKH assumes 8.2-8.8 is in force) — bug 4's own PR (#23) is
+  NOT merged as of this write, so per the routine's own dependency note,
+  build this bug's test against an explicit local `def` fixture (band
+  values passed directly, not read from the live PARAM_DEFS import) so
+  this PR does not implicitly depend on #23 having merged — the fix
+  itself is band-relative by construction (§9: "the zone is computed from
+  whatever band is in force and must never be hardcoded"). Use §5's kit
+  noise floor (STABILITY_RULES in src/lib/stability-engine.js — 0.1 dKH /
+  10 ppm / 30 ppm), NOT the _TREND.stable family bugs 2/3 use — same
+  caution as those bugs, opposite direction (habit might reach for
+  ALK_TREND.stable here by mistake). Must NOT change `passed`
+  (helpers.js:316) or the `arrived || passed` correction-done trigger
+  (state.js:227) — check call sites that branch on `cp.arrived`
+  specifically for wording, not necessarily code. `inBand` may be used
+  elsewhere in the same function for band membership, not arrival — check
+  every call site before narrowing it globally; add a new `inZone`-style
+  check if shared rather than redefining what `inBand` means everywhere.
+  Bug 7 is already implemented on `claude/bug7-arrival-zone` (PR #27), and it
+  was built exactly as the note above asks — against an explicit local `def`
+  fixture rather than the live PARAM_DEFS import — so it does not implicitly
+  depend on #23 having merged. It is composed onto this branch next rather
+  than branched fresh, which is what makes bug 4's band and bug 7's zone
+  meet for the first time.
+in-flight: none — bugs 3, 4, 5 and 6 all shipped. Bug 3 merged (PR #22); this
+  branch (PR #26) carries bugs 3, 4, 5 and 6 and the canon run. Working tree
+  clean.
+branch: claude/bug6-mg-dose-advice (pushed, PR #26)
 uncommitted work: no
 
 <!--
@@ -155,7 +191,7 @@ next run must resume before starting anything new. See AGENTS.md, "Checkpoint
 and resume contract".
 
 status is "interrupted" rather than "complete" because the routine (seven
-bugs) is not finished — bugs 1-5 are done, bugs 6-7 remain. This is a clean
+bugs) is not finished — bugs 1-6 are done, bug 7 remains. This is a clean
 stopping point per rule 6 (stop at a bug boundary), not a crash: nothing is
 half-edited, nothing needs reverting.
 

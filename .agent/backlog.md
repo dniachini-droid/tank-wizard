@@ -612,18 +612,6 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       component reads the output under a prop-drilled or re-exported name
       owner: implementer — needs [approved][chem] first (AGENTS.md rule 3)
 
-- [ ] [chem] TW-019 `DOSE_ADVICE_RULES` has a magnesium key; §10 forbids tuning magnesium from readings
-      why: independent of TW-018 and needs closing either way. drift.js:40-57 gives magnesium
-      its own 14-35 day window and never consults DOSE_DRIFT_TRIGGER, so magnesium can be
-      handed a computed dose figure through the previewStrengthChange path — while
-      reef-chemistry.md §10 says the magnesium maintenance dose is never tuned from readings,
-      "not delayed — exempt", and that DOSE_DRIFT_TRIGGER "must not gain" a magnesium key.
-      The exemption currently holds only because one engine honours a rule the other cannot
-      see. A 15% magnesium dose error takes over a thousand days to clear the 30 ppm noise
-      floor, so any figure built from a few weeks of magnesium readings measures nothing.
-      spec: docs/spec/reef-chemistry.md §10; docs/spec/wizard-states.md §9.4
-      owner: implementer — needs [approved][chem] first
-
 - [ ] [chem] TW-020 `arrived` must test the arrival zone, not the full band
       why: Dan's 2026-08-14 decision 4. correctionProgress's arrival test
       (src/lib/dosing/helpers.js:273-279) is `inBand(v)` over the last two readings — the
@@ -955,6 +943,32 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       pass for the reason they were already right, magnesium's pass for the new
       reason, not just that the file goes green as a whole.
       owner: implementer — routine 15 (phase 6), bug 5
+
+- [x] [chem] TW-019 `DOSE_ADVICE_RULES` had a magnesium key; §10 forbids tuning magnesium from readings
+      why: `drift.js`'s `DOSE_ADVICE_RULES` gave magnesium its own 14-35 day window and
+      computed a "suggested dose" from a trend, independent of `DOSE_DRIFT_TRIGGER` (which
+      correctly has no magnesium key) and independent of the real dosing wizard
+      (`assessMagnesium`) — a second, uncoordinated answer to a question §10 exempts
+      magnesium from entirely ("the maintenance dose is never tuned from readings... not
+      delayed — exempt").
+      fix: deleted the `magnesium: {...}` entry. `computeDoseAdvice` iterates
+      `Object.keys(DOSE_ADVICE_RULES)` generically — no special-casing needed elsewhere in
+      `drift.js`.
+      traced, not assumed: `previewStrengthChange` (corrected-strength.js:43-44, rendered
+      live at Insights.jsx:697-720) reads `adv.advice[key]` behind an `e && e.calc && ...`
+      guard already present — confirmed it degrades to no "Suggested dose" row for
+      magnesium rather than crashing. `Insights.jsx:108`/`Dashboard.jsx:298-300` (TW-022,
+      already-tracked dead code) read `DOSE_ADVICE_RULES[def.key]` behind a ternary already
+      — confirmed unaffected, left alone, not expanded into.
+      found while verifying, fixed in the same PR (unavoidable, not a scope expansion):
+      `tests/legacy-port/husbandry.js`'s "one settling window, not three" check indexed
+      `DOSE_ADVICE_RULES[key].minDaysSinceChange` for all three elements unconditionally —
+      a genuine crash once magnesium's entry is gone. Narrowed to elements that still have
+      an entry; the `settleWindow` sanity check for magnesium (unrelated to
+      `DOSE_ADVICE_RULES`) stays.
+      spec: docs/spec/reef-chemistry.md §10; docs/spec/wizard-states.md §9.4
+      repro: src/test/defects/magnesium-dose-advice-removed.test.js
+      owner: implementer — routine 15 (phase 6), bug 6
 
 - [x] [approved] TW-021 `verify:linkcheck` and `verify:propcheck` flipped advisory -> blocking
       why: both checkers were failing on real reference bugs, not false positives —
