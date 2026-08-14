@@ -27,6 +27,7 @@ import { buildFindings } from './lib/findings.js'
 import { buildBriefing, buildOverview, explainScore } from './lib/narrative-engine.js'
 import { REMINDER_SEED, autoCompletions, computeReminders, intervalLabel, reminderState } from './lib/reminders.js'
 import { computeStability } from './lib/stability-engine.js'
+import { assessInstall } from './lib/install-witness.js'
 import { drainLegacyStore, loadKey, notify, onStorageError, onToast, saveKey } from './lib/storage.js'
 
 /* ---------------------------------- main app ---------------------------------- */
@@ -283,6 +284,27 @@ export class RootErrorBoundary extends React.Component {
   }
 }
 
+/* What a cleared device is told it used to hold. Plain words rather than the
+   storage keys, and only the keys that had something in them — "412 readings
+   and 3 ICP panels" is a sentence somebody recognises as their own tank. */
+const LOST_LABELS = {
+  "readings": ["reading", "readings"],
+  "icp-tests": ["ICP panel", "ICP panels"],
+  "water-changes": ["water change", "water changes"],
+  "dose-log": ["dose change", "dose changes"],
+  "task-log": ["completed task", "completed tasks"],
+  "lighting-log": ["lighting note", "lighting notes"],
+};
+
+export function lostSummary(had) {
+  const parts = Object.keys(LOST_LABELS)
+    .filter((k) => (had[k] || 0) > 0)
+    .map((k) => `${had[k]} ${LOST_LABELS[k][had[k] === 1 ? 0 : 1]}`);
+  if (parts.length === 0) return "";
+  if (parts.length === 1) return parts[0];
+  return `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}`;
+}
+
 export function ReefConsoleInner() {
   const [tab, setTab] = useState("dashboard");
   /* Tapping "Log test" on a reminder should land on the entry form with the
@@ -382,6 +404,10 @@ export function ReefConsoleInner() {
   const [mgPlan, setMgPlan] = useState(null);
   const [doseResult, setDoseResult] = useState(null);
   const [storageMsg, setStorageMsg] = useState(null);
+  /* What the startup check made of this device: a new one, one that has been
+     running, or one whose browser cleared everything. Null until it has run,
+     so nothing is claimed before it is known. */
+  const [install, setInstall] = useState(null);
 
   // Merge any user-edited target ranges over the built-in defaults.
   const paramDefs = useMemo(() =>
@@ -470,6 +496,21 @@ export function ReefConsoleInner() {
         loadKey("water-changes", []),
       ]);
 
+      /* Is this a new device, or one that has been cleared? The two used to be
+         indistinguishable — every marker below lives in the storage a clear
+         erases, so their absence was read as "new install, seed away" and a
+         wiped device was handed 25 water changes it never had. The check runs
+         before any seeding decision because it is the input to all of them. */
+      const state = await assessInstall({
+        "readings": (r || []).length, "icp-tests": (i || []).length,
+        "water-changes": (wc || []).length, "dose-log": (dl || []).length,
+        "task-log": (tl || []).length, "lighting-log": (lg || []).length,
+      }, {
+        "historical-seeded": seeded, "icp-seeded": icpSeeded, "wc-seeded": wcSeeded,
+        "light-seeded": lightSeeded, "strengths-fixed-v1": strengthsFixed,
+      });
+      setInstall(state);
+
       /* Readings are measurements somebody took, so nothing is seeded into
          them — a clean device starts empty. The marker is still written on the
          first run so the state of an install stays readable. */
@@ -487,27 +528,39 @@ export function ReefConsoleInner() {
       }
 
       /* Weekly water changes, seeded once and matched on date so anything
-         already logged by hand is left alone. */
+         already logged by hand is left alone.
+
+         Not seeded at all on a device that has been cleared, or one the check
+         above could not account for. The marker is still written, so declining
+         is remembered: without it the next load — by then with a reading on it,
+         and so no longer looking wiped — would walk back into this branch and
+         write the 25 rows after all. A missing water-change history can be
+         restored from a backup or retyped; invented maintenance events cannot
+         be told from real ones afterwards, and they feed the nutrient maths. */
       let finalWaterChanges = wc || [];
       if (!wcSeeded) {
-        const have = new Set(finalWaterChanges.map((w) => w.date));
-        const add = WATER_CHANGE_SEED
-          .filter((d) => !have.has(d))
-          .map((d) => ({ id: "wc-" + d, date: d, litres: WATER_CHANGE_LITRES, note: "" }));
-        if (add.length) {
-          finalWaterChanges = [...finalWaterChanges, ...add].sort(byNewest);
-          await saveKey("water-changes", finalWaterChanges);
+        if (state.maySeed) {
+          const have = new Set(finalWaterChanges.map((w) => w.date));
+          const add = WATER_CHANGE_SEED
+            .filter((d) => !have.has(d))
+            .map((d) => ({ id: "wc-" + d, date: d, litres: WATER_CHANGE_LITRES, note: "" }));
+          if (add.length) {
+            finalWaterChanges = [...finalWaterChanges, ...add].sort(byNewest);
+            await saveKey("water-changes", finalWaterChanges);
+          }
         }
         await saveKey("wc-seeded", true);
       }
 
       let finalLighting = lg || [];
       if (!lightSeeded) {
-        const haveL = new Set(finalLighting.map((x) => x.date));
-        const addL = LIGHTING_SEED.filter((x) => !haveL.has(x.date));
-        if (addL.length) {
-          finalLighting = [...finalLighting, ...addL].sort(byNewest);
-          await saveKey("lighting-log", finalLighting);
+        if (state.maySeed) {
+          const haveL = new Set(finalLighting.map((x) => x.date));
+          const addL = LIGHTING_SEED.filter((x) => !haveL.has(x.date));
+          if (addL.length) {
+            finalLighting = [...finalLighting, ...addL].sort(byNewest);
+            await saveKey("lighting-log", finalLighting);
+          }
         }
         await saveKey("light-seeded", true);
       }
@@ -1200,6 +1253,39 @@ export function ReefConsoleInner() {
             paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))",
             paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))",
           }}>
+          {/* A cleared browser used to look exactly like a new phone, so the
+              app filled the gap with seed data and said nothing. It now says
+              what it knows and offers the only thing that can help. It does
+              not say whether a backup exists — `last-backup` was erased by the
+              same clear, and claiming either way is how the Setup panel used
+              to send people away from a file that was sitting in iCloud
+              Drive. */}
+          {install && (install.state === "wiped" || install.state === "suspect") && (
+            <div className="mb-4 rounded-xl p-3 border-2" style={{ background: "#A2621B12", borderColor: "#A2621B55" }}>
+              <div className="flex items-start gap-2 min-w-0">
+                <AlertTriangle size={16} className="shrink-0 mt-0.5" color="#A2621B" />
+                <div className="min-w-0">
+                  <p className="text-[13px] font-bold text-ink leading-relaxed">
+                    {install.state === "wiped"
+                      ? `This browser cleared the app's storage.${install.hadTotal > 0
+                          ? ` Before that, this device held ${lostSummary(install.had)}.`
+                          : ""} None of it is here now, and nothing has been filled in to replace it.`
+                      : "This browser is holding stored data the app cannot read, so this device is not being treated as a new one and nothing has been filled in."}
+                  </p>
+                  <p className="text-[12px] font-medium text-ink2 leading-relaxed mt-1">
+                    If you saved a backup file, restoring it brings your history back. This device
+                    has no record either way — that record was erased along with everything else.
+                  </p>
+                  <button onClick={() => setTab("setup")}
+                    className="mt-2 rounded-lg px-3 py-2 text-[12px] font-extrabold text-white"
+                    style={{ background: "#A2621B" }}>
+                    Restore from a backup
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {storageMsg && (
             <div className="mb-4 rounded-xl p-3 border-2" style={{ background: "#C4285B12", borderColor: "#C4285B55" }}>
               <div className="flex items-start justify-between gap-3">

@@ -35,36 +35,31 @@
  * and none of them are silent — `reason` comes back to storage.js, which tells
  * the user. */
 
-export const DB_NAME = "tank-wizard";
-export const DB_VERSION = 1;
-export const PHOTO_STORE = "icp-photos";
+/* The open lives in src/lib/idb.js, shared with every other store the app
+   keeps, because two modules opening the same database at two versions is a
+   `VersionError` that would leave photos inline in localStorage for good. */
+import { PHOTO_STORE, onDbClosed, run as runIdb } from './idb.js';
+
+export { DB_NAME, DB_VERSION, PHOTO_STORE } from './idb.js';
 
 /* The one key whose rows carry photos, and the fields involved. */
 export const PHOTO_KEY = "icp-tests";
 export const PHOTO_FIELD = "image";
 export const PHOTO_MARKER = "photoInIdb";
 
-/* An open that neither succeeds nor fails is a real state, not a hypothetical:
-   `onblocked` fires when another tab holds an older version of the database
-   open, and until that tab goes away nothing else happens. Waiting forever
-   would hang the load, so the open is raced against a clock and the app falls
-   back to inline photos, which still work. */
-const OPEN_TIMEOUT_MS = 4000;
-
-let dbPromise = null;
-let lastReason = null;
 let fallbackAnnounced = false;
 
 /* Dropping the memoised handle. Called when a connection turns out to be
-   unusable, and by tests between databases. */
-export function closePhotoStore() {
-  const pending = dbPromise;
-  dbPromise = null;
-  lastReason = null;
+   unusable, and by tests between databases. It is the shared teardown under
+   its old name — the connection is no longer this module's to own, but the
+   per-connection facts it keeps are, and they are reset by whoever closes it:
+   an explicit call here, or the database going away underneath it. */
+export { closeDb as closePhotoStore } from './idb.js';
+
+onDbClosed(() => {
   fallbackAnnounced = false;
   photosInline = false;
-  if (pending) pending.then((db) => { try { if (db) db.close(); } catch { /* already gone */ } }, () => {});
-}
+});
 
 /* True the first time this store falls back to inline photos, false after.
    The flag belongs to the connection's lifetime rather than to storage.js,
@@ -76,92 +71,9 @@ export function announceFallbackOnce() {
   return true;
 }
 
-function openDb() {
-  return new Promise((resolve) => {
-    let idb;
-    try { idb = window.indexedDB; } catch { idb = null; }
-    if (!idb || typeof idb.open !== "function") {
-      lastReason = "this browser has no IndexedDB";
-      return resolve(null);
-    }
-
-    let settled = false;
-    const done = (db, reason) => {
-      if (settled) return;
-      settled = true;
-      if (reason) lastReason = reason;
-      resolve(db);
-    };
-    const timer = setTimeout(() => done(null, "opening the photo database timed out"), OPEN_TIMEOUT_MS);
-    const finish = (db, reason) => { clearTimeout(timer); done(db, reason); };
-
-    let req;
-    try {
-      req = idb.open(DB_NAME, DB_VERSION);
-    } catch (e) {
-      /* Safari in a private window has historically thrown here rather than
-         reporting an error on the request. */
-      return finish(null, e && e.message ? e.message : "the photo database could not be opened");
-    }
-    if (!req || typeof req !== "object") return finish(null, "the photo database could not be opened");
-
-    req.onupgradeneeded = () => {
-      try {
-        const db = req.result;
-        if (!db.objectStoreNames.contains(PHOTO_STORE)) db.createObjectStore(PHOTO_STORE);
-      } catch { /* reported by the failure that follows */ }
-    };
-    req.onerror = () => finish(null, (req.error && req.error.message) || "the photo database could not be opened");
-    req.onblocked = () => finish(null, "another tab is holding the photo database open");
-    req.onsuccess = () => {
-      const db = req.result;
-      if (!db || !db.objectStoreNames || !db.objectStoreNames.contains(PHOTO_STORE)) {
-        return finish(null, "the photo database is missing its store");
-      }
-      /* A connection that dies later — the database is deleted, or a newer
-         version wants in — must not be handed out again. Both go through the
-         same teardown as an explicit close, so there is one way to forget a
-         connection rather than three that have to agree. */
-      db.onclose = closePhotoStore;
-      db.onversionchange = closePhotoStore;
-      finish(db, null);
-    };
-  });
-}
-
-function db() {
-  if (!dbPromise) dbPromise = openDb();
-  return dbPromise;
-}
-
-/* One transaction, one result. Every caller below is a single operation, so
-   there is nothing to gain from sharing transactions and a deadlock to avoid
-   by not trying. */
-function run(mode, fn) {
-  return db().then((conn) => {
-    if (!conn) return { ok: false, value: undefined, reason: lastReason };
-    return new Promise((resolve) => {
-      let tx;
-      try {
-        tx = conn.transaction(PHOTO_STORE, mode);
-      } catch (e) {
-        dbPromise = null;
-        return resolve({ ok: false, value: undefined, reason: (e && e.message) || "the photo database is not usable" });
-      }
-      let req;
-      try {
-        req = fn(tx.objectStore(PHOTO_STORE));
-      } catch (e) {
-        return resolve({ ok: false, value: undefined, reason: (e && e.message) || "that photo could not be stored" });
-      }
-      /* The request's own error is the useful one; the transaction's abort is
-         the backstop for a quota refusal, which surfaces there instead. */
-      req.onsuccess = () => resolve({ ok: true, value: req.result, reason: null });
-      req.onerror = () => resolve({ ok: false, value: undefined, reason: (req.error && req.error.message) || "that photo could not be stored" });
-      tx.onabort = () => resolve({ ok: false, value: undefined, reason: (tx.error && tx.error.message) || "there was no room for that photo" });
-    });
-  }, (e) => ({ ok: false, value: undefined, reason: (e && e.message) || "the photo database is not usable" }));
-}
+/* Every operation is one transaction in the photo store, through the shared
+   connection. The wrapper exists so the store name is written once. */
+function run(mode, fn) { return runIdb(PHOTO_STORE, mode, fn); }
 
 export async function photoIds() {
   const res = await run("readonly", (s) => s.getAllKeys());
