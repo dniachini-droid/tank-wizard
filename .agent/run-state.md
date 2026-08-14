@@ -43,10 +43,11 @@ next step: bug 7 — TW-020, arrival zone vs full band
   elsewhere in the same function for band membership, not arrival — check
   every call site before narrowing it globally; add a new `inZone`-style
   check if shared rather than redefining what `inBand` means everywhere.
-in-flight: none — this run has shipped bugs 3-6 as four independent PRs
-  against `main` (#22, #23, #25, #26), none merged as of this write. Bug 7
-  is the last of the seven; branch it from `main` as-is per the dependency
-  note above, don't wait for #23.
+in-flight: none — bug 6 shipped and pushed, PR #26 opened. This run has
+  shipped bugs 3-6 as four independent PRs against `main` (#22, #23, #25,
+  #26), none merged as of this write. Bug 7 is the last of the seven;
+  branch it from `main` as-is per the dependency note above, don't wait
+  for #23.
 branch: claude/bug6-mg-dose-advice (pushed)
 uncommitted work: no
 
