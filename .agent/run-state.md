@@ -2,11 +2,11 @@ run: 2026-08-14-phase5-gate
 routine: routine 13 — phase 5: the gate
 started: 2026-08-14T05:01:19Z
 status: complete
-last completed step: report written, backlog items filed, ready to commit/push/PR
-next step: git add, commit, push -u origin claude/eloquent-hypatia-dlftze, open PR per AGENTS.md #13
-in-flight: none — npm run verify passes locally (exit 0), mutate.mjs 6/6 caught
+last completed step: committed, pushed, PR #9 opened (https://github.com/dniachini-droid/tank-wizard/pull/9). Run complete.
+next step: none — awaiting Dan's review. Never merge (AGENTS.md #13).
+in-flight: none
 branch: claude/eloquent-hypatia-dlftze
-uncommitted work: yes — scripts/verify/*, .github/workflows/verify.yml, package.json, .agent/*
+uncommitted work: no
 
 <!--
 This file is the resume point. Every routine reads it first and writes it
