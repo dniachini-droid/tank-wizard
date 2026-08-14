@@ -167,9 +167,10 @@ Append to `.agent/log/<run-id>.md` after **every** agent completes, not when the
 run finishes. If the run dies, the log is what survives. A run that did good work
 and wrote nothing down did nothing.
 
-### The run-state file
+### The run file — one per run, never shared
 
-`.agent/run-state.md` is the resume point. It always reflects reality:
+Every run owns exactly one file, `.agent/runs/<run-id>.md`, and it is that run's
+resume point. It always reflects reality:
 
 ```
 run: <run-id>
@@ -185,18 +186,36 @@ uncommitted work: yes/no
 
 Update it **before** starting each step and **immediately after** finishing it.
 
-### Every run starts by reading it
+**The one rule: a run writes only its own file, and never edits another run's.**
+That is what makes two runs in flight at once safe. The `<run-id>` is the same
+one that names the run's log, so `.agent/runs/<id>.md` and `.agent/log/<id>.md`
+are always a matched pair.
 
-If `status` is `in-progress` or `interrupted`, the previous run died. Before
-doing anything new:
+There is no single shared state file. There was one — `.agent/run-state.md` —
+and concurrent runs overwrote each other's records in it, which is why it is
+gone. Do not reintroduce it, and do not add a committed index derived from
+`.agent/runs/`: a second copy of `status` conflicts exactly as the original did.
 
-1. Check for an open branch with uncommitted changes.
+### Every run starts by scanning the folder
+
+Read every file in `.agent/runs/`. A file whose `status` is `in-progress` or
+`interrupted` is a run that died — **there may be more than one, so check them
+all.** For each one that is not yours, before doing anything new:
+
+1. Check for its open branch with uncommitted changes.
 2. If the work is complete and verified → commit and open the PR.
 3. If the work is half-done and unverified → **revert it entirely** and put the
    item back on the backlog with a note. Half-finished chemistry code is more
    dangerous than no code.
 4. Log what you found and what you did about it.
-5. Then resume from `next step`, not from the beginning.
+5. Set that file's `status` to `interrupted` and record what you did, but leave
+   its `next step` intact — it belongs to that routine, and whoever runs that
+   routine next resumes from it. Do not carry on another run's work as your own.
+
+If the dead run **is** yours — same run id, from an earlier attempt — resume
+from its `next step` rather than starting over, as before.
+
+An absent or empty `.agent/runs/` is a normal start, not an error.
 
 ### Stop cleanly at boundaries
 

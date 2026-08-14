@@ -4,17 +4,25 @@ The surfaces run. Read-only except parity tests. Nothing ships.
 
 ## STEP ZERO — always, before anything else
 
-Read `.agent/run-state.md`.
+Scan `.agent/runs/`. Every run owns one file, `.agent/runs/<run-id>.md`, and
+**no run ever writes another run's file.**
 
-- `status: complete` → normal start. Set status to `in-progress`, fill in run id
-  and routine, continue below.
-- `status: in-progress` or `interrupted` → **the last run died.** Recover first,
-  per the checkpoint contract in `AGENTS.md`: check for an open branch, commit
-  verified work or revert unverified work, log what you found, then resume from
-  `next step` rather than starting over.
+- Any file whose `status:` is `in-progress` or `interrupted` and whose run id is
+  **not yours** → **that run died.** Recover it first, per the checkpoint
+  contract in `AGENTS.md`: check for its open branch, commit verified work or
+  revert unverified work, log what you found, and set that file's `status:` to
+  `interrupted` with a line saying what you did. Several may need it — handle
+  each. Leave its `next step:` intact; whoever runs that routine next resumes
+  from it.
+- Then create your own `.agent/runs/<run-id>.md` with `status: in-progress` and
+  continue below. If your run already has a file with `status: in-progress` or
+  `interrupted`, that is *your* dead run — resume from its `next step` rather
+  than starting over.
 
-Update `.agent/run-state.md` before and after every step. Append to
-`.agent/log/<run-id>.md` as you go, never at the end.
+An empty or absent `.agent/runs/` is a normal start, not an error.
+
+Update **your own** `.agent/runs/<run-id>.md` before and after every step. Append
+to `.agent/log/<run-id>.md` as you go, never at the end.
 
 If you are running low on time, context or usage: **stop at the next wave
 boundary**, write state, write the brief with whatever you have, and exit

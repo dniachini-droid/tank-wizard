@@ -76,7 +76,7 @@ PR does all of that — it is the fix TW-021 is waiting on, not a follow-up.
 6. **Stop at a bug boundary if running short on time, context or usage.**
    Finish the bug in progress (test, fix, verify, PR) or revert it entirely
    (AGENTS.md's checkpoint contract — half-fixed chemistry code is worse
-   than no fix). Never stop mid-edit. Write `.agent/run-state.md` and
+   than no fix). Never stop mid-edit. Write `.agent/runs/<run-id>.md` and
    `.agent/log/<run-id>.md` before moving to the next bug and before
    stopping.
 7. **Report anything more complicated than described here rather than
@@ -523,7 +523,7 @@ Per bug, as you finish it (not batched at the end):
    drift found under bug 4 is exactly this: a new backlog item, not a fix).
 5. `.agent/log/<run-id>.md`, appended per bug as you go, not reconstructed
    at the end — same checkpoint contract as every other routine.
-6. `.agent/run-state.md` updated before and after every bug.
+6. `.agent/runs/<run-id>.md` updated before and after every bug.
 
 When all seven are attempted (fixed, or explicitly reported-and-skipped per
 rule 7), write `.agent/phase6-bugs.md`: one section per bug, outcome (fixed
@@ -564,7 +564,7 @@ routine — say so plainly, don't apologize for it.
 - The relevant vitest spec file (where one is named) was run and its result
   reported honestly, including anything still red for unrelated reasons.
 - PR opened, per AGENTS.md #13's template, plain-language layer included.
-- Backlog and run-state updated in the same PR.
+- Backlog and the run file updated in the same PR.
 
 ## Definition of done, whole routine
 

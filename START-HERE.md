@@ -23,7 +23,7 @@ one depends on the last.
 | `docs/spec/wizard-states.md` | wizard states, bands, message rules, terminology, and the stack/storage/offline/accessibility floor (§18) |
 | `.claude/agents/` | the 27 agent definitions |
 | `routines/` | 6 routine prompts |
-| `.agent/` | backlog, budgets, findings, run-state, log folder |
+| `.agent/` | backlog, budgets, findings, `runs/` folder, log folder |
 
 ---
 
