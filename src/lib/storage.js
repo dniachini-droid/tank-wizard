@@ -1,3 +1,4 @@
+import { KV_STORE, run } from './idb.js';
 import { noteCount } from './install-witness.js';
 import {
   PHOTO_KEY, announceFallbackOnce, attachPhotos, collectOrphans, detachPhotos,
@@ -106,30 +107,66 @@ function readKey(key, fallback) {
       /* The bridge is synchronous only in shape; the caller awaits this. */
       return window.storage.get(key, false).then((res) => {
         /* The parse is inside the fallback, not outside it: a bridge that
-           hands back something unparseable must land on local storage the
+           hands back something unparseable must land on the local chain the
            same way one that throws does, rather than rejecting the load. */
         try {
           if (res && res.value) return JSON.parse(res.value);
-        } catch { /* fall through to local storage */ }
-        return readLocal(key, fallback);
-      }, () => readLocal(key, fallback));
+        } catch { /* fall through to the local chain */ }
+        return readStored(key, fallback);
+      }, () => readStored(key, fallback));
     }
-  } catch (e) { /* fall through to local storage */ }
-  return Promise.resolve(readLocal(key, fallback));
+  } catch (e) { /* fall through to the local chain */ }
+  return readStored(key, fallback);
 }
 
-function readLocal(key, fallback) {
+/* Values are kept as JSON strings rather than structured clones, so what
+   IndexedDB holds is byte-for-byte what localStorage held — the migration is
+   checkable by comparing strings, and the parse behaves identically on both
+   sides of the move. */
+async function kvGet(key) {
+  const res = await run(KV_STORE, "readonly", (s) => s.get(key));
+  if (!res.ok || typeof res.value !== "string") return { found: false, value: undefined };
+  try {
+    return { found: true, value: JSON.parse(res.value) };
+  } catch {
+    /* A corrupt entry answers nothing; the localStorage chain may still hold
+       a good copy from before the migration. */
+    return { found: false, value: undefined };
+  }
+}
+
+/* IndexedDB first, then localStorage. A key found only in localStorage has
+   not been moved yet — an install from before the change, or one where an
+   earlier attempt had nowhere to write. Moving it is exactly what saving it
+   does, so that is what happens, through the one write path — and it inherits
+   the same guarantee as the photo move: a key that cannot be written stays
+   where it already works, and a later load retries. */
+async function readStored(key, fallback) {
+  const kv = await kvGet(key);
+  if (kv.found) return kv.value;
+
+  const local = readLocal(key);
+  if (local !== undefined) {
+    await saveKey(key, local);
+    return local;
+  }
+  return fallback;
+}
+
+function readLocal(key) {
   /* A key the drain could not finish still lives under the legacy prefix, and
      that copy is the newer of the two. Empty on every device the drain
-     completed on, which is all of them but one that was out of space at load. */
+     completed on, which is all of them but one that was out of space at load.
+     The migration above must take this answer — the drain-aware one — or the
+     stale mirror it exists to shadow would be the copy that gets moved, and
+     the loss TW-032 was filed to stop would become permanent. */
   if (undrained.has(key)) {
     try {
       const raw = window.localStorage.getItem(LEGACY_PREFIX + key);
       if (raw != null) return JSON.parse(raw);
     } catch { /* fall through to the mirror */ }
   }
-  const local = lsGet(key);
-  return local === undefined ? fallback : local;
+  return lsGet(key);
 }
 
 export async function loadKey(key, fallback) {
@@ -181,6 +218,7 @@ export function isQuotaError(e) {
 
 function report(message) { if (storageErrorHandler) storageErrorHandler(message); }
 
+
 export async function saveKey(key, value) {
   /* Photos out of the row and into IndexedDB before the row is serialised.
      Anything that cannot be moved stays inline and is written to localStorage
@@ -222,9 +260,37 @@ export async function saveKey(key, value) {
     console.error("storage bridge save failed", key, e);
   }
 
-  /* Bridge unavailable or failed — write locally instead. In the shipped PWA
-     this is the only path, so the local failure is the one worth reporting;
-     with a bridge in play its failure came first and explains more. */
+  /* IndexedDB is where a value lives now. On a confirmed write both
+     localStorage prefixes are cleared for the key — removals cannot fail for
+     want of room — which is what stops the next load's drain resurrecting a
+     legacy copy into a store the app no longer treats as authoritative, and
+     incidentally hands the drain the space it may have been short of. Nothing
+     is removed until the replacement is known to be in place. */
+  const kv = await run(KV_STORE, "readwrite", (s) => s.put(JSON.stringify(value), key));
+  if (kv.ok) {
+    try { window.localStorage.removeItem(LS_PREFIX + key); } catch { /* stale copy stays; the next save retries */ }
+    try { window.localStorage.removeItem(LEGACY_PREFIX + key); } catch { /* same */ }
+    undrained.delete(key);
+    await witnessed;
+    return true;
+  }
+
+  /* IndexedDB unavailable or refusing — localStorage still works, and a value
+     kept where it works beats one lost to a better store. Worth saying once,
+     through the same once-per-connection gate the photo fallback uses: both
+     messages describe the same degraded device, and whichever save trips it
+     first says so — one banner, not one per concern. */
+  if (announceFallbackOnce() && storageErrorHandler) {
+    storageErrorHandler(
+      "This device is keeping your data in the smaller browser storage" +
+      (kv.reason ? ` (${kv.reason})` : "") +
+      ". Your data is saved. Saving a backup file now and then will keep it that way."
+    );
+  }
+
+  /* In the shipped PWA this is now the fallback path; the local failure is
+     the one worth reporting, since with a bridge in play its failure came
+     first and explains more. */
   if (lsSet(key, value)) { await witnessed; return true; }
 
   const e = bridgeError || lastLocalError;
