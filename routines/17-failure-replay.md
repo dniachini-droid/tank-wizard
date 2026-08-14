@@ -108,8 +108,9 @@ margin — or reopen anything.
    known constant changes and the structural unfairnesses of the comparison.
    "Different, cause not determined" is an acceptable classification;
    a difference silently credited to the bug fixes is not.
-8. **Checkpoint contract applies** (AGENTS.md). Read `.agent/run-state.md`
-   first; update it at each step boundary. Write the report incrementally —
+8. **Checkpoint contract applies** (AGENTS.md). Scan `.agent/runs/` first and
+   recover any dead run; write your own `.agent/runs/<run-id>.md` and update it
+   at each step boundary. Write the report incrementally —
    F1's measurements are worth having even if the run dies before F4.
 
 ---
@@ -301,7 +302,7 @@ Structure, in this order:
 ## Finish (AGENTS.md #13)
 
 Branch `claude/<date>-failure-replay`, commit `.agent/failure-replay.md`
-(and the updated `.agent/run-state.md` / run log — never `build/`, never
+(and the updated `.agent/runs/<run-id>.md` / run log — never `build/`, never
 scratch, never anything under `legacy/`), push, open the PR with the
 template's What / Why / Risk / Verification, both layers. What breaks if the
 report is wrong: Dan trusts a margin that isn't there — say so in Risk. Never

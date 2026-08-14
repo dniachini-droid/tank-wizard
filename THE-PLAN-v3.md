@@ -265,8 +265,12 @@ Phase 7's remainder and Phase 8's specs can run alongside each other.
    rather than widened.
 2. **Nothing merges unread.**
 3. **Chemistry constants need explicit approval.**
-4. **One thing at a time.** Also: **two branches that both write `run-state.md`
-   will conflict.** Today's lesson. Serialise, or accept a resolution pass.
+4. **One thing at a time.** The corollary used to be that two branches writing
+   `run-state.md` always conflict — serialise, or accept a resolution pass.
+   **Fixed at the root instead:** state lives in `.agent/runs/<run-id>.md`, one
+   file per run, and no run touches another's. Concurrent runs no longer collide
+   over bookkeeping. `.agent/backlog.md` is the same shape of risk and has not
+   been fixed — see TW-042.
 5. **Everything must be pushed.** Cloud sessions cannot see your Mac — this cost
    an hour today with the journey placeholders.
 6. **The specs are the authority, and they are yours.**

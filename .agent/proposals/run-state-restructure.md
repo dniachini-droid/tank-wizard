@@ -1,7 +1,10 @@
 # Proposal — restructure `run-state.md` so parallel runs append instead of rewrite
 
-Status: **proposal only, nothing implemented.** Raised after resolving the same
-conflict four times in one pass (PRs #37, #38, #40, #41).
+Status: **approved by Dan and implemented**, 2026-08-14. Raised after resolving
+the same conflict four times in one pass (PRs #37, #38, #40, #41). Option A was
+taken as recommended in §7: one file per run under `.agent/runs/`,
+`run-state.md` deleted, STEP ZERO now a directory scan. What shipped is recorded
+in §8 at the foot of this file.
 
 ---
 
@@ -190,10 +193,18 @@ than another instance of it.
 
 Stated plainly so the change isn't oversold:
 
-- **`.agent/backlog.md` is the next one.** It has merged itself so far, but four
-  runs appending items in one region is luck, not structure. If it starts
-  conflicting, the same split applies. Not proposed here — it has not actually
-  hurt yet, and this proposal should be judged on the file that has.
+- **`.agent/backlog.md` is the next one, and it is surviving on luck.** Filed as
+  **TW-042**, deliberately not fixed. It is structurally identical — one file
+  every concurrent run appends to — and the only reason it has merged itself is
+  that runs happened to append different regions. Git conflicts when two
+  branches add different lines at the same position, and every run files its new
+  TW- items at the same place; §3's measurement of that is the general case, not
+  a quirk of run-state.md. The evidence that it is luck and not design: across
+  the same four branches, the same four runs and the same concurrency,
+  `run-state.md` conflicted four times out of four and `backlog.md` conflicted
+  zero times out of four. Nothing about `backlog.md`'s shape earned that. It has
+  not actually hurt yet, which is exactly why it should not be restructured on
+  the strength of this note — but when it does, the same split applies.
 - **Genuine content conflicts stay conflicts.** Two runs editing the same source
   file still collide, correctly. This only stops runs colliding over bookkeeping
   that was never shared in the first place.
@@ -212,3 +223,65 @@ checkpoint contract's promise once runs overlap, and it fails silently when it
 breaks. The log folder has been running the one-file-per-run pattern in this
 repo without a single conflict, which is as much evidence as a change this size
 needs.
+
+---
+
+## 8. What shipped (2026-08-14)
+
+Implemented as approved. No application source, spec, test, fixture or
+dependency changed — the diff is `.agent/`, `routines/`, `AGENTS.md`,
+`THE-PLAN-v3.md` and `START-HERE.md` only.
+
+**Structure**
+
+- `.agent/runs/<run-id>.md` — six files, split from the old `run-state.md`.
+- `.agent/runs/README.md` — the one-file-per-run rule, the do-nots, and a
+  migration note explaining why old records still say "run-state.md".
+- `.agent/run-state.md` — **deleted**, no tombstone (§4 option 1).
+
+**The six run files.** Five came from the `run:` records the file carried:
+`failure-replay`, `durability-remainder`, `real-history-replay`,
+`engine-decision`, `consistency-sweep`. The sixth,
+`2026-08-14-position-last-reading`, was one of the two records that had been
+hidden inside an HTML comment under another run's header; it now has the
+ordinary header it was denied. Its `started:` is a date only — the original
+never recorded a time, and none was invented.
+
+Content was carried across verbatim and checked line by line: **exactly two
+lines of the original are not in `.agent/runs/`**, both of them the stale
+cross-reference `<!-- Previous run record (…) closed complete; see .agent/log/
+for its trail. -->` at the foot of the engine-decision record. It existed only
+because one file forced runs to point at each other; with a record per file, a
+"previous run record" pointer implies an ordering the folder does not have, so
+it was dropped rather than carried. That is the only deletion.
+
+**Documentation**
+
+- `AGENTS.md` §"The run file — one per run, never shared" — replaces §"The
+  run-state file". Field list unchanged. Adds the never-write-another-run's-file
+  rule, and says plainly that the shared file is gone and must not be
+  reintroduced, including as a committed derived index.
+- `AGENTS.md` §"Every run starts by scanning the folder" — replaces §"Every run
+  starts by reading it". Recovery steps 1-4 unchanged.
+- STEP ZERO rewritten in the five nightly routines (`01`-`05`) and the
+  checkpoint clause in `17`; path-only updates in `15`, `16`, `18`, `19`.
+- `THE-PLAN-v3.md` rule 4 — the serialise-or-resolve trade-off is retired and
+  pointed at TW-042.
+- `START-HERE.md` — `.agent/` inventory line.
+
+**One semantic decision, flagged rather than buried.** The old contract's step 5
+was "resume from `next step`, not from the beginning" — written when runs were
+serial, so the next run was always the same run's successor. Under concurrency
+that is ambiguous: a build cycle finding a dead consistency sweep should not
+execute the sweep's next step as its own. The contract now splits it — recover
+the *tree* (commit verified work or revert unverified, log it, mark the file
+`interrupted`) but leave that run's `next step` for its own routine, and resume
+from `next step` only when the dead run is yours. This is a change in meaning,
+not just address, and is the one part of this worth a second opinion.
+
+**Left alone deliberately.** Historical prose in `.agent/morning-brief.md`,
+`.agent/engine-decision.md`, `.agent/inventory.md` and inside the migrated run
+records still refers to `run-state.md`. Those are accurate accounts of what
+those runs saw at the time; rewriting them would falsify the record. The
+migration note in `.agent/runs/README.md` covers the dangling references
+instead.

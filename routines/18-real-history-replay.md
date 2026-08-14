@@ -2,7 +2,7 @@
 
 Cloud routine. **Reports only.** No code, spec, test or constant is changed.
 The entire output is one report: `.agent/real-history-replay.md`, plus the
-standard `.agent/log/<run-id>.md` and `.agent/run-state.md` per the checkpoint
+standard `.agent/log/<run-id>.md` and `.agent/runs/<run-id>.md` per the checkpoint
 contract. Nothing else in the tree moves.
 
 Baseline this routine was written against: commit `054b692`, 14 August 2026.
@@ -323,7 +323,7 @@ dispatched from this routine.
 ## Rules, no exceptions
 
 1. **Read-only.** The only writes are `.agent/real-history-replay.md`,
-   `.agent/log/<run-id>.md` and `.agent/run-state.md`. No source, spec, test,
+   `.agent/log/<run-id>.md` and `.agent/runs/<run-id>.md`. No source, spec, test,
    constant, fixture or script changes. The harness lives in the scratchpad
    and dies with the session; its core loop is preserved in the report's
    appendix.
@@ -344,7 +344,7 @@ dispatched from this routine.
    moments — Dan should be able to read the plain layer alone, against his
    memory, in ten minutes.
 7. **Checkpoint contract applies.** 336 steps is interruptible work: write the
-   timeline incrementally, update run-state at section boundaries, and a
+   timeline incrementally, update the run file at section boundaries, and a
    partial run ships a partial report that says what did not run.
 8. **Finish the job** (AGENTS.md #13): branch `claude/<date>-real-history-replay`,
    commit the report, push, open the PR with the what/why/risk body. Never

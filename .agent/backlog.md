@@ -569,6 +569,31 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       decision, so no [chem] tag needed.
       owner: implementer
 
+- [ ] [schema] TW-042 `.agent/backlog.md` is the next shared-singleton conflict, surviving on luck
+      why: `run-state.md` has been restructured into one file per run under
+      `.agent/runs/` because concurrent runs overwrote each other in it. `backlog.md`
+      is the same shape — one file every concurrent run appends to — and has NOT
+      been fixed. It has auto-merged so far only because runs happened to append
+      different regions: git conflicts when two branches add different lines at the
+      same position, and every run appends new TW- items at the same place. Measured
+      during the restructure: four branches (#37, #38, #40, #41) each conflicted on
+      run-state.md and each merged backlog.md cleanly — the same four runs, the same
+      concurrency, one file structurally safe and the other lucky.
+      in plain terms: the filing cabinet that survived this round did so by chance,
+      not design. The next two nights that both file an item in the same spot will
+      collide, and the conflict will be in the list of things wrong with the app.
+      spec: none — process/tooling, not chemistry. See AGENTS.md §checkpoint contract
+      and `.agent/proposals/run-state-restructure.md` §6.
+      repro: two branches from one base, each appending a TW- item at the end of the
+      open list, merge either into the other — conflict. Verified as the general case
+      during the run-state restructure (both sides appending at one point conflict).
+      suggested fix: not now, deliberately — it has not actually hurt yet, and the
+      run-state change should be judged on its own. If/when it does conflict, the
+      same split applies: per-run item files, or an id-keyed folder, merged into a
+      view rather than a hand-edited list. Do not pre-emptively restructure on the
+      strength of this note alone.
+      owner: needs Dan's call before any work starts
+
 - [ ] [a11y] TW-040 ICP confirmation popup renders every element value with no unit and no aria-label
       why: IcpConfirmation.jsx renders element values and "biggest moves" as bare numbers
       with no unit and zero aria-* attributes in the file.
