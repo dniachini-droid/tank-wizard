@@ -27,7 +27,7 @@ describe('App.jsx:1275 — onOpenDosing no longer calls a nonexistent goTo', () 
     // An active alkalinity correction is what makes readingVerdict return
     // goto: "dosing" without needing days of dose-change history — the
     // shortest real path to the crashing button.
-    localStorage.setItem('reefconsole:correction-plans', JSON.stringify({
+    localStorage.setItem('danstank:correction-plans', JSON.stringify({
       alkalinity: {
         target: 8.5, returnDose: 9, startedAt: '2026-08-01 08:00',
         startValue: 6.0, pace: 'steady', dose: 15, days: 10,
@@ -37,7 +37,7 @@ describe('App.jsx:1275 — onOpenDosing no longer calls a nonexistent goTo', () 
     // correction plan is active — without a tank volume (reef-chemistry.md
     // §17/§21/§12: deliberately no default). Setup already has one in the
     // real app; seed it the same way here.
-    localStorage.setItem('reefconsole:tank-settings', JSON.stringify({ volumeL: 77 }))
+    localStorage.setItem('danstank:tank-settings', JSON.stringify({ volumeL: 77 }))
 
     render(<ReefConsoleInner />)
     await waitFor(() => expect(screen.queryByText(/loading reef console/i)).not.toBeInTheDocument())

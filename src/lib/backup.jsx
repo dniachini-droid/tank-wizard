@@ -31,6 +31,12 @@ export const BACKUP_KEYS = [
   "readings", "icp-tests", "tasks-custom", "task-log", "lighting-log",
   "custom-ranges", "tank-settings", "dose-log", "water-changes", "reminders", "kit-changes",
   "findings-dismissed", "alk-plan", "corrections", "ca-plan", "mg-plan",
+  /* An in-progress correction: the elevated dose, what it is correcting
+     toward, and the dose to go back to when it arrives. It was written by the
+     app and read by the app but collected by neither half of this file, so a
+     restore returned the dose log showing an elevated dose with nothing left
+     to explain it, and nothing to tell the user to put the dose back. */
+  "correction-plans",
 ];
 
 export async function buildBackup() {
@@ -165,6 +171,33 @@ export async function restoreBackup(parsed, current, applySettings) {
     await saveKey("custom-ranges", b["custom-ranges"]);
     result["custom-ranges"] = b["custom-ranges"];
   }
+
+  /* An in-progress correction is merged per parameter rather than replaced
+     wholesale, which is the promise the lists above already make and the one
+     the restore panel makes to the user: a restore adds what is missing and
+     leaves what you have alone. The plan on this device wins a collision,
+     because it describes the dose going into the tank right now, whereas the
+     plan in a file describes what was running when the file was written.
+
+     The current plans are read from storage rather than from `current`, which
+     carries only the eight list keys the preview counts.
+
+     Absence is the migration case, and it has three shapes: a file written
+     before this key was collected has no member at all, a file from a device
+     with no correction running carries an explicit null, and a corrupted one
+     could carry anything. None of them may be read as "cancel the correction
+     that is running here" — the only safe reading of a file that says nothing
+     about corrections is that it says nothing. */
+  const asPlans = (v) => (v && typeof v === "object" && !Array.isArray(v) ? v : {});
+  const currentPlans = asPlans(await loadKey("correction-plans", null));
+  const mergedPlans = { ...asPlans(b["correction-plans"]), ...currentPlans };
+  /* Written only when the file actually contributed a parameter, so restoring
+     the same file twice is still a no-op the second time. */
+  if (Object.keys(mergedPlans).length !== Object.keys(currentPlans).length) {
+    await saveKey("correction-plans", mergedPlans);
+  }
+  result["correction-plans"] = mergedPlans;
+
   return result;
 }
 

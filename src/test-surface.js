@@ -273,7 +273,9 @@ export { computeStability, gradeSpread, STABILITY_COLOR, STABILITY_RULES } from 
 
 // src/lib/storage.js
 export {
+  drainLegacyStore,
   isQuotaError,
+  LEGACY_PREFIX,
   loadKey,
   LS_PREFIX,
   lsGet,
