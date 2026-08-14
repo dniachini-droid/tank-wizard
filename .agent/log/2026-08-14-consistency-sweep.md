@@ -70,3 +70,15 @@ priority line) computed every render, rendered nowhere; legacy had it under
 yesterday's pH-threshold finding: >8.4 vs >8.45 split is real in source but
 LATENT (the >8.4 branch is in the unrendered paragraphs); becomes live the
 moment S2 is fixed. Appended. Run totals: 3xS1, 2xS2, 2xS3.
+
+### terminology-auditor — complete (4th)
+Priors TW-015/016/017 UNCHANGED (TW-017 expanded: two more live "tank volume"
+strings — drift.js:282, DosingWizard.jsx:258); wordingcheck confirmed still
+one-file/one-function/one-field by running it (TW-028 evidence). NEW: S2
+"target" = four different concepts (typed value / computed midpoint / whole
+band / % in band), all reachable in one modal, plus doseStatus.target being a
+concentration in most branches and a dose RATE in one; S2 reading-meaning.js
+invents six categories not in §13 and its "drifting" means the OPPOSITE band
+position of §13's; S2 ICP popup unit-less+no aria; S2 chart axis/tooltip
+unit-less at 3 call sites; S3 the "notice" concept ships under three words
+today with a fourth coming (TW-031). Appended. Run totals: 3xS1, 6xS2, 3xS3.

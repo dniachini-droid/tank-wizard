@@ -144,3 +144,40 @@ evidence: trace above; findings.js:528 confirmed live via App.jsx findings state
 impact: In plain terms: for a pH between 8.40 and 8.45 nothing on screen claims "running high" today — but the moment the discarded advice text is wired back in, the app would say high and not-high about the same reading. A landmine for the S2 fix above.
 suggested fix: canon should name the pH-high figure once (reef-chemistry.md); collapse both branches to it before restoring paragraphs. Until then documentation debt, not a rendering bug.
 confidence: high
+
+### terminology-auditor / 2026-08-14 / status-of-priors
+TW-015 — UNCHANGED (time-in-range.js:70-80 spliced via reading-meaning.js:206; findings.js:201,247; state.js:202-203; ReadingConfirmation.jsx:51,352 still render "dangerously"/"emergency").
+TW-016 — UNCHANGED, shape shifted (reading-meaning.js "drifting" verdict now line 218 in restructured chain; Dashboard.jsx:492,582 "Weekly drift"; Insights.jsx:384,391 ionic-balance "drift").
+TW-017 — UNCHANGED core + EXPANDED: findings.js:362-363 byte-identical double-offender; two more live "Set your tank volume in Setup": drift.js:282, DosingWizard.jsx:258. Setup.jsx itself clean ("net volume").
+wordingcheck (TW-028 evidence) — CONFIRMED by running: OK, 11 checked, still one file/one function/one field, no coverage floor.
+
+### terminology-auditor / 2026-08-14 / S2
+what: The approved word "target" is used for four structurally different concepts across surfaces in one session: (A) the value the user types (Setup.jsx:379 Correction Calculator field); (B) the app's computed correction aim point = band midpoint (state.js:205 target:mid; rendered DosingWizard.jsx:135,161, ReadingConfirmation.jsx:48,77, narrative-engine.js:567); (C) the whole band, rendered "Target range" (alkalinity.js:487/calcium.js:243/helpers.js:741 out.target={min,max} → ErrorBoundary.jsx:280); (D) a synonym for in-band: Dashboard.jsx:430 "{c.pct}% in target". Supporting: doseStatus's target field is a concentration in most branches but a DOSE RATE (mL/day) in the "suggested" branch (state.js:361 target: a.maintenanceDose).
+evidence: file:line cites above; senses A-D all reachable within the same parameter modal (Dashboard.jsx:430,445-467 + ErrorBoundary.jsx:280 + DosingWizard.jsx).
+impact: In plain terms: "Target" means the number you typed, the point the app is steering to, your whole acceptable range, or just "in range" depending on the screen — "72% in target" next to "Target range: 8.4-8.6" next to "on its way to 8.5" teaches the keeper the word means nothing, on exactly the field where trusting it matters.
+suggested fix: reserve "target" for the user's chosen value/band per §15; rename B ("aim point" or band-midpoint language), C ("Your range"), D ("% in range"). Copy/registry decision — flag for Dan before renaming.
+confidence: high
+
+### terminology-auditor / 2026-08-14 / S2
+what: reading-meaning.js invents SIX headline categories not in §13's band table — sliding/"Moving fast", loose/"Wide swing", dialled/"Dialled in", controlled/"Well controlled", steady-off/"Steady, running high/low", drifting/"Drifting high/low" — rendered at Dashboard.jsx:467 in the same modal as the band badge. Worse: its "drifting" (line 218) fires only when the median sits OUTSIDE the band — §13 defines drifting as INSIDE the band trending toward an edge. Same word, opposite band position.
+evidence: reading-meaning.js:196-219; Dashboard.jsx:467.
+impact: In plain terms: a second home-made vocabulary sits on top of the official one, and its one shared word means the opposite — "Drifting high" here says you're already out of range, everywhere else it means still in range but sliding. suggested fix: needs Dan — decide whether consistency-over-time gets registry entries distinct from §13's bands or folds into the seven; involves chemistry reasoning (mixes rate grading with band position), not a bare rename.
+confidence: medium
+
+### terminology-auditor / 2026-08-14 / S3
+what: The §20 "notice" concept ships TODAY under three different user-facing words — "Worth knowing about" (Dashboard.jsx:619-620), "Got it — hide this" (DoseExpectation.jsx:175, no noun), "Hidden notes"/"Notes" (Setup.jsx:478-491) — and §20's settled confirmation sentence will add a fourth ("notification") when TW-031 lands.
+evidence: cites above. Registry gap itself is Dan's call per §20 — not filed as a defect; the shipped inconsistency is.
+impact: In plain terms: hide a message on one screen and you'll hunt for "notes" on another — and the planned confirmation dialog will call the same thing a "notification". suggested fix: one-line note to Dan — when §15 gains the entry, reconcile Setup's "notes" and §20's "notification" together.
+confidence: medium
+
+### terminology-auditor / 2026-08-14 / S2
+what: ICP confirmation popup renders every element value with no unit and no aria-label — unchanged from last sweep, now also checked for a11y.
+evidence: IcpConfirmation.jsx:134 "{e.v} · {e.st}", :156 biggest-moves values; zero aria-* attributes in file.
+impact: In plain terms: after logging an ICP lab result the "biggest moves" numbers carry no ppm/ppb, and a screen reader gets bare numbers with no context. suggested fix: thread units from icp-reference.js into lines 134/156, add aria-labels.
+confidence: high
+
+### terminology-auditor / 2026-08-14 / S2
+what: ZoomableLineChart never receives or displays a unit or parameter name — axis ticks and tooltips are bare numbers at all three call sites; zero aria-* in file.
+evidence: ZoomableChart.jsx:69 prop signature (no unit/label/def), :202 tickFormatter, :209 tooltip formatter (niceAxis :47-61 never appends a unit); callers Dashboard.jsx:612, IcpPanel.jsx:168, AllParametersSheet.jsx:285 pass nothing.
+impact: In plain terms: every gridline and tooltip on every history chart is unit-less — is that 8.2 dKH, ppm or ppt? A screen reader announces context-free numbers. suggested fix: add unit/label props, append in axis formatters, aria-label the container — one component fix clears all three call sites.
+confidence: high
