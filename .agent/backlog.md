@@ -351,30 +351,17 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
      on 2026-08-13 — see the Decisions section of that file. The code work those
      decisions create is TW-016 and TW-017 below. -->
 
-- [ ] [chem] TW-016 correction.js allows magnesium at 4x the rail; rails.test.js asserts the old canon
-      why: Dan settled the magnesium rail at 25 ppm/24 h on 2026-08-14 (§3), closing
-      the 25-vs-50 conflict the canon swap surfaced. Against that figure:
-      - src/lib/analytics/correction.js:20 CORRECTIONS.magnesium.maxPerDay is 100 —
-        four times the rail. Per §3, "any recommendation exceeding a rail is a bug,
-        not a preference." Its calcium entry (20) is already right.
-      - src/lib/analytics/safe-rate.js:27 CORRECTION_MAX_RATE is {alkalinity 0.5,
-        calcium 20, magnesium 25} — this now matches canon exactly and needs NO
-        change. Its own comment ("the conservative end of each is the default")
-        states the principle Dan chose. Do not touch it.
-      So this item is now one constant plus its test, not the two-sided conflict it
-      was filed as: correction.js's 100 becomes 25.
-      spec: docs/spec/reef-chemistry.md#3-rate-rails--one-per-element
-      UNBLOCKED 2026-08-14 — the rail figure is no longer in dispute.
-      repro: tests/parity/correction-calculator-vs-rail.test.js; also
-      src/test/spec/classification/rails.test.js, whose SPEC_RAIL at line 24 is
-      {alkalinity 0.5, calcium 25, magnesium 100} — the pre-13-Aug canon, quoted
-      again in the header comment at lines 1-19, which cites "§6, lines 149-166"
-      (that section is now §3). SPEC_RAIL must be re-pointed to {0.5, 20, 25} and
-      the header comment rewritten to quote §3, as part of this item — not edited
-      on its own to go green (AGENTS.md rule 4). Its calcium assertions currently
-      fail against code that is already correct; its magnesium ones fail for the
-      right reason.
-      owner: implementer — needs [approved][chem] first (AGENTS.md rule 3)
+- [ ] [chem] TW-026 magnesium's default band is off-centre from its suggested target
+      why: found while fixing bug 4 (routine 15, alkalinity's band 1.0 -> 0.6).
+      reef-chemistry.md §2's Layer 3 table gives magnesium a suggested target of
+      1350 ppm with a 150-total (±75) band -> 1275-1425. `src/lib/constants.js`'s
+      PARAM_DEFS entry ships `{ min: 1250, max: 1400 }` — width 150 (correct), but
+      centred on 1325, not 1350 (min and target-75 coincide; the shipped band is
+      target-75-to-target+50, not target±75). Not authorised to fix under bug 4's
+      citation (alkalinity only) — reported per rule 7 rather than folded in.
+      spec: docs/spec/reef-chemistry.md#2-targets-three-layers
+      repro: PARAM_DEFS.find(d => d.key === 'magnesium') — (1250+1400)/2 = 1325, not 1350
+      owner: Dan approves the fix; implementer applies it once approved
 
 - [ ] TW-017 Terminology: "water volume" is now a banned synonym for "net volume"
       why: Dan's 2026-08-13 registry decision. wizard-states.md §15 now
@@ -624,18 +611,6 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       repro: static trace only (grep-based); worth confirming with the app running that no
       component reads the output under a prop-drilled or re-exported name
       owner: implementer — needs [approved][chem] first (AGENTS.md rule 3)
-
-- [ ] [chem] TW-019 `DOSE_ADVICE_RULES` has a magnesium key; §10 forbids tuning magnesium from readings
-      why: independent of TW-018 and needs closing either way. drift.js:40-57 gives magnesium
-      its own 14-35 day window and never consults DOSE_DRIFT_TRIGGER, so magnesium can be
-      handed a computed dose figure through the previewStrengthChange path — while
-      reef-chemistry.md §10 says the magnesium maintenance dose is never tuned from readings,
-      "not delayed — exempt", and that DOSE_DRIFT_TRIGGER "must not gain" a magnesium key.
-      The exemption currently holds only because one engine honours a rule the other cannot
-      see. A 15% magnesium dose error takes over a thousand days to clear the 30 ppm noise
-      floor, so any figure built from a few weeks of magnesium readings measures nothing.
-      spec: docs/spec/reef-chemistry.md §10; docs/spec/wizard-states.md §9.4
-      owner: implementer — needs [approved][chem] first
 
 <!-- 2026-08-14, from Dan's four decisions: two of the four need NO code change,
      recorded here so nobody re-opens them. Decision 2 (water changes stay in the
@@ -926,6 +901,58 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       owner: Dan approves the dependency; implementer wires it in once approved
 
 ## Done
+
+- [x] [chem] TW-016 correction.js allows magnesium at 4x the rail; rails.test.js asserted the old canon
+      why: Dan settled the magnesium rail at 25 ppm/24 h on 2026-08-14 (§3), closing
+      the 25-vs-50 conflict the canon swap surfaced.
+      - `src/lib/analytics/correction.js:20` `CORRECTIONS.magnesium.maxPerDay`:
+        100 -> 25 (was four times the rail). Its calcium entry (20) was already right,
+        untouched.
+      - `src/lib/analytics/safe-rate.js:27` `CORRECTION_MAX_RATE` — already matched
+        canon exactly ({alkalinity 0.5, calcium 20, magnesium 25}), confirmed
+        untouched.
+      - `src/test/spec/classification/rails.test.js` `SPEC_RAIL` (line 24):
+        {0.5, 25, 100} (the pre-13-Aug canon) -> {0.5, 20, 25}, and its header
+        comment's stale "§6, lines 149-166" citation corrected to §3 — done in the
+        same PR as the fix, not on its own (AGENTS.md rule 4; the backlog item
+        itself named this file's constant as needing the update).
+        `tests/parity/correction-calculator-vs-rail.test.js`'s two assertions that
+        hardcoded the buggy 100/4x figures as "the actual, current disagreement"
+        updated the same way — the disagreement they demonstrated no longer
+        exists, so asserting it as fact would itself be false; its SPEC VIOLATION
+        assertion (the one proving the defect) now passes unedited.
+      spec: docs/spec/reef-chemistry.md#3-rate-rails--one-per-element
+      repro: tests/parity/correction-calculator-vs-rail.test.js;
+      src/test/spec/classification/rails.test.js — confirmed calcium assertions
+      pass for the reason they were already right, magnesium's pass for the new
+      reason, not just that the file goes green as a whole.
+      owner: implementer — routine 15 (phase 6), bug 5
+
+- [x] [chem] TW-019 `DOSE_ADVICE_RULES` had a magnesium key; §10 forbids tuning magnesium from readings
+      why: `drift.js`'s `DOSE_ADVICE_RULES` gave magnesium its own 14-35 day window and
+      computed a "suggested dose" from a trend, independent of `DOSE_DRIFT_TRIGGER` (which
+      correctly has no magnesium key) and independent of the real dosing wizard
+      (`assessMagnesium`) — a second, uncoordinated answer to a question §10 exempts
+      magnesium from entirely ("the maintenance dose is never tuned from readings... not
+      delayed — exempt").
+      fix: deleted the `magnesium: {...}` entry. `computeDoseAdvice` iterates
+      `Object.keys(DOSE_ADVICE_RULES)` generically — no special-casing needed elsewhere in
+      `drift.js`.
+      traced, not assumed: `previewStrengthChange` (corrected-strength.js:43-44, rendered
+      live at Insights.jsx:697-720) reads `adv.advice[key]` behind an `e && e.calc && ...`
+      guard already present — confirmed it degrades to no "Suggested dose" row for
+      magnesium rather than crashing. `Insights.jsx:108`/`Dashboard.jsx:298-300` (TW-022,
+      already-tracked dead code) read `DOSE_ADVICE_RULES[def.key]` behind a ternary already
+      — confirmed unaffected, left alone, not expanded into.
+      found while verifying, fixed in the same PR (unavoidable, not a scope expansion):
+      `tests/legacy-port/husbandry.js`'s "one settling window, not three" check indexed
+      `DOSE_ADVICE_RULES[key].minDaysSinceChange` for all three elements unconditionally —
+      a genuine crash once magnesium's entry is gone. Narrowed to elements that still have
+      an entry; the `settleWindow` sanity check for magnesium (unrelated to
+      `DOSE_ADVICE_RULES`) stays.
+      spec: docs/spec/reef-chemistry.md §10; docs/spec/wizard-states.md §9.4
+      repro: src/test/defects/magnesium-dose-advice-removed.test.js
+      owner: implementer — routine 15 (phase 6), bug 6
 
 - [x] [chem] TW-020 `arrived` tested the full band, not the arrival zone
       why: Dan's 2026-08-14 decision 4. `correctionProgress`'s arrival test

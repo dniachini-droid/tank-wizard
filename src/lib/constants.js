@@ -23,7 +23,7 @@ import { Activity, Beaker, FlaskConical, LayoutDashboard, ListChecks, Settings2 
    Chart strokes and fills keep the original values where they are purely
    graphical: 3:1 is the bar for a graphical object and they all clear it. */
 export const PARAM_DEFS = [
-  { key: "alkalinity", label: "Alkalinity", unit: "dKH", min: 8.5, max: 9.5, step: 0.1, freqDays: 2, color: "#0B7C86" },
+  { key: "alkalinity", label: "Alkalinity", unit: "dKH", min: 8.2, max: 8.8, step: 0.1, freqDays: 2, color: "#0B7C86" },
   { key: "salinity", label: "Salinity", unit: "ppt", min: 34, max: 36, step: 0.1, freqDays: 3, color: "#1D6FA5" },
   { key: "calcium", label: "Calcium", unit: "ppm", min: 400, max: 450, step: 1, freqDays: 7, color: "#B8541A" },
   { key: "magnesium", label: "Magnesium", unit: "ppm", min: 1250, max: 1400, step: 1, freqDays: 21, color: "#7B4FCB" },
