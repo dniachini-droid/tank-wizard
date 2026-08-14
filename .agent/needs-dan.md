@@ -6,6 +6,126 @@ Decisions no agent may make. Newest at top. Dan clears this file.
 
 ## Open
 
+### 2. Negative-consumption refusal (routine 15, bug 2) — Decision 3's option (c), as specified, breaks the legacy behavioural suite
+
+**What was tried.** `.agent/five-decisions.md` Decision 3 worked three options
+for what to do when `consumption` comes out negative ("gaining"). Routine 15
+(`routines/15-phase6-bugs.md`, bug 2) authorised option (c), the "middle"
+ground: a gain within an element's own trend-noise floor (`ALK_TREND.stable`
+/ `CA_TREND.stable` / `MG_TREND.stable`) continues exactly as today (clamp to
+zero, label "gaining"); a gain clearly beyond that floor stops before the
+hold/act branches with an `action: "implausible"` refusal, reusing
+`strengthPlausible`/`dosePlausible`'s existing convention — except when the
+level is already past its own safe bound (`findings.js` `SAFE_BOUNDS`) and
+still moving the wrong way, in which case the refusal stands down so that
+emergency response still fires (the routine's own explicit ordering note,
+citing Decision 3's "must change with").
+
+I implemented exactly this in all three engines (`alkalinity.js`,
+`calcium.js`, `helpers.js`'s magnesium assessment), wrote failing-then-passing
+tests proving the refusal fires for Decision 3's own worked "large" numbers
+and stands down for a constructed safe-bound emergency, confirmed both with
+`npx vitest run` — then ran `npm run verify` and it failed three blocking
+checks that were green before the change:
+
+- `legacy-port:golden` — fingerprint changed (`37ded9064e91e80e` ->
+  `2497c8fdd5a7313f`). Every regressed row I inspected has the same shape:
+  `calcium|-2.5|0.29|...` — calcium below its target range and recovering
+  upward (a rising trend, e.g. "Calcium is below your range at 315ppm and
+  moving up toward it"). Before: `action: "hold"` (the existing "moving to
+  target, don't fight the direction you want" branch). After: `action:
+  "implausible"`, because the negative-consumption refusal I added runs
+  *before* that branch is ever reached and catches the same rising trend as
+  "gaining beyond the noise floor."
+- `legacy-port:protocols` — `MISS Mg §61: got "implausible", expected
+  "hold"`. Fixture: magnesium readings 1360 -> 1380 -> 1400 over 14 days
+  (20 ppm/week), comfortably inside the 1250-1400 band and nowhere near
+  `SAFE_BOUNDS.magnesium` (1150-1600). Per §10, magnesium never drives a dose
+  off trend at all — the protocol's own answer is simply "hold" regardless of
+  direction or rate. My refusal fires anyway, because 20 ppm/week converts to
+  a per-day gaining amount that clears `MG_TREND.stable` (10 ppm/week) — the
+  same test the routine specified, applied to an entirely ordinary reading.
+- `legacy-port:invariants` — 6,000 random assessments, 626 (~10%) produced a
+  negative `consumption` or `maintenanceDose`, because my refusal branch
+  returned before the existing zero-clamp ran. That specific part is a plain
+  implementation bug in my patch and fixable on its own (clamp before
+  returning) — but it doesn't touch the two findings above, which are about
+  the *action* changing, not the raw figures.
+
+**The actual problem.** The threshold Decision 3 authorised — "clearly beyond
+the element's own trend-noise floor" — does not distinguish implausible
+chemistry from ordinary tank behaviour anywhere near as cleanly as the
+worked arithmetic suggested. Two large, legitimate classes of movement
+produce "consumption negative, beyond the noise floor" as a matter of course:
+a level recovering from below (or above) its target band, which is *supposed*
+to move faster than the maintenance dose alone would explain; and, for
+magnesium specifically, ordinary slow drift within its own band, since
+nothing about magnesium's assessment reacts to trend by design (§10). The
+routine's own ordering note anticipated one exemption (the safe-bound
+emergency) but not these two, and Decision 3's worked examples were chosen
+to demonstrate the *bug*, not sampled against the legacy golden/protocol
+corpus for false positives — so this gap wasn't visible until it was run
+against real fixtures.
+
+**Why I stopped instead of extending the exemption myself.** AGENTS.md rule 5
+forbids changing a chemistry threshold or formula beyond what's authorised,
+and rule 7 asks for a report rather than a forced fix when a bug wants more
+than its citation covers. Inventing a wider exemption (e.g., also standing
+down whenever the level is moving toward its target band) or a looser
+threshold multiplier would be exactly that: a new, uncited chemistry
+judgement call, the same kind of call Decision 3 itself declined to make
+("no basis for a recommendation — this needs Dan's judgement").
+
+**The change was reverted in full** (`git checkout` on all three engine
+files, the new test file removed) before this was written up. `npm run
+verify` confirmed green again afterward — all blocking checks pass, same as
+before this bug was attempted. Nothing was left half-fixed.
+
+**Options, for the actual decision:**
+
+- **(a) Status quo, formally.** Leave the clamp-and-continue as it is for all
+  magnitudes of gaining, closing this as "investigated, not changed."
+  Chemistry risk: none beyond what already exists today (nothing about
+  today's behaviour changes). Cost: the two real problems Decision 3
+  documented stay open — alkalinity/calcium still walk into an unexplained
+  ~25% dose cut on a real gaining event, and magnesium's gaining stays fully
+  silent with no other symptom to flag a bad reading. This is where the
+  routine's own attempted fix landed once evidence overruled the plan; it is
+  a legitimate outcome, not a failure to act.
+- **(b) Narrow the trigger to exclude "moving toward target."** Compute
+  whichever of `above`/`below` + trend-direction each engine already uses for
+  its own "moving to target, hold" branch, and add it as a second exemption
+  alongside the safe-bound one — refuse only when the level is *not* headed
+  toward its band. This would very likely close the calcium golden
+  regression (that fixture is exactly the moving-to-target shape) but not
+  the magnesium one, since §61's reading is already inside its band, not
+  approaching it from outside — magnesium would need its own, separate
+  carve-out (plausibly: never refuse for magnesium at all, consistent with
+  §10 already exempting it from every other trend-driven action). This is
+  the direction I'd take if authorised, but it is two more chemistry-relevant
+  judgement calls beyond what Decision 3 or the routine settled, and I have
+  not verified it against the full golden/protocol/invariant corpus.
+- **(c) Raise the threshold instead of narrowing the trigger.** Keep one
+  exemption (safe-bound) but require the gain to clear a larger multiple of
+  the noise floor (2x, 3x — unset) before refusing, on the theory that a
+  small multiple is what's catching ordinary recovery and drift. Untested
+  against the golden corpus, and picking a multiple is exactly the kind of
+  unsourced number Decision 3 avoided inventing; it would need the same
+  sourcing scrutiny the original three options got.
+
+**In plain terms.** I built the tank-wizard app's planned fix for "the app
+sometimes recommends cutting a dose when the tank is actually just gaining
+that element naturally" — but when I ran it against the app's full historical
+test suite (thousands of pre-verified reef scenarios), it also started
+wrongly flagging two completely normal situations as suspicious: a tank
+recovering back up toward its target range after being low, and magnesium
+drifting slowly within its healthy range (which the app is never supposed to
+react to anyway). I did not ship the change — the app behaves exactly as it
+did before this attempt, nothing is broken, and the original problem
+(the dose-cut and the silent magnesium case) is still open. Fixing it
+properly needs a couple of small judgement calls about exactly when to hold
+back the new warning, which is what the options above lay out.
+
 ### ~~0. The magnesium rail has two live values~~ — closed 2026-08-14, see Decisions
 
 ### ~~1. `reef-chemistry.md` §2 still uses the losing term~~ — closed 2026-08-14
