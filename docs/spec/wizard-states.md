@@ -5,7 +5,10 @@ and `legacy/protocol/wizard-spec.txt`. **Amended 14 August 2026** on the spec
 owner's authority — §0.3, §4 and §9.4; the decisions and their reasoning are
 recorded in `.agent/needs-dan.md`. **Became this file on 14 August 2026**, when
 Part II carried forward the rest of `surfaces-and-messaging.md` and all of
-`app-contract.md`.
+`app-contract.md`. **Part III added 14 August 2026** on the spec owner's
+authority — §19 and §20, the surfaces and notice halves of the Reef Chemistry
+Engine decision, folded in from `docs/spec/DECISION-reef-chemistry-engine.md`
+(now deleted). Its assessment half is `reef-chemistry.md` §25.
 
 > Agents never edit this file. Disagreements → `.agent/spec-challenges.md`.
 
@@ -14,7 +17,8 @@ number the app produces; this one to know why a particular card is showing,
 what words may go on it, and what the app must be true of as a program.
 
 Part I (§0–§10) is the wizard's state machine. Part II (§11–§18) is the surfaces
-and messaging canon plus the platform floor.
+and messaging canon plus the platform floor. Part III (§19–§20) is the Reef
+Chemistry Engine's surfaces and the notice model.
 
 ---
 
@@ -265,6 +269,12 @@ reading confirmation window, and the findings list.
 
 All three **echo the wizard or say nothing**.
 
+**Widened 14 Aug — see §19.** This section is the rule for three surfaces and
+three elements because until now nothing produced a verdict about anything
+else. §19 applies the same rule to every surface and every parameter the Reef
+Chemistry Engine assesses. Where the two overlap they agree; §7's specifics
+below stand unchanged.
+
 - The summary renders the wizard's headline and the first sentence of its
   detail. It does not write its own sentence.
 - The reading confirmation may use its own voice for the **level**, but must
@@ -418,6 +428,10 @@ calls it. No surface recomputes, reformats or re-decides.
 | Rail enforcement | `applyRails(...)` per `reef-chemistry.md` §3 | every path producing a dose |
 | Consumption rate | `consumptionRate(...)` per `reef-chemistry.md` §22 | trends, wizard, log |
 | Message selection | `messageFor(classification, context)` | every surface showing words about a reading |
+| Parameter assessment | the Reef Chemistry Engine, run by `deriveTankState` | every surface showing a verdict about any parameter |
+
+The last row was **added 14 Aug** by the Reef Chemistry Engine decision — §19
+here, `reef-chemistry.md` §25.
 
 **A second implementation of any of these is an S1 defect,** even if it
 currently produces identical output. Identical today is divergent after the next
@@ -633,3 +647,152 @@ No accounts, no sync, no telemetry, no analytics, no ads, no cloud dependency.
 - All interactive elements keyboard reachable and labelled
 - Numeric inputs use the right `inputmode` — this app is used one-handed,
   wet-handed, standing at a tank
+
+---
+
+# Part III — decided after the canon swap
+
+Parts I and II were merged or carried forward from documents this file
+replaces. What follows was decided after that and is new canon.
+
+---
+
+## 19. The Reef Chemistry Engine — which surface shows what
+
+**Decided 14 Aug (Dan, spec owner): one engine assesses every parameter. Every
+surface renders its verdict. No surface forms its own opinion.** The engine is
+the **Reef Chemistry Engine**; what it must assess, and with what reasoning, is
+`reef-chemistry.md` §25. This section and §20 are the surfaces half of the same
+decision. Both were folded in on 14 August from
+`docs/spec/DECISION-reef-chemistry-engine.md`, which they replace and which is
+deleted.
+
+Today the app has roughly five mechanisms producing dosing or stability advice,
+and a findings layer computing its own notices on top. Surfaces disagree
+because each is doing its own reasoning. Under this decision there is one
+assessment step; every parameter goes through it; every surface reads the
+result.
+
+| Surface | What it shows |
+|---|---|
+| The dosing wizard screen | alkalinity, calcium, magnesium |
+| The tank summary | every parameter |
+| A parameter card | that one parameter |
+| Insights | whichever it needs |
+
+**The wizard is a screen, not the source.** It displays three parameters
+because those are the three that are dosed. The engine assesses all of them
+regardless — phosphate, nitrate, salinity and the rest are assessed the same
+way and simply not shown there.
+
+A parameter the wizard does not display still has a verdict, and the surfaces
+that do show that parameter render *that* verdict. There is no second opinion
+to fall back on and none to invent.
+
+### What this changes about §7 and §11
+
+§7 says three named surfaces echo the wizard or stay quiet. §19 widens it in
+two directions and narrows it in none:
+
+- **from three surfaces to every surface** — the tank summary, the reading
+  confirmation, the findings list, the parameter card, the parameter graph
+  panel and Insights alike.
+- **from three elements to every parameter the engine assesses.** §7 could only
+  ever be a rule about alkalinity, calcium and magnesium, because nothing
+  produced a verdict about anything else.
+
+Where §7, §11 and §19 overlap they agree, and §11's single-source table gains
+the row this decision creates:
+
+| Concern | The one function | Everything else must call it |
+|---|---|---|
+| Parameter assessment | the Reef Chemistry Engine, run by `deriveTankState` (`src/App.jsx:67`) | every surface showing a verdict about any parameter |
+
+**A surface computing its own verdict is an S1 defect**, on the same terms as
+§11's other five rows: identical output today is divergent after the next
+change.
+
+### What this unblocks
+
+- **TW-026** — the `doseStatus` states the journey-4b matrix needs. They belong
+  in the engine, not in the notification layer.
+- **TW-027** — every surface renders the engine's verdict. `findingKey`,
+  `findingSignature` and `findingHidden` already provide identity,
+  supersession and global hiding; they stop at the summary.
+- **TW-028** — extend `wordingcheck` so a surface writing its own sentence
+  fails the build. Without it this section erodes, exactly as §7 did: per §10,
+  a rule with no checker is an intention.
+
+---
+
+## 20. Notices — one per parameter, superseded not stacked
+
+With one verdict per parameter, the notification model in
+`docs/journeys/journey-4-notifications.md` becomes almost free. **Decided
+14 Aug:**
+
+- **One live notice per parameter.** Its content is the engine's current
+  verdict. Not one per surface, not one per rule that fired.
+- **A new verdict supersedes the old notice** rather than joining it. Nothing
+  accumulates, and the hidden list stops growing.
+- **Hiding is global**, because there is one notice, not one per surface.
+
+### Hiding
+
+**Every notice can be hidden. No exceptions, including safe-bounds
+excursions.**
+
+> *"If someone wants to hide a notification, they can hide a notification.
+> There might be a reason the app doesn't know about."*
+
+This settles the conflict recorded in journey 4's open question 4 and in
+TW-027, and two live behaviours are now against canon rather than merely
+undecided: findings of severity `act` and scope `chemistry` are non-dismissible
+by rule (`src/lib/narrative-engine.js:394`), and five dose claims —
+`correcting-dose`, `correction-due`, `correction-done`, `correction-stalled`
+and `correcting` (`narrative-engine.js:457-492`) — are built with no
+`dismissible` flag at all. Both stated a reason in the code, and the reason is
+overruled: the user may have one the app cannot see.
+
+**Serious notices get a confirmation before hiding:**
+
+> "This is flagged as a serious notification. Are you sure you wish to hide
+> it?"
+
+with a line noting hidden notices can be brought back from the tank summary.
+
+**Serious** is the app's existing severity vocabulary and not a new category: a
+finding of severity `act`, or a wizard state whose §3 tone is red. **The
+decision did not name this mapping** — it is written here so the rule is
+implementable, and correcting it is a one-line change to this paragraph, not a
+new concept. This is the one thing in §19–§20 the owner has not stated
+directly.
+
+The confirmation is a speed bump, not an exception. It does not create a class
+of notice that cannot be hidden.
+
+### Resurfacing
+
+**A hidden notice resurfaces on the next reading that would trigger it.** The
+new verdict supersedes the hidden one and appears unhidden. Hiding buys you
+until the next test, never indefinitely.
+
+No special case is needed in the model — supersession already does the work,
+and `findingHidden` (`src/components/DoseExpectation.jsx:148`) already
+implements exactly this for findings: an entry stays hidden only while the
+stored signature still equals the current one.
+
+### A note on the word
+
+This document uses **notice** for the thing shown about a parameter — what the
+code variously calls a finding, a claim and a dose state. The confirmation
+sentence above says "notification" because that is the settled user-facing
+wording, quoted verbatim. §15's registry carries no entry for this concept yet;
+adding one is the owner's call and nothing here should be read as having made
+it.
+
+### Enforced by
+
+Per §10, named rather than asserted: **nothing asserts §19 or §20 today.**
+`scripts/verify/wordingcheck.mjs` covers one field of one loop in one function.
+TW-028 is the enforcement, and it should land with TW-027 rather than after it.

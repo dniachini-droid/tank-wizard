@@ -17,7 +17,7 @@ export const CORRECTIONS = {
     products: [{ name: "Calcium chloride dihydrate", gPerUnitPer100L: 0.367, note: "per 1 ppm Ca per 100L" }],
   },
   magnesium: {
-    label: "Magnesium", unit: "ppm", maxPerDay: 100,
+    label: "Magnesium", unit: "ppm", maxPerDay: 25,
     products: [
       { name: "Magnesium chloride hexahydrate", gPerUnitPer100L: 0.836, note: "use roughly 3:1 with sulphate" },
       { name: "Magnesium sulphate heptahydrate", gPerUnitPer100L: 1.01, note: "the sulphate share of a mixed dose" },

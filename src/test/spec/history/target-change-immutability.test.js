@@ -41,14 +41,14 @@ const asyncNoop = async () => {};
 const historicalReading = {
   id: 'hist-1',
   param: 'alkalinity',
-  value: 9.0,
+  value: 8.5,
   date: '2026-03-15',
   time: '09:00',
   note: '',
 };
 
 // The band in force at the time the reading was logged: PARAM_DEFS ships
-// alkalinity as 8.5-9.5 dKH (src/lib/constants.js:26), and 9.0 sits
+// alkalinity as 8.2-8.8 dKH (src/lib/constants.js:26), and 8.5 sits
 // squarely inside it.
 const targetsAtLogTime = PARAM_DEFS;
 
@@ -70,7 +70,7 @@ function renderLog(paramDefs) {
 }
 
 describe('§6 history truthfulness — target change must not rewrite a historical classification', () => {
-  it('baseline: 9.0 dKH logged in March renders "In range" under the target that was in force then', () => {
+  it('baseline: 8.5 dKH logged in March renders "In range" under the target that was in force then', () => {
     renderLog(targetsAtLogTime);
     expect(screen.getByText('In range')).toBeInTheDocument();
   });
@@ -95,7 +95,7 @@ describe('§6 history truthfulness — target change must not rewrite a historic
 
   it('confirms what the history view shows instead: "Low", for a value that never moved', () => {
     renderLog(targetsAfterChange);
-    // Evidence, not just absence: the exact same 9.0 dKH reading, unedited,
+    // Evidence, not just absence: the exact same 8.5 dKH reading, unedited,
     // now reads as Low because 9.2-9.8 is today's band. History rewritten.
     expect(screen.getByText('Low')).toBeInTheDocument();
     expect(screen.queryByText('In range')).not.toBeInTheDocument();
