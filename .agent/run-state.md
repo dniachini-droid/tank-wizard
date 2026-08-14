@@ -20,6 +20,14 @@ the 62 spot-checked by name against the baseline list.
 
 notes:
   - npm ci before anything; a fresh clone fails verify at `vite: not found`.
+  - Baselines: verify green (advisory deadcode 3 + csscheck 3), vitest
+    62/313 pre-work, 62/323 after piece one, 62/335 after piece two.
+  - PR stacking: the GitHub API here refuses a non-default base (422), so
+    all PRs target main and stacking is by branch parentage, said in each
+    PR body. Merge order: #30, then #31, then piece two's, then three's.
+  - blockdup ceiling 10, tree at exactly 10 — watch new duplication.
+  - The wipe-detection test helper imports DB_VERSION from idb.js; keep it
+    that way when bumping for piece three.
   - src/lib/idb.js owns DB_NAME/DB_VERSION (now 4). Adding a store = STORES +
     version bump there, nowhere else. Tests that open the database import
     DB_VERSION rather than hardcoding it.
