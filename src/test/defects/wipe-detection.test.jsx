@@ -28,20 +28,21 @@ import { IDBFactory } from 'fake-indexeddb'
 import { render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { ReefConsoleInner } from '../../App.jsx'
+import { DB_NAME, DB_VERSION, PHOTO_STORE, WITNESS_STORE } from '../../lib/idb.js'
 import { closePhotoStore, putPhoto } from '../../lib/photo-store.js'
 import { lsGet, saveKey } from '../../lib/storage.js'
 
-const DB_NAME = 'tank-wizard'
-const WITNESS_STORE = 'install-witness'
 const WITNESS_KEY = 'install'
-const PHOTO_STORE = 'icp-photos'
 
 /* The witness is written here through raw IndexedDB rather than through the
    app's own module, so these tests describe the state a wiped device is in
-   rather than the implementation that reads it. */
+   rather than the implementation that reads it. The one thing borrowed from
+   the app is the version constant: opening the shared database at a fixed
+   number is the exact `VersionError` trap the routine warns about, and this
+   helper fell into it the first time the version moved (piece two, 2 -> 3). */
 function withDb(fn) {
   return new Promise((resolve, reject) => {
-    const req = window.indexedDB.open(DB_NAME, 2)
+    const req = window.indexedDB.open(DB_NAME, DB_VERSION)
     req.onupgradeneeded = () => {
       const db = req.result
       if (!db.objectStoreNames.contains(PHOTO_STORE)) db.createObjectStore(PHOTO_STORE)
