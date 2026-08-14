@@ -25,6 +25,15 @@ same position.
 runs 450–500. Not a conflict — the band is user-set — but the *suggested
 default* is centred well below where he actually keeps it.
 
+> **Resolved 14 August 2026 — Dan, spec owner.** Not a mismatch, and nothing to
+> change. The suggested default stays **425 ±25 (400–450)**: that is where most
+> reefers target and it is what a new user should be offered. Dan runs
+> **450–500** and tolerates anything up to **500**, but that is a layer 2
+> preference inside a user-set band, not a reason to move the layer 3
+> suggestion. Recorded in `.agent/needs-dan.md`; no spec change, no code change,
+> no backlog item. *(Owner-authorised note — the rest of this file is as
+> dictated.)*
+
 ---
 
 ## Journey A — the ordinary drift
