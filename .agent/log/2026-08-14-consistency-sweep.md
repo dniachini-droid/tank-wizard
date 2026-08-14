@@ -58,3 +58,15 @@ rail). S3 — §3's "user may tighten a rail" has no implementation anywhere;
 flagged for triage that §21 (facts-not-judgements) may put the spec in
 self-tension → candidate needs-dan. Appended. Run total so far: 3xS1, 1xS2,
 1xS3.
+
+### message-consistency-auditor — complete (3rd)
+Priors TW-008/009/010/011 all UNCHANGED at the cited lines; §20's
+non-dismissible claims confirmed live at narrative-engine.js:394/457-492;
+position-is-last-reading message cleanup verified clean (no orphan "dose
+right, level off" text). NEW: S2 — buildOverview's whole cross-parameter
+narrative (ratio commentary, burnt-tips warning, pH paragraph, weekly
+priority line) computed every render, rendered nowhere; legacy had it under
+"Read full assessment", the port dropped the render call. S3 — corrects
+yesterday's pH-threshold finding: >8.4 vs >8.45 split is real in source but
+LATENT (the >8.4 branch is in the unrendered paragraphs); becomes live the
+moment S2 is fixed. Appended. Run totals: 3xS1, 2xS2, 2xS3.

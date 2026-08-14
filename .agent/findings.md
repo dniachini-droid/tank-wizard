@@ -122,3 +122,25 @@ evidence: grep for maxDailyRise/tighten/rateLimit in Setup.jsx → no matches. L
 impact: In plain terms: a keeper who knows their corals react badly to fast alkalinity swings has no way to ask the app for a gentler daily limit — the spec promises that control, the app silently ignores it and always runs at the full default rate.
 suggested fix: per-element rate-cap field (or existing rail-adjacent settings surface) threaded as min(default, userValue) through rateLimitDose/safeDoseBand. UI-and-wiring, not a chemistry change. NOTE for triage: check against wizard-states.md §21 (Setup asks facts, not judgements — a rate tolerance is named there as a NON-fact); the spec may be in self-tension here → possible needs-dan rather than backlog.
 confidence: high
+
+### message-consistency-auditor / 2026-08-14 / status-of-priors
+TW-011 — UNCHANGED (ReadingConfirmation.jsx:76-77, in-band headline + remaining/daysLeft body in same object).
+TW-009 — UNCHANGED (alkalinity.js:433-437 refusal path keeps action:"hold"; ErrorBoundary.jsx:121 "Hold at null mL/day" shape; DosingWizard.jsx:22-31 collapses every refusal to "Set up"/"more readings needed", never renders a.reason).
+TW-010 — UNCHANGED, same line (ReadingConfirmation.jsx:409 green "Saved" for status unknown).
+TW-008 — UNCHANGED (alkalinity.js:738,775 + DosingWizard.jsx:14-31 "No change" beside band dot).
+§20 non-dismissibles — CONFIRMED still live at cited lines (narrative-engine.js:394; :457-492 five dose claims, no dismissible flag). TW-031 still un-approved.
+position-is-last-reading cleanup — VERIFIED CLEAN: "dose right, level off" fully removed, no surviving message references it (state.js:505-513, pinned by position-is-last-reading.test.js:110,118).
+
+### message-consistency-auditor / 2026-08-14 / S2
+what: buildOverview's entire cross-parameter narrative — Ca:alk and Mg:Ca ratio commentary, the alkalinity-vs-nutrients "burnt SPS tips" warning, pH read against alkalinity, stability paragraph, stale-testing warning, and the "if you do one thing this week" line — is computed correctly every render and shown NOWHERE. Only overview.headline and overview.score have consumers; overview.paragraphs has none. The legacy app rendered it under a "Read full assessment" expander (legacy/releases/reef-console-v1-stable.jsx:5278, v3:5296-5346); the render call did not survive the rewrite into OverviewCard.
+evidence: grep -rn "overview\." src/components → only TodayPanel.jsx:645 (headline) and Dashboard.jsx:38; OverviewCard (TodayPanel.jsx:617-690) reads score+headline only. grep -rn "\.paragraphs" → zero JSX consumers in src/, definition only at narrative-engine.js:1343. Insights.jsx never calls buildOverview. Not tracked in backlog.
+impact: In plain terms: the app quietly works out real cross-checks — e.g. that high alkalinity with lean nutrients is the classic setup for burnt SPS tips, or that a calcium-to-alkalinity ratio far off balance means one dosing program needs attention — and then throws the advice away. The keeper sees a headline and a score with no explanation, and a category of chemistry cross-checks no other surface performs reaches no screen.
+suggested fix: wire overview.paragraphs into OverviewCard behind an expander as legacy did, or thread buildOverview's output into Insights explicitly. Resolve the pH threshold split (next finding) FIRST.
+confidence: high
+
+### message-consistency-auditor / 2026-08-14 / S3
+what: CORRECTION to last sweep: the pH "running high" threshold disagreement (>8.4 narrative-engine.js:1191 vs >8.45 findings.js:528) is NOT a live two-surface contradiction — the >8.4 branch lives inside the never-rendered overview.paragraphs. Only the >8.45 branch reaches a screen (claims/Briefing feed). Real and unreconciled in source, but latent, not live.
+evidence: trace above; findings.js:528 confirmed live via App.jsx findings state → Briefing/FindingList.
+impact: In plain terms: for a pH between 8.40 and 8.45 nothing on screen claims "running high" today — but the moment the discarded advice text is wired back in, the app would say high and not-high about the same reading. A landmine for the S2 fix above.
+suggested fix: canon should name the pH-high figure once (reef-chemistry.md); collapse both branches to it before restoring paragraphs. Until then documentation debt, not a rendering bug.
+confidence: high
