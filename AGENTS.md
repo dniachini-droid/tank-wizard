@@ -54,6 +54,21 @@ safety property, not a quality property.
     changes a chemistry constant, changes what the app tells the user to dose,
     or contradicts something settled in `docs/spec/`. Not for terminology, dead
     code, formatting, test structure, performance or accessibility.
+13. **Finish the job: commit, push, open a PR. Never merge.** When work is
+    complete, all three happen in the same breath — `git commit`, `git push -u
+    origin <branch>`, and `gh pr create` (or the GitHub MCP tools where `gh` is
+    not installed). **A pushed branch with no PR is unfinished work**, invisible
+    to Dan and easy to lose; if you pushed, you open the PR, in the same run,
+    before you report done.
+    The PR body uses the template below and must say three things: **what
+    changed, why, and what breaks if it is wrong.** Per rule 11 it says them
+    twice — the precise version with figures and `file:line`, then the same
+    thing in plain reef-keeping terms. A PR Dan cannot evaluate without reading
+    the diff is not finished either.
+    **Merging is Dan's alone.** Never merge a PR, never enable auto-merge, never
+    push to `main`. This holds however green the checks are and however trivial
+    the change looks — a wrong number in this app can kill livestock, and the
+    last human check is the whole point of the gate.
 
 ## Definition of done
 
@@ -114,6 +129,10 @@ Tags: `[approved]` (implementer may act), `[chem]`, `[schema]`, `[pwa]`, `[a11y]
 
 ## PR body template
 
+Per non-negotiable #13, every PR uses this and every PR gets opened. Per rule
+11, **What / Why / Risk each carry a plain-language layer** — the precise
+version first, then the same thing in reef-keeping terms.
+
 ```
 ## What
 ## Why
@@ -121,7 +140,13 @@ Tags: `[approved]` (implementer may act), `[chem]`, `[schema]`, `[pwa]`, `[a11y]
 ## Risk (what breaks if I'm wrong)
 ## Verification (commands run + output)
 ## Not done / follow-ups
+
+## In plain terms
+what changed · why · what breaks if it's wrong
 ```
+
+If a command in Verification could not be run, say so and say why. An unrun
+check is never reported as a passing one.
 
 ## Tone
 

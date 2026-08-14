@@ -6,27 +6,7 @@ Decisions no agent may make. Newest at top. Dan clears this file.
 
 ## Open
 
-### 0. The magnesium rail has two live values — 25 or 50 ppm/24 h (surfaced by the 2026-08-14 canon swap)
-
-Your 13 August decision set the magnesium rail to **50 ppm/24 h**, sourced to the
-Aqua Forest label ("maximum daily increase 50 mg/l"), and it was written into the
-old `reef-chemistry.md` §6. The merged draft that became the new
-`reef-chemistry.md` was written the same day and independently kept **25
-ppm/day** in its §3 rails table, sourced as "widely given as 25; Aqua Forest
-label allows 50". The two documents never met, so replacing the old file with the
-merged one would have silently reverted your decision.
-
-Nothing has been resolved. §3 now carries an **UNRESOLVED** note stating both
-figures and their sources, and `.agent/backlog.md` TW-016 — the code item filed
-against the 50 ppm figure — is marked blocked on this, because it cannot be
-implemented while canon disagrees with itself about the number.
-
-What is not in dispute: calcium (both say 20 ppm/day) and alkalinity (both say
-0.5 dKH/day). Live code is a third and fourth answer already —
-`correction.js:20` says 100, `safe-rate.js:27` says 25 — which is what TW-016
-exists to fix.
-
-One line from you settles it: 25 or 50.
+### ~~0. The magnesium rail has two live values~~ — closed 2026-08-14, see Decisions
 
 ### ~~1. `reef-chemistry.md` §2 still uses the losing term~~ — closed 2026-08-14
 
@@ -44,6 +24,35 @@ column — where naming the banned term is the point.
 ---
 
 ## Decisions
+
+### 2026-08-14 (later) — Dan, spec owner: the magnesium rail is 25 ppm/24 h
+
+Settles the 25-vs-50 conflict the canon swap surfaced (open item 0, now closed).
+The old canon said 50, set on 13 August; the merged draft written the same day
+said 25. **25 wins.**
+
+Recorded in `reef-chemistry.md` §3 with the reasoning, and worth repeating here
+because the losing figure is the better-sourced one: **50 ppm/day is the Aqua
+Forest magnesium label's own stated maximum daily increase** — not a guess, and
+nothing in this decision calls it unsafe. **25 is the conservative figure, chosen
+for consistency across the three rails.** Calcium sits at 20 ppm/day where BRS
+allows 50 for large corrections; taking the manufacturer's ceiling for magnesium
+while taking the conservative number for calcium would mean the rails were
+picked on two different principles — the disagreement-between-numbers failure
+this app keeps having. One principle, all three rails: the conservative number.
+
+**Revisit if corrections prove too slow in practice.** The cost is days on a
+magnesium correction — 150 ppm takes 6 days at 25 rather than 3 at 50. If that
+becomes real friction on the tank, the label figure is there and §3 is the
+paragraph to come back to.
+
+Consequences, already applied: the UNRESOLVED note in §3 is gone, and
+`.agent/backlog.md` TW-016 is unblocked and rescoped. It turns out to be smaller
+than filed — `safe-rate.js`'s `CORRECTION_MAX_RATE` is *already* {0.5, 20, 25}
+and needs no change at all, so the work is `correction.js`'s magnesium
+`maxPerDay` of 100 (four times the rail) plus re-pointing `rails.test.js`'s
+`SPEC_RAIL`, which still asserts the pre-13-August {0.5, 25, 100}. No
+application code was changed under this authorisation.
 
 ### 2026-08-14 — Dan, spec owner (resolves Decisions 1, 2, 4 and 5 of `.agent/five-decisions.md`)
 

@@ -22,27 +22,29 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
      on 2026-08-13 — see the Decisions section of that file. The code work those
      decisions create is TW-016 and TW-017 below. -->
 
-- [ ] [chem] TW-016 Magnesium rail constants disagree with canon's new 50 ppm/24 h
-      why: Dan set the magnesium rail to 50 ppm/24 h on 2026-08-13 (then §6, now §3).
-      src/lib/analytics/correction.js:20 CORRECTIONS.magnesium.maxPerDay is 100 —
-      it now EXCEEDS the rail, and per §3 "any recommendation exceeding a rail is a
-      bug". src/lib/analytics/safe-rate.js:27 CORRECTION_MAX_RATE.magnesium is 25 —
-      under the rail, but a hardcoded tightening where §3 permits only a [user] one.
-      safe-rate.js's SAFE_DAILY_RISE is what the live Dosing Wizard calls on every
-      dosing path, so today the wizard doses magnesium at half the authorised rate
-      while the correction planner would allow double it.
+- [ ] [chem] TW-016 correction.js allows magnesium at 4x the rail; rails.test.js asserts the old canon
+      why: Dan settled the magnesium rail at 25 ppm/24 h on 2026-08-14 (§3), closing
+      the 25-vs-50 conflict the canon swap surfaced. Against that figure:
+      - src/lib/analytics/correction.js:20 CORRECTIONS.magnesium.maxPerDay is 100 —
+        four times the rail. Per §3, "any recommendation exceeding a rail is a bug,
+        not a preference." Its calcium entry (20) is already right.
+      - src/lib/analytics/safe-rate.js:27 CORRECTION_MAX_RATE is {alkalinity 0.5,
+        calcium 20, magnesium 25} — this now matches canon exactly and needs NO
+        change. Its own comment ("the conservative end of each is the default")
+        states the principle Dan chose. Do not touch it.
+      So this item is now one constant plus its test, not the two-sided conflict it
+      was filed as: correction.js's 100 becomes 25.
       spec: docs/spec/reef-chemistry.md#3-rate-rails--one-per-element
-      BLOCKED 2026-08-14: the canon swap left §3's table saying 25 ppm/day where Dan's
-      13-Aug decision said 50. See the UNRESOLVED note in §3. This item cannot be
-      implemented until that is settled — the rail figure itself is in dispute.
+      UNBLOCKED 2026-08-14 — the rail figure is no longer in dispute.
       repro: tests/parity/correction-calculator-vs-rail.test.js; also
-      src/test/spec/classification/rails.test.js, which hardcodes the OLD canon
-      (SPEC_RAIL calcium 25, magnesium 100 at line 24, quoted again in the header
-      comment lines 8-15). 6 of its 12 assertions fail today. Under the new canon
-      the 3 calcium ones are asserting the wrong number — code is already 20, which
-      is now correct — and the magnesium ones fail for the right reason. The test
-      constants must be re-pointed at the new rails as part of this item, not
-      edited on their own to go green (AGENTS.md rule 4).
+      src/test/spec/classification/rails.test.js, whose SPEC_RAIL at line 24 is
+      {alkalinity 0.5, calcium 25, magnesium 100} — the pre-13-Aug canon, quoted
+      again in the header comment at lines 1-19, which cites "§6, lines 149-166"
+      (that section is now §3). SPEC_RAIL must be re-pointed to {0.5, 20, 25} and
+      the header comment rewritten to quote §3, as part of this item — not edited
+      on its own to go green (AGENTS.md rule 4). Its calcium assertions currently
+      fail against code that is already correct; its magnesium ones fail for the
+      right reason.
       owner: implementer — needs [approved][chem] first (AGENTS.md rule 3)
 
 - [ ] TW-017 Terminology: "water volume" is now a banned synonym for "net volume"

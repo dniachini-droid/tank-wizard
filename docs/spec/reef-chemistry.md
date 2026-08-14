@@ -104,23 +104,31 @@ might administer at once.
 |---|---|---|
 | Alkalinity | 0.5 dKH / day | most keepers cap at 0.5; some sources allow up to 1.4 |
 | Calcium | 20 ppm / day | reefcalcs calls 20 safe; BRS allows 50 for large corrections |
-| Magnesium | 25 ppm / day | widely given as 25; Aqua Forest label allows 50 |
+| Magnesium | 25 ppm / day | Aqua Forest label allows 50; 25 is the conservative figure — see below |
 | Salinity | 0.5 ppt / day | carried forward from the previous canon |
 | Temperature | 0.5 °C / day | carried forward from the previous canon |
 
 `[user]` may **tighten** a rail. **The app never permits loosening beyond the
 figure above.**
 
-> **UNRESOLVED, 14 Aug — the magnesium rail has two live values.** The table
-> above says 25 ppm/day. The canon this file replaced said **50 ppm/day**, set
-> deliberately by the spec owner on 13 August with the source recorded — the Aqua
-> Forest magnesium label's "maximum daily increase 50 mg/l (ppm)" — and
-> `.agent/backlog.md` TW-016 is filed against that figure. Both documents were
-> dated 13 August; the merge kept the conservative number and the decision
-> raised it, and the two never met. **This is not resolved here.** Until it is,
-> TW-016 cannot be implemented against this section, because the section and the
-> decision disagree about what the rail is. Calcium is not affected — both say
-> 20 ppm/day.
+**Decided 14 Aug: the magnesium rail is 25 ppm/day.** This settles a conflict
+the canon swap surfaced — the document this file replaced said 50 ppm/day, set
+on 13 August, while the merged draft written the same day kept 25, and the two
+never met.
+
+For the record, because the losing figure is the better-sourced one: **50 ppm is
+the Aqua Forest magnesium label's own stated maximum daily increase.** It is not
+a guess, and nothing here says it is unsafe. **25 is chosen as the conservative
+figure, for consistency.** Calcium's rail is 20 ppm/day where BRS allows 50 for
+large corrections; taking the manufacturer's ceiling for magnesium while taking
+the conservative figure for calcium would mean the three rails were picked on
+different principles, which is the disagreement-between-numbers failure this app
+keeps having. One principle, applied to all three: the conservative number.
+
+**Revisit if corrections prove too slow in practice.** The cost of 25 over 50 is
+days on a magnesium correction — a 150 ppm correction takes 6 days instead of 3.
+If that shows up as real friction on a real tank, the label figure is there and
+this is the paragraph to come back to.
 
 **Decided 13 Aug: one rail per element, not two.** A separate, faster rail for
 corrections was considered and rejected. The conservative figure is used
@@ -776,7 +784,7 @@ line number. Those line numbers are all stale now. The section mapping is:
 | §3 Targets — alert thresholds, band validation | §18 |
 | §4 Testing cadence and precision | §19, and §4 for the windows |
 | §5 Three-part reasoning | §20, and §10 for the magnesium gate |
-| §6 Rate-of-change rails | §3 (see §3's note on the magnesium rail) |
+| §6 Rate-of-change rails | §3 — note the magnesium rail was settled at 25 ppm/day on 14 Aug, not the 50 this file previously carried |
 | §7 Dose calculation | §21 |
 | §8 Consumption rate | §22, and §6 for the maintenance-dose derivation |
 | §9 The app must refuse to | §12 |
