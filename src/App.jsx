@@ -16,7 +16,7 @@ import { DOSE_ELEMENTS } from './lib/analytics/consumption.js'
 import { fmtAmount } from './lib/analytics/time-in-range.js'
 import { addDays, byNewest, byOldest, nowTime } from './lib/analytics/time-of-day.js'
 import { DEFAULT_SETTINGS, LIGHTING_SEED, WATER_CHANGE_LITRES, WATER_CHANGE_SEED } from './lib/analytics/water-changes.js'
-import { buildBackup } from './lib/backup.jsx'
+import { buildBackup, requestPersistence } from './lib/backup.jsx'
 import { NAV, PARAM_DEFS, uid } from './lib/constants.js'
 import { fmtShort, paramStatus, todayStr } from './lib/dates.js'
 import { assessAlkalinity } from './lib/dosing/alkalinity.js'
@@ -308,6 +308,16 @@ export function ReefConsoleInner() {
      for the entire life of that browser tab, which is why it stopped showing. */
   const [splash, setSplash] = useState(true);
   useEffect(() => { onToast(setToastMsg); }, []);
+
+  /* Ask the browser to keep this app's data, once, at launch.
+     This request used to live in Setup's mount effect, and Setup only mounts
+     while its tab is selected — so someone who logged readings from the
+     Dashboard for months never asked at all, while Safari's seven-day
+     eviction rule applied to them in full. Asking from the root means it
+     happens whatever tab is showing. requestPersistence remembers its own
+     answer, so Setup's copy of the call reads the result rather than asking a
+     second time. */
+  useEffect(() => { requestPersistence(); }, []);
   const openTestFor = (paramKey) => { setTestPrefill({ paramKey, at: Date.now() }); setTab("log"); };
 
   /* Browsers restore the previous scroll position on reload, which drops you
