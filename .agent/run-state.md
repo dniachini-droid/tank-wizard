@@ -2,9 +2,9 @@ run: 2026-08-14-consistency-sweep
 routine: routines/05-consistency-sweep.md
 started: 2026-08-14T (scheduled fire)
 status: in-progress
-last completed step: Wave B complete (3 parity files added + verified 53/8, committed 326605c; new S1 target-field semantics, S2 StabilityStrip live disagreement)
-next step: Wave C — contradiction-hunter (read-only, works §17 matrix over Wave A+B findings), then Wave D (adjudicator → triage → reporter → PR)
-in-flight: Wave C — contradiction-hunter (read-only; if run dies here, nothing to revert — re-dispatch)
+last completed step: Wave C complete (matrix holds 2/9/5; 2 new S1 — restore natural-key data loss, corrections invisible; committed cba7b55)
+next step: Wave D — adjudicator (verify new S1/S2), then triage-analyst (dedupe into backlog, empty findings.md), then reporter (morning brief), then PR
+in-flight: Wave D step 1 — adjudicator (read-only; if run dies here, nothing to revert — re-dispatch)
 branch: claude/2026-08-14-consistency-sweep
 uncommitted work: yes (this file)
 
