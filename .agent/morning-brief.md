@@ -1,43 +1,126 @@
-# 2026-08-13 — Tank Wizard overnight
+# 2026-08-14 — Tank Wizard overnight (consistency sweep, routine 5)
 
-> **Note added 2026-08-14 (canon swap).** This is a historical record; its body
-> is left as written. The files it cites were renamed that day:
-> `reef-chemistry-MERGED.md` → `docs/spec/reef-chemistry.md`,
-> `wizard-states-MERGED.md` → `docs/spec/wizard-states.md`,
-> `docs/spec/surfaces-and-messaging.md` → `wizard-states.md` §11–§17 (add 10 to
-> the section number), `docs/spec/app-contract.md` → `wizard-states.md` §18,
-> `docs/spec/incoming/*.txt` → `legacy/protocol/*.txt` (identical files,
-> duplicates deleted). Section numbers in `reef-chemistry.md` §1–§14 and
-> `wizard-states.md` §0–§10 are unchanged, **except** that §8's subsections
-> shifted: bracketing §8.1 → §8.3, step cap §8.2 → §8.4, rate ceiling
-> §8.3 → §8.5. Everything the previous canon carried that the merge had dropped
-> now lives in `reef-chemistry.md` Part II (§15–§23), which maps the old sections
-> to the new ones.
+## Needs you (3)
 
-## Needs you (N)
-Two spec files disagree with each other on volume terminology — surfaces-and-messaging.md says "water volume", reef-chemistry.md says "net volume" — pick one. (.agent/needs-dan.md #1)
-Magnesium dose-rate rail: the live wizard runs on safe-rate.js's 25 ppm/day, which contradicts both reef-chemistry.md canon (100 ppm/day) and Setup's own correction.js (100). safe-rate.js's code comment cites independent real-world sourcing — may be the spec that's wrong, not the code. Needs your call before anyone touches a dosing rail. (.agent/needs-dan.md #2)
-15 backlog items (TW-002 through TW-016) are waiting for [approved] tags — untagged, implementer can't act on any of them.
+**1. The spec contradicts itself, same day, both sentences yours — rail
+tightening.** `reef-chemistry.md` §3 says the user may tighten a daily rate
+rail ("never loosen"); `wizard-states.md` §21 (decided the same day) rejects a
+rate-tolerance Setup question outright and names §3's rate ceiling as an
+arrival point of the rejected shape. Nothing in code implements either — the
+rail is fixed and untweakable today (`safe-rate.js:43-48` reads no user
+value). Full three-option workup in `.agent/needs-dan.md` item 8. Plain
+terms: the spec promises a keeper whose corals react badly to fast swings a
+way to ask for a gentler daily limit, then immediately says Setup must never
+ask that kind of question. Pick which sentence survives.
 
-## Shipped (branches awaiting your merge)
-PR #1 — claude/2026-08-13-consistency-sweep: adds 4 permanent regression tests under src/test/spec/history/ and 9 files (fixtures + 8 suites) under tests/parity/, proving cross-surface disagreement. No application source touched, no user-facing number moved — this was a read-only audit sweep by design.
+**2. Vocabulary registry decision** (`.agent/needs-dan.md` item 7): the
+consistency verdicts (`reading-meaning.js:196-219`) use six words that are
+not in §13's seven bands, and the one shared word — "drifting" — means the
+opposite (§13: inside the band, sliding toward an edge; the code: already
+outside it). Blocks TW-037. Plain terms: the app has grown a second
+home-made vocabulary for "how is this parameter doing", and its one shared
+word disagrees with the official one.
 
-## Found
-**Lead contradiction — the app disagrees with itself.** TW-002: `classifyReading()` — the one function the spec requires every surface to call — does not exist anywhere in the codebase. ~8 independently-maintained classifiers exist in its place, and they visibly disagree today: a single 6.9 dKH reading shows mild amber (paramStatus) directly beside two separate red "Dangerously low" badges (doseStatus, findings.js) in one Dashboard card, one render. This is the root cause behind most of tonight's other findings and outranks them per the single-source rule.
-TW-003: the Dosing Wizard crashes outright (`TypeError`, null dereference) on the two most common refusal states — no volume/strength set, no readings yet. First thing a new user hits.
-TW-004: manual dose entry (DoseChangeSheet + Setup's dose field) has no rail check at all — Setup accepts negative or unbounded doses with zero validation.
-TW-005: the magnesium gate and precipitation guard (reef-chemistry §5/§9) are structurally unreachable from the wizard — assessAlkalinity/assessCalcium have no channel to receive magnesium status at all.
-Also flagged by contradiction-hunter: 9 cross-surface facts that agree today only by coincidence (no shared source) — they will break on the next unrelated change, not just today's bugs.
+**3. Three one-liners** (`.agent/needs-dan.md` item 6): phosphate's and
+potassium's brand colours are byte-identical to the danger-red/low-amber
+severity colours (a colour-registry gap of §15's shape); the "notice"
+concept ships under three words today with a fourth planned; the four-way
+"target" rename needs your sign-off before any copy changes.
+
+## Shipped
+
+Nothing — read-only sweep by design. Only new parity tests (below) and
+`.agent/` state are on this branch.
+
+## Found (new, all independently re-verified by the adjudicator: 19/19 confirmed, 0 refuted)
+
+1. **TW-036 — the dose sheet can record a number you didn't just ask for.**
+   `DoseChangeSheet.jsx:17` seeds its amount once and never re-syncs; the
+   staged-plan shortcuts ("Step to X" / "Go to Y", `ErrorBoundary.jsx:209,212`)
+   reuse one unkeyed sheet. Reproduced live: tap "Step to 7.50", then "Go to
+   9.90" with the sheet open — the field still says 7.5. Plain terms:
+   change your mind between the small step and the full dose, and unless you
+   notice, the dose you record is the one you *didn't* pick.
+
+2. **TW-033 [schema] — restore silently rewrites and drops data while
+   claiming it didn't.** One root cause, three consequences
+   (`backup.jsx:75,78,120,123,170-172`): targets are overwritten
+   unconditionally on every restore (not even gated by the settings flag), so
+   all history silently reclassifies against that day's bands; the merge keys
+   omit time-of-day, so the second same-day reading or dose is dropped — while
+   the preview counts it as recovered; and with no stored classification or
+   recommendation (TW-013/TW-014), nothing downstream can even detect what
+   changed. Reproduced live, twice independently. Plain terms: use the undo
+   feature to recover a few lost readings and the app may quietly relabel
+   months of history, throw away one of two same-day tests, and tell you
+   "nothing was overwritten."
+
+3. **TW-034 — corrections feed the math but are written down nowhere.** The
+   one-off correction log (`App.jsx:888-911`) shapes consumption estimates,
+   correction gating and findings, yet appears in no history view, no CSV
+   export (`export-csv.js:5`), and its delete function has no caller. Plain
+   terms: the app privately uses your correction doses to explain the tank's
+   behaviour forever, but neither you nor your exported records can ever see
+   them again.
+
+4. **TW-002 [standing #1] — still no single classifier; the census is now
+   thirteen, not eight.** All prior manifestations reconfirmed unchanged;
+   StabilityStrip (`TodayPanel.jsx:314`) newly catalogued and its live
+   disagreement pinned by a permanent test: the spread bar renders "outside"
+   amber while the current reading is in band on every other surface. §19's
+   one-engine decision is still wired to nothing. Plain terms: thirteen
+   independent opinions about the same reading, still one card showing amber
+   "low" above red "dangerously low" for one number.
+
+5. **TW-035, TW-037, TW-038, TW-039, TW-040, TW-041** — one internal field
+   holds "level to aim for" in one branch and "mL per day" in the rest
+   (latent, now permanently tested); the invented-vocabulary family above;
+   the cross-parameter assessment (ratio warnings, burnt-tips, weekly
+   priority) is computed every render and rendered nowhere — with two
+   landmines (pH 8.4 vs 8.45, two rival "one thing this week" waterfalls)
+   that must be unified before wiring it in; a red test still asserts the
+   pre-14-Aug rails (Ca 25/Mg 100) next to correct code — fix direction
+   triple-checked: fix the TEST, or someone "fixing" the code would let
+   magnesium run four times faster than the decided ceiling; ICP popup and
+   every history chart render bare numbers, no units, no aria labels.
+
+## Verified good news
+
+- **Position-is-last-reading landed cleanly**: 17/17 defect tests pass, and a
+  new cross-engine parity test proves all three engines agree by rule, not
+  luck.
+- The 13 Aug magnesium-rail fix (fd82363) held; its spec assertion now
+  passes on merit.
+- Restore's row-merge is genuinely additive for what it doesn't drop; no
+  history rows are overwritten in place.
+- The two crash bugs from the phase-5 gate (log-popup "go to dosing", task
+  "mark done") are confirmed fixed at root cause (704cc69).
 
 ## Health
-tests: 193 passing / 68 failing / 0 skipped (44 files: 12 pass, 32 fail). Of the 32 failing files, 23 pre-date tonight's sweep (existing spec-violation tests the auditors used as evidence, not created by this run) and 9 are new — 3 history + 6 parity regression tests this sweep added, all failing intentionally to document real findings, none broken infrastructure.
-coverage: not measured this run (read-only sweep, no coverage tooling run)
-bundle: main JS 286.2 kB gzip (budget 180 kB) — over budget; CSS 8.7 kB (budget 40 kB) — fine; total initial ~294.9 kB gzip (budget 250 kB) — over budget. Pre-existing, not caused by tonight's sweep (no application source changed), but flagging since it's over both thresholds in .agent/budgets.json.
-build: pass (`npm run build` succeeds, one Vite warning about a >500 kB chunk — same root cause as the bundle-budget miss)
-audit: 51 raw findings → adjudicator independently reproduced all 40 S1/S2 (0 downgraded) → merged to 25 root-cause clusters → triage promoted 15 to backlog, deleted 5 as noise, parked 2 unverified, held back 7 at the item cap
 
-## Didn't finish
-Nothing stalled. All four waves (A: 6 surface auditors, B: parity checker, C: contradiction-hunter, D: adjudicator/triage/reporter) ran to completion.
+- Tests: pre-sweep 414 (352 pass / 62 standing documented failures);
+  post-sweep 430 (366 / 64) — +16 new parity tests, +2 new documented spec
+  violations, zero unexplained drift. Parity suite: 11 files, 61 tests,
+  53 pass / 8 documented violations.
+- Build: passes. Bundle: main JS 292.7 kB gzip vs 180 kB budget, total
+  ~301.9 kB vs 250 kB — over, pre-existing; growth since yesterday
+  (286.2 → 292.7) traces to the durability and position merges, not this
+  read-only sweep.
 
-## Cost
-not tracked this run
+## Didn't run
+
+No fixes, no build-cycle work (by design). Phase-5-gate leftovers (dead
+useMemo `preview`, dead CSS) parked unverified on TW-022/TW-023. Durability
+piece three (TW-D11) remains not started, carried in run-state.
+
+## In plain terms
+
+Nothing got fixed tonight and nothing got worse — every inconsistency found
+yesterday is still there, freshly confirmed. What's new is where the app
+*keeps its promises about the past*: the backup/undo feature can quietly
+relabel your whole history, silently drop one of two same-day tests while
+saying it recovered both, and the correction doses the app reasons from are
+never shown to you at all. The dose-entry sheet can record the number you
+changed your mind away from. And the one decision only you can make: the
+spec both promises and forbids a "gentler daily limit" question, in two
+documents dated the same day.

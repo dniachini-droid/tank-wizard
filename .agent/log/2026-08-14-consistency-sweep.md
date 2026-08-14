@@ -176,3 +176,28 @@ meaning vocabulary family, buildOverview dead-narrative family. Escalations
 for needs-dan: §3-vs-§21 rail-tightening same-day spec self-contradiction
 (new), reading-meaning vocabulary registry question. Arithmetic re-verified
 exact. Appended to findings.md. Proceeding to triage.
+
+## Wave D step 2 — triage-analyst (complete)
+found 35 raw blocks → merged 11 into 6 destinations / deleted 2 (the
+already-fixed phase5-gate S1s, per adjudicator) / promoted 9 (TW-033..041,
+priority order led by TW-036 wrong-dose-recording, then TW-033 restore
+integrity) / escalated 5 to needs-dan (items 8 and 7 with full rule-10
+workups; item 6 = three one-liners) / annotated 7 existing items
+(TW-002/004/006/013/014/017 + TW-022/023 parked-unverified note).
+findings.md emptied to header. No 15-cap holdbacks. Committed 8a577ef.
+
+## Wave D step 3 — reporter (complete, orchestrator-corrected)
+Reporter (read-only by design) returned brief text; orchestrator wrote
+.agent/morning-brief.md with three corrections under the evidence rule:
+item order aligned to triage's actual backlog priority (TW-036 above
+TW-033), verified bundle numbers added (build pass; main 292.7 kB gzip vs
+180 budget, growth 286.2→292.7 attributed via git log to durability+position
+merges, not tonight), and one garbled sentence about the classifier census
+rewritten. Health numbers cross-checked against orchestrator's own runs.
+
+## Run complete
+All four waves ran to completion; nothing stalled, nothing reverted. Only
+tests/parity/ and .agent/ were written, per the routine's write policy.
+Deliverables: 3 permanent parity tests, 9 backlog items, 2 needs-dan
+workups + 3 notes, morning brief, this log. PR opened from
+claude/2026-08-14-consistency-sweep (see run-state / PR body = brief).
