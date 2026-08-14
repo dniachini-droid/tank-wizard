@@ -2,7 +2,41 @@ run: 2026-08-14-phase6-bugs
 routine: routine 15 — phase 6: the known bugs
 started: 2026-08-14T00:00:00Z
 status: interrupted
-last completed step: bug 4 — alkalinity band, 1.0 -> 0.6 dKH, shipped.
+last completed step: bugs 3 and 4 — both now on this branch, bug 3 via a
+  merge of `main` into `claude/bug4-alkalinity-band` (see the log's "Merge —
+  bugs 3 and 4 composed" section). Listed oldest first; bug 4 is the genuine
+  last completed step.
+
+  bug 3 — dose-gap halving removed (3a) + stability
+  grading fixed (3b), shipped together per §7/§11. `doseDriftedFrom`
+  (helpers.js) no longer halves its trigger out of band; the `outOfBand`
+  parameter is gone, not just unused. `alkBandOf`/`caBandOf`/`mgBandOf` now
+  take a second `outOfBandWorsening` argument (a shared helper in helpers.js,
+  looks up STABILITY_RULES[key].noiseFloor itself) and promote a rate-only
+  "stable" grade to the next band up only when the level is outside its band,
+  still moving away, and the movement clears the §5 noise floor over the
+  fitted window. Confirmed magnesium is not exempt — grading is its *only*
+  guard, since doseDriftedFrom is permanently false for it (§10, no trigger
+  key). blockdup (ceiling 10, baseline exactly 10) failed twice during
+  implementation from incidental new duplication between calcium.js and
+  helpers.js; resolved by extracting the shared helper and by keeping the
+  original provisional out.band assignment in place (promoted later) rather
+  than deleting it — both real fixes, not workarounds, confirmed via a
+  differential region diff. npm run verify GREEN on every blocking check.
+  golden re-recorded (372fcda432be5bcf -> ae3b6189dd1ac438) after auditing
+  all 441 changed rows: 365 are the intended band promotion (14 of those
+  still hold, via the pre-existing "mild, one interval" gate — safe, bounded);
+  71 are wording-only (a hold explanation changing which of two legitimate
+  hold branches fires, action unchanged); the last 5 are a genuine finding —
+  under an active correction, doseDriftedFrom's removed raw-position check
+  and grading's fitted-position check can disagree, so a ~7-8.7% alkalinity
+  dose gap goes uncaught by either mechanism until the correction ends. Not
+  authorised to fix — written up in full (options, not a recommendation) at
+  .agent/needs-dan.md item 3. vitest 69 failed / 252 passed — same 69
+  pre-existing [chem] failures as the bug-2 baseline, spot-checked by name,
+  none related to this bug. Merged to main as PR #22.
+
+  bug 4 — alkalinity band, 1.0 -> 0.6 dKH, shipped.
   One-line fix (constants.js PARAM_DEFS, 8.5-9.5 -> 8.2-8.8) with a large,
   fully-explained blast radius: three OTHER test files (tests/legacy-port/
   summary.js, src/test/spec/history/target-change-immutability.test.js,
@@ -25,11 +59,20 @@ last completed step: bug 4 — alkalinity band, 1.0 -> 0.6 dKH, shipped.
   1350 target §2 gives it — same off-centre shape as alkalinity's bug, filed
   to .agent/backlog.md "Needs Dan's approval". PR:
   https://github.com/dniachini-droid/tank-wizard/pull/23
-  IMPORTANT for whoever resumes: this branch was cut fresh from `main`, which
-  does NOT yet include bug 3's changes (PR #22, not merged as of this run) —
-  bugs 3 and 4 are independent PRs against the same base, per rule 1. Bug 5
-  below is also independent of both and should also branch from `main`, not
-  from either.
+
+  IMPORTANT for whoever resumes: bug 4's branch was originally cut fresh from
+  a `main` that did NOT include bug 3 (PR #22 was still open), so bugs 3 and 4
+  were developed as independent PRs against the same base, per rule 1. PR #22
+  merged first; `main` has since been merged into this branch, so bug 3 IS now
+  present here and the two fixes are composed. The golden fingerprint was
+  REGENERATED against both fixes together rather than either side of the
+  conflict being chosen — neither bug's solo digest (ae3b6189dd1ac438,
+  a24f6fb8d3011187) is current any more. The composed digest is
+  fbac65244f00ac9b, 5,940 rows, audited against both sides (0 THREW, every
+  band move a promotion in bug 3's stated direction, calcium 28 / magnesium 0
+  matching bug 3's own figures) — see the log's merge section for the full
+  audit. Bug 5 below is independent of both and should still branch from
+  `main`, not from either.
 next step: bug 5 — TW-016, magnesium correction rail 100 -> 25
   (src/lib/analytics/correction.js:20, CORRECTIONS.magnesium.maxPerDay).
   Branch fresh from origin/main. Read routine section 5 in full before
@@ -41,8 +84,10 @@ next step: bug 5 — TW-016, magnesium correction rail 100 -> 25
   the fix, confirm rails.test.js's calcium assertions pass for a reason
   already true before this fix (code was already right) and magnesium's pass
   for the new reason, not just that the file goes green as a whole.
-in-flight: none — bug 4 shipped and pushed, PR #23 opened, working tree clean
-branch: claude/bug4-alkalinity-band (pushed)
+in-flight: none — bugs 3 and 4 both shipped; bug 3 merged (PR #22), bug 4's
+  PR #23 updated with `main` merged in and its conflicts resolved, working
+  tree clean
+branch: claude/bug4-alkalinity-band (pushed, PR #23)
 uncommitted work: no
 
 <!--

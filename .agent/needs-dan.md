@@ -6,6 +6,76 @@ Decisions no agent may make. Newest at top. Dan clears this file.
 
 ## Open
 
+### 3. §7's composition claim doesn't fully hold during an active correction
+
+Bug 3 (`routines/15-phase6-bugs.md`) removed the out-of-band halving in
+`doseDriftedFrom` (§7) and fixed stability grading to catch a level outside
+its band and still worsening regardless of rate (§11), on §7's own stated
+premise: "with grading fixed, the app catches a slow decline directly and the
+hair-trigger is no longer doing any work." The golden sweep (5 of 5,940 rows,
+all alkalinity, all with a correction logged) shows one narrow case where that
+premise doesn't hold.
+
+**The mechanism.** `doseDriftedFrom`'s (now-removed) `outOfBand` argument was
+computed from `out.current.value` — the last **raw** reading. Grading's new
+`outOfBandWorsening` check (this bug) is computed from `fittedNow` — the
+**correction-adjusted** fitted position, which was already what `alkWorsening`
+used pre-fix. During an active correction these two can disagree at the
+margin: the raw last reading sits just outside the band while the
+correction-adjusted fit sits just inside it. Before this bug, a real ~7-8.7%
+dose gap in that state was caught by the halved 6% out-of-band trigger (using
+the raw position). After this bug, the same gap is under the full 12% trigger
+(halving gone) and grading doesn't promote the band away from "stable" either
+(the fitted position reads in-band, so the two qualifiers never engage). The
+result: a real, moderate dose gap that used to prompt a recalculation now
+holds silently until it either clears 12% on its own or the correction ends
+and the raw and fitted positions converge again.
+
+**Reproduce:** `routines/15-phase6-bugs.md` bug 3's golden audit,
+`alkalinity|0.8|-0.02|7|false|true` through `|0.8|0|20|false|true` in
+`tests/legacy-port/golden.js`'s sweep (offset 0.8, near-zero slope, an active
+correction). `action: "increase" -> "hold"`, no `band` change, `doseDriftedFrom`
+flips from true (halved, raw-position out-of-band) to false (un-halved, and
+grading sees the fitted in-band position).
+
+**Options, not a recommendation:**
+
+(a) **Leave it.** The window is narrow — needs a dose gap in roughly the 6-12%
+band (30-60% for calcium, since its trigger is 30%), a level within about a
+kit-noise-floor's width of the band edge, and an active correction running.
+It resolves itself once the correction completes (raw and fitted positions
+reconverge) or the gap grows past 12%/30% on its own. Cost: a real gap sits
+uncorrected for the life of the correction, which could be days.
+
+(b) **Make `doseDriftedFrom`'s out-of-band-ness (if the halving is ever
+reconsidered) or `outOfBandWorsening`'s position test use the same measure of
+"where the level is."** Whichever of `out.current.value` (raw) or `fittedNow`
+(correction-adjusted) is chosen as the single source of truth, use it
+everywhere a "which side of the band" question is asked. This is bigger than
+bug 3's citation — `alkClearlyOut`/`caClearlyOut`/`clearlyOut` (the
+`alkWorsening` family) already use `fittedNow` exclusively, so unifying on
+`fittedNow` is probably the smaller change, but it's a live behavioural
+change to more than the two things this bug touched and needs its own
+authorisation.
+
+(c) **Widen `outOfBandWorsening` to also fire on a large `doseDriftedFrom`-
+style gap even when `fittedNow` reads in-band**, reasoning that a real
+double-digit-percent dose/consumption mismatch is itself evidence worth
+acting on independent of band position. This reintroduces something
+halving-shaped, just gated differently — worth being explicit that's what it
+is before choosing it.
+
+**In plain terms:** a very specific, narrow situation — the tank's true
+alkalinity is right at the edge of its healthy range, a manual top-up
+correction is running, and the daily dose is off by a moderate amount (not a
+lot, not a little) — used to get flagged for a dose recalculation and, after
+this fix, doesn't get flagged until either the correction finishes or the
+mismatch grows larger. Nothing crashes and nothing dangerous is missed (an
+emergency — the level actually past its safe edge and still heading the wrong
+way — is caught by a separate, unaffected check), but a real, moderate dosing
+error can sit unflagged for the life of a correction. Found by machine-testing
+thousands of synthetic scenarios, not observed on the real tank.
+
 ### ~~2. Negative-consumption refusal~~ — closed 2026-08-14, see Decisions
 
 Decision 3's option (c) was wrong at the premise, not merely mis-calibrated.

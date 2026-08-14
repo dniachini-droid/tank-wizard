@@ -4,7 +4,7 @@ import { minutesOf, nowTime } from '../analytics/time-of-day.js'
 import { dayNum } from '../analytics/water-changes.js'
 import { todayStr } from '../dates.js'
 import { alkAnomaly, alkFit, alkIntervals, alkStamp, applyDoseConstraints, directionConsistent, noteCurrentAndInterventions, rateLimitDose, trendConfirmed } from './alkalinity.js'
-import { correctionPlanFor, correctionProgress, doseDriftedFrom, dosePlausible, gainingHold, mgEffectPerMl, missingDoseInputs, pendingCorrection } from './helpers.js'
+import { correctionPlanFor, correctionProgress, doseDriftedFrom, dosePlausible, gainingHold, mgEffectPerMl, missingDoseInputs, outOfBandWorsening, pendingCorrection } from './helpers.js'
 import { strengthPlausible } from './magnesium.js'
 
 /* --- Calcium dosing assessment ---
@@ -131,12 +131,16 @@ export function solveCaEffect(readings, doseLog, waterChanges, settings, correct
 }
 
 
-export function caBandOf(perWeek) {
+export function caBandOf(perWeek, outOfBandWorsening) {
   const a = Math.abs(perWeek);
-  if (a < CA_TREND.stable) return "stable";
-  if (a < CA_TREND.small) return "small";
-  if (a < CA_TREND.meaningful) return "meaningful";
-  return "significant";
+  const rate = a < CA_TREND.stable ? "stable"
+    : a < CA_TREND.small ? "small"
+    : a < CA_TREND.meaningful ? "meaningful"
+    : "significant";
+  /* reef-chemistry.md §11 — same fix as alkBandOf, same reasoning: a level
+     outside its band and still moving away is never graded stable, whatever
+     the rate. Only ever promotes away from "stable". */
+  return (rate === "stable" && outOfBandWorsening) ? "small" : rate;
 }
 
 
@@ -317,6 +321,9 @@ export function assessCalcium({ readings, doseLog = [], waterChanges = [], setti
   const intervals = alkIntervals(maths);
   out.trendPerDay = fit ? fit.slope : intervals[intervals.length - 1].perDay;
   out.trendPerWeek = out.trendPerDay * 7;
+  /* Provisional — rate only. Promoted below, once fittedNow/above/below exist,
+     if §11's grading (see `outOfBandWorsening` in helpers.js) says a "stable"
+     reading is actually outside the band and still worsening. */
   out.band = caBandOf(out.trendPerWeek);
   out.consistent = directionConsistent(intervals, CA_TREND.stable * 0.5);
   out.intervals = intervals.length;
@@ -402,6 +409,15 @@ export function assessCalcium({ readings, doseLog = [], waterChanges = [], setti
   const inRange = fittedNow >= def.min && fittedNow <= def.max;
   const above = fittedNow > def.max;
   const below = fittedNow < def.min;
+  /* §11's grading fix — see `outOfBandWorsening` above `doseDriftedFrom` in
+     helpers.js for the two qualifiers and why this is shared across all
+     three engines rather than copied per file. Only ever promotes away from
+     the provisional "stable" set above; a rate that already read faster than
+     that is untouched. */
+  if (out.band === "stable") {
+    out.band = caBandOf(out.trendPerWeek,
+      outOfBandWorsening(above, below, out.trendPerDay, spanDays, def.key));
+  }
   /* Sections 44 and 45: the same trend means different things depending on how
      close calcium already is to leaving the range. */
   const bandWidth = def.max - def.min;
@@ -461,8 +477,7 @@ export function assessCalcium({ readings, doseLog = [], waterChanges = [], setti
     && (Math.abs(out.trendPerWeek) >= CA_TREND.stable || caRepeats >= 2)
     && ((below && out.trendPerDay <= 0) || (above && out.trendPerDay >= 0));
   if (out.band === "stable" && !caWorsening
-      && !doseDriftedFrom(out.maintenanceDose, out.currentDose, def.key,
-        out.current != null && (out.current.value < def.min || out.current.value > def.max))) {
+      && !doseDriftedFrom(out.maintenanceDose, out.currentDose, def.key)) {
     out.ok = true; out.recommendedDose = out.currentDose; out.action = "hold";
     out.explanation = `Calcium moved ${fmtAmount(Math.abs(out.trendPerWeek))}${def.unit} a week, which is within what the test itself can resolve. The objective is a stable range rather than an identical number each week, so this is exactly what you want.`;
     out.nextCheck = "Measure again at your next weekly test.";

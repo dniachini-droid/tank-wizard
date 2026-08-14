@@ -486,21 +486,37 @@ export const DOSE_DRIFT_TRIGGER = {
      rules respond; the dose is never chased. */
 };
 
-export function doseDriftedFrom(maintenanceDose, currentDose, key, outOfBand) {
+export function doseDriftedFrom(maintenanceDose, currentDose, key) {
   if (maintenanceDose == null || !(currentDose > 0)) return false;
   const trigger = DOSE_DRIFT_TRIGGER[key];
   if (trigger == null) return false;
-  /* The threshold exists to ignore noise while the level is where it should
-     be. Once the level has left its band that reasoning is gone: the gap is no
-     longer a question of whether the reading can see it, it is the reason the
-     tank is drifting.
-     
-     Over three simulated years this held a dose 10% short while alkalinity
-     fell from 9.0 to 6.82 — below the safe floor — and only acted at 5.22.
-     One dose change in three years on a tank that was crashing the whole time.
-     Out of band, half the tolerance applies. */
+  /* reef-chemistry.md §7, decided 13 Aug: the out-of-band halving here is
+     removed. It existed only as a patch for broken stability grading (§11) —
+     a level outside its band and worsening used to be able to grade "stable"
+     regardless of rate, so this trigger was the only thing standing between
+     that misgrade and a tank crashing in slow motion, and halving the
+     tolerance out of band was how it tried to compensate. Grading now catches
+     that case directly (`alkBandOf`/`caBandOf`/`mgBandOf`), so the hair-trigger
+     is no longer doing any work — the same 12%/30% tolerance applies whether
+     the level is in band or out of it. */
   const gap = Math.abs(maintenanceDose - currentDose) / currentDose;
-  return gap > (outOfBand ? trigger / 2 : trigger);
+  return gap > trigger;
+}
+
+/* reef-chemistry.md §11, decided 13 Aug — "the most dangerous defect": a
+   level outside its band and still moving further out is never graded
+   stable, whatever the rate. Two qualifiers, both required: movement away
+   from the band (recovering back toward it is fine), and the movement clears
+   the element's own §5 kit noise floor (`STABILITY_RULES`, not
+   `ALK_TREND.stable`/`CA_TREND.stable`/`MG_TREND.stable` — a different
+   constant family for a different job) over the span the trend was fitted
+   across. Shared by all three engines so the two qualifiers can never drift
+   out of step between them — copy-pasted per engine is exactly the shape
+   every bug in this file's history has come from. */
+export function outOfBandWorsening(above, below, trend, spanDays, key) {
+  const noiseFloor = (STABILITY_RULES[key] || {}).noiseFloor || 0;
+  return ((above && trend > 0) || (below && trend < 0))
+    && Math.abs(trend) * spanDays > noiseFloor;
 }
 
 export function dosePlausible(ml, settings) {
@@ -657,12 +673,16 @@ export function solveMgEffect(readings, doseLog, waterChanges, settings, correct
 }
 
 
-export function mgBandOf(perWeek) {
+export function mgBandOf(perWeek, outOfBandWorsening) {
   const a = Math.abs(perWeek);
-  if (a < MG_TREND.stable) return "stable";
-  if (a < MG_TREND.small) return "small";
-  if (a < MG_TREND.meaningful) return "meaningful";
-  return "significant";
+  const rate = a < MG_TREND.stable ? "stable"
+    : a < MG_TREND.small ? "small"
+    : a < MG_TREND.meaningful ? "meaningful"
+    : "significant";
+  /* reef-chemistry.md §11 — same fix as alkBandOf, same reasoning: a level
+     outside its band and still moving away is never graded stable, whatever
+     the rate. Only ever promotes away from "stable". */
+  return (rate === "stable" && outOfBandWorsening) ? "small" : rate;
 }
 
 export function assessMagnesium({ readings, doseLog = [], waterChanges = [], settings, def,
@@ -804,6 +824,9 @@ export function assessMagnesium({ readings, doseLog = [], waterChanges = [], set
   const intervals = alkIntervals(maths);
   out.trendPerDay = fit ? fit.slope : intervals[intervals.length - 1].perDay;
   out.trendPerWeek = out.trendPerDay * 7;
+  /* Provisional — rate only. Promoted below, once fittedNow/above/below exist,
+     if §11's grading (see `outOfBandWorsening` above `doseDriftedFrom`) says
+     a "stable" reading is actually outside the band and still worsening. */
   out.band = mgBandOf(out.trendPerWeek);
   out.consistent = directionConsistent(intervals, CA_TREND.stable * 0.5);
   out.intervals = intervals.length;
@@ -875,6 +898,15 @@ export function assessMagnesium({ readings, doseLog = [], waterChanges = [], set
   const inRange = fittedNow >= def.min && fittedNow <= def.max;
   const above = fittedNow > def.max;
   const below = fittedNow < def.min;
+  /* §11's grading fix (see `outOfBandWorsening` above `doseDriftedFrom`). Only
+     ever promotes away from the provisional "stable" set above. Magnesium has
+     no `DOSE_DRIFT_TRIGGER` key (§10), so this is the only guard standing
+     between a slow out-of-band decline and an indefinite "stable" hold — more
+     load-bearing here than for the other two elements. */
+  if (out.band === "stable") {
+    out.band = mgBandOf(out.trendPerWeek,
+      outOfBandWorsening(above, below, out.trendPerDay, spanDays, def.key));
+  }
 
   const bandWidth = def.max - def.min;
   const nearLower = inRange && (fittedNow - def.min) < bandWidth * 0.12;
@@ -924,8 +956,7 @@ export function assessMagnesium({ readings, doseLog = [], waterChanges = [], set
     && (Math.abs(out.trendPerWeek) >= MG_TREND.stable || mgRepeats >= 2)
     && ((below && out.trendPerDay <= 0) || (above && out.trendPerDay >= 0));
   if (out.band === "stable" && !worsening
-      && !doseDriftedFrom(out.maintenanceDose, out.currentDose, def.key,
-        out.current != null && (out.current.value < def.min || out.current.value > def.max))) {
+      && !doseDriftedFrom(out.maintenanceDose, out.currentDose, def.key)) {
     out.ok = true; out.recommendedDose = out.currentDose; out.action = "hold";
     out.explanation = `Magnesium moved ${fmtAmount(Math.abs(out.trendPerWeek))}${def.unit} a week, which is inside what the test can resolve. Stable magnesium in the right range is the goal, not an identical number each week.`;
     out.nextCheck = "Measure again at your next weekly test.";

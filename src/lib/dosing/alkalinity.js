@@ -4,7 +4,7 @@ import { minutesOf, nowTime } from '../analytics/time-of-day.js'
 import { dayNum } from '../analytics/water-changes.js'
 import { todayStr } from '../dates.js'
 import { repeatedCorrections } from './calcium.js'
-import { bracketDose, capDoseStep, correctionPlanFor, correctionProgress, doseDriftedFrom, doseObservations, dosePlausible, gainingHold, missingDoseInputs, pendingCorrection } from './helpers.js'
+import { bracketDose, capDoseStep, correctionPlanFor, correctionProgress, doseDriftedFrom, doseObservations, dosePlausible, gainingHold, missingDoseInputs, outOfBandWorsening, pendingCorrection } from './helpers.js'
 import { strengthPlausible } from './magnesium.js'
 
 /* --- Alkalinity dosing assessment ---
@@ -185,12 +185,22 @@ export function alkIntervals(rows) {
   return out;
 }
 
-export function alkBandOf(perDay) {
+export function alkBandOf(perDay, outOfBandWorsening) {
   const a = Math.abs(perDay);
-  if (a < ALK_TREND.stable) return "stable";
-  if (a < ALK_TREND.mild) return "mild";
-  if (a < ALK_TREND.meaningful) return "meaningful";
-  return "significant";
+  const rate = a < ALK_TREND.stable ? "stable"
+    : a < ALK_TREND.mild ? "mild"
+    : a < ALK_TREND.meaningful ? "meaningful"
+    : "significant";
+  /* reef-chemistry.md §11, decided 13 Aug — "the most dangerous defect": a
+     level outside its band and moving further out is never graded stable,
+     whatever the rate. A flat-rate threshold graded 0.02 dKH/day "stable" and
+     held a dose for three simulated years while alkalinity fell past the safe
+     floor. `outOfBandWorsening` is true only when both §11 qualifiers hold —
+     movement away from the band, clearing the kit noise floor over the fitted
+     window — computed by the caller, which is where the band edges and the
+     fitted trend both already live. This only ever promotes away from
+     "stable"; a trend that already reads faster than that is unaffected. */
+  return (rate === "stable" && outOfBandWorsening) ? "mild" : rate;
 }
 
 /* A reading that contradicts everything around it should be re-tested rather
@@ -590,7 +600,10 @@ export function assessAlkalinity({ readings, doseLog = [], waterChanges = [], se
   const inRange = fittedNow >= def.min && fittedNow <= def.max;
   const above = fittedNow > def.max;
   const below = fittedNow < def.min;
-  out.band = alkBandOf(trend);
+  /* §11's grading fix — see `outOfBandWorsening` above `doseDriftedFrom` in
+     helpers.js for the two qualifiers and why this is shared across all
+     three engines rather than copied per file. */
+  out.band = alkBandOf(trend, outOfBandWorsening(above, below, trend, spanDays, def.key));
   out.anomaly = alkAnomaly(used, fit);
 
   /* A trend is consistent when every interval points the same way. Two
@@ -713,8 +726,7 @@ export function assessAlkalinity({ readings, doseLog = [], waterChanges = [], se
      Below that the difference is inside the noise and chasing it is how the
      8 -> 10 -> 8 oscillation started. */
   if (out.band === "stable" && !alkWorsening
-      && !doseDriftedFrom(out.maintenanceDose, out.currentDose, def.key,
-        out.current != null && (out.current.value < def.min || out.current.value > def.max))) {
+      && !doseDriftedFrom(out.maintenanceDose, out.currentDose, def.key)) {
     out.ok = true;
     out.recommendedDose = out.currentDose;
     out.action = "hold";
