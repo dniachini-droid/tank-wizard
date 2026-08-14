@@ -27,7 +27,7 @@ import { buildFindings } from './lib/findings.js'
 import { buildBriefing, buildOverview, explainScore } from './lib/narrative-engine.js'
 import { REMINDER_SEED, autoCompletions, computeReminders, intervalLabel, reminderState } from './lib/reminders.js'
 import { computeStability } from './lib/stability-engine.js'
-import { loadKey, notify, onStorageError, onToast, saveKey } from './lib/storage.js'
+import { drainLegacyStore, loadKey, notify, onStorageError, onToast, saveKey } from './lib/storage.js'
 
 /* ---------------------------------- main app ---------------------------------- */
 
@@ -429,6 +429,22 @@ export function ReefConsoleInner() {
   useEffect(() => { onStorageError((m) => setStorageMsg(m)); }, []);
 
   useEffect(() => {
+    /* Carry an existing install's data out of the legacy `reefconsole:` prefix
+       before anything is read from the live one. Removing the storage shim
+       moved every read from the legacy copy to the mirror, and the old save
+       path ignored whether the mirror write succeeded — so on a device that
+       was ever short of space the mirror is the older of the two, and reading
+       it silently reverts whatever the failed write was carrying. A custom
+       target range is exactly that shape of value: lose it and the band falls
+       back to the shipped default with nothing on screen to say so.
+
+       Synchronous and before the loads below, not inside them: `drainLegacyStore`
+       records the keys it could not finish, and `loadKey` consults that record
+       to keep preferring the legacy copy for them. Both halves have to have
+       run before the first read, or the record is empty and the stale mirror
+       wins anyway. Idempotent and a no-op on a device with nothing under the
+       old prefix, which is every install made after the shim went. */
+    drainLegacyStore();
     (async () => {
       const [r, i, ct, tl, lg, seeded, icpSeeded, wcSeeded, lightSeeded, strengthsFixed, rem, kc, dis, ap, corr, cap, mgp, cr, st, dl, wc] = await Promise.all([
         loadKey("readings", []),

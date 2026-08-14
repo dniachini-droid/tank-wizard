@@ -255,3 +255,29 @@ into the next in bug order: #23 carries bugs 3-4, #25 carries 3-5, #26 carries
 one out of order and it brings its predecessors with it. Independently branched
 per rule 1, as the entries above say — but no longer independently mergeable.
 -->
+
+<!-- 2026-08-14, appended by the phosphate-band investigation (log:
+     .agent/log/2026-08-14-phosphate-band-investigation.md). Deliberately NOT
+     written as a new `run:` header: routine 15's record is what this file's
+     header is, and the tail above documents the confusion the last run caused
+     by overwriting it mid-flight. This was a question from Dan, answered in
+     session, not a routine.
+
+     What it produced, on branch claude/phosphate-band-shift-4t55n8:
+     (1) The answer — nothing today touched phosphate's band. constants.js:33
+     has been 0.03-0.10 since 0637695; the day's only PARAM_DEFS edit is bug
+     4's alkalinity change. The 0.07-0.15 band Dan remembers is the pre-rebuild
+     one, still visible in legacy/releases/*.
+     (2) TW-032 [schema], fixed here — drainLegacyStore was written and tested
+     in ee64a23 and never called by the app, so an install whose mirror had
+     gone stale silently reads its older copy. That is the one live mechanism
+     that can make a hand-set target range revert with no code change behind
+     it. Wired into App.jsx's startup effect; regression test
+     src/test/defects/legacy-drain-wiring.test.jsx, 3 of 4 cases confirmed red
+     before the fix. Authorised by Dan directly, per AGENTS.md rule 5.
+     (3) TW-029 gained a sub-item — bug 7's arrival zone reads phosphate's and
+     nitrate's percent-mode noise floors as absolute values. Latent (neither
+     parameter reaches correctionProgress today), filed rather than fixed
+     because every candidate fix is a chemistry decision.
+
+     Nothing here changes routine 15's state or its five composed PRs. -->
