@@ -21,10 +21,10 @@ next step: bug 3 — dose-gap halving removal + stability grading fix
   grading fix). Branch fresh from origin/main. Read routine section 3 in
   full again before starting; do not rely on this summary alone.
 in-flight: none — bug 2 fully closed out (no code change shipped, needs-dan.md
-  finding written, committed, pushed, PR opened documenting the attempt and
-  the revert), working tree clean, no half-finished edits anywhere
+  finding written, committed, pushed, PR #14 opened documenting the attempt
+  and the revert), working tree clean, no half-finished edits anywhere
 branch: claude/2026-08-14-bug2-negative-consumption-report (bug 2's PR
-  branch, to be pushed, PR to be opened against main)
+  branch, pushed, PR #14 opened against main)
 uncommitted work: no
 
 <!--
