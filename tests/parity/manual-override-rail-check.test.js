@@ -1,4 +1,4 @@
-/* §2 manual override rule — surfaces-and-messaging.md:
+/* §12 manual override rule — wizard-states.md:
  *
  *   "A manual adjustment may exceed the app's recommendation. It may NOT
  *    silently exceed a §6 rail — the app warns explicitly, states the rail

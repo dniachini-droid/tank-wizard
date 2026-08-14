@@ -33,7 +33,7 @@ Any file touching dose calculation, unit conversion, or a threshold gets:
 - an explicit test for the boundary value on each side
 - an explicit test that the §4 rate-of-change rails cannot be exceeded
 - an explicit test for missing/null net volume
-- a comment citing the spec section, e.g. `// spec: reef-chemistry.md §5 rounding`
+- a comment citing the spec section, e.g. `// spec: reef-chemistry.md §8.2 rounding`
 
 Convert first, round last. Round down on first correction. If you find yourself
 reasoning about what "seems reasonable" for a reef tank, stop — you are guessing,

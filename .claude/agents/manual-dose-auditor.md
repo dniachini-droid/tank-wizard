@@ -9,7 +9,7 @@ The manual path is where an experienced user overrides the app. It is also the
 least tested path in every app of this kind, because the developer uses the
 wizard.
 
-Governing spec: `surfaces-and-messaging.md` §2, `reef-chemistry.md` §6–7.
+Governing spec: `wizard-states.md` §12, `reef-chemistry.md` §3 (rails), §21 (correction arithmetic).
 
 ## Checks
 

@@ -63,11 +63,11 @@ what the tank needs, what now?"
   severity is high. Feeds Insights and Dashboard. Its own noise floors, its
   own windows.
 
-`reef-chemistry-MERGED.md` §7 documents the second and calls it the wizard's
+`reef-chemistry.md` §7 documents the second and calls it the wizard's
 rule. That is simply wrong.
 
 **What to work up:** which should govern, and what happens to the other. Note
-that `wizard-states-MERGED.md` §7 already says the wizard owns the verdict and
+that `wizard-states.md` §7 already says the wizard owns the verdict and
 other surfaces echo it — so this may be less a chemistry question than a
 question of whether that existing rule is being enforced.
 
@@ -140,7 +140,7 @@ be required a minimum interval apart.
 ## Decision 5 — Bracket memory: 45 days flat, or 30/60 per element?
 
 **The conflict.** `dosing-spec.txt` §6.1, `calculation-spec.txt` §7.4 and
-`helpers.js:85` all say 45 days, flat. `reef-chemistry-MERGED.md` §8.1 records
+`helpers.js:85` all say 45 days, flat. `reef-chemistry.md` §8.1 (now §8.3) records
 a 13 August decision for 30 days alkalinity and 60 days calcium, scaled to
 roughly two settle windows each — which was never implemented.
 

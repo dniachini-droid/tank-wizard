@@ -1,5 +1,5 @@
 /* History truthfulness — §6, plus §2 manual-override rules and §6's export
- * corollary (surfaces-and-messaging.md).
+ * corollary (wizard-states.md).
  *
  *   "A manual override is shown in history as recommended-vs-dosed, always
  *    both." (§6)

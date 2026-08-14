@@ -15,8 +15,9 @@ on 12 August 2026:
 | `legacy/protocol/correction-spec.txt` | how a correction is sized and tracked |
 | `legacy/protocol/dose-change-confirmation.md` | not yet read by anyone |
 
-Two merged drafts exist in `docs/spec/`: `reef-chemistry-MERGED.md` and
-`wizard-states-MERGED.md`. They were written before the last three documents
+Two merged drafts existed in `docs/spec/` as `reef-chemistry-MERGED.md` and
+`wizard-states-MERGED.md`; on 14 Aug they became `reef-chemistry.md` and
+`wizard-states.md`, the only two canon files. They were written before the last three documents
 above were found, so they are incomplete.
 
 `.agent/SPEC-GAPS.md` lists **31 places (G1–G31)** where the merged drafts are

@@ -14,9 +14,9 @@ anything except the report itself.**
 owner, read directly out of running code on 2026-08-12, with sourced constants
 and simulated failures behind their conclusions:
 
-- `docs/spec/incoming/dosing-spec.txt` — the arithmetic: bands, rate limits,
+- `legacy/protocol/dosing-spec.txt` — the arithmetic: bands, rate limits,
   how `maintenanceDose` is derived, when a change is worth suggesting
-- `docs/spec/incoming/wizard-spec.txt` — the state machine: 23 returns across
+- `legacy/protocol/wizard-spec.txt` — the state machine: 23 returns across
   15 states, in tested order
 
 **Secondary documents.** Written in a single conversation on 2026-08-13,
@@ -25,8 +25,7 @@ corrected** (the magnesium rail, and the claim that magnesium needs separating
 from calcium and alkalinity to avoid precipitation — it does not):
 
 - `docs/spec/reef-chemistry.md`
-- `docs/spec/surfaces-and-messaging.md`
-- `docs/spec/app-contract.md`
+- `docs/spec/wizard-states.md`
 
 **Where they conflict, the base documents are presumed right** unless the
 secondary document cites a source the base lacks. Say when that happens; do not

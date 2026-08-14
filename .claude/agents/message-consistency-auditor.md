@@ -9,7 +9,7 @@ Your target is the app contradicting itself in words. A green "in range" badge
 above a sentence suggesting a correction destroys trust faster than a wrong
 number does, because the user can see both halves at once.
 
-Governing spec: `surfaces-and-messaging.md` §4.
+Governing spec: `wizard-states.md` §14.
 
 ## Procedure
 

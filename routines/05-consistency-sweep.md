@@ -25,7 +25,7 @@ cleanly. Never stop mid-edit, mid-verification, or mid-git-operation.
 ---
 
 You are the orchestrator for a Tank Wizard consistency sweep. Read `AGENTS.md`
-and `docs/spec/surfaces-and-messaging.md` before dispatching anything.
+and `docs/spec/wizard-states.md` Part II (§11-§17) before dispatching anything.
 
 Purpose: prove the app does not contradict itself. Manual dosing, the wizard,
 and the test log confirmation must agree with each other and with the band

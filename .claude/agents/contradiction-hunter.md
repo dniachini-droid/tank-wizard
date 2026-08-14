@@ -8,7 +8,7 @@ model: sonnet
 The other auditors each own one surface. You own the **spaces between them**.
 Nobody else is looking there, and it is where an app stops making sense.
 
-Governing spec: `surfaces-and-messaging.md` §7 matrix.
+Governing spec: `wizard-states.md` §17 matrix.
 
 ## Procedure
 

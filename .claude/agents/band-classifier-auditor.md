@@ -9,7 +9,7 @@ Classification is the hinge the whole app turns on. Every message, colour, alert
 and recommendation hangs off it. A boundary error here is invisible in normal
 use and wrong at exactly the moment it matters.
 
-Governing spec: `surfaces-and-messaging.md` §3.
+Governing spec: `wizard-states.md` §13.
 
 ## Checks
 

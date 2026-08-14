@@ -6,18 +6,40 @@ Decisions no agent may make. Newest at top. Dan clears this file.
 
 ## Open
 
-### 1. `reef-chemistry.md` §2 still uses the losing term (follow-on from the 2026-08-13 terminology decision)
+### 0. The magnesium rail has two live values — 25 or 50 ppm/24 h (surfaced by the 2026-08-14 canon swap)
 
-The registry now bans "water volume" (see Decisions, below). Two places in
-`docs/spec/reef-chemistry.md` still use it:
+Your 13 August decision set the magnesium rail to **50 ppm/24 h**, sourced to the
+Aqua Forest label ("maximum daily increase 50 mg/l"), and it was written into the
+old `reef-chemistry.md` §6. The merged draft that became the new
+`reef-chemistry.md` was written the same day and independently kept **25
+ppm/day** in its §3 rails table, sourced as "widely given as 25; Aqua Forest
+label allows 50". The two documents never met, so replacing the old file with the
+merged one would have silently reverted your decision.
 
-- line 43, the §2 heading: `## 2. Water volume`
-- line 45: "`[user]` net water volume — gross system volume minus rock…"
+Nothing has been resolved. §3 now carries an **UNRESOLVED** note stating both
+figures and their sources, and `.agent/backlog.md` TW-016 — the code item filed
+against the 50 ppm figure — is marked blocked on this, because it cannot be
+implemented while canon disagrees with itself about the number.
 
-Not changed: only three spec edits were authorised and these are a fourth.
-Say the word and they become "Net volume" / "net volume", or confirm the
-heading and the definition line are exempt as prose describing the concept
-rather than app-facing terminology.
+What is not in dispute: calcium (both say 20 ppm/day) and alkalinity (both say
+0.5 dKH/day). Live code is a third and fourth answer already —
+`correction.js:20` says 100, `safe-rate.js:27` says 25 — which is what TW-016
+exists to fix.
+
+One line from you settles it: 25 or 50.
+
+### ~~1. `reef-chemistry.md` §2 still uses the losing term~~ — closed 2026-08-14
+
+The registry banned "water volume"; the old §2 heading (`## 2. Water volume`)
+and its definition line still used it. Both were rewritten during the 14 August
+canon swap, when that section was carried forward as **§17 Net volume** —
+heading and definition line now read "net volume". This was not a fourth
+unauthorised spec edit: the section was being rewritten anyway to survive the
+swap, and the registry decision already settled the wording.
+
+The only remaining occurrences of the phrase in canon are in
+`wizard-states.md` §15's registry itself — the concept column and the never-use
+column — where naming the banned term is the point.
 
 ---
 
@@ -113,19 +135,19 @@ half-width was meant literally; it is a one-line change in three places.
 
 ### 2026-08-13 — Dan, spec owner (resolves both items from run 2026-08-13-consistency-sweep)
 
-**Magnesium rail: 50 ppm / 24 h.** `reef-chemistry.md` §6 changed from 100 to
-50. Source recorded in the table: Aqua Forest magnesium label, "maximum daily
+**Magnesium rail: 50 ppm / 24 h.** `reef-chemistry.md` §6 — now §3 after the
+14 Aug canon swap — changed from 100 to 50. Source recorded in the table: Aqua Forest magnesium label, "maximum daily
 increase 50 mg/l (ppm)". Neither in-app table was right — `correction.js`'s
 100 matched the old canon and now **exceeds** the rail; `safe-rate.js`'s 25 is
 under it but is a hardcoded tightening, not a `[user]` one.
 
-**Calcium rail: 20 ppm / 24 h.** `reef-chemistry.md` §6 changed from 25 to 20,
+**Calcium rail: 20 ppm / 24 h.** `reef-chemistry.md` §6 (now §3) changed from 25 to 20,
 noted in the table as matching the real-world sourcing cited in
 `src/lib/analytics/safe-rate.js` (reefcalcs' 20 ppm/day safe rate). Both
 in-app tables already agree at 20, so canon moved to the code here, not the
 code to canon. The uniform constant drift is closed.
 
-**Volume terminology: "net volume" wins.** `surfaces-and-messaging.md` §5
+**Volume terminology: "net volume" wins.** `wizard-states.md` §15
 registry row changed: the word to use is **net volume**; "water volume" joins
 "tank size, volume, capacity" in the never-use column. `reef-chemistry.md`
 already uses "net volume" throughout, so the losing file was the registry.

@@ -1,6 +1,6 @@
 /* §2/§6 parity — a correction landing exactly on a rail
  *
- * surfaces-and-messaging.md §2: "the recommended dose in mL, after rounding
+ * wizard-states.md §12: "the recommended dose in mL, after rounding
  * and rails" must be identical across every surface that produces a dose.
  * reef-chemistry.md §6: SAFE_DAILY_RISE is the enforced ceiling; a
  * recommendation exceeding it is a bug.

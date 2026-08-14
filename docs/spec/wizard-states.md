@@ -1,12 +1,20 @@
-# The Dosing Wizard — Canon
+# The Dosing Wizard, the Surfaces and the App Contract — CANON
 
-**Status: proposed.** Replaces `docs/spec/surfaces-and-messaging.md` §1–3 and
-supersedes `docs/spec/incoming/wizard-spec.txt`. Merged 13 August 2026.
-**Amended 14 August 2026** on the spec owner's authority — §0.3, §4 and §9.4;
-the decisions and their reasoning are recorded in `.agent/needs-dan.md`.
+**Status: canon.** Merged 13 August 2026 from `surfaces-and-messaging.md` §1–3
+and `legacy/protocol/wizard-spec.txt`. **Amended 14 August 2026** on the spec
+owner's authority — §0.3, §4 and §9.4; the decisions and their reasoning are
+recorded in `.agent/needs-dan.md`. **Became this file on 14 August 2026**, when
+Part II carried forward the rest of `surfaces-and-messaging.md` and all of
+`app-contract.md`.
+
+> Agents never edit this file. Disagreements → `.agent/spec-challenges.md`.
 
 Companion: `reef-chemistry.md` — the arithmetic. Read that one to know what
-number the app produces; this one to know why a particular card is showing.
+number the app produces; this one to know why a particular card is showing,
+what words may go on it, and what the app must be true of as a program.
+
+Part I (§0–§10) is the wizard's state machine. Part II (§11–§18) is the surfaces
+and messaging canon plus the platform floor.
 
 ---
 
@@ -368,3 +376,260 @@ it.** Where a test exists, name it. Where none does, say so.
 - **`recovering` / `worsening`** — assert both states exist with their trigger
   conditions and tones. Nothing currently prevents them vanishing in a refactor,
   since until today no document named them.
+
+---
+
+# Part II — surfaces, messaging and the app contract
+
+**Added 14 August 2026, during the canon swap.** Everything below was in
+`surfaces-and-messaging.md` and `app-contract.md`, both of which this document
+replaces. It is appended rather than merged into §1–§10 so that those sections
+keep the numbering every cross-reference already uses. §11–§17 are the surfaces
+and messaging canon; §18 is the platform floor.
+
+Section mapping for anything that cited the old files:
+
+| Previously | Now |
+|---|---|
+| `surfaces-and-messaging.md` §1 single-source rule | §11 |
+| `surfaces-and-messaging.md` §2 surfaces, parity, overrides | §12 |
+| `surfaces-and-messaging.md` §3 band classification | §13 |
+| `surfaces-and-messaging.md` §4 message contract | §14 |
+| `surfaces-and-messaging.md` §5 terminology registry | §15 |
+| `surfaces-and-messaging.md` §6 history truthfulness | §16 |
+| `surfaces-and-messaging.md` §7 contradiction matrix | §17 |
+| `app-contract.md` (all of it) | §18 |
+
+§7 above — where the wizard must not be contradicted — is the same principle
+these sections enforce in detail. Where §7 and §11–§17 overlap, they agree: the
+wizard owns the verdict, everything else echoes it or stays quiet.
+
+---
+
+## 11. The single-source rule
+
+There is **exactly one** implementation of each of the following. Every surface
+calls it. No surface recomputes, reformats or re-decides.
+
+| Concern | The one function | Everything else must call it |
+|---|---|---|
+| Band classification | `classifyReading(param, value, targets)` | wizard, manual entry, test log, dashboard, alerts, history |
+| Dose calculation | `calculateDose(...)` per `reef-chemistry.md` §21 (correction) and §6–§8 (maintenance) | wizard, manual adjustment, plan view |
+| Rail enforcement | `applyRails(...)` per `reef-chemistry.md` §3 | every path producing a dose |
+| Consumption rate | `consumptionRate(...)` per `reef-chemistry.md` §22 | trends, wizard, log |
+| Message selection | `messageFor(classification, context)` | every surface showing words about a reading |
+
+**A second implementation of any of these is an S1 defect,** even if it
+currently produces identical output. Identical today is divergent after the next
+change.
+
+As of 14 August this is an intention, not a guarantee, and the gap is large
+enough to name here rather than only in §10: there is no `classifyReading` —
+**ten** divergent classifiers stand in its place (§7) — and until 14 August
+there were **four** implementations of "what should be dosed" (§0.3, §9.4).
+
+---
+
+## 12. The three dosing surfaces
+
+| Surface | What it is | Who uses it |
+|---|---|---|
+| **Manual adjustment** | user directly edits a dose amount | experienced user overriding |
+| **Dosing wizard** | guided flow: reading → classification → recommendation → confirm | default path |
+| **Test log confirmation** | the message shown after logging a test result | every user, every test |
+
+### Parity requirement
+
+Given identical inputs — same reading, same targets, same net volume, same
+product, same history — **all three surfaces must produce the same numbers and
+the same classification.** Differences permitted only in presentation:
+verbosity, layout, and how much reasoning is shown.
+
+Specifically, the following must be identical across surfaces:
+
+- the band the reading falls in
+- the recommended dose in mL, after rounding and rails
+- the expected delta and days to target
+- whether the app refuses to advise, and the reason
+- whether a multi-day plan is required
+
+### Manual override rules
+
+- A manual adjustment may exceed the app's recommendation. It may **not**
+  silently exceed a rail (`reef-chemistry.md` §3) — the app warns explicitly,
+  states the rail and the overage, and requires confirmation.
+- A manual adjustment is recorded **as a manual dose**, with both the
+  recommended value and the entered value. History must show both.
+- A manual dose never changes the stored targets or the consumption model
+  unless the user explicitly asks. One-off means one-off.
+- After a manual dose, the next recommendation is computed from actual dosed
+  amounts, not from what was recommended.
+
+This is the same rule as §8: a dose changes in exactly one place, and how it is
+recorded does not depend on where the number came from.
+
+---
+
+## 13. Band classification
+
+`classifyReading` returns exactly one of:
+
+| Band | Meaning | Action implied |
+|---|---|---|
+| `in-band` | within the user's no-action band | none |
+| `drifting` | inside the band, but trending toward an edge | watch |
+| `out-of-band-low` | below no-action band, above alert-low | correct slowly |
+| `out-of-band-high` | above no-action band, below alert-high | correct slowly |
+| `alert-low` | at or below alert-low | act, and see the magnesium gate (`reef-chemistry.md` §10) |
+| `alert-high` | at or above alert-high | act |
+| `insufficient-data` | cannot classify (missing target, missing volume, too few readings) | refuse and name what's missing |
+
+Thresholds are `reef-chemistry.md` §2 (band, safe bounds) and §18 (alert
+levels). Whether movement counts as `drifting` at all is the kit noise floor
+over the fitted window, §5 and §11 there — never a single pair of readings.
+
+### Boundary rules — fixed, no exceptions
+
+- Band edges are **inclusive of the band they bound**: a value exactly equal to
+  the no-action lower edge is `in-band`, not `out-of-band-low`.
+- A value exactly equal to alert-low is `alert-low`.
+- Comparisons happen at **stored precision**, never at display precision. A
+  reading of 7.849 displayed as 7.8 classifies as 7.849.
+- Classification never rounds. Display rounds.
+
+**Every surface uses these bands and no other vocabulary.** No surface may
+invent a category like "slightly low" or "borderline" that is not in this table.
+
+These seven bands are not the wizard's 17 states. A band describes where a
+reading sits; a state describes what to do about the element. Branch 21's
+`recovering` / `worsening` / `off-target` split, for instance, is three states
+over one band.
+
+---
+
+## 14. Message contract
+
+Every message shown about a reading has exactly these parts, and every surface
+uses the same ones:
+
+1. **What was measured** — parameter, value, unit, and the date/time
+2. **The band** — using §15's terminology, never a synonym
+3. **Why** — brief, referencing the target, not the app's opinion
+4. **What happens next** — the recommended action, or explicitly "no action", or
+   the refusal and what's missing
+
+### Hard rules
+
+- **A message must never contradict the classification it accompanies.** A
+  reading classified `in-band` may not carry a message suggesting a correction.
+  This is the single most important rule in this part.
+- A message must never state a number that differs from the number shown
+  alongside it, at any rounding.
+- A message must never imply an action the app will not then offer.
+- A refusal message names the missing input specifically.
+- No message tells a user their test kit is wrong.
+- No message expresses urgency the band does not justify.
+
+---
+
+## 15. Terminology registry
+
+One word per concept, everywhere. Any synonym is a finding.
+
+| Concept | The word to use | Never use |
+|---|---|---|
+| within no-action band | **in range** | fine, good, OK, normal, healthy, ideal |
+| outside no-action band | **out of range** | bad, off, abnormal, dangerous |
+| at/beyond alert threshold | **needs attention** | critical, urgent, emergency, danger |
+| moving toward an edge | **drifting** | trending, slipping, creeping |
+| the user's chosen value | **target** | ideal, optimal, recommended level, correct |
+| a suggested dose | **recommended dose** | required, needed, prescribed |
+| net water volume | **net volume** | water volume, tank size, volume, capacity |
+| a user-entered dose | **manual dose** | custom, override, adjusted |
+
+The app never uses "safe" or "unsafe" about any reading. It reports position
+relative to the user's own targets and nothing more. This is a rule about
+user-facing words only — `reef-chemistry.md` §2's "safe bounds" is the internal
+name of a threshold, and the app does not say it out loud.
+
+**net volume** won the 13 August terminology decision; "water volume" is a
+banned synonym (`.agent/needs-dan.md`).
+
+---
+
+## 16. History truthfulness
+
+- A logged entry records **what the app said at the time**: the classification,
+  the recommendation, and the targets then in force.
+- Changing targets today must **not** retroactively change what history shows
+  was recommended. Recomputing the past against present settings is an S1
+  defect.
+- If a target changed, history shows the change as an event in the series.
+- A manual dose is shown in history as recommended-vs-dosed, always both.
+
+§8's dose-change record — from, to, date, basis reading, expected effect,
+outcome — is the same principle applied to a dose rather than a reading.
+
+---
+
+## 17. Cross-surface contradiction matrix
+
+The auditors work through every cell. Each pair must agree, or the disagreement
+is a finding.
+
+| | wizard | manual | test log | dashboard | history | alerts |
+|---|---|---|---|---|---|---|
+| band shown | | | | | | |
+| dose mL | | | | | | |
+| expected delta | | | | | | |
+| days to target | | | | | | |
+| refusal + reason | | | | | | |
+| terminology used | | | | | | |
+| units displayed | | | | | | |
+
+---
+
+## 18. The app contract — platform floor
+
+Moved verbatim from `app-contract.md` on 14 August. It is not about the wizard
+and sits here only because canon is now two files; if it grows, it should get
+its own again.
+
+### Stack
+
+- React + JSX, PWA, offline-first
+- Build: detected from the repo at first run and recorded here by Dan
+- Test: Vitest + React Testing Library, axe-core for a11y
+- Storage: detected from the repo at first run and recorded here by Dan
+
+### Storage contract
+
+- Schema version key: `tw.schema.version`
+- **Every schema change requires a forward migration plus a test that migrates a
+  fixture from every previous version.** Fixtures in `tests/fixtures/schema/`.
+- Data is never destructively rewritten in place: migrate to a new key, verify,
+  then remove the old.
+- On migration failure the app enters read-only mode and surfaces an export
+  button. It must never start empty and silent.
+
+### Offline behaviour
+
+- Fully functional with no network on first paint after install.
+- Service worker updates must never serve a half-updated asset set.
+- A log entry created offline must survive a hard reload.
+
+### Non-goals
+
+No accounts, no sync, no telemetry, no analytics, no ads, no cloud dependency.
+
+### Performance budgets
+
+`.agent/budgets.json`. Enforced, not advisory.
+
+### Accessibility floor
+
+- Touch targets ≥44 px
+- Text contrast ≥4.5:1
+- All interactive elements keyboard reachable and labelled
+- Numeric inputs use the right `inputmode` — this app is used one-handed,
+  wet-handed, standing at a tank
