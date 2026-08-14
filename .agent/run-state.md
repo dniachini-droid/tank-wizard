@@ -2,9 +2,9 @@ run: 2026-08-14-consistency-sweep
 routine: routines/05-consistency-sweep.md
 started: 2026-08-14T (scheduled fire)
 status: in-progress
-last completed step: setup (npm ci, canon read, branch created, baseline vitest 352/414 pass, 62 standing failures)
-next step: collect Wave A results (6 auditors dispatched in parallel, read-only), append to findings.md, then Wave B (dose-parity-checker)
-in-flight: Wave A — manual-dose-auditor, wizard-dose-auditor, band-classifier-auditor, message-consistency-auditor, terminology-auditor, history-truth-auditor (all read-only; if this run dies here, nothing needs reverting — re-dispatch Wave A)
+last completed step: Wave A complete (all 6 auditors reported, findings appended + pushed; 1 new S1, 8 new S2, 3 new S3; all priors reconfirmed unchanged)
+next step: Wave B — dose-parity-checker (writes under tests/parity/ only), then Wave C contradiction-hunter, then Wave D
+in-flight: Wave B — dose-parity-checker (if this run dies mid-Wave-B: check tests/parity/ for uncommitted test files; run npx vitest run tests/parity — commit if green-or-documented-failure pattern, revert if broken)
 branch: claude/2026-08-14-consistency-sweep
 uncommitted work: yes (this file)
 
