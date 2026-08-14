@@ -271,6 +271,64 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       Dashboard.jsx:492,582; src/components/Insights.jsx:384,391
       owner: implementer
 
+- [ ] [chem] TW-018 Remove `drift.js`'s dose figures; the wizard is the only source of a dose
+      why: Dan's 2026-08-14 decision 1 (see .agent/needs-dan.md). reef-chemistry.md §7 and
+      wizard-states.md §0.3 now state that the wizard's staged full-recompute is the only
+      mechanism that may produce a figure to dose. src/lib/analytics/drift.js's
+      computeDoseAdvice/computeDoseCalc compute their own — a flat 10%/15% in .pct, a
+      halve-the-gap first step in .calc — from their own noise floors and windows, with no
+      concept of staging, bracketing, rate ceilings, plausibility or an active plan. Worked
+      in the spec: the same two readings give 10.35 (drift .pct), 10.08→11.17 (drift .calc)
+      and 10.95 mL/day (wizard).
+      scope: `assessDrift`, the slope classifier with no dose number, is explicitly NOT
+      removed. `previewStrengthChange` (src/lib/dosing/corrected-strength.js:43-51) is the
+      only live consumer of .calc, rendered at Insights.jsx:697-720 — it needs re-pointing
+      at the wizard's own assessment run under before/after settings BEFORE the removal, or
+      that row goes blank. The dead `doseAdvice` useMemos at Insights.jsx:108 and
+      Dashboard.jsx:298 (computed, never read in either file) come out with it.
+      spec: docs/spec/reef-chemistry-MERGED.md §7; docs/spec/wizard-states-MERGED.md §0.3, §9.4
+      repro: static trace only (grep-based); worth confirming with the app running that no
+      component reads the output under a prop-drilled or re-exported name
+      owner: implementer — needs [approved][chem] first (AGENTS.md rule 3)
+
+- [ ] [chem] TW-019 `DOSE_ADVICE_RULES` has a magnesium key; §10 forbids tuning magnesium from readings
+      why: independent of TW-018 and needs closing either way. drift.js:40-57 gives magnesium
+      its own 14-35 day window and never consults DOSE_DRIFT_TRIGGER, so magnesium can be
+      handed a computed dose figure through the previewStrengthChange path — while
+      reef-chemistry.md §10 says the magnesium maintenance dose is never tuned from readings,
+      "not delayed — exempt", and that DOSE_DRIFT_TRIGGER "must not gain" a magnesium key.
+      The exemption currently holds only because one engine honours a rule the other cannot
+      see. A 15% magnesium dose error takes over a thousand days to clear the 30 ppm noise
+      floor, so any figure built from a few weeks of magnesium readings measures nothing.
+      spec: docs/spec/reef-chemistry-MERGED.md §10; docs/spec/wizard-states-MERGED.md §9.4
+      owner: implementer — needs [approved][chem] first
+
+- [ ] [chem] TW-020 `arrived` must test the arrival zone, not the full band
+      why: Dan's 2026-08-14 decision 4. correctionProgress's arrival test
+      (src/lib/dosing/helpers.js:273-279) is `inBand(v)` over the last two readings — the
+      full band. Canon is now `zoneWidth = max(bandWidth / 3, 2 × noiseFloor)`, clamped to
+      the band, centred on the midpoint: 8.40-8.60 dKH, 415-435 ppm Ca, 1320-1380 ppm Mg at
+      the suggested bands. The aim point (`proposeCorrection`'s `(min + max) / 2`,
+      helpers.js:404) does not change.
+      watch: `passed` (helpers.js:316) must stay independent — correction-done fires on
+      `arrived || passed` (state.js:227) and that is what keeps the "return to maintenance"
+      action reachable when the narrower zone is not hit twice. Do not conflate them. Also
+      check the two call sites that branch on `cp.arrived` specifically for wording, and
+      note the zone/noise-floor margin: reaching the zone from outside the band always
+      exceeds `stalled`'s noiseFloor test today, but only by 1.67× for calcium and magnesium.
+      spec: docs/spec/reef-chemistry-MERGED.md §9; docs/spec/wizard-states-MERGED.md §4
+      owner: implementer — needs [approved][chem] first
+
+<!-- 2026-08-14, from Dan's four decisions: two of the four need NO code change,
+     recorded here so nobody re-opens them. Decision 2 (water changes stay in the
+     trend fit, corrections subtracted proportionally) — alkalinity.js:493-499 and
+     calcium.js:273-278 already do exactly this; canon moved to the code. Decision 3
+     (bracket memory flat 45 days) — BRACKET_MEMORY_DAYS = 45 at helpers.js:85 is
+     already correct; the withdrawn 30/60 split was never built. Still open and NOT
+     filed as code work: the "widen never narrow" bracket rule (needs a sharper
+     diagnosis first — see reef-chemistry-MERGED.md §8.3) and the absence of any
+     size threshold separating a routine 10% water change from a 40% one. -->
+
 ## Blocked
 
 ## Done

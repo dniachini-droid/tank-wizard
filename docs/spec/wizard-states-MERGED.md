@@ -2,6 +2,8 @@
 
 **Status: proposed.** Replaces `docs/spec/surfaces-and-messaging.md` §1–3 and
 supersedes `docs/spec/incoming/wizard-spec.txt`. Merged 13 August 2026.
+**Amended 14 August 2026** on the spec owner's authority — §0.3, §4 and §9.4;
+the decisions and their reasoning are recorded in `.agent/needs-dan.md`.
 
 Companion: `reef-chemistry.md` — the arithmetic. Read that one to know what
 number the app produces; this one to know why a particular card is showing.
@@ -29,6 +31,15 @@ surfaces forming their own opinion: a summary saying "parked off-target"
 against an engine saying "on its way to 475", and a confirmation saying
 "nothing to do" against a wizard asking for a dose change. **If a surface
 disagrees with the wizard, the surface is wrong.**
+
+This is a rule about the whole app, not about three named screens, and it
+covers numbers as well as words. **Decided 14 Aug:** the wizard is the only
+thing in the app that may produce a figure to dose. The second dose calculator
+in `src/lib/analytics/drift.js` — which had its own flat 10%/15% nudge, its own
+noise floors and its own windows — is being removed, because it knew nothing of
+staging, bracketing, rate ceilings, plausibility or a running plan and could
+therefore contradict the wizard while both were on screen. See
+`reef-chemistry.md` §7, and §9.4 below for what is still standing.
 
 **4. Magnesium never reaches the dose-gap states.** By design — see
 `reef-chemistry.md` §10. It is managed by level. An agent who reads this as an
@@ -147,8 +158,8 @@ the readings since it started.
 
 | Flag | Meaning |
 |---|---|
-| `arrived` | the level has reached the target |
-| `passed` | the level has gone past the target |
+| `arrived` | two readings inside the arrival zone — see below |
+| `passed` | one reading at or beyond the target. Computed independently of `arrived`; never conflate the two |
 | `dueNow` | enough time has elapsed that a reading is expected |
 | `overrun` | days > (expected × 2) + 2 |
 | `stalled` | 3+ days in, a reading since, level moved less than the noise floor |
@@ -164,16 +175,39 @@ plan with no readings still said "on its way to 9.0 dKH" at day 40.
 
 ### Where a correction ends
 
-**Changed 13 Aug.** A correction targets the **middle third of the band**, not
-the nearest edge and not a fixed offset.
+The arithmetic is `reef-chemistry.md` §9; this is what it means for the branch.
+Two numbers, kept apart:
 
-**`correction-done` exits only after two readings inside the band**, not one.
-Three consecutive 0.2 dKH rises do not simply stop; reaching the band mid-climb
-is passing through, not arriving. While the state holds:
+- **Where the correction aims** — the midpoint of the band. A target is a point.
+  Unchanged.
+- **Where it is judged to have arrived** — a zone. **Changed 14 Aug:** the
+  middle third of the band, floored so the zone is never narrower than twice
+  that element's noise floor, and clamped to the band. Against the suggested
+  bands that is 8.40–8.60 dKH, 415–435 ppm calcium, 1320–1380 ppm magnesium.
 
-- `testOn` carries "keep testing every 2 days — it may still be climbing"
-- consumption does **not** re-baseline, so the tail of a correction is never
-  read as tank behaviour
+The 13 August wording — "the middle third of the band," followed two sentences
+later by an exit condition written in full-band terms — asserted both and
+matched neither consistently. The zone above is the exit condition.
+
+**`correction-done` exits only after two readings inside the arrival zone**, not
+one, and not merely inside the band. Three consecutive 0.2 dKH rises do not
+simply stop; reaching the band mid-climb is passing through, not arriving. While
+the state holds, `testOn` carries "keep testing every 2 days — it may still be
+climbing."
+
+A narrower zone cannot strand the elevated dose. Branch 5 fires on `arrived`
+**or** `passed`, and `passed` needs only one reading at or beyond the target, so
+the one-tap "return to your maintenance dose" action is reached either way. The
+cost of a stricter `arrived` is that the confident two-reading wording gets rare
+for calcium and magnesium, not that the correction fails to close.
+
+**Deleted 14 Aug: "consumption does not re-baseline until this clears."** No
+such mechanism exists anywhere in the app — the analytics layer contains no
+reference to corrections, plans or `arrived` (`.agent/five-decisions.md`,
+Decision 4). What does happen is in `reef-chemistry.md` §6: while a logged
+correction is being delivered, its estimated contribution is subtracted from
+each reading in the trend fit. The claim is removed, not restated as an
+intention.
 
 Same branch position, no new state — only the exit condition changed.
 
@@ -286,6 +320,26 @@ replacement. Until that lands, branch 21b rarely fires when it should.
 `src/lib/dosing/helpers.js:502-503`. `reef-chemistry.md` §7 removes it. **These
 two must change together**: the halving exists only to compensate for 9.2, so
 removing it before grading is fixed would make slow declines worse.
+
+**9.4 — the second dose calculator is decided-removed in spec, still present in
+code.** `src/lib/analytics/drift.js` still exports `computeDoseAdvice` and
+`computeDoseCalc`. Where they stand as of 14 Aug: `Insights.jsx:108` and
+`Dashboard.jsx:298` each compute a `doseAdvice` and never read it — dead in both
+files. The one live path is `.calc`, through `previewStrengthChange`
+(`src/lib/dosing/corrected-strength.js:43-51`) into the "Suggested dose … now /
+after" row at `Insights.jsx:697-720`, itself gated behind a third mechanism,
+`calibrateDoseStrength`. Removing the dose figures therefore needs a replacement
+source for that preview row — the wizard's own assessment run under before and
+after settings — and the two dead `useMemo` calls taken out with them.
+`assessDrift`, the slope classifier that produces no dose number, is not what
+this decision removes.
+
+Separately and independently of the removal: `DOSE_ADVICE_RULES`
+(`drift.js:40-57`) carries a `magnesium` entry and never consults
+`DOSE_DRIFT_TRIGGER`, so magnesium can be given a computed dose figure through
+that preview path. `reef-chemistry.md` §10 forbids tuning magnesium's daily dose
+from readings at all. Nobody decided this; it is an omission, and it needs
+closing whatever happens to the rest of the file.
 
 ---
 
