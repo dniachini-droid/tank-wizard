@@ -25,7 +25,7 @@ last completed step: bug 5 — TW-016, magnesium correction rail 100 -> 25,
   legacy-port:golden passing with no digest-mismatch output. npm run verify
   GREEN on every blocking check. vitest: baseline 70 / post-fix 63, diff
   shows exactly the 7 closed assertions removed, zero added. PR:
-  https://github.com/dniachini-droid/tank-wizard/pull/24
+  https://github.com/dniachini-droid/tank-wizard/pull/25
 next step: bug 6 — TW-019, remove magnesium from DOSE_ADVICE_RULES
   (src/lib/analytics/drift.js:40-57). Branch fresh from origin/main. Read
   routine section 6 in full before starting. The fix itself is a straight
@@ -39,7 +39,7 @@ next step: bug 6 — TW-019, remove magnesium from DOSE_ADVICE_RULES
   Dashboard.jsx:298-300 are TW-022 (separate, already-tracked dead code) —
   leave them alone, don't expand into that item.
 in-flight: none — bugs 3, 4 and 5 are each their own shipped, independent PR
-  against `main` (#22, #23, #24) — none merged as of this write. Bug 6 does
+  against `main` (#22, #23, #25) — none merged as of this write. Bug 6 does
   not depend on any of them; branch it from `main` as-is, don't wait.
 branch: claude/bug5-magnesium-rail (pushed)
 uncommitted work: no
