@@ -914,6 +914,7 @@ export function ReefConsoleInner() {
     if (merged["custom-ranges"]) setCustomRanges(merged["custom-ranges"]);
     if (merged["kit-changes"]) setKitChanges(merged["kit-changes"]);
     if (merged["findings-dismissed"]) setDismissed(merged["findings-dismissed"]);
+    if (merged["correction-plans"]) setCorrectionPlans(merged["correction-plans"]);
   };
 
   /* Reminders replaced the old task list, so anything that used to look up a
