@@ -71,8 +71,20 @@ last completed step: bugs 3 and 4 — both now on this branch, bug 3 via a
   fbac65244f00ac9b, 5,940 rows, audited against both sides (0 THREW, every
   band move a promotion in bug 3's stated direction, calcium 28 / magnesium 0
   matching bug 3's own figures) — see the log's merge section for the full
-  audit. Bug 5 below is independent of both and should still branch from
-  `main`, not from either.
+  audit.
+
+  `main` has been merged in a SECOND time since, to pick up the
+  2026-08-14-reef-chemistry-engine-canon run (PR #24: the spec integration,
+  TW-026/027/028 approved, TW-029/030/031 filed). That run changed no code —
+  spec, backlog and its own log file only — so it moves nothing in the
+  fingerprint, and the composed digest above still stands, re-verified rather
+  than assumed. Its narrative is not repeated here: this file is the resume
+  point for routine 15, and that run recorded itself complete and handed the
+  thread back. Its durable record is
+  .agent/log/2026-08-14-reef-chemistry-engine-canon.md, which the merge keeps
+  in full. Bugs 5, 6 and 7 were each also cut from a `main` that predates bug
+  4, per rule 1; they are composed onto this branch in bug order, each
+  regenerating the fingerprint against everything applied so far.
 next step: bug 5 — TW-016, magnesium correction rail 100 -> 25
   (src/lib/analytics/correction.js:20, CORRECTIONS.magnesium.maxPerDay).
   Branch fresh from origin/main. Read routine section 5 in full before
@@ -97,13 +109,24 @@ next run must resume before starting anything new. See AGENTS.md, "Checkpoint
 and resume contract".
 
 status is "interrupted" rather than "complete" because the routine (seven
-bugs) is not finished — bugs 1 and 2 are done, bugs 3-7 remain. This is a
-clean stopping point per rule 6 (stop at a bug boundary), not a crash: nothing
-is half-edited, nothing needs reverting.
+bugs) is not finished — bugs 1-4 are done, bugs 5-7 remain. This is a clean
+stopping point per rule 6 (stop at a bug boundary), not a crash: nothing is
+half-edited, nothing needs reverting.
 
 Bug 2 was closed twice. The first pass (PR #14) reported and reverted, because
 the option the routine authorised broke three blocking checks. Dan then
 withdrew that option as wrong at the premise and authorised the §24 rule, which
 is what shipped on the second pass. PR #14 documents the investigation and
 stays as the record of it; the rule itself is a separate change.
+
+The 2026-08-14-reef-chemistry-engine-canon run wrote its own `run: ` header
+here while routine 15 was mid-flight, and recorded itself complete with
+routine 15 named as "the older resume point". Merging it in restores routine
+15 as the current run, which is what this file is for. Nothing of that run is
+lost: its log file is merged intact, its backlog edits are merged, and the one
+note it left that is still live rather than run-specific is carried below.
+
+Found while reading and deliberately not fixed: .agent/backlog.md has two items
+numbered TW-016. Renumbering one is Dan's call, not a tidy-up — an ID is cited
+from run notes and PRs.
 -->
