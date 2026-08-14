@@ -1,43 +1,52 @@
-run: 2026-08-14-reef-chemistry-engine-canon
-routine: none — owner-directed. Dan authorised the spec edits explicitly
-  (AGENTS.md rule 1 otherwise forbids them).
-started: 2026-08-14T09:20:00Z
+run: 2026-08-14-phase6-bugs
+routine: routine 15 — phase 6: the known bugs
+started: 2026-08-14T00:00:00Z
 status: complete
-last completed step: the whole of it, in one pass —
-  (1) docs/spec/DECISION-reef-chemistry-engine.md folded into canon and
-  deleted: reef-chemistry.md §25 (the engine, what it assesses, per-parameter
-  reasoning, the coverage table, not-a-rebuild) plus a new §12 refusal and a
-  narrowed §13.2; wizard-states.md Part III §19 (surfaces) and §20 (notices,
-  hiding, the confirmation wording, resurfacing) plus a §7 pointer and a new
-  §11 single-source row for parameter assessment.
-  (2) TW-026, TW-027, TW-028 moved to "Approved for implementation" and marked
-  [approved] — the only recorded blocker was the missing canon entry. None
-  carries [chem]: the routing, states and enforcement may be built, a chemistry
-  constant may not be minted from them.
-  (3) TW-029 (defect — phosphate/nitrate carry alkalinity's reasoning),
-  TW-030 (salinity not assessed at all) and TW-031 (confirmation before hiding
-  a serious notice; every notice becomes hideable) filed under "Needs Dan's
-  approval". TW-029 and TW-030 each need per-parameter reasoning from Dan
-  before their second half is implementable; §25 mints no figures for them
-  deliberately.
-  No code changed. npm test 69 failed / 279 passed both before and after
-  (unchanged, pre-existing); npm run build succeeds; npm run verify ALL
-  BLOCKING CHECKS PASSED. npm run lint does not exist (TW-024) and was not run.
-next step: nothing outstanding from this run. Two things waiting on Dan, both
-  written up in place rather than here: the "serious" mapping in
-  wizard-states.md §20 (the one line in §19/§20 that is the spec's inference
-  rather than his words), and the phosphate, nitrate and salinity reasoning
-  TW-029 and TW-030 need.
-  **Routine 15 is still unfinished and is the older resume point**: bugs 1-3
-  are done, bugs 4-7 remain. Bug 4 — alkalinity band 1.0 -> 0.6
-  (constants.js PARAM_DEFS, min: 8.2, max: 8.8), branch fresh from origin/main,
-  read routine section 4 in full first. Report, do not fix, magnesium's own
-  uncredited off-centre band (min 1250/max 1400 vs target 1350 -> should be
-  1275-1425). band-edges.test.js is already red (pre-existing, part of the 69)
-  and may reference a different concept — read what it asserts before assuming
-  bug 4 closes it.
-in-flight: none — working tree clean, everything committed and pushed
-branch: claude/reef-chemistry-spec-integration-i62jqc (pushed, PR opened)
+last completed step: bug 7 — TW-020, arrival zone vs full band, shipped.
+  This was the seventh and last bug in the routine. `correctionProgress`
+  (helpers.js) now tests arrival against the §9 zone
+  (`max(bandWidth/3, 2×noiseFloor)`, clamped, centred on the midpoint),
+  computed live from `def.min`/`def.max` on every call — not the full
+  band. `noiseFloor` is §5's `STABILITY_RULES[key]`, confirmed the correct
+  family (not `_TREND.stable`, bugs 2/3's constant, same caution those
+  bugs needed in reverse). `passed` and the `arrived || passed`
+  correction-done trigger confirmed untouched — proved via a live
+  assessAlkalinity + doseStatus integration test, not just the raw
+  correctionProgress fields. Two call sites' wording ("inside your
+  band"/"inside your range") updated to "back near the middle of your
+  range" — still true either way, now precise about what arrived actually
+  means. npm run verify GREEN; golden UNCHANGED (golden.js's sweep never
+  sets up a correctionPlans entry, so correctionProgress is never
+  exercised by it — confirmed by reading golden.js, not assumed). vitest:
+  differential diff 70/70 before and after, empty — no existing red test
+  asserted this defect, this bug's own test is the coverage. PR:
+  https://github.com/dniachini-droid/tank-wizard/pull/27
+next step: none — routine 15 is complete. All seven bugs attempted (six
+  fixed and shipped, bug 2 fixed on its second pass after a first-pass
+  revert). Each bug is its own PR against `main`, independently branched
+  and independently verified per rule 1 — #12 (bug 1) and #14 + the
+  bug-2-second-pass PR are merged; #22 (bug 3), #23 (bug 4), #25 (bug 5),
+  #26 (bug 6) and #27 (bug 7) are open, unmerged as of this write. Merging
+  is Dan's alone (AGENTS.md #13) — nothing here waits on it.
+  Two things surfaced along the way that are Dan's to decide, not fixed
+  under this routine's authorisation: `.agent/needs-dan.md` item 3 (a
+  narrow alkalinity dose-gap coverage question found auditing bug 3's
+  golden diff) and TW-026 (magnesium's own off-centre PARAM_DEFS band,
+  found under bug 4) — filed to `.agent/backlog.md` "Needs Dan's
+  approval". Also found, not fixed: `.agent/backlog.md` now has **two**
+  different items both numbered TW-026 (mine, from bug 4; a
+  pre-existing one from an unrelated concurrent canon-sync run, "doseStatus
+  cannot express four cells of the journey-4b matrix") — a numbering
+  collision across two independent, concurrently-shipped PRs, not
+  something either session could have seen coming. Renumbering is Dan's
+  call, same as the pre-existing TW-016 collision this run already found
+  (see the log) — an ID is cited from run notes and PRs, so it is not a
+  tidy-up to do unilaterally.
+  `.agent/phase6-bugs.md` written this run, per the routine's closing
+  instructions — one section per bug, both the precise and plain layers.
+in-flight: none — bug 7 shipped and pushed, PR #27 opened, working tree
+  clean
+branch: claude/bug7-arrival-zone (pushed)
 uncommitted work: no
 
 <!--
@@ -46,12 +55,23 @@ throughout. If status is in-progress or interrupted, the last run died and the
 next run must resume before starting anything new. See AGENTS.md, "Checkpoint
 and resume contract".
 
-status is "complete" for this run and this run only. The routine-15 work above
-it is a separate, still-unfinished thread and is carried forward in "next step"
-so it is not lost — the previous version of this file was the only record of
-where it stopped.
+status is "complete" — all seven bugs in routine 15 have been attempted, each
+as its own PR. "Complete" describes this routine's work, not the repo's
+overall state: none of bugs 3-7's PRs are merged as of this write (merging is
+Dan's alone), and a separate, unrelated run (2026-08-14-reef-chemistry-engine-
+canon, run by a different session concurrently with bugs 3-7) landed its own
+spec and backlog changes on `main` in between — those are that run's own
+record, not duplicated here.
 
-Found while reading and deliberately not fixed: .agent/backlog.md has two items
-numbered TW-016. Renumbering one is Dan's call, not a tidy-up — an ID is cited
-from run notes and PRs.
+Two backlog numbering collisions found across concurrent work this run,
+neither renumbered — an ID is cited from run notes and PRs, so renumbering is
+Dan's call, not a tidy-up:
+- TW-016: one pre-existing ("drift"/"drifting" terminology) and one this
+  routine's bug 5 closed (magnesium correction rail). Found under bug 5.
+- TW-026: one pre-existing (from the concurrent canon-sync run, "doseStatus
+  cannot express four cells of the journey-4b matrix", now [approved]) and one
+  this routine filed (magnesium's off-centre PARAM_DEFS band, found under
+  bug 4, still needs Dan's approval). Found under bug 7, while writing this
+  file — the canon-sync run's TW-026 did not exist yet when bug 4 filed its
+  own.
 -->

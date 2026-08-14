@@ -60,7 +60,7 @@ export function readingVerdict(def, result) {
       return { emoji: "\u{1F386}", tone: "#0B7C86", celebrate: true,
         headline: `Nice work — ${def.label.toLowerCase()} is back in range`,
         line: cp.arrived
-          ? `Two readings inside your band confirm it. Set the dose back to ${fmtAmount(cp.returnDose)} mL/day in the Dosing Wizard.`
+          ? `Two readings back near the middle of your range confirm it. Set the dose back to ${fmtAmount(cp.returnDose)} mL/day in the Dosing Wizard.`
           : `${fmtVal(def, value)}${unit} has passed your target — stop pushing now and set the dose back to ${fmtAmount(cp.returnDose)} mL/day.`,
         goto: "dosing" };
     }

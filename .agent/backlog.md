@@ -637,22 +637,6 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       spec: docs/spec/reef-chemistry.md §10; docs/spec/wizard-states.md §9.4
       owner: implementer — needs [approved][chem] first
 
-- [ ] [chem] TW-020 `arrived` must test the arrival zone, not the full band
-      why: Dan's 2026-08-14 decision 4. correctionProgress's arrival test
-      (src/lib/dosing/helpers.js:273-279) is `inBand(v)` over the last two readings — the
-      full band. Canon is now `zoneWidth = max(bandWidth / 3, 2 × noiseFloor)`, clamped to
-      the band, centred on the midpoint: 8.40-8.60 dKH, 415-435 ppm Ca, 1320-1380 ppm Mg at
-      the suggested bands. The aim point (`proposeCorrection`'s `(min + max) / 2`,
-      helpers.js:404) does not change.
-      watch: `passed` (helpers.js:316) must stay independent — correction-done fires on
-      `arrived || passed` (state.js:227) and that is what keeps the "return to maintenance"
-      action reachable when the narrower zone is not hit twice. Do not conflate them. Also
-      check the two call sites that branch on `cp.arrived` specifically for wording, and
-      note the zone/noise-floor margin: reaching the zone from outside the band always
-      exceeds `stalled`'s noiseFloor test today, but only by 1.67× for calcium and magnesium.
-      spec: docs/spec/reef-chemistry.md §9; docs/spec/wizard-states.md §4
-      owner: implementer — needs [approved][chem] first
-
 <!-- 2026-08-14, from Dan's four decisions: two of the four need NO code change,
      recorded here so nobody re-opens them. Decision 2 (water changes stay in the
      trend fit, corrections subtracted proportionally) — alkalinity.js:493-499 and
@@ -942,6 +926,28 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       owner: Dan approves the dependency; implementer wires it in once approved
 
 ## Done
+
+- [x] [chem] TW-020 `arrived` tested the full band, not the arrival zone
+      why: Dan's 2026-08-14 decision 4. `correctionProgress`'s arrival test
+      (src/lib/dosing/helpers.js) was `inBand(v)` over the last two readings — the full
+      band. Canon: `zoneWidth = max(bandWidth / 3, 2 × noiseFloor)` clamped to the band,
+      centred on the midpoint — 8.40-8.60 dKH, 415-435 ppm Ca, 1320-1380 ppm Mg at the
+      suggested bands. The aim point (`(min + max) / 2`) did not change.
+      fix: replaced the local `inBand` arrow (which had exactly one call site, `arrived` —
+      confirmed by grep before touching it) with an `inZone` check computed live from
+      `def.min`/`def.max` on every call, never hardcoded, per §9's own words. `passed`
+      (helpers.js) is untouched — still computed independently, `correction-done` still
+      fires on `arrived || passed` (state.js), confirmed via a live
+      assessAlkalinity + doseStatus integration test, not just the raw
+      correctionProgress fields.
+      wording: the two call sites that branch on `cp.arrived` for copy (state.js;
+      ReadingConfirmation.jsx) both said "inside your band"/"inside your range" — true
+      but no longer precise once arrival means the narrower zone. Reworded to "back near
+      the middle of your range" in both places; the logic they read (`cp.arrived`)
+      is untouched.
+      spec: docs/spec/reef-chemistry.md §9; docs/spec/wizard-states.md §4
+      repro: src/test/defects/correction-arrival-zone.test.js
+      owner: implementer — routine 15 (phase 6), bug 7
 
 - [x] [approved] TW-021 `verify:linkcheck` and `verify:propcheck` flipped advisory -> blocking
       why: both checkers were failing on real reference bugs, not false positives —
