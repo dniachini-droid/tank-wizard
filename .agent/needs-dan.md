@@ -6,6 +6,144 @@ Decisions no agent may make. Newest at top. Dan clears this file.
 
 ## Open
 
+### 8. §3's "user may tighten a rail" vs §21's rejection of a rate-tolerance Setup field — same-day self-contradiction
+
+Found 2026-08-14 (manual-dose-auditor, adjudicator-confirmed). `reef-chemistry.md` §3
+states a user may tighten (never loosen) a dosing rail, but no mechanism exists in code
+to do so — `Setup.jsx` has no `maxDailyRise`/tighten/rateLimit field (`grep -rn
+"maxDailyRise\|tighten\|rateLimit" src/components/Setup.jsx` → no matches), and neither
+`rateLimitDose` (`alkalinity.js:351-379`, reads settings only for `dosePlausible`) nor
+`safeDoseBand` (`safe-rate.js:43-48`, hardcoded `SAFE_DAILY_RISE`) consults a user value
+at all. Live: `rate-rails.test.js` "a tighter user-configured alkalinity rail is not
+honoured" fails — `settings.maxDailyRiseDKH: 0.2` is silently ignored and the app clamps
+at the hardcoded 0.5 default regardless.
+
+`wizard-states.md` §21 (the same-day decision on what belongs in Setup) explicitly
+**rejects** a rate-tolerance field, on the ground that "Setup asks facts, not
+judgements" and names a rate tolerance specifically as a non-fact — pointing instead at
+§3's rate ceiling as the arrival point, i.e. the rail already settles it for everyone.
+§3 and §21 were both settled on 2026-08-14 and now disagree on the same question: does
+the user get to ask for a gentler rail, or does the rail itself already answer that for
+everyone?
+
+**Options, not a recommendation:**
+
+(a) **§3 wins — build the tighten-only field.** A per-element rate-cap surfaced
+somewhere in Setup (or an existing rail-adjacent settings screen), threaded as
+`min(default, userValue)` through `rateLimitDose`/`safeDoseBand`. Cost: a Setup field
+asking for the exact kind of number §21's own reasoning says Setup should not ask for
+("a judgement, not a fact") — reopens the question §21 was written to close, for this
+one field.
+
+(b) **§21 wins — delete §3's "user may tighten" sentence.** The rail is a fixed fact,
+not a per-user dial; a keeper who wants gentler correction gets there by not taking the
+staged plan's fastest step (the wizard already offers a slower step in a staged plan).
+Cost: a real use case named in §3's own original reasoning — a keeper whose corals react
+badly to fast swings — has no path through the app at all, not even a manual one (manual
+entry is capped by the same rail once TW-004 lands).
+
+(c) **Point §3's sentence at the staged plan instead of a Setup field.** The rail's
+ceiling stays one fixed number for everyone (satisfying §21), but the wizard's staged
+step size already lets a user choose a gentler first step (`TW-036` territory) — if that
+satisfies the "may tighten" intent, reword §3 to say so rather than implying a Setup
+field. Cost: needs confirming the staged plan's steps behave like a genuine rate
+tolerance and aren't themselves capped by the rail's speed rather than a separate
+ceiling — not yet checked.
+
+**Which direction being wrong hurts.** (a) wrong: Setup grows exactly the kind of field
+§21 exists to keep out, and every other "fact vs judgement" line in Setup gets harder to
+hold. (b) wrong: a keeper with corals that measurably react badly to fast alkalinity
+swings has zero way to ask the app for a gentler correction — not dangerous (the rail
+stays conservative), but it silently withdraws a control §3 promised in writing. (c)
+wrong if the staged plan doesn't actually behave like a rate tolerance — unverified.
+
+**What else must change.** Whichever way this goes, §3's sentence and §21's "non-fact"
+list need to agree about this one feature — right now each references the other without
+matching.
+
+**In plain terms.** The spec says twice, on the same day, that a keeper worried about
+fast alkalinity swings should be able to ask for a gentler daily limit — and also that
+Setup should never ask a question shaped like that. Nothing in the app lets a keeper ask
+for gentler today, either way, so it's moot for now — but the two sentences can't both
+survive as written, and building toward one closes off the other.
+
+repro: `grep -rn "maxDailyRise\|tighten\|rateLimit" src/components/Setup.jsx` → no
+matches; `npx vitest run src/test/spec/dosing/rate-rails.test.js` — "a tighter
+user-configured alkalinity rail is not honoured" → FAIL.
+
+### 7. reading-meaning.js's invented vocabulary vs §13's band words — does "consistency over time" get its own registry, or fold into §13's seven?
+
+Found 2026-08-14 (terminology-auditor, contradiction-hunter, adjudicator-confirmed).
+`reading-meaning.js`'s `computeControl` invents six headline categories with no entry in
+§13's band table — sliding/"Moving fast", loose/"Wide swing", dialled/"Dialled in",
+controlled/"Well controlled", steady-off/"Steady, running high/low", drifting/"Drifting
+high/low" — rendered at `Dashboard.jsx:467`, in the same modal as the official band
+badge. One of the six, "drifting", collides head-on with §13's own defined word:
+`reading-meaning.js:218` fires it when the window **median** sits outside the band; §13
+defines drifting as **inside** the band, trending toward an edge. Live-reproduced
+consequence: a tank whose current reading is safely in band (`paramStatus` "ok", teal)
+can show "Steady, running low" in blue in the same modal, one tap away
+(`scratchpad/drift-collision3.mjs`).
+
+This is a chemistry-judgement question, not a rename: the six categories mix a
+rate-of-change grading (is the parameter oscillating or holding steady over the test
+window) with band-position grading (is the current reading in range), and it isn't
+obvious the two should share one vocabulary at all.
+
+**Options:**
+
+(a) Give consistency-over-time its own registry section in §13/§15, with words that
+cannot collide with band-position words even by accident. Cost: a genuinely new spec
+section, and every existing `reading-meaning.js` label needs re-auditing against it, not
+just "drifting".
+
+(b) Fold consistency-over-time into the existing seven band-position words — describe
+window behaviour using only §13's vocabulary, dropping the six invented categories
+outright. Cost: may lose real information (a reading can be in-band and still have swung
+wildly across the window, which today only "loose" says) unless §13's seven words get
+new modifiers.
+
+(c) Keep both vocabularies, but make it structurally impossible for them to describe the
+same reading in the same view — gate which one renders on whether recent history is
+coherent enough to trust median-based grading (close to what `TW-007`'s minimum-evidence
+gate already asks for elsewhere). Cost: the most code, and doesn't by itself pick better
+words.
+
+**Which direction being wrong hurts.** (a) wrong if it's overengineered for a feature
+nobody reads closely; (b) wrong if it silently discards genuine "your readings are
+bouncing even though you're in range" information the seven band words cannot express;
+(c) wrong if it hides the disagreement instead of resolving it.
+
+**In plain terms.** There's a second, home-made vocabulary layered on top of the
+official band words, and its one shared word ("drifting") means the opposite thing
+depending on which screen you're reading. This needs a decision about whether "is your
+testing pattern steady" deserves its own words at all, not just a rename.
+
+Blocks `.agent/backlog.md` TW-037 (code-side fix), filed `[blocked]` pending this
+decision.
+
+### 6. One-line notes — 2026-08-14
+
+Three small items, flagged rather than filed, each too small for its own workup:
+
+- **Colour-registry gap** (contradiction-hunter). `PARAM_DEFS.phosphate.color`
+  (`constants.js:33`) equals the app-wide danger red (`#C4285B`) — phosphate's header cap
+  tints "danger" regardless of the actual reading. `PARAM_DEFS.potassium.color` equals
+  `STATUS_COLOR.low` (`#926A09`) — same shape. Same kind of problem as §15's word
+  registry, one level down (colours instead of words); worth a colour-registry entry the
+  day §15 gets touched again.
+- **"Notice" wording** (terminology-auditor). The same on-screen concept ships today as
+  "Worth knowing about" (`Dashboard.jsx:619-620`), "Got it — hide this"
+  (`DoseExpectation.jsx:175`, no noun), and "Hidden notes"/"Notes" (`Setup.jsx:478-491`) —
+  and `TW-031`'s settled confirmation sentence will add a fourth ("notification").
+  Reconcile Setup's "notes" and `TW-031`'s "notification" together when §15 next gains an
+  entry.
+- **"Target" rename** (terminology-auditor). "Target" is used for four structurally
+  different concepts in one modal: the value the user types, the app's computed aim
+  point, the whole band, and a synonym for in-band. A rename needs your sign-off before
+  anything ships — noted here rather than filed as backlog work, since it's a
+  registry/copy decision, not implementation.
+
 ### 5. `caClearlyOut`/`clearlyOut` compare a distance against a rate
 
 Found while implementing §26 (position is the last reading) and left alone:
