@@ -1,7 +1,7 @@
 /* §2/§6 parity — Setup's "correction calculator" vs the §6 rail
  *
  * Setup.jsx renders a fourth dose-recommending surface not named in
- * surfaces-and-messaging.md's table of three, but which produces exactly
+ * wizard-states.md's table of three, but which produces exactly
  * the numbers §2 requires parity on ("the recommended dose in mL... the
  * expected delta and days to target"): a "Correction calculator" for
  * turning a current/target gap into grams-per-day and days-to-target

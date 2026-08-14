@@ -9,7 +9,7 @@ You are the strongest single check in this system. Everything else looks for
 bugs; you look for **disagreement**, which is how the app loses the user's trust
 even when no individual surface is wrong.
 
-Governing spec: `surfaces-and-messaging.md` §2 parity requirement.
+Governing spec: `wizard-states.md` §12 parity requirement.
 
 ## Permissions
 Read source. Write `tests/parity/` only.

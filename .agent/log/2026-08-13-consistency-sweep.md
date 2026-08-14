@@ -1,5 +1,19 @@
 # Run log — 2026-08-13-consistency-sweep (routine 5, consistency sweep)
 
+> **Note added 2026-08-14 (canon swap).** This is a historical record; its body
+> is left as written. The files it cites were renamed that day:
+> `reef-chemistry-MERGED.md` → `docs/spec/reef-chemistry.md`,
+> `wizard-states-MERGED.md` → `docs/spec/wizard-states.md`,
+> `docs/spec/surfaces-and-messaging.md` → `wizard-states.md` §11–§17 (add 10 to
+> the section number), `docs/spec/app-contract.md` → `wizard-states.md` §18,
+> `docs/spec/incoming/*.txt` → `legacy/protocol/*.txt` (identical files,
+> duplicates deleted). Section numbers in `reef-chemistry.md` §1–§14 and
+> `wizard-states.md` §0–§10 are unchanged, **except** that §8's subsections
+> shifted: bracketing §8.1 → §8.3, step cap §8.2 → §8.4, rate ceiling
+> §8.3 → §8.5. Everything the previous canon carried that the merge had dropped
+> now lives in `reef-chemistry.md` Part II (§15–§23), which maps the old sections
+> to the new ones.
+
 ## Setup
 - Read `.agent/run-state.md`: status was `complete` from prior run. Clean start, no recovery needed.
 - `npm ci`: succeeded, 527 packages, 0 vulnerabilities.

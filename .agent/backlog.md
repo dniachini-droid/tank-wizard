@@ -6,7 +6,7 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
 
 - [ ] [approved][chem] TW-001 Add net-volume field; every dose calc uses net, not gross
       why: dosing on gross 77 L overdoses by the displacement fraction
-      spec: docs/spec/reef-chemistry.md#2-tank-constants
+      spec: docs/spec/reef-chemistry.md#17-net-volume
       owner: implementer
 
 ## Needs Dan's approval
@@ -22,32 +22,37 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
      on 2026-08-13 — see the Decisions section of that file. The code work those
      decisions create is TW-016 and TW-017 below. -->
 
-- [ ] [chem] TW-016 Magnesium rail constants disagree with canon's new 50 ppm/24 h
-      why: Dan set the §6 magnesium rail to 50 ppm/24 h on 2026-08-13.
-      src/lib/analytics/correction.js:20 CORRECTIONS.magnesium.maxPerDay is 100 —
-      it now EXCEEDS the rail, and per §6 "any recommendation exceeding a rail is a
-      bug". src/lib/analytics/safe-rate.js:27 CORRECTION_MAX_RATE.magnesium is 25 —
-      under the rail, but a hardcoded tightening where §6 permits only a [user] one.
-      safe-rate.js's SAFE_DAILY_RISE is what the live Dosing Wizard calls on every
-      dosing path, so today the wizard doses magnesium at half the authorised rate
-      while the correction planner would allow double it.
-      spec: docs/spec/reef-chemistry.md#6-rate-of-change-rails--hard-caps
+- [ ] [chem] TW-016 correction.js allows magnesium at 4x the rail; rails.test.js asserts the old canon
+      why: Dan settled the magnesium rail at 25 ppm/24 h on 2026-08-14 (§3), closing
+      the 25-vs-50 conflict the canon swap surfaced. Against that figure:
+      - src/lib/analytics/correction.js:20 CORRECTIONS.magnesium.maxPerDay is 100 —
+        four times the rail. Per §3, "any recommendation exceeding a rail is a bug,
+        not a preference." Its calcium entry (20) is already right.
+      - src/lib/analytics/safe-rate.js:27 CORRECTION_MAX_RATE is {alkalinity 0.5,
+        calcium 20, magnesium 25} — this now matches canon exactly and needs NO
+        change. Its own comment ("the conservative end of each is the default")
+        states the principle Dan chose. Do not touch it.
+      So this item is now one constant plus its test, not the two-sided conflict it
+      was filed as: correction.js's 100 becomes 25.
+      spec: docs/spec/reef-chemistry.md#3-rate-rails--one-per-element
+      UNBLOCKED 2026-08-14 — the rail figure is no longer in dispute.
       repro: tests/parity/correction-calculator-vs-rail.test.js; also
-      src/test/spec/classification/rails.test.js, which hardcodes the OLD canon
-      (SPEC_RAIL calcium 25, magnesium 100 at line 24, quoted again in the header
-      comment lines 8-15). 6 of its 12 assertions fail today. Under the new canon
-      the 3 calcium ones are asserting the wrong number — code is already 20, which
-      is now correct — and the magnesium ones fail for the right reason. The test
-      constants must be re-pointed at the new rails as part of this item, not
-      edited on their own to go green (AGENTS.md rule 4).
+      src/test/spec/classification/rails.test.js, whose SPEC_RAIL at line 24 is
+      {alkalinity 0.5, calcium 25, magnesium 100} — the pre-13-Aug canon, quoted
+      again in the header comment at lines 1-19, which cites "§6, lines 149-166"
+      (that section is now §3). SPEC_RAIL must be re-pointed to {0.5, 20, 25} and
+      the header comment rewritten to quote §3, as part of this item — not edited
+      on its own to go green (AGENTS.md rule 4). Its calcium assertions currently
+      fail against code that is already correct; its magnesium ones fail for the
+      right reason.
       owner: implementer — needs [approved][chem] first (AGENTS.md rule 3)
 
 - [ ] TW-017 Terminology: "water volume" is now a banned synonym for "net volume"
-      why: Dan's 2026-08-13 registry decision. surfaces-and-messaging.md §5 now
+      why: Dan's 2026-08-13 registry decision. wizard-states.md §15 now
       requires "net volume"; "water volume" is never-use. terminology-auditor
       previously found "tank volume" / "net volume" / "water volume" all live in the
       app, twice in one message at src/lib/findings.js:362-363.
-      spec: docs/spec/surfaces-and-messaging.md#5-terminology-registry
+      spec: docs/spec/wizard-states.md#15-terminology-registry
       owner: implementer
 
 - [ ] TW-002 No single classifyReading(); ~8 divergent classifiers disagree on the same reading
@@ -64,7 +69,7 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       "emergency"). narrative-engine.js and findings.js separately disagree on the pH-high
       threshold (8.4 vs 8.45) for the same stored value, producing a message on one surface
       and silence on the other for the same reading.
-      spec: docs/spec/surfaces-and-messaging.md §1 ("a second implementation... is an S1
+      spec: docs/spec/wizard-states.md §11 ("a second implementation... is an S1
       defect, even if it currently produces identical output"), §3
       repro: npx vitest run src/test/spec/classification/classify-reading-validation.test.js
       ("no module in scope exports a function named classifyReading"); npx vitest run
@@ -83,8 +88,8 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       "this tab hit an error" card and a raw stack trace. This is the first thing a
       brand-new user sees — the wizard opens on the element needing attention, and the
       closing hint text explicitly invites tapping any of the three cards.
-      spec: docs/spec/reef-chemistry.md §2/§9 (refuses and names what's missing);
-      docs/spec/surfaces-and-messaging.md §4
+      spec: docs/spec/reef-chemistry.md §17/§12 (refuses and names what's missing);
+      docs/spec/wizard-states.md §14
       repro: reproduced live against real components (not mocked): render
       <AlkAssessmentBlock a={{...assessAlkalinity({readings:[],doseLog:[],waterChanges:[],
       settings:{},def,now}), def}} /> throws "TypeError: Cannot read properties of null
@@ -92,7 +97,7 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       readings:[] against fully-configured settings.
       owner: implementer
 
-- [ ] [chem] TW-004 Manual dose entry has no §6 rail check; Setup also accepts negative/unbounded doses
+- [ ] [chem] TW-004 Manual dose entry has no rail check (reef-chemistry.md §3); Setup also accepts negative/unbounded doses
       why: DoseChangeSheet (opened from the wizard for all three elements) only compares
       the typed value to the app's own suggestion for a cosmetic "that's fine" note; the
       Save button is enabled for any finite value >= 0, with no rail lookup and no
@@ -100,7 +105,7 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       (saveDose only rejects NaN), never calls dosePlausible, and stores the raw parseFloat
       verbatim — a negative or wildly implausible daily dose is written straight into
       settings and doseLog, corrupting every downstream engine's currentDose input.
-      spec: docs/spec/surfaces-and-messaging.md §2 ("may NOT silently exceed a §6 rail...
+      spec: docs/spec/wizard-states.md §12 ("may NOT silently exceed a §3 rail...
       the app warns explicitly, states the rail and the overage, and requires confirmation")
       repro: npx vitest run tests/parity/manual-override-rail-check.test.js — with
       rateLimitDose clamping a requested 70 mL/day to 49.4 mL/day elsewhere in the app,
@@ -111,11 +116,11 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
 
 - [ ] [chem] TW-005 Magnesium gate and precipitation guard are unreachable from the Dosing Wizard
       why: assessAlkalinity/assessCalcium take no magnesium status or sibling-element
-      due-today parameter at all, so two of reef-chemistry.md §9's mandatory refusals — hold
+      due-today parameter at all, so two of reef-chemistry.md §12's mandatory refusals — hold
       alk/Ca corrections while magnesium is below alert-low; never schedule alk and Ca doses
       within 4 hours of each other — cannot be produced by the wizard no matter what a user
       does. Not merely untested: structurally unimplemented.
-      spec: docs/spec/reef-chemistry.md §5/§9, worked examples 4 and 8
+      spec: docs/spec/reef-chemistry.md §20/§12, §23 worked examples 4 and 8
       repro: npx vitest run src/test/spec/dosing/magnesium-gate.test.js — worked-example-4
       fixture (Mg 1140 < alert-low 1150, alk 7.4 vs target 8.5) still returns action:
       "increase" with no /magnesium/i match anywhere in the reason text; npx vitest run
@@ -130,7 +135,7 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       its own 0.5/0.6 urgency multiplier, never capped) are two different numbers both
       claiming to be "day one" of the identical correction, computed inside one function
       call.
-      spec: docs/spec/surfaces-and-messaging.md §2 ("the recommended dose in mL... and
+      spec: docs/spec/wizard-states.md §12 ("the recommended dose in mL... and
       whether a multi-day plan is required" must be identical across surfaces)
       repro: npx vitest run tests/parity/multiday-plan-parity.test.js — currentDose 6 mL/day,
       maintenanceDose ~9.93 mL/day: recommendedDose = 7.5 (stepCapped {wanted:9.9,
@@ -144,8 +149,8 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       own consumption calc never gate on reef-chemistry's minimum-evidence rule (>=3
       readings spanning >=6 days; no reading pair under 2 days apart) before producing a
       confident, dose-affecting verdict.
-      spec: docs/spec/surfaces-and-messaging.md §3; docs/spec/reef-chemistry.md §7
-      ("round last"), §8 (minimum evidence)
+      spec: docs/spec/wizard-states.md §13; docs/spec/reef-chemistry.md §21
+      ("round last"), §22 (minimum evidence)
       repro: npx vitest run src/test/spec/classification/rounding-vs-stored.test.js; npx
       vitest run src/test/spec/classification/min-evidence.test.js — both fail live
       owner: implementer
@@ -156,7 +161,7 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       matches use" in the neutral hold tone, directly beside an amber/red band-position dot
       — and one tap away, inside the same card, an active "Log a ... mL correction" button
       for the identical reading.
-      spec: docs/spec/surfaces-and-messaging.md §4 (a message must not imply no action is
+      spec: docs/spec/wizard-states.md §14 (a message must not imply no action is
       needed when an action is available for the same reading)
       repro: code trace — src/lib/dosing/alkalinity.js:715-765 (out.ok=true,
       action="hold", explanation still notes it's out of range), src/components/
@@ -171,7 +176,7 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       "needs another reading" — false when the cause is a missing Setup field, since no
       amount of retesting fixes that. The correctly-worded a.reason exists on the object but
       only reaches the least prominent of the three surfaces.
-      spec: docs/spec/surfaces-and-messaging.md §3 ("refuse and name what's missing"), §4
+      spec: docs/spec/wizard-states.md §13 ("refuse and name what's missing"), §4
       ("a refusal message names the specific missing input")
       repro: code trace — src/lib/dosing/{calcium,alkalinity,helpers}.js (action never set
       off the "hold" default on any refusal path); src/components/DosingWizard.jsx:27-31;
@@ -184,7 +189,7 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       final return, which reuses the exact tone (#0B7C86) and checkmark used for a
       confirmed in-band good reading. A reading the app cannot classify is indistinguishable
       from one it has confirmed healthy.
-      spec: docs/spec/surfaces-and-messaging.md §3 ("refuse and name what's missing"), §2
+      spec: docs/spec/wizard-states.md §13 ("refuse and name what's missing"), §2
       (test-log confirmation, "every user, every test")
       repro: code trace — src/components/ReadingConfirmation.jsx:343-409, no unknown/
       insufficient-data branch; fallback at line 409 returns {emoji:"checkmark",
@@ -197,7 +202,7 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       headline "In range, correction still running" with a body line quoting the remaining
       ppm/dKH gap and days left in the same breath — pairing the spec's no-action term
       directly against language describing an unfinished action.
-      spec: docs/spec/surfaces-and-messaging.md §4 ("the single most important rule in this
+      spec: docs/spec/wizard-states.md §14 ("the single most important rule in this
       file")
       repro: code trace — src/components/ReadingConfirmation.jsx:74-78; reachable via
       App.jsx:1014-1020 recomputing doseState/correctionPlan from the freshly-saved reading
@@ -212,7 +217,7 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       the same stale array; the later write replaces the array outright rather than merging,
       so one entry can be silently dropped from state, from storage, or from just one of the
       two while the UI still reports "Recorded" for it.
-      spec: docs/spec/surfaces-and-messaging.md §6 (history-truthfulness); audit checklist
+      spec: docs/spec/wizard-states.md §16 (history-truthfulness); audit checklist
       item 7 ("rapid double-tap on the final button must not double-dose or double-log")
       repro: reproduced live (not committed, git status clean after) — two fireEvent.click
       on Record calls onSave twice with no lock in between; code trace src/App.jsx:388-394
@@ -226,7 +231,7 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       Separately, saveRange/resetRange write only to custom-ranges — no event is recorded
       anywhere when a target changes, so a step-change in a chart/history has no on-screen
       explanation.
-      spec: docs/spec/surfaces-and-messaging.md §6 ("Recomputing the past against present
+      spec: docs/spec/wizard-states.md §16 ("Recomputing the past against present
       settings is an S1 defect"; "If a target changed, history shows the change as an event
       in the series")
       repro: npx vitest run src/test/spec/history/target-change-immutability.test.js — a
@@ -239,7 +244,7 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       recommended/suggested figure shown on the same sheet is dropped before it reaches
       storage. Every doseLog row is {id, date, time, ml, element, note}; no history view,
       chart, or CSV export can show recommended-vs-dosed for a past manual entry.
-      spec: docs/spec/surfaces-and-messaging.md §2/§6 ("recorded as a manual override, with
+      spec: docs/spec/wizard-states.md §12/§16 ("recorded as a manual override, with
       both the recommended value and the entered value... history must show both, always")
       repro: npx vitest run src/test/spec/history/override-visibility.test.js — typing 15.5
       into the amount field with recommended=10.0 and clicking Record calls onSave with
@@ -252,7 +257,7 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       correction ceiling"; "fluctuation... inside the optimal range"; "a steady 0.08 ppm is
       healthier than a range of 0.01-0.15 ppm". §5 bans exactly this vocabulary about a
       reading.
-      spec: docs/spec/surfaces-and-messaging.md §5 ("The app never uses 'safe' or 'unsafe'
+      spec: docs/spec/wizard-states.md §15 ("The app never uses 'safe' or 'unsafe'
       about any reading")
       repro: code trace — src/lib/analytics/time-in-range.js:70,72,76,80, spliced in at
       src/lib/analytics/reading-meaning.js:206, consumed by Dashboard.jsx:11 and
@@ -265,11 +270,69 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       Dashboard's "Weekly drift" label is a generic rate-of-change magnitude shown even when
       a parameter is centred in-band. Insights' ionic-balance section uses "drift" for an
       unaccounted dosing-vs-measured discrepancy, a third, unrelated meaning.
-      spec: docs/spec/surfaces-and-messaging.md §3 (band-verdict definition of "drifting"),
+      spec: docs/spec/wizard-states.md §13 (band-verdict definition of "drifting"),
       §5 (no invented or reused vocabulary)
       repro: code trace — src/lib/analytics/reading-meaning.js:196-220; src/components/
       Dashboard.jsx:492,582; src/components/Insights.jsx:384,391
       owner: implementer
+
+- [ ] [chem] TW-018 Remove `drift.js`'s dose figures; the wizard is the only source of a dose
+      why: Dan's 2026-08-14 decision 1 (see .agent/needs-dan.md). reef-chemistry.md §7 and
+      wizard-states.md §0.3 now state that the wizard's staged full-recompute is the only
+      mechanism that may produce a figure to dose. src/lib/analytics/drift.js's
+      computeDoseAdvice/computeDoseCalc compute their own — a flat 10%/15% in .pct, a
+      halve-the-gap first step in .calc — from their own noise floors and windows, with no
+      concept of staging, bracketing, rate ceilings, plausibility or an active plan. Worked
+      in the spec: the same two readings give 10.35 (drift .pct), 10.08→11.17 (drift .calc)
+      and 10.95 mL/day (wizard).
+      scope: `assessDrift`, the slope classifier with no dose number, is explicitly NOT
+      removed. `previewStrengthChange` (src/lib/dosing/corrected-strength.js:43-51) is the
+      only live consumer of .calc, rendered at Insights.jsx:697-720 — it needs re-pointing
+      at the wizard's own assessment run under before/after settings BEFORE the removal, or
+      that row goes blank. The dead `doseAdvice` useMemos at Insights.jsx:108 and
+      Dashboard.jsx:298 (computed, never read in either file) come out with it.
+      spec: docs/spec/reef-chemistry.md §7; docs/spec/wizard-states.md §0.3, §9.4
+      repro: static trace only (grep-based); worth confirming with the app running that no
+      component reads the output under a prop-drilled or re-exported name
+      owner: implementer — needs [approved][chem] first (AGENTS.md rule 3)
+
+- [ ] [chem] TW-019 `DOSE_ADVICE_RULES` has a magnesium key; §10 forbids tuning magnesium from readings
+      why: independent of TW-018 and needs closing either way. drift.js:40-57 gives magnesium
+      its own 14-35 day window and never consults DOSE_DRIFT_TRIGGER, so magnesium can be
+      handed a computed dose figure through the previewStrengthChange path — while
+      reef-chemistry.md §10 says the magnesium maintenance dose is never tuned from readings,
+      "not delayed — exempt", and that DOSE_DRIFT_TRIGGER "must not gain" a magnesium key.
+      The exemption currently holds only because one engine honours a rule the other cannot
+      see. A 15% magnesium dose error takes over a thousand days to clear the 30 ppm noise
+      floor, so any figure built from a few weeks of magnesium readings measures nothing.
+      spec: docs/spec/reef-chemistry.md §10; docs/spec/wizard-states.md §9.4
+      owner: implementer — needs [approved][chem] first
+
+- [ ] [chem] TW-020 `arrived` must test the arrival zone, not the full band
+      why: Dan's 2026-08-14 decision 4. correctionProgress's arrival test
+      (src/lib/dosing/helpers.js:273-279) is `inBand(v)` over the last two readings — the
+      full band. Canon is now `zoneWidth = max(bandWidth / 3, 2 × noiseFloor)`, clamped to
+      the band, centred on the midpoint: 8.40-8.60 dKH, 415-435 ppm Ca, 1320-1380 ppm Mg at
+      the suggested bands. The aim point (`proposeCorrection`'s `(min + max) / 2`,
+      helpers.js:404) does not change.
+      watch: `passed` (helpers.js:316) must stay independent — correction-done fires on
+      `arrived || passed` (state.js:227) and that is what keeps the "return to maintenance"
+      action reachable when the narrower zone is not hit twice. Do not conflate them. Also
+      check the two call sites that branch on `cp.arrived` specifically for wording, and
+      note the zone/noise-floor margin: reaching the zone from outside the band always
+      exceeds `stalled`'s noiseFloor test today, but only by 1.67× for calcium and magnesium.
+      spec: docs/spec/reef-chemistry.md §9; docs/spec/wizard-states.md §4
+      owner: implementer — needs [approved][chem] first
+
+<!-- 2026-08-14, from Dan's four decisions: two of the four need NO code change,
+     recorded here so nobody re-opens them. Decision 2 (water changes stay in the
+     trend fit, corrections subtracted proportionally) — alkalinity.js:493-499 and
+     calcium.js:273-278 already do exactly this; canon moved to the code. Decision 3
+     (bracket memory flat 45 days) — BRACKET_MEMORY_DAYS = 45 at helpers.js:85 is
+     already correct; the withdrawn 30/60 split was never built. Still open and NOT
+     filed as code work: the "widen never narrow" bracket rule (needs a sharper
+     diagnosis first — see reef-chemistry.md §8.3) and the absence of any
+     size threshold separating a routine 10% water change from a 40% one. -->
 
 ## Blocked
 

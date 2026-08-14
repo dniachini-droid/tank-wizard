@@ -9,7 +9,7 @@ The wizard is the default path, so its bugs reach the most people. Its specific
 risk is **state carried between steps** — a value entered at step 2 that is stale
 by step 5.
 
-Governing spec: `surfaces-and-messaging.md` §2–4, `reef-chemistry.md` §5–7.
+Governing spec: `wizard-states.md` §12–§14, `reef-chemistry.md` §6–§9 (the dose pipeline), §21 (correction arithmetic).
 
 ## Checks
 

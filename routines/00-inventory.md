@@ -40,7 +40,7 @@ For each, say which version appears to be the live one.
 
 ## 5. Distance from the spec
 Compare what exists against `docs/spec/reef-chemistry.md` and
-`docs/spec/surfaces-and-messaging.md`. Don't fix anything — just list the gaps,
+`docs/spec/wizard-states.md`. Don't fix anything — just list the gaps,
 biggest first. Be specific: "no net-volume field exists, doses are calculated on
 a hardcoded 77" is useful; "chemistry needs work" is not.
 

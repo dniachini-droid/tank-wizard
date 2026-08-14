@@ -20,8 +20,7 @@ one depends on the last.
 
 | `AGENTS.md` | the house rules every agent obeys |
 | `docs/spec/reef-chemistry.md` | the chemistry the app gets checked against |
-| `docs/spec/surfaces-and-messaging.md` | bands, message rules, terminology |
-| `docs/spec/app-contract.md` | stack, storage, offline, accessibility floor |
+| `docs/spec/wizard-states.md` | wizard states, bands, message rules, terminology, and the stack/storage/offline/accessibility floor (§18) |
 | `.claude/agents/` | the 27 agent definitions |
 | `routines/` | 6 routine prompts |
 | `.agent/` | backlog, budgets, findings, run-state, log folder |

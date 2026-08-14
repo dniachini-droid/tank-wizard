@@ -6,6 +6,6 @@
    They fed every consumption rate, trend and maintenance dose, and were written
    into the backup file and the CSV export. A fabricated reading standing in for
    a measurement nobody took is exactly the substitution the spec forbids
-   (reef-chemistry.md §0, §9), so the readings are gone rather than flagged.
+   (reef-chemistry.md §15, §12), so the readings are gone rather than flagged.
    The export stays so the seeding path stays a no-op, not a missing import. */
 export const HISTORICAL_DATA = {};

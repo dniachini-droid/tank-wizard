@@ -10,7 +10,7 @@ silently re-renders with different classifications, the app has rewritten
 history. For someone tracking a tank over years, that is the most damaging bug
 in the application — and it will never throw an error.
 
-Governing spec: `surfaces-and-messaging.md` §6.
+Governing spec: `wizard-states.md` §16.
 
 ## Permissions
 Read source; write `tests/` only.

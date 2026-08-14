@@ -1,5 +1,5 @@
-/* History truthfulness / manual override rules — §6 and §2
- * (surfaces-and-messaging.md):
+/* History truthfulness / manual override rules — §16 and §12
+ * (wizard-states.md):
  *
  *   §2: "A manual adjustment is recorded as a manual override, with both
  *   the recommended value and the entered value. History must show both."

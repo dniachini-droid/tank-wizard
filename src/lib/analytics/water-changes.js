@@ -29,8 +29,8 @@ export const DEFAULT_SETTINGS = {
   /* Deliberately absent. Every millilitre figure in the app is scaled by the
      tank's net volume, so a default here is not a convenience — it is one
      particular tank's volume silently dosing somebody else's. The engines
-     refuse and name it as the missing input instead (reef-chemistry.md §2,
-     §7.6, §9). */
+     refuse and name it as the missing input instead (reef-chemistry.md §17,
+     §21 rule 6, §12). */
   volumeL: null,
   /* Derived from the actual mix rather than a label. Aquaforest Balling at 2x
      standard: 101 g soda ash per L = 1906 meq/L, so 1 mL into 100 L gives

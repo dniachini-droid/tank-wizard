@@ -1,4 +1,4 @@
-/* History truthfulness — §6 (surfaces-and-messaging.md)
+/* History truthfulness — §16 (wizard-states.md)
  *
  *   "A logged entry records what the app said at the time: the
  *    classification, the recommendation, and the targets then in force.

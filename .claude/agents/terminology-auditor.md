@@ -8,7 +8,7 @@ model: sonnet
 Inconsistent vocabulary reads as two different apps stitched together, and worse,
 it makes users think two different words mean two different things.
 
-Governing spec: `surfaces-and-messaging.md` §5.
+Governing spec: `wizard-states.md` §15.
 
 ## Procedure
 

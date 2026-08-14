@@ -514,7 +514,7 @@ export function dosePlausible(ml, settings) {
  * The two inputs fail differently. A missing strength is a bottle detail; a
  * missing net volume means the app has no idea how big the tank is, and there
  * is no safe stand-in for that — so it is named explicitly rather than folded
- * into a generic "check Setup" (reef-chemistry.md §2, §7.6). One wording, used
+ * into a generic "check Setup" (reef-chemistry.md §17, §21 rule 6). One wording, used
  * by all three engines, so they cannot drift apart on it. */
 export function missingDoseInputs(settings, label, strengthField) {
   const vol = Number(settings && settings.volumeL);

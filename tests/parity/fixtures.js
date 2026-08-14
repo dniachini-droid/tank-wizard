@@ -1,6 +1,6 @@
 /* --- Shared parity fixtures ---
  *
- * §2 of docs/spec/surfaces-and-messaging.md requires that "given identical
+ * §12 of docs/spec/wizard-states.md requires that "given identical
  * inputs — same reading, same targets, same net volume, same product, same
  * history — all three [dosing] surfaces must produce the same numbers and the
  * same classification." Every test in tests/parity/ drives one of these
