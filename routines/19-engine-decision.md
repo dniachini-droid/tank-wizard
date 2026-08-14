@@ -2,7 +2,7 @@
 
 Cloud routine. **Reports only.** No code, spec, test, constant, fixture or
 script is changed. The entire output is one report: `.agent/engine-decision.md`,
-plus the standard `.agent/log/<run-id>.md` and `.agent/run-state.md` per the
+plus the standard `.agent/log/<run-id>.md` and `.agent/runs/<run-id>.md` per the
 checkpoint contract. Nothing else in the tree moves.
 
 Baseline this routine was written against: commit `480b086`, 14 August 2026.
@@ -412,7 +412,7 @@ Measured with the repo's own tools, not asserted:
 - Three engines sharing most of their lines. `golden.js:4-6` claims 68% and
   attributes every "fixed in one place, not the others" bug to it. **Measure it
   now** — `npm run verify:dupcheck`, `npm run verify:blockdup` (ceiling 10,
-  tree at 10 per `.agent/run-state.md`) — and report measured beside claimed.
+  tree at 10 per `.agent/runs/<run-id>.md`) — and report measured beside claimed.
 - Divergence that structure has already produced: `nearEdge` in two engines of
   three; the three-times-identical block at `alkalinity.js:407-428`, whose own
   comment records that *"blockdup did not object because it abandoned any
@@ -544,7 +544,7 @@ prose.
 ## Rules, no exceptions
 
 1. **Read-only.** The only writes are `.agent/engine-decision.md`,
-   `.agent/log/<run-id>.md` and `.agent/run-state.md`. No source, spec, test,
+   `.agent/log/<run-id>.md` and `.agent/runs/<run-id>.md`. No source, spec, test,
    constant, fixture, journey or script changes. Any harness lives in the
    scratchpad and dies with the session; its core loop goes in the appendix.
 2. **Advocacy is confined to part six.** Parts one to five report; part six
@@ -576,7 +576,7 @@ prose.
    risks, what is unknown, and the recommendation with what would make it
    wrong. No identifiers, no file paths, no camelCase, no test names.
 10. **Checkpoint contract.** Six parts and nine habits is interruptible work.
-    Write each part as it completes, update `.agent/run-state.md` at every part
+    Write each part as it completes, update `.agent/runs/<run-id>.md` at every part
     boundary, and ship a partial report saying exactly what did not run. **A
     partial report stops before part six** — a recommendation on incomplete
     evidence is worse than none, and the report says that is why it is absent.

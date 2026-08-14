@@ -123,13 +123,21 @@ implementer may not act (AGENTS.md, backlog item format); these need
   is to be **inverted, not deleted** — the assertion §3 now supports is that no
   user value changes what the rail enforces, which makes it the regression test
   for decision 1.
-- **TW-042** — the notice wording, three surfaces. Build the confirmation half
+- **TW-043** — the notice wording, three surfaces. Build the confirmation half
   with TW-031 or the string lands twice.
-- **TW-043** — the two brand colours, plus the registry test that would have
+- **TW-044** — the two brand colours, plus the registry test that would have
   caught both.
-- **TW-044** — the §22 checker. Nothing asserts §22 today, and per §10 a rule
+- **TW-045** — the §22 checker. Nothing asserts §22 today, and per §10 a rule
   with no checker is an intention. Ordering matters: check (1) may land before
   TW-037; (2) and (3) assert behaviour TW-037 creates.
+
+These three were filed as TW-042/043/044 and **renumbered when `main` was merged
+in**. `main`'s run-state restructure (`a2ea1b4`) had already taken TW-042 for
+"`.agent/backlog.md` is the next shared-singleton conflict, surviving on luck",
+and git merged both sets of additions without noticing — two items under one id,
+in the file whose singleton risk that item is about. Renumbering is the smaller
+correction: `main`'s item is merged and referenced elsewhere; these three were
+referenced only from this branch. Every cross-reference moved with them.
 
 ## Left open, deliberately
 
@@ -171,6 +179,23 @@ Cross-reference integrity was checked by grep rather than by reading: every
 `docs/spec/` was re-read and is either a band-word use (correct), a verbatim
 owner quotation (kept, and §20 says why), or a document/file name (recorded as a
 non-violation).
+
+## Merged up, after the fact
+
+`main` moved while this branch was open: the run-state restructure landed
+(`a2ea1b4`, PR #42), deleting `.agent/run-state.md` in favour of one file per
+run under `.agent/runs/`. `origin/main` (`e3b9658`) merged in. One conflict, and
+it was the expected one — this branch had written to the shared file that main
+deleted. Resolved per the new convention: the file is gone, and this run's
+record is now `.agent/runs/2026-08-14-four-owner-decisions.md`, content carried
+across unchanged apart from the merge notes. No other run's file was touched.
+
+The merge also surfaced the silent half: git combined both branches' backlog
+additions cleanly and produced **two TW-042s**, because both sides appended to
+one shared file. Renumbered here, not on main — see "Filed, not fixed" above.
+Worth noting that main's TW-042 is the item warning that `.agent/backlog.md` is
+the next shared-singleton conflict; this merge is a small instance of exactly
+that, and it argues for the item rather than against it.
 
 ## In plain terms
 

@@ -357,8 +357,11 @@ column — where naming the banned term is the point.
 Authorised as owner, **spec only — no application code was touched.** Resolves open
 items 8, 7 and two of the three one-line notes in 6. The resulting code work is filed
 untagged in `.agent/backlog.md` — **TW-037** rescoped and unblocked, **TW-039**
-extended, **TW-042 to TW-044** new. Per AGENTS.md, untagged means the implementer may
+extended, **TW-043 to TW-045** new. Per AGENTS.md, untagged means the implementer may
 not act on it: these need `[approved]` from you before any of it ships.
+(Filed as TW-042/043/044; renumbered on merge, because `main`'s run-state
+restructure had already taken TW-042 — for the item about `.agent/backlog.md`
+being the next shared-singleton conflict, which is what just happened.)
 
 **1. The rails are fixed. There is no user rail.** (Open item 8, option (b).) §3's
 `[user]` may tighten a rail clause is **withdrawn**; one figure per element, the same

@@ -59,7 +59,7 @@ shared), new modules under `src/lib/`, `src/App.jsx`, `src/components/Setup.jsx`
    ship, and every one of these pieces is the same risk.
 7. **Stop at a piece boundary** if short on time, context or usage. Finish the
    piece in hand — test, build, verify, commit, push, PR — or revert it whole.
-   Never stop mid-edit. Write `.agent/run-state.md` and `.agent/log/<run-id>.md`
+   Never stop mid-edit. Write `.agent/runs/<run-id>.md` and `.agent/log/<run-id>.md`
    before moving on and before stopping.
 8. **Report anything more involved than described here rather than forcing it.**
    This routine was written by reading the code on 14 August. Where a piece

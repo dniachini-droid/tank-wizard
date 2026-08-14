@@ -636,6 +636,31 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       spec (second block): docs/spec/reef-chemistry.md §3, docs/spec/wizard-states.md §21
       owner: implementer
 
+- [ ] [schema] TW-042 `.agent/backlog.md` is the next shared-singleton conflict, surviving on luck
+      why: `run-state.md` has been restructured into one file per run under
+      `.agent/runs/` because concurrent runs overwrote each other in it. `backlog.md`
+      is the same shape — one file every concurrent run appends to — and has NOT
+      been fixed. It has auto-merged so far only because runs happened to append
+      different regions: git conflicts when two branches add different lines at the
+      same position, and every run appends new TW- items at the same place. Measured
+      during the restructure: four branches (#37, #38, #40, #41) each conflicted on
+      run-state.md and each merged backlog.md cleanly — the same four runs, the same
+      concurrency, one file structurally safe and the other lucky.
+      in plain terms: the filing cabinet that survived this round did so by chance,
+      not design. The next two nights that both file an item in the same spot will
+      collide, and the conflict will be in the list of things wrong with the app.
+      spec: none — process/tooling, not chemistry. See AGENTS.md §checkpoint contract
+      and `.agent/proposals/run-state-restructure.md` §6.
+      repro: two branches from one base, each appending a TW- item at the end of the
+      open list, merge either into the other — conflict. Verified as the general case
+      during the run-state restructure (both sides appending at one point conflict).
+      suggested fix: not now, deliberately — it has not actually hurt yet, and the
+      run-state change should be judged on its own. If/when it does conflict, the
+      same split applies: per-run item files, or an id-keyed folder, merged into a
+      view rather than a hand-edited list. Do not pre-emptively restructure on the
+      strength of this note alone.
+      owner: needs Dan's call before any work starts
+
 - [ ] [a11y] TW-040 ICP confirmation popup renders every element value with no unit and no aria-label
       why: IcpConfirmation.jsx renders element values and "biggest moves" as bare numbers
       with no unit and zero aria-* attributes in the file.
@@ -1227,14 +1252,14 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       §19 (the surfaces that carry a hide control), §18 (accessibility floor)
       owner: implementer, once Dan confirms the "serious" mapping in §20
 
-<!-- 2026-08-14: TW-042, TW-043 and TW-044 filed from Dan's four-decision
+<!-- 2026-08-14: TW-043, TW-044 and TW-045 filed from Dan's four-decision
      authorisation (.agent/needs-dan.md, "four decisions"). Spec-only that
      night — §15's registry and colour registry, §20's word, §22 — so all
-     three are untagged and need [approved] before any code moves. TW-042 and
-     TW-043 are copy and colour, not chemistry; TW-044 is the checker that
+     three are untagged and need [approved] before any code moves. TW-043 and
+     TW-044 are copy and colour, not chemistry; TW-045 is the checker that
      stops §22 eroding the way §7 did. -->
 
-- [ ] TW-042 "Notice" is the one word; three others ship today
+- [ ] TW-043 "Notice" is the one word; three others ship today
       why: docs/spec/wizard-states.md §15 now registers **notice** as the single
       term for the thing the app shows about a parameter, and bans the three
       that ship alongside it. Live strings, all user-facing:
@@ -1262,7 +1287,7 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       land with it rather than as a second checker.
       owner: implementer, once [approved]
 
-- [ ] TW-043 Phosphate and potassium brand colours are byte-identical to severity colours
+- [ ] TW-044 Phosphate and potassium brand colours are byte-identical to severity colours
       why: docs/spec/wizard-states.md §15's colour registry, decided 2026-08-14.
       PARAM_DEFS.phosphate.color (src/lib/constants.js:33) is #C4285B, byte-identical
       to STATUS_COLOR.high (src/lib/dates.js:31) — the danger red. PARAM_DEFS.
@@ -1298,7 +1323,7 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       STATUS_COLOR value, which would have caught both and will catch the next one.
       owner: implementer, once [approved]
 
-- [ ] TW-044 Nothing asserts §22 — the consistency verdicts have no checker
+- [ ] TW-045 Nothing asserts §22 — the consistency verdicts have no checker
       why: docs/spec/wizard-states.md §22 says so in its own Enforced-by section. Per
       §10, a rule with no checker is an intention, and §7 is what that erodes into.
       Three checks, all cheap:
