@@ -2,34 +2,49 @@ run: 2026-08-14-phase6-bugs
 routine: routine 15 — phase 6: the known bugs
 started: 2026-08-14T00:00:00Z
 status: interrupted
-last completed step: bug 2 — negative consumption, SECOND PASS, shipped.
-  Dan withdrew Decision 3's option (c) as wrong at the premise and authorised
-  a four-part replacement rule (hold / report the observation not a cause /
-  ask about an unlogged water change or correction / escalate on three
-  consecutive negatives with nothing logged). Recorded at
-  docs/spec/reef-chemistry.md §24 (new Part III, cross-referenced from §6 and
-  §12) and .agent/needs-dan.md; open item 2 there is closed. Implemented in
-  all three engines via one shared helper in helpers.js, plus a doseStatus
-  fix so the dose card stops saying "the dose is matching consumption" under
-  a wizard asking for a retest. One qualification beyond the authorised
-  words — a level at or over the top of its range and still rising keeps its
-  reduction, without which protocols Mg §56 fails — flagged explicitly in
-  needs-dan.md, not buried. npm run verify GREEN on every blocking check,
-  including the three the first pass broke. golden re-recorded
-  (37ded9064e91e80e -> 372fcda432be5bcf) after a row-by-row audit proving all
-  60 changed rows are the intended decrease -> hold and nothing else moved.
-  vitest 69 failed / 213 passed against a measured 69 / 200 baseline — no new
-  failures.
-next step: bug 3 — dose-gap halving removal + stability grading fix
-  (helpers.js halving in doseDriftedFrom; alkBandOf/caBandOf/magnesium
-  equivalent grading fix). Branch fresh from origin/main. Read routine
-  section 3 in full again before starting; do not rely on this summary alone.
-  Note for bug 3: doseDriftedFrom's outOfBand halving is the same function
-  §24 now bypasses for gaining rows — check the two changes compose before
-  assuming bug 3's diff is unaffected.
-in-flight: none — bug 2 shipped and pushed, working tree clean
-branch: claude/negative-consumption-bug-irngrj (pushed)
-uncommitted work: no
+last completed step: bug 3 — dose-gap halving removed (3a) + stability
+  grading fixed (3b), shipped together per §7/§11. `doseDriftedFrom`
+  (helpers.js) no longer halves its trigger out of band; the `outOfBand`
+  parameter is gone, not just unused. `alkBandOf`/`caBandOf`/`mgBandOf` now
+  take a second `outOfBandWorsening` argument (a shared helper in helpers.js,
+  looks up STABILITY_RULES[key].noiseFloor itself) and promote a rate-only
+  "stable" grade to the next band up only when the level is outside its band,
+  still moving away, and the movement clears the §5 noise floor over the
+  fitted window. Confirmed magnesium is not exempt — grading is its *only*
+  guard, since doseDriftedFrom is permanently false for it (§10, no trigger
+  key). blockdup (ceiling 10, baseline exactly 10) failed twice during
+  implementation from incidental new duplication between calcium.js and
+  helpers.js; resolved by extracting the shared helper and by keeping the
+  original provisional out.band assignment in place (promoted later) rather
+  than deleting it — both real fixes, not workarounds, confirmed via a
+  differential region diff. npm run verify GREEN on every blocking check.
+  golden re-recorded (372fcda432be5bcf -> ae3b6189dd1ac438) after auditing
+  all 441 changed rows: 365 are the intended band promotion (14 of those
+  still hold, via the pre-existing "mild, one interval" gate — safe, bounded);
+  71 are wording-only (a hold explanation changing which of two legitimate
+  hold branches fires, action unchanged); the last 5 are a genuine finding —
+  under an active correction, doseDriftedFrom's removed raw-position check
+  and grading's fitted-position check can disagree, so a ~7-8.7% alkalinity
+  dose gap goes uncaught by either mechanism until the correction ends. Not
+  authorised to fix — written up in full (options, not a recommendation) at
+  .agent/needs-dan.md item 3. vitest 69 failed / 252 passed — same 69
+  pre-existing [chem] failures as the bug-2 baseline, spot-checked by name,
+  none related to this bug.
+next step: bug 4 — alkalinity band 1.0 -> 0.6 (constants.js PARAM_DEFS,
+  min: 8.2, max: 8.8). Branch fresh from origin/main once bug 3's PR exists.
+  Read routine section 4 in full before starting. Report, do not fix,
+  magnesium's own uncredited off-centre band (min 1250/max 1400 vs target
+  1350 -> should be 1275-1425) found while reading — same rule 7 shape as
+  bug 2 and bug 3's needs-dan.md item, a second thing found, not authorised.
+  band-edges.test.js is already red (pre-existing, part of the 69) and may
+  reference a different concept ("§3 default coral-mix target") — read what
+  it actually asserts before assuming this fix closes it; write a new,
+  narrower defects test if it doesn't match §2.
+in-flight: none — bug 3 committed on claude/bug3-halving-and-grading, not yet
+  pushed/PR'd as of this write; push + PR happen in the same breath as this
+  commit, per rule 8, before bug 4 starts.
+branch: claude/bug3-halving-and-grading
+uncommitted work: no (this file's own edit is part of the commit being made)
 
 <!--
 This file is the resume point. Every routine reads it first and writes it
