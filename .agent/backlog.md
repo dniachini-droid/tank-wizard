@@ -351,6 +351,256 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
      on 2026-08-13 — see the Decisions section of that file. The code work those
      decisions create is TW-016 and TW-017 below. -->
 
+<!-- 2026-08-14 consistency sweep: 9 new items promoted (TW-033-041), ordered
+     within this block by the night's priority rule (wrong dose reaching the
+     user > data loss > offline failure > crash > a11y contract violation >
+     perf budget > everything else). Not interleaved into the rest of the
+     file's existing order — see the sweep's triage record for the full
+     found/merged/deleted/promoted/escalated count. StabilityStrip (13th
+     classifier), AlkAssessmentBlock's dual numbers, and the TW-004/TW-014
+     binding were folded as evidence onto TW-002/TW-006/TW-004/TW-014 above
+     instead of filed as new items. -->
+
+- [ ] TW-036 DoseChangeSheet's amount field doesn't re-sync when a second staged-plan shortcut is tapped without closing the sheet
+      why: the amount field is seeded once via useState (DoseChangeSheet.jsx:17) and never
+      re-syncs to a changed `recommended` prop. In a staged multi-day plan, "Step to X" and
+      "Go to Y" both open the same already-mounted sheet (ErrorBoundary.jsx:209,212 → :249,
+      React reuses the instance) — tap one shortcut, then the other without closing the
+      sheet, and the field keeps the FIRST figure while the button just pressed claims the
+      second.
+      in plain terms: consider the small step, change your mind and tap "go straight to
+      the full dose" instead — the entry box quietly keeps the small number, and unless
+      you notice, the dose you record is not the one you just asked for.
+      spec: docs/spec/wizard-states.md §12/§16 (the recorded dose must match what the
+      wizard just told the user)
+      repro: REPRODUCED LIVE (jsdom + react-dom, real components, no mocks) — staged plan
+      [7.5, 8.4, 9.9]: "Step to 7.50" -> field 7.5; "Go to 9.90" with sheet still open ->
+      field still 7.5. General case also confirmed: recommended changing 9.9->14.2 while
+      sheet open leaves input at 9.9. (wizard-dose-auditor, 2026-08-14)
+      suggested fix: key DoseChangeSheet off prefill/recommended, or useEffect-resync the
+      field when it hasn't been hand-edited.
+      owner: implementer
+
+- [ ] [schema] TW-033 Snapshot/file restore silently overwrites targets and drops same-day rows, while claiming nothing was lost
+      why: three consequences of one root cause in src/lib/backup.jsx's restore/merge path.
+      (1) restoreBackup unconditionally overwrites live custom-ranges (targets) with the
+      snapshot's copy (backup.jsx:170-172) — no merge, not gated by the applySettings flag
+      that DOES gate tank-settings just above it. Because band classification is computed
+      live against custom-ranges everywhere in history (WaterLog rows, chart shading,
+      tooltips — TW-013's mechanism), a restore instantly and silently reclassifies every
+      reading in the log, including readings logged after the snapshot. Setup.jsx:722-728's
+      confirmation text ("Snapshot restored — anything missing was added, nothing was
+      overwritten") is false for this one field.
+      (2) The natural key used to dedupe restored rows omits time of day — readings key
+      is param|date (backup.jsx:75), dose-log key is element|date (backup.jsx:120,123).
+      Two same-parameter entries on one calendar day collide on restore; the later row is
+      silently dropped while inspectBackup's preview counts both as "fresh" (it dedups
+      against current state only, never within the incoming file itself).
+      (3) downstream meaning loss: because neither a reading's classification-at-time
+      (TW-013) nor a dose's trigger context (TW-014) is ever stored, a restore that
+      changes targets or drops a row leaves no trace that anything changed — no surface
+      can even detect the mismatch it just created.
+      in plain terms: use the undo feature to recover a few lost readings and, as a side
+      effect, every historical test result quietly re-labels itself against whatever
+      target was set on the snapshot's day — and if you logged two tests of the same
+      parameter on one day, the restore keeps one and throws the other away while its own
+      screen says both came back safely.
+      spec: docs/spec/wizard-states.md §16 ("Recomputing the past against present
+      settings is an S1 defect"); §8/§16 (history record completeness)
+      repro: contradiction-hunter LIVE repro against the real unmodified functions (no
+      mocks) — backup with two alk readings 2026-08-10 08:00 and 18:00 restored into
+      empty state: preview {total:2, fresh:2, skipped:0}, actual restored rows: 1 (the
+      08:00). Identical for dose-log. Scripts: scratchpad/{readings-key-collision2,
+      doselog-key-collision}.mjs (contradiction-hunter, 2026-08-14). custom-ranges
+      overwrite: static trace unambiguous (backup.jsx:170-172, Setup.jsx:722-728),
+      dynamic repro not independently exercised this run (read-only discovery path);
+      adjudicator UPGRADED this half to VERIFIED and confirms it is worse than filed —
+      even the manual-file-restore path overwrites targets, not just the daily ring.
+      note: binds to TW-013 and TW-014 — a restore that changes targets or drops a row
+      can make "why did I raise this dose?" permanently unanswerable and unflagged as
+      unanswerable (contradiction-hunter, compositional finding, medium confidence).
+      suggested fix: root fix is TW-013 (persist classification at log time); until then
+      restoreBackup should merge custom-ranges rather than replace (or the confirmation
+      must name the overwrite), and both natural keys need time-of-day (or a composite
+      fallback), with inspectBackup's fresh-count sharing restoreBackup's exact dedup
+      logic.
+      owner: Dan to weigh in on the schema/merge approach; implementer once approved
+
+- [ ] TW-034 One-off dose corrections feed the dosing engines but appear in no history view and no CSV, and can't be deleted
+      why: logCorrection (App.jsx:888-905) writes to a separate `corrections` array that
+      feeds the engines' math — consumption-disturbance fitting, pendingCorrection/
+      repeatedCorrections gating (alkalinity.js:83,486,513,721,776,853; calcium.js:74,
+      184-185) and buildFindings (App.jsx:124,134-137) — but is rendered on no history
+      surface and exported in no CSV (export-csv.js:5's buildCsv signature has no
+      corrections param; the one call site, Setup.jsx:744, passes none). deleteCorrection
+      (App.jsx:907) is defined and wired to nothing, so a logged correction cannot even be
+      reviewed or removed through the UI.
+      in plain terms: log a correction and the app privately uses it to explain your
+      tank's behaviour from then on, but nowhere — including the CSV you'd export — is
+      the correction itself written down. "Why did the consumption estimate jump last
+      month?" becomes unanswerable from your own records.
+      §8/§16 gap on a dosing path distinct from TW-014: this is a separate array with
+      zero visibility anywhere, not a dropped field on an existing record.
+      spec: docs/spec/wizard-states.md §8 (history record shape), §16 (history-truthfulness)
+      repro: grep confirms deleteCorrection has no call site; buildCsv signature
+      (export-csv.js:5) and its one call site (Setup.jsx:744) confirmed to omit
+      corrections (contradiction-hunter, 2026-08-14)
+      suggested fix: give corrections the §8 record shape and a history row (or fold into
+      doseLog with type:"correction"), add to buildCsv, wire deleteCorrection or remove it.
+      owner: implementer
+
+- [ ] TW-035 doseStatus.target holds two incompatible physical quantities under one name
+      why: the top-level `target` field on doseStatus is a dose RATE (mL/day) in the
+      majority of branches — "suggested" (state.js:361, target: a.maintenanceDose) and
+      "settling"/"due"/"worked" (state.js:294,300,315, target: plan.target) — and a
+      concentration only in "emergency" (state.js:205, target: mid). state.js:314's own
+      nearby prose calls the same field "mL/day".
+      in plain terms: the same labelled box sometimes holds "the level you're aiming for"
+      and sometimes "how fast you're dosing"; nothing breaks today because no live
+      consumer reads the field generically (checked — only correctionPlan.target, a
+      different object, is rendered) — which is exactly the danger: the day a future
+      change reads it generically, a dose rate could render as "8.4 dKH" with no test to
+      catch it.
+      spec: docs/spec/wizard-states.md §15 (one word, one concept, applied to the
+      internal contract)
+      repro: tests/parity/dose-status-target-field-semantics.test.js — every branch driven
+      through the real function (dose-parity-checker, 2026-08-14, confirmed by adjudicator
+      independent re-run)
+      suggested fix: split the field (targetDose / targetLevel).
+      owner: implementer
+
+- [ ] [blocked] TW-037 reading-meaning.js's six invented headline categories disagree with §13, and one of them ("drifting") means the opposite word for word
+      why: reading-meaning.js's computeControl invents six headline categories not in
+      §13's band table — sliding/"Moving fast", loose/"Wide swing", dialled/"Dialled in",
+      controlled/"Well controlled", steady-off/"Steady, running high/low", drifting/
+      "Drifting high/low" — rendered at Dashboard.jsx:467, in the same modal opened by
+      tapping the band badge. Two live/near-live contradictions:
+        (1) "drifting" (reading-meaning.js:218) fires only when the window MEDIAN sits
+            OUTSIDE the band; §13 defines drifting as INSIDE the band, trending toward an
+            edge. Same word, opposite band position.
+        (2) "steady-off" fires on median position while the CURRENT reading is in band —
+            reproduced live: 10 low alk readings (7.2-8.0, band 8.2-8.8) then a recovering
+            8.25-8.3 -> paramStatus "ok" (teal card) but ParamHistoryModal (opened by
+            tapping that same card) leads "Steady, running low" in blue
+            (Dashboard.jsx:374-380,464-467). Script: scratchpad/drift-collision3.mjs.
+      in plain terms: a second, home-made vocabulary sits on top of the official band
+      words, and its one shared word means the opposite of the official one — "Drifting
+      high" here says you're already out of range; everywhere else in the app it means
+      you're still in range but sliding toward the edge. Tap a card that says you're fine
+      and the very next screen says you're running low, for a reading inside the range
+      you set.
+      blocked on: needs-dan escalation (see .agent/needs-dan.md, "reading-meaning
+      vocabulary vs §13's band words") — whether consistency-over-time gets its own
+      registry entries distinct from §13's bands, or folds into the existing seven. This
+      mixes rate-of-change grading with band position and needs chemistry judgement, not
+      a bare rename.
+      related: TW-016 (the word "drift" used for three meanings across Dashboard/
+      Insights/reading-meaning) is the wording-drift half of the same surfaces; this item
+      is reading-meaning's own invented-category system and its two concrete
+      contradictions.
+      spec: docs/spec/wizard-states.md §13 (band-verdict definitions), §5 (no invented
+      or reused vocabulary)
+      repro: reading-meaning.js:196-219; Dashboard.jsx:467 (terminology-auditor); live
+      repro script scratchpad/drift-collision3.mjs against the real computeControl module
+      (contradiction-hunter, 2026-08-14, adjudicator-confirmed)
+      owner: blocked on Dan's registry decision; implementer once unblocked
+
+- [ ] TW-038 buildOverview computes a real cross-parameter narrative every render and shows it nowhere; wiring it in without unifying first creates two landmines
+      why: buildOverview's cross-parameter narrative (narrative-engine.js:1220-1343) —
+      Ca:alk and Mg:Ca ratio commentary, the alkalinity-vs-nutrients "burnt SPS tips"
+      warning, pH read against alkalinity, a stability paragraph, a stale-testing warning,
+      and the "if you do one thing this week" priority sentence — is computed correctly
+      every render and consumed nowhere. Only overview.headline and overview.score have
+      consumers (TodayPanel.jsx:645, Dashboard.jsx:38); overview.paragraphs has zero JSX
+      consumers anywhere in src/. The legacy app rendered it under a "Read full assessment"
+      expander (legacy/releases/reef-console-v1-stable.jsx:5278); the render call did not
+      survive the rewrite into OverviewCard.
+      in plain terms: the app quietly works out real cross-checks — e.g. that high
+      alkalinity with lean nutrients is the classic setup for burnt SPS tips, or that a
+      calcium-to-alkalinity ratio far off balance means one dosing program needs
+      attention — and then throws the advice away. The keeper sees a headline and a score
+      with no explanation.
+      two landmines gated behind this fix, both latent only because paragraphs render
+      nowhere today — acceptance criteria for this item include resolving BOTH before any
+      wiring:
+        (1) pH "running high" threshold split: narrative-engine.js:1191 uses >8.4 (inside
+            the never-rendered paragraphs), findings.js:528 uses >8.45 (live, reaches
+            Briefing/FindingList). For a pH between 8.40 and 8.45, nothing on screen
+            claims "running high" today; the moment paragraphs are wired in, the app
+            would say high and not-high about the same reading in one view.
+        (2) two independently-computed "what matters most" answers with no shared source
+            and no cross-check: buildOverview's "if you do one thing this week" waterfall
+            (narrative-engine.js:1220-1288, its own priority order: far-out -> nutrient-
+            starved -> swinging -> drifting -> off-target-age -> pH -> stale -> thin-data)
+            and buildBriefing's claim ordering (:356-543). Wiring paragraphs in without
+            unifying these means the app can name two different top priorities in one
+            view.
+      spec: docs/spec/wizard-states.md §14 (no contradicting messages in one view);
+      reef-chemistry.md (pH threshold to be named once, canon TBD)
+      repro: grep -rn "overview\." src/components -> only TodayPanel.jsx:645 and
+      Dashboard.jsx:38 consume it; grep -rn "\.paragraphs" -> zero JSX consumers,
+      definition only at narrative-engine.js:1343 (message-consistency-auditor,
+      2026-08-14); waterfall/claim-ordering divergence traced by contradiction-hunter,
+      2026-08-14, no shared consumer found by grep.
+      suggested fix: name the pH-high figure once in canon and collapse both branches to
+      it; derive buildOverview's priority sentence from the top Briefing claim (or
+      justify divergence explicitly) — THEN wire overview.paragraphs into OverviewCard
+      behind an expander as legacy did, or thread buildOverview's output into Insights.
+      owner: implementer
+
+- [ ] TW-039 rate-rails.test.js still asserts the pre-14-Aug rail canon; a red test sits next to code that is actually correct
+      why: src/test/spec/dosing/rate-rails.test.js still asserts calcium 25 / magnesium
+      100 ppm/day as "the canon table verbatim". The rail-constant fix (closed 2026-08-13,
+      see TW-016 Done) updated correction.js and the sibling rails tests to current canon
+      (reef-chemistry.md §3: alk 0.5, Ca 20, Mg 25) but missed this one file. Its header
+      also cites "reef-chemistry.md §6, lines 149-166", a range that no longer exists
+      (rails are now §3, ~107-113).
+      in plain terms: a leftover checklist still says magnesium may rise 100 ppm a day
+      when the decided safe ceiling is 25; the app itself is correct today, but anyone who
+      trusts this red test as "code is out of spec" and fixes safe-rate.js to match it
+      would reintroduce a magnesium rail four times too loose.
+      spec: docs/spec/reef-chemistry.md §3
+      repro: npx vitest run src/test/spec/dosing/rate-rails.test.js -> FAIL "calcium
+      default rail is 25 ppm/24h per canon (code enforces 20)"; FAIL "magnesium default
+      rail is 100 ppm/24h per canon (code enforces 25)" (manual-dose-auditor, 2026-08-14,
+      confirmed by adjudicator: "fix the TEST, not the code")
+      suggested fix: update the test's expectations (Ca->20, Mg->25) and its citation to
+      §3 — same-shape follow-up to the closed TW-016 rail fix, not a new chemistry
+      decision, so no [chem] tag needed.
+      owner: implementer
+
+- [ ] [a11y] TW-040 ICP confirmation popup renders every element value with no unit and no aria-label
+      why: IcpConfirmation.jsx renders element values and "biggest moves" as bare numbers
+      with no unit and zero aria-* attributes in the file.
+      in plain terms: after logging an ICP lab result, the "biggest moves" numbers carry
+      no ppm/ppb, and a screen reader announces context-free numbers with no unit or
+      parameter name.
+      spec: docs/spec/wizard-states.md §18 (accessibility floor); §15 (units are part of
+      the reading, not decoration)
+      repro: code trace — IcpConfirmation.jsx:134 "{e.v} · {e.st}", :156 biggest-moves
+      values; zero aria-* attributes in file (terminology-auditor, 2026-08-14, unchanged
+      finding from prior sweep, now also checked for a11y)
+      suggested fix: thread units from icp-reference.js into lines 134/156, add
+      aria-labels.
+      owner: implementer
+
+- [ ] [a11y] TW-041 ZoomableLineChart never receives or displays a unit or parameter name; axis and tooltip are unit-less at every call site
+      why: ZoomableChart.jsx's prop signature (line 69) carries no unit/label/def; axis
+      tickFormatter (:202) and tooltip formatter (:209) never append one (niceAxis,
+      :47-61); zero aria-* in the file. All three call sites — Dashboard.jsx:612,
+      IcpPanel.jsx:168, AllParametersSheet.jsx:285 — pass nothing.
+      in plain terms: every gridline and tooltip on every history chart is a bare
+      number — is that 8.2 dKH, ppm or ppt? A screen reader announces context-free
+      numbers with no chart label either.
+      spec: docs/spec/wizard-states.md §18 (accessibility floor); §15 (units are part of
+      the reading)
+      repro: code trace — ZoomableChart.jsx:69,202,209,47-61; callers Dashboard.jsx:612,
+      IcpPanel.jsx:168, AllParametersSheet.jsx:285 (terminology-auditor, 2026-08-14,
+      unchanged finding, now also checked for a11y)
+      suggested fix: add unit/label props, append in axis formatters, aria-label the
+      chart container — one component fix clears all three call sites.
+      owner: implementer
+
 - [ ] [chem] TW-026 magnesium's default band is off-centre from its suggested target
       why: found while fixing bug 4 (routine 15, alkalinity's band 1.0 -> 0.6).
       reef-chemistry.md §2's Layer 3 table gives magnesium a suggested target of
@@ -368,6 +618,10 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       requires "net volume"; "water volume" is never-use. terminology-auditor
       previously found "tank volume" / "net volume" / "water volume" all live in the
       app, twice in one message at src/lib/findings.js:362-363.
+      2026-08-14: terminology-auditor finds the same byte-identical double-offender at
+      findings.js:362-363 still live, plus two more sites not previously catalogued:
+      drift.js:282 and DosingWizard.jsx:258, both still reading "Set your tank volume in
+      Setup". Setup.jsx itself is clean ("net volume").
       spec: docs/spec/wizard-states.md#15-terminology-registry
       owner: implementer
 
@@ -392,6 +646,16 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       tests/parity/alert-severity-cross-surface.test.js (doseStatusAt(6.9) → emergency/red
       vs readingVerdictAt(6.9) → "Well below band"/amber; doseStatusAt(7.0).state is not
       'emergency')
+      2026-08-14: band-classifier-auditor and dose-parity-checker independently catalogue
+      a 13th classifier — StabilityStrip (TodayPanel.jsx:314) computes its own
+      in/out-of-band test straight off def.min/def.max to pick its spread-bar colour,
+      agreeing with paramStatus today by coincidence only. Now permanently
+      regression-tested: tests/parity/stability-strip-vs-param-status.test.js (real
+      component via @testing-library/react) — last reading 8.5 in a 8.2-8.8 band
+      (paramStatus "ok") plus a 12-day-old 7.9 in the window still renders the strip's
+      hardcoded "#A2621B" excursion colour; the strip reappears in the Briefing feed too.
+      Fold into this item's fix (colour off the engine's band once classifyReading
+      exists) rather than filed separately.
       owner: implementer
 
 - [ ] TW-003 Dosing Wizard crashes on the two most common refusal states
@@ -428,6 +692,13 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       driving the real DoseChangeSheet component with 70 mL/day entered shows no text
       matching /rail|limit|confirm|exceed/ anywhere, Record enabled, onSave(70,...) fires
       silently. src/components/Setup.jsx:66-92,204-208 (no min, no dosePlausible call).
+      2026-08-14: contradiction-hunter — this is ONE fix with TW-014, not two. Even once
+      this item adds an entry-time warning, no field exists anywhere in the write path
+      (DoseChangeSheet.jsx:16,63 onSave(ml,date,time); stored shape {date,time,ml,element,
+      note}; export-csv.js:20-21 identical) to carry "this exceeded a rail" — so a
+      rail-violating manual dose, once recorded, is forever indistinguishable from an
+      engine-approved one in history and CSV. Fix both together: {ml, recommended,
+      railExceeded} through the write path.
       owner: implementer
 
 - [ ] [chem] TW-005 Magnesium gate and precipitation guard are unreachable from the Dosing Wizard
@@ -456,6 +727,12 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       repro: npx vitest run tests/parity/multiday-plan-parity.test.js — currentDose 6 mL/day,
       maintenanceDose ~9.93 mL/day: recommendedDose = 7.5 (stepCapped {wanted:9.9,
       allowed:7.5}), plan[0] = 8.4 — a third figure, matching neither.
+      2026-08-14: contradiction-hunter finds a tighter, earlier manifestation of this same
+      root cause — AlkAssessmentBlock renders BOTH numbers in one uncontested render,
+      before any sheet even opens: the staged list says "Set 8.4 mL/day now"
+      (ErrorBoundary.jsx:188-190) while the shortcut two lines later says "Step to 7.5"
+      (:209-210), both unconditional in the same JSX block (:177). Pinned by the existing
+      multiday-plan-parity test. Filed as evidence on this item, not a new one.
       owner: implementer
 
 - [ ] TW-007 Rate/drift verdicts compare display-rounded values and skip the minimum-evidence gate
@@ -553,6 +830,9 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       repro: npx vitest run src/test/spec/history/target-change-immutability.test.js — a
       9.0 dKH reading logged 2026-03-15, rendered "In range" via the real WaterLog
       component, re-renders as "Low" the moment paramDefs reflects a changed target, unedited
+      related: TW-033 — a snapshot/file restore opens a second, silent door to this exact
+      bug (custom-ranges overwritten unconditionally on restore) and compounds with
+      TW-014 to erase the reason a dose change is in history at all.
       owner: implementer
 
 - [ ] [schema] TW-014 Manual dose overrides are never stored with the recommendation they replaced
@@ -565,6 +845,10 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       repro: npx vitest run src/test/spec/history/override-visibility.test.js — typing 15.5
       into the amount field with recommended=10.0 and clicking Record calls onSave with
       [15.5, date, time]; 10.0 appears nowhere in the call
+      2026-08-14: contradiction-hunter — this is ONE fix with TW-004, not two (see that
+      item's note); and a restore that changes custom-ranges compounds with this item and
+      TW-013 to make "why did I raise this dose?" permanently unanswerable and unflagged
+      as unanswerable — see TW-033's scoping note.
       owner: implementer
 
 - [ ] TW-015 Forbidden vocabulary ("safe", "optimal", "healthier") leaks into rendered narrative text
@@ -888,6 +1172,10 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       owner: implementer for the two known cases; `preview` needs a domain read first
       (is the water-change preview a missing feature or leftover code?) before it's safe
       to call [approved]
+      2026-08-14: raised again by routine-13-phase5-gate (same three values, Tasks.jsx:27
+      `preview` included) but NOT independently re-verified this run — adjudicator flags
+      it UNVERIFIED-tonight, not reconfirmed. Content matches this item exactly; no new
+      item filed.
 
 - [ ] [blocked] TW-023 `verify:csscheck` lands advisory — three dead CSS rules
       why: scripts/verify/csscheck.mjs (ported from legacy/tools/csscheck.py, reading
@@ -902,6 +1190,9 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       verify:csscheck` clean, flip `csscheck`'s mode to `'blocking'`.
       owner: implementer for the deletions; a11y-reviewer's read needed before `.rc-modal`
       is called safe to drop instead of fixed
+      2026-08-14: raised again by routine-13-phase5-gate (same three rules) but NOT
+      independently re-verified this run — adjudicator flags it UNVERIFIED-tonight, not
+      reconfirmed. Content matches this item exactly; no new item filed.
 
 - [ ] [deps] TW-024 `npm run lint` doesn't exist; several checkers overlap what eslint does
       why: AGENTS.md's Definition of Done requires `npm run lint` clean, and there is no
