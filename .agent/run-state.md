@@ -2,34 +2,49 @@ run: 2026-08-14-phase6-bugs
 routine: routine 15 — phase 6: the known bugs
 started: 2026-08-14T00:00:00Z
 status: interrupted
-last completed step: bug 2 — negative consumption, SECOND PASS, shipped.
-  Dan withdrew Decision 3's option (c) as wrong at the premise and authorised
-  a four-part replacement rule (hold / report the observation not a cause /
-  ask about an unlogged water change or correction / escalate on three
-  consecutive negatives with nothing logged). Recorded at
-  docs/spec/reef-chemistry.md §24 (new Part III, cross-referenced from §6 and
-  §12) and .agent/needs-dan.md; open item 2 there is closed. Implemented in
-  all three engines via one shared helper in helpers.js, plus a doseStatus
-  fix so the dose card stops saying "the dose is matching consumption" under
-  a wizard asking for a retest. One qualification beyond the authorised
-  words — a level at or over the top of its range and still rising keeps its
-  reduction, without which protocols Mg §56 fails — flagged explicitly in
-  needs-dan.md, not buried. npm run verify GREEN on every blocking check,
-  including the three the first pass broke. golden re-recorded
-  (37ded9064e91e80e -> 372fcda432be5bcf) after a row-by-row audit proving all
-  60 changed rows are the intended decrease -> hold and nothing else moved.
-  vitest 69 failed / 213 passed against a measured 69 / 200 baseline — no new
-  failures.
-next step: bug 3 — dose-gap halving removal + stability grading fix
-  (helpers.js halving in doseDriftedFrom; alkBandOf/caBandOf/magnesium
-  equivalent grading fix). Branch fresh from origin/main. Read routine
-  section 3 in full again before starting; do not rely on this summary alone.
-  Note for bug 3: doseDriftedFrom's outOfBand halving is the same function
-  §24 now bypasses for gaining rows — check the two changes compose before
-  assuming bug 3's diff is unaffected.
-in-flight: none — bug 2 shipped and pushed, working tree clean
-branch: claude/negative-consumption-bug-irngrj (pushed)
-uncommitted work: no
+last completed step: bug 4 — alkalinity band, 1.0 -> 0.6 dKH, shipped.
+  One-line fix (constants.js PARAM_DEFS, 8.5-9.5 -> 8.2-8.8) with a large,
+  fully-explained blast radius: three OTHER test files (tests/legacy-port/
+  summary.js, src/test/spec/history/target-change-immutability.test.js,
+  src/test/spec/dosing/rounding.test.js) hardcoded alkalinity reading values
+  that assumed the old band and needed their fixture *numbers* re-picked
+  (never their assertions — AGENTS.md #4) to keep testing what they claim to.
+  Confirmed via a differential vitest failure-list diff that the full suite's
+  failure set is now byte-identical to a freshly-measured baseline, not just
+  the same count. band-edges.test.js read but not touched — its 4 failures
+  cite a "§3, target ± 0.5" numbering that matches neither the old nor the
+  new band and predate this bug entirely (ran unchanged before/after,
+  4 failed both times, same reason). golden re-recorded
+  (372fcda432be5bcf -> a24f6fb8d3011187) after confirming no THREW/crash and
+  spot-checking five rows field-by-field — not a row-by-row audit like bugs
+  2/3, since golden.js's sweep is deliberately band-relative
+  (base/rate = f(span)), so ~1/3 of the alkalinity matrix re-deriving is the
+  designed consequence of this exact change, not a symptom to chase row by
+  row. Found and filed, not fixed (rule 7 — out of this bug's citation):
+  TW-026, magnesium's own PARAM_DEFS band is centred on 1325 ppm, not the
+  1350 target §2 gives it — same off-centre shape as alkalinity's bug, filed
+  to .agent/backlog.md "Needs Dan's approval". PR number recorded in a
+  follow-up commit once opened, per the bug-3 precedent.
+  IMPORTANT for whoever resumes: this branch was cut fresh from `main`, which
+  does NOT yet include bug 3's changes (PR #22, not merged as of this run) —
+  bugs 3 and 4 are independent PRs against the same base, per rule 1. Bug 5
+  below is also independent of both and should also branch from `main`, not
+  from either.
+next step: bug 5 — TW-016, magnesium correction rail 100 -> 25
+  (src/lib/analytics/correction.js:20, CORRECTIONS.magnesium.maxPerDay).
+  Branch fresh from origin/main. Read routine section 5 in full before
+  starting. rails.test.js's SPEC_RAIL constant needs re-pointing to
+  {0.5, 20, 25} as part of this fix (the backlog item TW-016 explicitly
+  names this file's constant, not just its assertions — not a rule-4
+  violation), and its header comment's "§6, lines 149-166" citation is stale
+  (now §3 after the 14 Aug canon swap) — correct both in the same PR. After
+  the fix, confirm rails.test.js's calcium assertions pass for a reason
+  already true before this fix (code was already right) and magnesium's pass
+  for the new reason, not just that the file goes green as a whole.
+in-flight: bug 4 committed on claude/bug4-alkalinity-band, about to push and
+  open the PR in the same breath, per rule 8.
+branch: claude/bug4-alkalinity-band
+uncommitted work: no (this file's own edit is part of the commit being made)
 
 <!--
 This file is the resume point. Every routine reads it first and writes it
