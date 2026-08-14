@@ -1,3 +1,32 @@
+run: 2026-08-14-failure-replay
+routine: routines/17-failure-replay.md
+started: 2026-08-14T00:00:00Z
+status: complete
+last completed step: committed, pushed, PR #38 opened (https://github.com/dniachini-droid/tank-wizard/pull/38) — never merged, per AGENTS.md #13
+next step: none — routine finished
+in-flight: none
+branch: claude/stoic-carson-i9416q
+uncommitted work: no
+
+notes:
+  - read-only routine: no application code, spec, test, or constant changed.
+    verified via git status before commit — only .agent files touched.
+  - scratch work happened outside the repo tree, in the session scratchpad
+    (<scratchpad>/failure-replay/legacy-run, current-run). Never committed.
+  - headline finding: current, in 2 of 24 simulated three-year runs, opens
+    a calcium correction plan just before a neglect spell and overshoots
+    further than legacy does in the same circumstance (836.8 / 710.6 ppm
+    vs legacy's worst 518.2 ppm) — above the documented F3 figure of
+    702 ppm. Attributed, not proven, to Bug 3's grading sensitivity change
+    increasing how often a plan is open going into a testing gap. Full
+    detail in .agent/failure-replay.md's "New failures" section.
+  - previous run-state content (routine 16, durability remainder, status
+    "piece one complete") was superseded by this run at the start; that
+    routine's own branches/PRs are untouched by this one and its log
+    survives independently at .agent/log/2026-08-14-durability-remainder.md.
+
+---
+
 run: 2026-08-14-durability-remainder
 routine: routines/16-durability-remainder.md (PR #30)
 started: 2026-08-14T11:30:00Z
@@ -62,6 +91,42 @@ notes:
 
      Nothing here changes routine 15's state or its composed PRs. This branch
      was cut from `main`, which carries bugs 1-7. -->
+
+---
+
+run: 2026-08-14-real-history-replay
+routine: routines/18-real-history-replay.md
+started: 2026-08-14T12:20:00Z
+status: complete
+last completed step: report written (all 11 sections), log written, committed,
+  pushed, PR opened: https://github.com/dniachini-droid/tank-wizard/pull/37
+next step: none — Dan reviews and merges (or not). Follow-ups are filed inside
+  the report, §8 (other owners) and §9 (questions for Dan).
+in-flight: nothing
+branch: claude/hopeful-bohr-yc58vu
+uncommitted work: no
+
+what shipped:
+  .agent/real-history-replay.md          — the full report, sections 1-11
+  .agent/log/2026-08-14-real-history-replay.md
+  .agent/run-state.md                    — this file
+
+nothing else in the tree moved. The replay harness lived in the session
+scratchpad and dies with the session; its core loop is preserved in the
+report's appendix (§10).
+
+notes for whoever runs this next:
+  - npm ci first; node_modules is empty in a fresh clone and the engine cannot
+    be imported without it.
+  - The engine modules cannot be imported by plain Node: src/lib/constants.js
+    imports ../icons.jsx. A node --import loader that transpiles .jsx through
+    the esbuild vendored with vite fixes it (report §10.1). Do not work around
+    it by stubbing PARAM_DEFS.
+  - The clock fake is not optional. Verify todayStr() returns the step date
+    before trusting one line of output; computeStability alone flips green to
+    amber on the system clock (report §8, finding O2).
+  - Key everything by (param, date, value). Reading ids do not survive an
+    export/restore round trip (report §1).
 
 ---
 
