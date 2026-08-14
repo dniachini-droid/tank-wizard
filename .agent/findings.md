@@ -213,3 +213,26 @@ evidence: DoseChangeSheet.jsx:17 (useState seeded once); ErrorBoundary.jsx:209,2
 impact: In plain terms: consider the small step, change your mind and tap "go straight to the full dose" — the entry box quietly keeps the small number, and unless you notice, the dose you record is not the one you just asked for.
 suggested fix: key DoseChangeSheet off prefill/recommended (or useEffect resync when not hand-edited) so the amount always reflects the last selection.
 confidence: high
+
+### dose-parity-checker / 2026-08-14 / status-of-priors
+All 6 previously-documented parity violations UNCHANGED, re-verified by content: no rail check (TW-004), Mg gate unreachable (TW-005), plan[0] vs recommendedDose (TW-006), confident hold on <2-day readings, 6.9/7.0 dKH alert-low boundary pair. One count drift vs 13 Aug (parity 38/7 → 39/6) fully explained by fd82363 (magnesium rail 100→25 fix) — a genuine fix whose spec assertion now passes, not a weakened test. Suite extended: 8 files/45 tests → 11 files/61 tests (53 pass / 8 fail, the 6 prior + 2 new documented violations). Orchestrator reconciled full-suite numbers exactly: 414→430 tests (+16), 62→64 fail (+2 documented), 352→366 pass — no unexplained drift anywhere.
+
+### dose-parity-checker / 2026-08-14 / S1
+what: doseStatus's top-level `target` field carries two incompatible physical quantities under one name — and the dose-rate reading (mL/day) is the MAJORITY: "suggested" (state.js:361 target: a.maintenanceDose), "settling"/"due"/"worked" (state.js:294,300,315 target: plan.target) are all mL/day; only "emergency" (state.js:205 target: mid) is a concentration.
+evidence: tests/parity/dose-status-target-field-semantics.test.js — every branch driven through the real function; state.js:314's own prose labels the same field "mL/day" nearby. No live consumer reads the field generically today (checked — only correctionPlan.target, a different object, is rendered): latent, honestly reported as such.
+impact: In plain terms: the same labelled box sometimes holds "the level you're aiming for" and sometimes "how fast you're dosing"; nothing breaks today, and that's exactly the danger — the day a future change reads it generically, a dose rate renders as "8.4 dKH" and no test would have failed. Now one does.
+suggested fix: split the field (targetDose/targetLevel) per §15's one-word-one-concept applied to the internal contract.
+confidence: high
+
+### dose-parity-checker / 2026-08-14 / S2
+what: StabilityStrip's verdict comes from a spread statistic (p05/p95 of a window), not the last reading — live-reproduced showing the strip render its "outside" colour while the same parameter's current reading is squarely in band per every other surface.
+evidence: tests/parity/stability-strip-vs-param-status.test.js — real component via @testing-library/react: last reading 8.5 (band 8.2-8.8, paramStatus "ok") + a 12-day-old 7.9 in the window → strip renders hardcoded "#A2621B" excursion colour. Agreement-by-coincidence pins added for the degenerate no-spread case.
+impact: In plain terms: the spread bar can say "running out of range" in amber right next to a badge saying you're fine, same tank, same moment (and the strip appears again in the Briefing feed). Executable confirmation of Wave A's 13th-classifier finding, now permanently pinned.
+suggested fix: colour off the last-reading band position (§26); keep the spread for consistency display only.
+confidence: high
+
+### dose-parity-checker / 2026-08-14 / S3
+what: POSITIVE — all three engines genuinely agree that band position derives from the last reading, proven cross-engine by construction (identical relative band-position shape scaled per element), not just per-engine fixtures.
+evidence: tests/parity/position-is-last-reading-cross-engine.test.js, 3/3 pass. Note in-file: a one-band-width outlier splits the engines' fits (calcium stays in-band); three band-widths needed for unanimity — informative about fit sensitivity, documented in comments.
+impact: Permanent regression guard: a future edit reintroducing fitted-value position in exactly one engine now fails a cross-engine test, not only a per-engine fixture.
+confidence: high
