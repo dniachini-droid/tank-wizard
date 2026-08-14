@@ -138,3 +138,25 @@ Full suite 430 tests 366/64 — reconciles exactly with the 414/352/62
 baseline (+16 tests, +2 documented failures). Nothing outside tests/parity/
 touched (verified by exclusion runs). Committed 326605c. Proceeding to
 Wave C.
+
+## Wave C — contradiction-hunter (complete)
+Matrix re-worked against unchanged app source: cell classes hold at 2
+construction / 9 coincidence / 5 live; deltas are durability (two cells
+gained permanent tests via Wave B; ParamCard's three-badge triple still
+UNPINNED) plus interaction-level findings between cells. NEW S1 x2, both in
+the spaces between yesterday's lanes:
+1. Backup/restore natural keys omit time (param|date, element|date) —
+   LIVE REPRO: restore of two same-day alk readings delivers ONE row while
+   the preview claims both fresh. Same for dose-log. The recovery feature
+   silently deletes data AND (per Wave A) silently relabels it.
+2. The `corrections` array feeds engine math (consumption disturbances,
+   correction gating, findings) but renders in no history surface and no
+   CSV; deleteCorrection wired to nothing.
+Also: S2 AlkAssessmentBlock renders 8.4 and 7.5 as the same step in one
+block (tighter TW-006 evidence); S2 "steady-off" vs in-band card reproduced
+live with a realistic recovery fixture; S2 rail-violating doses forever
+indistinguishable downstream (TW-004+TW-014 are ONE fix — triage directive);
+S2 restore×TW-013×TW-014 compound ("why did I raise this dose" becomes
+unanswerable, unflagged); S3 priority-sentence vs Briefing latent landmine.
+Two new unpinned colour coincidences (phosphate=danger red, potassium=low
+amber) — colour-registry gap, note for Dan. Appended. Proceeding to Wave D.

@@ -236,3 +236,55 @@ what: POSITIVE — all three engines genuinely agree that band position derives 
 evidence: tests/parity/position-is-last-reading-cross-engine.test.js, 3/3 pass. Note in-file: a one-band-width outlier splits the engines' fits (calcium stays in-band); three band-widths needed for unanimity — informative about fit sensitivity, documented in comments.
 impact: Permanent regression guard: a future edit reintroducing fitted-value position in exactly one engine now fails a cross-engine test, not only a per-engine fixture.
 confidence: high
+
+### contradiction-hunter / 2026-08-14 / matrix-summary
+No app source changed since yesterday's Wave C (verified by git log — only sweep commits), so cell classes hold at 2 construction / 9 coincidence / 5 live-contradiction. Deltas: StabilityStrip cell moved from "observed" to permanently regression-tested (Wave B); doseStatus.target latent contradiction now pinned; ParamCard's three-badge triple remains UNPINNED by any test. New dimension: history's band column now provably breakable by a single user action (Restore), not just a Setup edit. Two NEW unpinned colour coincidences: PARAM_DEFS.phosphate.color === the app-wide danger red #C4285B (constants.js:33 vs dates.js:31, state.js:202, DoseExpectation.jsx:158, stability-engine.js:164, TodayPanel.jsx:519 — phosphate's header cap always tints "danger" regardless of reading) and PARAM_DEFS.potassium.color === STATUS_COLOR.low #926A09. Colour-registry gap, same shape as §15's word registry — one-line note for Dan, not a backlog item yet.
+
+### contradiction-hunter / 2026-08-14 / S1
+what: The backup/restore natural key for BOTH readings and dose-log omits time of day — readings key `param|date`, dose-log key `element|date` (backup.jsx:75,78,120,123). Two same-parameter rows on one calendar day collide: restore keeps the first, silently drops the second, while inspectBackup's preview counts both as "fresh" (it dedups against current state only, never within the incoming file).
+evidence: LIVE repro against the real unmodified functions (esbuild bundle, no mocks): backup with two alk readings 2026-08-10 08:00 and 18:00 restored into empty state → PREVIEW {total:2, fresh:2, skipped:0}; ACTUAL restored rows: 1 (the 08:00). Identical for dose-log (7.5 mL @08:00 + 9.9 mL @15:30 → 1 row). Scripts: scratchpad/{readings-key-collision2,doselog-key-collision}.mjs.
+impact: In plain terms: restore a backup after losing data — test alkalinity before and after a water change that day, or retest a suspicious reading, and the restore quietly throws one of the two away while its own preview screen says both were recovered. Compounds the custom-ranges overwrite S1: the recovery feature both relabels history AND deletes rows, each silently. Downstream, the "at least two readings after the change" gate (state.js:284) and same-day consumption fits then run on data the user believes intact.
+suggested fix: include time in both natural keys (composite fallback when time is blank), and make inspectBackup's fresh-count share restoreBackup's exact dedup logic.
+confidence: high (live repro, production functions)
+
+### contradiction-hunter / 2026-08-14 / S1
+what: One-off dose corrections (logCorrection, App.jsx:888-905) live in a separate `corrections` array that FEEDS the engines' math (consumption-disturbance fitting, pendingCorrection/repeatedCorrections gating — alkalinity.js:83,486,513,721,776,853; calcium.js:74,184-185 — and buildFindings via App.jsx:124,134-137) but is rendered in NO history surface and exported in NO CSV (buildCsv signature export-csv.js:5 has no corrections param; call site Setup.jsx:744 passes none). deleteCorrection (App.jsx:907) is defined and wired to nothing — once logged, a correction can't even be reviewed or removed through the UI.
+evidence: traces above; grep confirms deleteCorrection has no call site.
+impact: In plain terms: log a correction and the app privately uses it to explain your tank's behaviour ever after — but nowhere, including the CSV you'd export, is that correction written down. "Why did the consumption estimate jump last month?" becomes unanswerable from your own records. §8/§16 gap on a different dose path than TW-014 (structurally separate array, zero visibility).
+suggested fix: give corrections the §8 record shape and a history row (or fold into doseLog with type:"correction"), add to buildCsv, wire deleteCorrection or remove it.
+confidence: high
+
+### contradiction-hunter / 2026-08-14 / S2
+what: AlkAssessmentBlock shows TWO different numbers for the same first correction step in ONE render, before any sheet opens: staged list says "Set {plan[0]} mL/day now" (ErrorBoundary.jsx:188-190) while the shortcut two lines later says "Step to {recommendedDose}" (:209-210), both unconditional in the same JSX block (:177). Pinned fixture values: 8.4 vs 7.5.
+evidence: JSX co-render traced; numeric divergence confirmed live via existing multiday-plan-parity test (still failing that pair).
+impact: In plain terms: the plan says "set 8.4 now" and the button right under it says "step to 7.5" — same step, same screen, no input yet. Tighter, earlier manifestation of TW-006's root cause, not a new root.
+suggested fix: same fix as TW-006 (plan[0] and recommendedDose one computation); file as evidence on that item.
+confidence: high
+
+### contradiction-hunter / 2026-08-14 / S2
+what: reading-meaning's invented "steady-off" verdict fires on window-MEDIAN position while the CURRENT reading is in band — reproduced concretely: 10 low alk readings (7.2-8.0, band 8.2-8.8) then a recovering 8.25-8.3 → paramStatus "ok" (teal card) but ParamHistoryModal (opened by tapping that card) leads "Steady, running low" in blue (Dashboard.jsx:374-380,464-467).
+evidence: LIVE run of computeControl against the real module; script scratchpad/drift-collision3.mjs.
+impact: In plain terms: the card says you're fine; tap it and the next screen says you're running low — for a reading that is in the range you set. TW-016's invented vocabulary made concrete with numbers.
+suggested fix: covered by TW-016/TW-002 — separate consistency-over-time language from current-band language.
+confidence: high
+
+### contradiction-hunter / 2026-08-14 / S2
+what: A rail-violating manual dose, once recorded, is INDISTINGUISHABLE from an engine-approved one on every downstream surface — the compound of TW-004 (no entry check) and TW-014 (recommended figure dropped at save): even after TW-004 adds an entry-time warning, no field exists anywhere in the pipeline (App.jsx write path, history, CSV) to carry "this exceeded a rail".
+evidence: DoseChangeSheet.jsx:16,63 onSave(ml,date,time); stored shape {date,time,ml,element,note}; export-csv.js:20-21 identical. Both halves confirmed by still-failing tests.
+impact: In plain terms: enter 70 mL against a 49.4 mL safety ceiling and the record forever reads like any ordinary dose. Fixing the warning without fixing the record leaves the history blind.
+suggested fix: TW-004+TW-014 are ONE fix ({ml, recommended, railExceeded} through the write path), not two — triage should bind them.
+confidence: high
+
+### contradiction-hunter / 2026-08-14 / S2
+what: Restore × TW-013 × TW-014 compound: a snapshot restore reverting custom-ranges can invalidate the REASON a dose change sits in history with no trace — the dose entry survives (additive merge) but neither the trigger reading's classification-at-time (TW-013) nor the dose's trigger context (TW-014) was ever stored, so no surface can even detect the mismatch.
+evidence: composition of backup.jsx:170-172 + TW-013 + TW-014 traces (each separately verified; interaction not separately executed).
+impact: In plain terms: "why did I raise this dose?" becomes permanently unanswerable — and unflagged as unanswerable — when two ordinary features (edit a target, restore a backup) interact. Triage note: the restore target-overwrite S1's blast radius includes the dose log's MEANING, not just reading badges.
+suggested fix: no new fix — binds to TW-013+TW-014; recorded so triage scopes the restore finding correctly.
+confidence: medium (compositional)
+
+### contradiction-hunter / 2026-08-14 / S3
+what: buildOverview's "If you do one thing this week" priority sentence (narrative-engine.js:1220-1288, bespoke waterfall) and buildBriefing's claim ordering (:356-543) are two independently-computed answers to "what matters most now" with no shared source and no cross-check. Latent today only because overview.paragraphs renders nowhere; the moment that S2 gap is fixed, two different "one things" can sit in one view.
+evidence: waterfall traced (far-out → nutrient-starved → swinging → drifting → off-target-age → pH → stale → thin-data); grep confirms no consumer.
+impact: In plain terms: same landmine shape as the pH 8.4/8.45 split, one level up — wire the hidden advice back in without unifying, and the app names two different top priorities at once.
+suggested fix: when wiring paragraphs in, derive priority from the top Briefing claim or justify divergence explicitly. Bind to the buildOverview S2.
+confidence: medium
