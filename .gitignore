@@ -6,6 +6,10 @@ dist-ssr/
 # Build / PWA generated output
 dev-dist/
 
+# Phase 3 legacy-conformance harness output — regenerate with the esbuild
+# command in .agent/phase3-conformance.md, not committed.
+/build/
+
 # Logs
 logs/
 *.log
