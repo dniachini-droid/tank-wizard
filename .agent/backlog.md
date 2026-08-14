@@ -22,31 +22,6 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
      on 2026-08-13 — see the Decisions section of that file. The code work those
      decisions create is TW-016 and TW-017 below. -->
 
-- [ ] [chem] TW-016 correction.js allows magnesium at 4x the rail; rails.test.js asserts the old canon
-      why: Dan settled the magnesium rail at 25 ppm/24 h on 2026-08-14 (§3), closing
-      the 25-vs-50 conflict the canon swap surfaced. Against that figure:
-      - src/lib/analytics/correction.js:20 CORRECTIONS.magnesium.maxPerDay is 100 —
-        four times the rail. Per §3, "any recommendation exceeding a rail is a bug,
-        not a preference." Its calcium entry (20) is already right.
-      - src/lib/analytics/safe-rate.js:27 CORRECTION_MAX_RATE is {alkalinity 0.5,
-        calcium 20, magnesium 25} — this now matches canon exactly and needs NO
-        change. Its own comment ("the conservative end of each is the default")
-        states the principle Dan chose. Do not touch it.
-      So this item is now one constant plus its test, not the two-sided conflict it
-      was filed as: correction.js's 100 becomes 25.
-      spec: docs/spec/reef-chemistry.md#3-rate-rails--one-per-element
-      UNBLOCKED 2026-08-14 — the rail figure is no longer in dispute.
-      repro: tests/parity/correction-calculator-vs-rail.test.js; also
-      src/test/spec/classification/rails.test.js, whose SPEC_RAIL at line 24 is
-      {alkalinity 0.5, calcium 25, magnesium 100} — the pre-13-Aug canon, quoted
-      again in the header comment at lines 1-19, which cites "§6, lines 149-166"
-      (that section is now §3). SPEC_RAIL must be re-pointed to {0.5, 20, 25} and
-      the header comment rewritten to quote §3, as part of this item — not edited
-      on its own to go green (AGENTS.md rule 4). Its calcium assertions currently
-      fail against code that is already correct; its magnesium ones fail for the
-      right reason.
-      owner: implementer — needs [approved][chem] first (AGENTS.md rule 3)
-
 - [ ] TW-017 Terminology: "water volume" is now a banned synonym for "net volume"
       why: Dan's 2026-08-13 registry decision. wizard-states.md §15 now
       requires "net volume"; "water volume" is never-use. terminology-auditor
@@ -730,6 +705,32 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       owner: Dan approves the dependency; implementer wires it in once approved
 
 ## Done
+
+- [x] [chem] TW-016 correction.js allows magnesium at 4x the rail; rails.test.js asserted the old canon
+      why: Dan settled the magnesium rail at 25 ppm/24 h on 2026-08-14 (§3), closing
+      the 25-vs-50 conflict the canon swap surfaced.
+      - `src/lib/analytics/correction.js:20` `CORRECTIONS.magnesium.maxPerDay`:
+        100 -> 25 (was four times the rail). Its calcium entry (20) was already right,
+        untouched.
+      - `src/lib/analytics/safe-rate.js:27` `CORRECTION_MAX_RATE` — already matched
+        canon exactly ({alkalinity 0.5, calcium 20, magnesium 25}), confirmed
+        untouched.
+      - `src/test/spec/classification/rails.test.js` `SPEC_RAIL` (line 24):
+        {0.5, 25, 100} (the pre-13-Aug canon) -> {0.5, 20, 25}, and its header
+        comment's stale "§6, lines 149-166" citation corrected to §3 — done in the
+        same PR as the fix, not on its own (AGENTS.md rule 4; the backlog item
+        itself named this file's constant as needing the update).
+        `tests/parity/correction-calculator-vs-rail.test.js`'s two assertions that
+        hardcoded the buggy 100/4x figures as "the actual, current disagreement"
+        updated the same way — the disagreement they demonstrated no longer
+        exists, so asserting it as fact would itself be false; its SPEC VIOLATION
+        assertion (the one proving the defect) now passes unedited.
+      spec: docs/spec/reef-chemistry.md#3-rate-rails--one-per-element
+      repro: tests/parity/correction-calculator-vs-rail.test.js;
+      src/test/spec/classification/rails.test.js — confirmed calcium assertions
+      pass for the reason they were already right, magnesium's pass for the new
+      reason, not just that the file goes green as a whole.
+      owner: implementer — routine 15 (phase 6), bug 5
 
 - [x] [approved] TW-021 `verify:linkcheck` and `verify:propcheck` flipped advisory -> blocking
       why: both checkers were failing on real reference bugs, not false positives —

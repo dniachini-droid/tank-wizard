@@ -1,27 +1,29 @@
-/* Rate-of-change rails as data (§6)
+/* Rate-of-change rails as data (§3)
  *
- * Spec anchor: docs/spec/reef-chemistry.md §6, lines 149-166 —
+ * Spec anchor: docs/spec/reef-chemistry.md §3, "Rate rails — one per element"
+ * (renumbered from §6 in the 14 Aug canon swap) —
  *   "Any recommendation exceeding a rail is a bug, not a preference. Enforced
  *    in logic, not merely displayed.
  *    | Rail | Default per 24 h |
  *    | Alkalinity | 0.5 dKH |
- *    | Calcium    | 25 ppm  |
- *    | Magnesium  | 100 ppm |
+ *    | Calcium    | 20 ppm  |
+ *    | Magnesium  | 25 ppm  |
  *   [user] may tighten a rail. The app never permits loosening beyond the
  *    default."
+ * Magnesium settled at 25 (not the Aqua Forest label's 50) on 14 Aug, closing
+ * a conflict the canon swap surfaced — see §3's own "For the record" note.
  *
  * These are §1-class universal constants (line 29: "Changing any of these
- * without an [approved][chem] item is an S1 defect"). The task brief flags
- * that safe-rate.js appears to have calcium at 20 and magnesium at 25 — this
- * file asserts the spec values directly, and separately checks that the two
- * independent places in the codebase that both claim to encode "the daily
- * rail" (safe-rate.js and correction.js) don't disagree with each other.
+ * without an [approved][chem] item is an S1 defect"). This file asserts the
+ * spec values directly, and separately checks that the two independent
+ * places in the codebase that both claim to encode "the daily rail"
+ * (safe-rate.js and correction.js) don't disagree with each other.
  */
 import { describe, expect, it } from 'vitest'
 import { CORRECTION_MAX_RATE, SAFE_DAILY_RISE } from '../../../lib/analytics/safe-rate.js'
 import { CORRECTIONS } from '../../../lib/analytics/correction.js'
 
-const SPEC_RAIL = { alkalinity: 0.5, calcium: 25, magnesium: 100 };
+const SPEC_RAIL = { alkalinity: 0.5, calcium: 20, magnesium: 25 };
 
 describe('§6 rails — CORRECTION_MAX_RATE must equal the spec default per 24h', () => {
   for (const key of Object.keys(SPEC_RAIL)) {
