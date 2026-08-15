@@ -6,7 +6,16 @@ Decisions no agent may make. Newest at top. Dan clears this file.
 
 ## Open
 
-### 9. `PARAM_DEFS.alkalinity.color` is byte-identical to `STATUS_COLOR.ok` — the mirror of the phosphate fault
+### ~~9. `PARAM_DEFS.alkalinity.color` is byte-identical to `STATUS_COLOR.ok` — the mirror of the phosphate fault~~ — closed 2026-08-15, see Decisions
+
+Resolved as **option (b)**: alkalinity's brand colour moves, on the same reasoning as
+phosphate's and potassium's, and the severity colours stay put. Option (c) — extending
+§15's colour registry to the verdict tones, which would have pulled in nitrate and
+salinity — was **not** taken; those two stay as they are. Filed as **TW-046**, which
+carries the one thing this decision does not settle: no replacement hex is named yet,
+and `#0B7C86` turns out to be the app's own brand teal as well as `STATUS_COLOR.ok`,
+so the colour has to be chosen on purpose. The workup below is left in place because
+its framing of the two directions of harm is what the decision turns on.
 
 Found 2026-08-14 while applying the colour half of decision 4, and **not covered by
 it**. That decision named phosphate (`#C4285B` = danger red) and potassium (`#926A09`
@@ -172,7 +181,8 @@ decision.
 - ~~**Colour-registry gap**~~ — **closed 2026-08-14.** §15 gained the colour registry
   and both named collisions are settled: phosphate `#9B3A8C`, potassium `#5F7A12`.
   The severity colours are unchanged. A third collision the note did not name
-  (`alkalinity` = `ok`) is **open item 9** above.
+  (`alkalinity` = `ok`) was item 9 above — **closed 2026-08-15**, alkalinity moves
+  too, filed as TW-046.
 - ~~**"Notice" wording**~~ — **closed 2026-08-14.** `notice` is registered in §15 as
   the single term; "Worth knowing about", "Hidden notes"/"Notes" and "notification"
   are banned, TW-031's confirmation sentence is restated, and "Got it — hide this"
@@ -352,7 +362,64 @@ column — where naming the banned term is the point.
 
 ## Decisions
 
-### 2026-08-14 (latest) — Dan, spec owner: four decisions — fixed rails, two vocabularies, the tier and the refusal, one word for a notice
+### 2026-08-15 (latest) — Dan, spec owner: four items approved for implementation, and alkalinity's colour moves too
+
+Two separate acts in one message, kept apart here because they authorise different
+things.
+
+**1. Four backlog items approved.** `TW-037`, `TW-039`, `TW-043` and `TW-044` are now
+`[approved]` and have moved into `.agent/backlog.md`'s "Approved for implementation"
+section. This is the code authorisation the 14 August decision deliberately withheld —
+that night was spec-only, and the items it created were filed untagged precisely so
+this step would be its own. Ordered after the phase-8b three; **TW-001 is still next.**
+
+The scope Dan restated on each, which is narrower than the items alone would suggest:
+
+- **TW-037** — implement §22. All three parts: rename `drifting` to `unsettled`; give
+  the verdicts an alert tier so none renders calmer than the latest reading's §13 band;
+  make an ungradeable parameter refuse and name what is missing rather than grade
+  against nothing.
+- **TW-039** — both stale blocks in `rate-rails.test.js`, one pass. `SPEC_RAIL` to
+  calcium 20 / magnesium 25, and the §6 citation corrected to §3. The "a user may
+  tighten a rail" block is **inverted, not deleted** (AGENTS.md rule 4): it now asserts
+  that a user value changes nothing, because no user value may tighten a rail. Retitle
+  the describe to §3 and drop the comment at :89-91 that states the opposite of canon.
+- **TW-043** — "notice" is the one word. Fix "Worth knowing about" in Dashboard and
+  "Hidden notes"/"note" in Setup. **The hide-confirmation sentence lands with TW-031,
+  not here**, or the string ships twice.
+- **TW-044** — phosphate `#C4285B` → `#9B3A8C`, potassium `#926A09` → `#5F7A12`.
+  Re-derive the contrast and separation figures rather than trusting the recorded ones.
+  Grep for hardcoded copies before assuming `constants.js` is the only site. Alkalinity
+  is **not** in scope here — that is decision 2 below, and TW-046.
+
+**Not approved, and it matters: `TW-045`.** The §22 checker stays untagged. Its checks
+(2) and (3) assert the behaviour TW-037 creates, and the item's own ordering note says
+they must land with TW-037 or immediately after. TW-037 shipping alone leaves §22
+enforced by nothing, which is the state §10 calls "an intention" and §7 is the worked
+example of. Flagged rather than assumed: approving it was not asked for.
+
+**2. Alkalinity's brand colour moves too.** (Open item 9, **option (b)**.) Same
+reasoning as phosphate and potassium: a parameter's identity colour must not be a
+status colour. The severity colours stay put — as in decision 4, changing one of those
+instead would be a different item. **Option (c) was not taken**: §15's colour registry
+is not extended to verdict tones, so `nitrate` `#2A8050` (= the `controlled` tone) and
+`salinity` `#1D6FA5` (= the `steady-off` tone) stay exactly as they are.
+
+Filed as its own item, **TW-046**, untagged — the decision settles that alkalinity
+moves, not what it moves to, and no replacement hex is named. Two things found while
+filing it that the item now carries, because neither was visible when item 9 was
+written:
+
+- `#0B7C86` is not only `STATUS_COLOR.ok`. It is also `STABILITY_COLOR.green`, the
+  `dialled` verdict tone, the `tight` consistency colour, and **the app's own brand
+  teal** — 134 sites across 23 files. Only `PARAM_DEFS.alkalinity.color` moves, which
+  means alkalinity's chart stops matching the house colour. That is a visual-identity
+  call, not a mechanical swap, and it is why this is a separate item from TW-044 rather
+  than a third line in it.
+- Alkalinity/pH is the palette's tightest pair today at CIE76 16.4. Moving alkalinity
+  is the one change that can improve that number, and must not worsen it.
+
+### 2026-08-14 (previously latest) — Dan, spec owner: four decisions — fixed rails, two vocabularies, the tier and the refusal, one word for a notice
 
 Authorised as owner, **spec only — no application code was touched.** Resolves open
 items 8, 7 and two of the three one-line notes in 6. The resulting code work is filed
@@ -459,7 +526,7 @@ four. And your phosphate chart is no longer drawn in the exact red the app uses 
 danger, nor potassium in the exact amber it uses for low, so a perfectly healthy
 phosphate no longer looks like an alarm. The danger colours themselves have not moved.
 
-### 2026-08-14 (previously latest) — Dan, spec owner: position is always the last reading
+### 2026-08-14 (earlier) — Dan, spec owner: position is always the last reading
 
 **Supersedes open item 3's option (b)**, which offered a choice between the two
 measures and noted that unifying on `fittedNow` was probably the smaller
