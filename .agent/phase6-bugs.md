@@ -111,7 +111,7 @@ values that assumed the old band; their fixture *numbers* were re-picked
 a differential vitest diff that the full suite's failure list came back
 byte-identical to a freshly measured baseline. Found, not fixed:
 magnesium's own PARAM_DEFS band is centred on 1325 ppm, not its 1350 ppm
-target — same shape as this bug, filed as TW-026 (not authorised under this
+target — same shape as this bug, filed as TW-052 (not authorised under this
 bug's alkalinity-only citation).
 
 **Plain.** Alkalinity's healthy-range window narrowed from a full point to
@@ -120,7 +120,7 @@ will speak up about a drifting alkalinity reading sooner than it used to.
 
 ---
 
-## Bug 5 — TW-016, magnesium correction rail 100 → 25 ppm/24h
+## Bug 5 — TW-051, magnesium correction rail 100 → 25 ppm/24h
 
 **Outcome: fixed.** PR #25 (not yet merged).
 
@@ -187,10 +187,13 @@ range while still climbing.
 
 - `.agent/needs-dan.md` item 3 — the bug-3 dose-gap coverage question
   (options, not a recommendation).
-- `.agent/backlog.md` TW-026 (mine, bug 4's magnesium band finding) — needs
+- `.agent/items/TW-052.md` TW-052 (mine, bug 4's magnesium band finding) — needs
   approval before an implementer can act.
-- Two backlog numbering collisions, found across concurrent work, not
+- ~~Two backlog numbering collisions, found across concurrent work, not
   renumbered (an ID is cited from run notes and PRs — Dan's call):
   **TW-016** (this routine's bug 5 vs. a pre-existing terminology item) and
   **TW-026** (this routine's bug 4 finding vs. a pre-existing item from an
-  unrelated concurrent canon-sync run).
+  unrelated concurrent canon-sync run).~~
+  **Resolved 2026-08-15** — one file per item makes a shared number impossible.
+  The later of each pair moved: this routine's bug 5 item is now **TW-051**,
+  its bug 4 finding **TW-052**. Mapping and evidence: `.agent/items/README.md`.

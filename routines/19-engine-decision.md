@@ -427,8 +427,8 @@ Measured with the repo's own tools, not asserted:
   `doseStatus`, so the engine cannot be evaluated at a past date through its
   public interface (`routines/18-real-history-replay.md:189-209`). Confirm it
   still holds.
-- Open items already filed against these engines (`.agent/backlog.md`,
-  `.agent/needs-dan.md`) — count them. Both paths inherit the problems; only
+- Open items already filed against these engines (`.agent/items/`,
+  `.agent/needs-dan.md`) — count them (`npm run backlog`). Both paths inherit the problems; only
   one inherits the code they attach to.
 
 **If the evidence shows the two paths are not exhaustive** — for instance that

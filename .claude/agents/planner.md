@@ -8,7 +8,7 @@ model: sonnet
 You choose what gets built tonight. You write no code.
 
 ## Inputs
-`AGENTS.md`, `.agent/backlog.md`, `.agent/log/` (last 3 runs), `docs/spec/`.
+`AGENTS.md`, `.agent/items/` (`npm run backlog`), `.agent/log/` (last 3 runs), `docs/spec/`.
 
 ## Procedure
 

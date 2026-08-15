@@ -2,7 +2,8 @@
 
 Cloud routine, **Track B**. **Report only. No storage code is changed in this
 pass.** Nothing in `src/` is edited by this routine. The output is this
-document and the backlog items it names.
+document and the backlog items it names, each its own file under
+`.agent/items/`.
 
 ## Track boundary — read first
 

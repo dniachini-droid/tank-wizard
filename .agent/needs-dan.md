@@ -32,7 +32,7 @@ Their harm points the other way — a healthy reading drawn in the alarm colour 
 the badge does not rescue them. The asymmetry is the whole reason this item resolves
 differently from the two it was filed alongside.
 
-TW-046 is closed as decided-against, under Done in `.agent/backlog.md`, with its
+TW-046 is closed as decided-against, under Done in `.agent/items/`, with its
 evidence kept. The workup below is left in place for the same reason: its framing of
 the two directions of harm is exactly what the decision turns on.
 
@@ -192,7 +192,7 @@ official band words, and its one shared word ("drifting") means the opposite thi
 depending on which screen you're reading. This needs a decision about whether "is your
 testing pattern steady" deserves its own words at all, not just a rename.
 
-Blocks `.agent/backlog.md` TW-037 (code-side fix), filed `[blocked]` pending this
+Blocks `.agent/items/TW-037.md` TW-037 (code-side fix), filed `[blocked]` pending this
 decision.
 
 ### 6. One-line notes — 2026-08-14 — two of three closed
@@ -501,7 +501,7 @@ Two separate acts in one message, kept apart here because they authorise differe
 things.
 
 **1. Four backlog items approved.** `TW-037`, `TW-039`, `TW-043` and `TW-044` are now
-`[approved]` and have moved into `.agent/backlog.md`'s "Approved for implementation"
+`[approved]` and have moved into `.agent/items/`'s "Approved for implementation"
 section. This is the code authorisation the 14 August decision deliberately withheld —
 that night was spec-only, and the items it created were filed untagged precisely so
 this step would be its own. Ordered after the phase-8b three; **TW-001 is still next.**
@@ -560,11 +560,11 @@ written:
 
 Authorised as owner, **spec only — no application code was touched.** Resolves open
 items 8, 7 and two of the three one-line notes in 6. The resulting code work is filed
-untagged in `.agent/backlog.md` — **TW-037** rescoped and unblocked, **TW-039**
+untagged in `.agent/items/` — **TW-037** rescoped and unblocked, **TW-039**
 extended, **TW-043 to TW-045** new. Per AGENTS.md, untagged means the implementer may
 not act on it: these need `[approved]` from you before any of it ships.
 (Filed as TW-042/043/044; renumbered on merge, because `main`'s run-state
-restructure had already taken TW-042 — for the item about `.agent/backlog.md`
+restructure had already taken TW-042 — for the item about `.agent/items/`
 being the next shared-singleton conflict, which is what just happened.)
 
 **1. The rails are fixed. There is no user rail.** (Open item 8, option (b).) §3's
@@ -886,7 +886,7 @@ becomes real friction on the tank, the label figure is there and §3 is the
 paragraph to come back to.
 
 Consequences, already applied: the UNRESOLVED note in §3 is gone, and
-`.agent/backlog.md` TW-016 is unblocked and rescoped. It turns out to be smaller
+`.agent/items/TW-051.md` TW-051 (filed as TW-016) is unblocked and rescoped. It turns out to be smaller
 than filed — `safe-rate.js`'s `CORRECTION_MAX_RATE` is *already* {0.5, 20, 25}
 and needs no change at all, so the work is `correction.js`'s magnesium
 `maxPerDay` of 100 (four times the rail) plus re-pointing `rails.test.js`'s
@@ -896,7 +896,7 @@ application code was changed under this authorisation.
 ### 2026-08-14 — Dan, spec owner (resolves Decisions 1, 2, 4 and 5 of `.agent/five-decisions.md`)
 
 Authorised as owner. **Spec only — no application code was touched.** The
-resulting code work is filed untagged in `.agent/backlog.md`.
+resulting code work is filed untagged in `.agent/items/`.
 
 **1. Which engine owns the drift response — the wizard, and only the wizard.**
 (Decision 1, option (a).) The wizard recomputes `maintenanceDose` in full on
@@ -1008,4 +1008,4 @@ usage in canon and is the more precise of the two terms — "water volume" does
 not say net.
 
 Application source code was **not** touched under this authorisation. The
-resulting code work is filed untagged in `.agent/backlog.md`.
+resulting code work is filed untagged in `.agent/items/`.

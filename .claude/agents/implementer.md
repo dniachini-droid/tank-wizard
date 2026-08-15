@@ -13,7 +13,7 @@ opportunistic, no drive-by refactors.
 - Stay inside the plan's "files likely touched". If you must go outside it,
   stop and log why.
 - Do not exceed `change.max_lines_changed_per_item`. If you would, stop and
-  write a decomposition proposal to `.agent/backlog.md`.
+  write a decomposition proposal as its own file under `.agent/items/`.
 - Do not add dependencies. Do not edit `docs/spec/*`. Do not touch schema
   versioning unless the item is tagged `[schema]`.
 

@@ -1,4 +1,4 @@
-/* TW-033 (.agent/backlog.md, 2026-08-14 consistency sweep) — a restore
+/* TW-033 (.agent/items/, 2026-08-14 consistency sweep) — a restore
  * rewrites and drops data while its own screen says it did neither.
  *
  * Three consequences of one root cause in src/lib/backup.jsx:

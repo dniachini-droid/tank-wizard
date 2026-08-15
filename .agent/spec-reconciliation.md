@@ -136,7 +136,7 @@ Ranked by cost of a wrong call. Both positions stated. Not resolved here.
 - **code does**: `CORRECTION_MAX_RATE.magnesium` and `SAFE_DAILY_RISE.magnesium`
   (`src/lib/analytics/safe-rate.js:27,31`) = 25 — matches base, half of
   secondary's current figure. This is not a fresh discovery: it is
-  `.agent/backlog.md` **TW-016**, already written up by Dan on 2026-08-13 and
+  `.agent/items/TW-051.md` **TW-051** (filed as TW-016), already written up by Dan on 2026-08-13 and
   sitting in "Needs Dan's approval" pending an `[approved][chem]` tag — not
   yet implemented. Both documents cite a real source for their number; the
   routine's "secondary wins if it cites a source base lacks" tie-breaker does
@@ -144,7 +144,7 @@ Ranked by cost of a wrong call. Both positions stated. Not resolved here.
   re-deciding it.
 - **evidence**: `src/lib/analytics/safe-rate.js:22-31`,
   `docs/spec/reef-chemistry.md:154-158`,
-  `docs/spec/incoming/dosing-spec.txt:94-102`, `.agent/backlog.md` TW-016.
+  `docs/spec/incoming/dosing-spec.txt:94-102`, `.agent/items/TW-051.md` TW-051.
 
 ---
 
@@ -228,7 +228,7 @@ bounds.max` is written out independently at `findings.js:232`,
 `ReadingConfirmation.jsx:45-53` — five inline re-implementations of the same
 two-line check, already caught diverging at the boundary by the prior
 sweep (doseStatus's inclusive vs. ReadingConfirmation's exclusive edge
-handling on 6.9 dKH — see `.agent/backlog.md` TW-002).
+handling on 6.9 dKH — see `.agent/items/TW-002.md` TW-002).
 
 ### 5.3 — Two live wizard states with zero authorization in either document
 
