@@ -19,6 +19,7 @@
     "verify:deadcode": "node scripts/verify/deadcode.mjs",
     "verify:livecheck": "node scripts/verify/livecheck.mjs",
     "verify:wordingcheck": "node scripts/verify/wordingcheck.mjs",
+    "verify:consistencycheck": "node scripts/verify/consistencycheck.mjs",
     "verify:dupcheck": "node scripts/verify/dupcheck.mjs",
     "verify:blockdup": "node scripts/verify/blockdup.mjs",
     "verify:csscheck": "node scripts/verify/csscheck.mjs",
