@@ -11,7 +11,7 @@ must pass before any of these opens.
 Phase 5 built `scripts/verify/*.mjs` and wired `.github/workflows/verify.yml`
 into this repo's first CI. Building it surfaced two live crash bugs
 (`.agent/findings.md`) that nobody had fixed yet, and the backlog already
-carried three approved-for-authorization chemistry items (TW-016, TW-019,
+carried three approved-for-authorization chemistry items (TW-051, TW-019,
 TW-020) and two spec-decided-but-not-yet-coded rules (negative consumption,
 stability grading) that predate Phase 5 entirely. This routine works through
 all seven, smallest and most user-visible first.
@@ -40,7 +40,7 @@ for reasons unrelated to your fix — say so in the PR rather than chasing
 every red line in a file you touched.
 
 `linkcheck` and `propcheck` currently run **advisory** — they already found
-bug 1, below, which is exactly why. TW-021 (`.agent/backlog.md`) says
+bug 1, below, which is exactly why. TW-021 (`.agent/items/TW-021.md`) says
 explicitly what flipping them to blocking requires: fix both bugs, confirm
 `npm run verify:linkcheck` and `npm run verify:propcheck` clean, flip their
 `mode` in `scripts/verify/run.mjs` from `'advisory'` to `'blocking'`. Bug 1's
@@ -134,8 +134,8 @@ file per bug or one file for both — your call, they're small.
 **Also in this PR**: once both are fixed and `npm run verify:linkcheck` and
 `npm run verify:propcheck` are clean, flip `linkcheck` and `propcheck` from
 `'advisory'` to `'blocking'` in `scripts/verify/run.mjs` (this is exactly
-what TW-021 asks for) and move TW-021 from `## Blocked` to `## Done` in
-`.agent/backlog.md`.
+what TW-021 asks for) and set TW-021's `status:` to `done` in
+`.agent/items/TW-021.md`.
 
 No chemistry, no spec citation needed — these are wiring bugs.
 
@@ -363,9 +363,10 @@ band.
 
 ---
 
-### 5. TW-016 — magnesium correction rail, 100 → 25
+### 5. TW-051 — magnesium correction rail, 100 → 25
 
-`.agent/backlog.md` TW-016, already `[chem]`, formally approved by this
+`.agent/items/TW-051.md` (filed as TW-016; renumbered 2026-08-15), already
+`[chem]`, formally approved by this
 routine. `docs/spec/reef-chemistry.md` §3: the magnesium rail is 25 ppm/24h
 (settled 14 Aug, closing a prior 25-vs-50 conflict). Two places claim to
 encode "the daily rail":
@@ -379,7 +380,7 @@ encode "the daily rail":
 and already asserts this (it's one of the 69 red vitest specs) — its
 `SPEC_RAIL` constant (`{alkalinity: 0.5, calcium: 25, magnesium: 100}`, line
 ~24) is the **pre-13-Aug** canon and needs re-pointing to `{0.5, 20, 25}` as
-part of this fix, per TW-016's own text — not a violation of rule 4, since
+part of this fix, per TW-051's own text — not a violation of rule 4, since
 the backlog item explicitly names this file's constant as needing the
 update, not just the assertions. Re-check the file's header comment too
 (lines 1-19 cite "§6, lines 149-166," which is now §3 after the 14 Aug
@@ -393,7 +394,7 @@ as a whole without checking why.
 
 ### 6. TW-019 — remove magnesium from `DOSE_ADVICE_RULES`
 
-`.agent/backlog.md` TW-019, already `[chem]`, formally approved by this
+`.agent/items/TW-019.md`, already `[chem]`, formally approved by this
 routine. `docs/spec/reef-chemistry.md` §10, "What is exempt": "**The
 maintenance dose is never tuned from readings.** Not delayed — exempt... Any
 answer the app produced would be invented."
@@ -433,7 +434,7 @@ rather than crashing or producing `undefined` where a number was expected.
 
 ### 7. TW-020 — `arrived` tests the arrival zone, not the full band
 
-`.agent/backlog.md` TW-020, already `[chem]`, formally approved by this
+`.agent/items/TW-020.md`, already `[chem]`, formally approved by this
 routine. `docs/spec/reef-chemistry.md` §9: "**Decided 14 Aug: the arrival
 test is the middle third of the band, floored so the zone is never narrower
 than twice that element's noise floor (§5).**"
@@ -516,8 +517,8 @@ Per bug, as you finish it (not batched at the end):
 3. The PR body follows AGENTS.md's template — What / Why / Spec reference /
    Risk / Verification / Not done / **In plain terms**, per rule 11: every PR
    states its fix twice, the precise version and the reefkeeping-plain one.
-4. `.agent/backlog.md`: move the bug's own item (TW-016, TW-019, TW-020,
-   TW-021) from wherever it sits to `## Done`, in the same PR that closes it.
+4. `.agent/items/`: set the bug's own item (TW-051, TW-019, TW-020,
+   TW-021) to `status: done` in its own file, in the same PR that closes it.
    Bugs 2, 3 and 4 don't have existing TW items — file one only if you find
    follow-on work (per rule 7's "report, don't force" — the magnesium band
    drift found under bug 4 is exactly this: a new backlog item, not a fix).

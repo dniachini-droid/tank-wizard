@@ -11,6 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "verify": "node scripts/verify/run.mjs",
+    "backlog": "node scripts/backlog.mjs",
+    "backlog:check": "node scripts/backlog.mjs --check",
     "verify:linkcheck": "node scripts/verify/linkcheck.mjs",
     "verify:propcheck": "node scripts/verify/propcheck.mjs",
     "verify:scopecheck": "node scripts/verify/scopecheck.mjs",

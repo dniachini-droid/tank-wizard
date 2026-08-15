@@ -9,7 +9,7 @@
  * parseFloat(calcTarget), settings.volumeL)`, imported from
  * src/lib/analytics/correction.js).
  *
- * Bug 5 (routine 15, TW-016) fixed the defect this file was written to
+ * Bug 5 (routine 15, TW-051 — filed as TW-016) fixed the defect this file was written to
  * demonstrate: CORRECTIONS.magnesium.maxPerDay (100, four times the §3 rail)
  * disagreed with CORRECTION_MAX_RATE.magnesium / SAFE_DAILY_RISE.magnesium
  * (25) — the same "physical limit on how fast magnesium may rise" encoded

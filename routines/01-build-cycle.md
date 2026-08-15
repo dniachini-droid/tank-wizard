@@ -71,6 +71,7 @@ concurrently and collect everything into `.agent/findings.md`.
 ### Wave 4 — Report
 
 7. **triage-analyst** — remaining findings into the backlog, deduped hard.
+   One new file per item under `.agent/items/`; never a combined list.
 8. **reporter** — `.agent/morning-brief.md`.
 
 ## Orchestrator rules

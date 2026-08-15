@@ -111,7 +111,8 @@ Several of these checkers have a better modern equivalent — `no-undef` for
 `scopecheck`, `eslint-plugin-react-hooks` for `hookcheck`, a dead-export finder
 for `deadcode`. Every one of those is a new dependency.
 
-**Do not add one.** File it as a `[deps]` backlog item with the checker it
+**Do not add one.** File it as a `[deps]` backlog item (`.agent/items/<id>.md`)
+with the checker it
 replaces, the evidence from §2 that it actually catches the fault, and what it
 costs. Dan approves dependencies (AGENTS.md #6).
 
@@ -195,7 +196,8 @@ Several will. That is the checkers working, not a reason to weaken them.
 **Never edit a checker to make it pass.** Same rule as AGENTS.md #4 for tests.
 
 Land each failing checker **advisory** — it runs, it prints, it does not fail
-the build — with a `[blocked]` backlog item naming what it found and what
+the build — with a `[blocked]` backlog item (`.agent/items/<id>.md`) naming
+what it found and what
 making it blocking would take. Everything green goes in **blocking** on day
 one. The report must list, explicitly, which checkers are blocking and which
 are advisory, and every advisory one must have a backlog item. An advisory
