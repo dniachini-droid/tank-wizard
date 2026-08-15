@@ -22,7 +22,8 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
   waterChanges = [], icps = [], lighting = [], taskLog = [], allTasks = [],
   onAddLighting, onDeleteLighting, onRestored, onPlayIntro,
   onRestoreFinding, onRestoreAllFindings,
-  customTasks = [], dismissedList = [], customRanges = {} }) {
+  customTasks = [], dismissedList = [], customRanges = {},
+  corrections = [], onDeleteCorrection = null }) {
 
   const [vol, setVol] = useState((settings.volumeL == null ? "" : String(settings.volumeL)));
   const [backupAt, setBackupAt] = useState(null);
@@ -389,6 +390,52 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
           </div>
           <p className="text-[12px] text-ink2 font-medium leading-relaxed mt-3">
             Every change here also appears as a marker on that element's own chart, so you can see what each adjustment actually did.
+          </p>
+        </InfoBlock>
+      )}
+
+      {/* --- One-off corrections, as their own kind of entry ---
+
+          A correction is not a dose change and is not a reading, and it was
+          previously neither listed nor exported anywhere. The engines have
+          always read it — it is what stops a rise being scored as the tank
+          suddenly needing less — so the app was reasoning permanently from
+          something the user had no way to look at, check or take back. Its
+          own block rather than a row in Doser changes, because the two hold
+          different quantities: a dose change is mL per day and stays set, a
+          correction is a single addition in mL and is over once it is in. */}
+      {corrections.length > 0 && (
+        <InfoBlock icon={Calculator} eyebrow="History" title="One-off corrections" tone="#B8541A"
+          collapsible
+          summary={`${corrections.length} correction${corrections.length === 1 ? "" : "s"} logged`}>
+          <div className="divide-y divide-app">
+            {[...corrections].sort(byNewest).map((c) => {
+              const el = DOSE_ELEMENTS.find((e) => e.key === (c.element || "alkalinity"));
+              const label = el ? el.label.toLowerCase() : "alkalinity";
+              const down = c.direction === "down" || c.ml < 0;
+              return (
+                <div key={c.id} className="flex items-center justify-between gap-2 py-2.5">
+                  <div className="min-w-0">
+                    <div className="text-[13px] font-black text-ink">
+                      {fmtAmount(Math.abs(c.ml))} mL of {label}
+                    </div>
+                    <div className="text-[11px] text-ink2 font-semibold">
+                      {fmtDate(c.date)}{c.time ? ` · ${c.time}` : ""}
+                      {" · "}{down ? "to bring it down" : "one-off, on top of the daily dose"}
+                    </div>
+                  </div>
+                  {onDeleteCorrection && (
+                    <DeleteButton onDelete={() => onDeleteCorrection(c.id)} size={13}
+                      confirmMessage="Correction removed" />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-[12px] text-ink2 font-medium leading-relaxed mt-3">
+            The app treats the rise these caused as your doing rather than as the tank needing less,
+            so they stay in the reasoning for as long as they are listed here. Removing one you
+            logged by mistake takes it back out of that reasoning too.
           </p>
         </InfoBlock>
       )}
@@ -840,7 +887,7 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
           </p>
           <Btn variant="ghost" className="w-full sm:w-auto"
             onClick={() => downloadCsv(
-              buildCsv({ readings, icps, lighting, taskLog, doseLog, waterChanges, allTasks }),
+              buildCsv({ readings, icps, lighting, taskLog, doseLog, waterChanges, allTasks, corrections }),
               `dans-tank-${todayStr()}.csv`)}>
             <span className="flex items-center justify-center gap-1.5"><Download size={14} /> Download CSV</span>
           </Btn>
