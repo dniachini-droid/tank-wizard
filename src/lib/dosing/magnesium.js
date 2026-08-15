@@ -18,6 +18,14 @@ export const MG_TREND = {
   meaningful: 30,   /* at or above this, verify before acting */
 };
 
+/* reef-chemistry.md §27 — how far past the edge counts as CLEARLY out.
+   A distance in ppm, never a rate. See `ALK_CLEARLY_OUT` in alkalinity.js for
+   the full reasoning; the short version is that magnesium's `clearlyOut` in
+   helpers.js read `> MG_TREND.stable` — 10 ppm per WEEK against a distance in
+   ppm — and moving the trend constant silently moved the margin with it.
+   The same 50 ppm as calcium, and the same figure whatever the band width. */
+export const MG_CLEARLY_OUT = 50;
+
 export const MG_SETTLE_DAYS = 7;
 
 /* A recommendation is only as sound as the strength figure behind it.

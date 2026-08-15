@@ -1,0 +1,326 @@
+/* Out and clearly out — reef-chemistry.md §27, decided 15 Aug.
+ *
+ * Owner decision, closing `.agent/needs-dan.md` item 5:
+ *
+ *   "Out and clearly out are two different questions and get two different
+ *    numbers. A level is out the moment it is past the band edge by any
+ *    amount. 455 ppm against a 400–450 band is out. There is no margin on
+ *    this. A level is clearly out once it is past the edge by a fixed margin:
+ *    calcium 50 ppm, magnesium 50 ppm, alkalinity 0.5 dKH. Fixed figures, not
+ *    scaled to band width."
+ *
+ * The fault item 5 reported is dimensional. `caClearlyOut` (`calcium.js`) and
+ * magnesium's `clearlyOut` (`helpers.js`) measured a **distance** past the
+ * edge — ppm — against `CA_TREND.stable` (5 ppm per **week**) and
+ * `MG_TREND.stable` (10 ppm per week), which are rate constants, declared as
+ * such in their own comments. `alkClearlyOut` used a literal 0.2, which is a
+ * dKH distance and dimensionally right but too small under this decision.
+ *
+ * So this file pins three things:
+ *
+ *  1. **Out has no margin.** A hair past the edge is out, on every element, in
+ *     both directions. This half already held and is pinned so it cannot
+ *     acquire a tolerance later.
+ *  2. **Clearly out is the new fixed margin**, and it is the margin that
+ *     governs — a level past the edge by more than the OLD constant but less
+ *     than the new one is no longer clearly out.
+ *  3. **The margins are their own constants.** Not the trend constants, not
+ *     the kit noise floors. Adjusting how fast counts as moving must never
+ *     change how far counts as out, and the structural checks at the bottom
+ *     are what stop that happening again.
+ */
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { describe, expect, it } from 'vitest'
+import { PARAM_DEFS } from '../../lib/constants.js'
+import { DEFAULT_SETTINGS, dayNum } from '../../lib/analytics/water-changes.js'
+import { ALK_CLEARLY_OUT, assessAlkalinity } from '../../lib/dosing/alkalinity.js'
+import { CA_CLEARLY_OUT, assessCalcium } from '../../lib/dosing/calcium.js'
+import { assessMagnesium } from '../../lib/dosing/helpers.js'
+import { MG_CLEARLY_OUT } from '../../lib/dosing/magnesium.js'
+import { doseStatus } from '../../lib/dosing/state.js'
+
+const TODAY = '2026-08-15'
+const NOW = dayNum(TODAY) + 12 / 24
+const addDays = (iso, n) =>
+  new Date(new Date(iso + 'T00:00:00Z').getTime() + n * 86400000).toISOString().slice(0, 10)
+
+/* `drift` is the per-reading movement of the fixture series: enough to give a
+   direction, small enough that the trend stays inside the element's own
+   "stable" grade, which is what puts the assessment on the branch `clearlyOut`
+   guards. */
+const ENGINES = {
+  alkalinity: { fn: assessAlkalinity, strength: 'dkhPerMlPer100L', s: 0.0533, dose: 'dailyDoseMl', d: 9, gap: 2, drift: 0.02, oldMargin: 0.2, margin: 0.5, unit: 'dKH' },
+  calcium: { fn: assessCalcium, strength: 'caPpmPerMlPer100L', s: 0.36, dose: 'calciumDoseMl', d: 7, gap: 7, drift: 0.3, oldMargin: 5, margin: 50, unit: 'ppm' },
+  magnesium: { fn: assessMagnesium, strength: 'mgPpmPerMlPer100L', s: 0.024, dose: 'magDoseMl', d: 8, gap: 14, drift: 0.6, oldMargin: 10, margin: 50, unit: 'ppm' },
+}
+
+const defOf = (key) => PARAM_DEFS.find((d) => d.key === key)
+
+function assess(key, values, corrections = []) {
+  const cfg = ENGINES[key]
+  const def = defOf(key)
+  const settings = { ...DEFAULT_SETTINGS, volumeL: 77, [cfg.strength]: cfg.s, [cfg.dose]: cfg.d }
+  const readings = values.map((value, i) => ({
+    param: key, value, time: '09:00',
+    date: addDays(TODAY, -(values.length - i) * cfg.gap),
+  }))
+  const a = cfg.fn({ readings, doseLog: [], waterChanges: [], corrections,
+    settings, def, correctionPlans: {}, now: NOW })
+  return { a, def, settings, status: doseStatus(a, def, TODAY, settings) }
+}
+
+const everythingSaid = (a, status) =>
+  `${a.explanation || ''} ${a.reason || ''} ${a.caution || ''} `
+  + `${status ? status.headline || '' : ''} ${status ? status.detail || '' : ''}`
+
+/* ------------------------------------------------------------------ *
+ * 1. Out has no margin.
+ * ------------------------------------------------------------------ */
+
+/* A flat series, so nothing but the position is under test. */
+const flat = (v) => [v, v, v, v]
+
+/* Deliberately smaller than every margin in the file, including the old ones:
+   the point is that being barely past the edge is still being past it. */
+const HAIRS = { alkalinity: [0.01, 0.1], calcium: [0.1, 5], magnesium: [0.1, 5] }
+
+describe('§27 — a level past its band edge by any amount is out', () => {
+  for (const key of Object.keys(ENGINES)) {
+    const def = defOf(key)
+    for (const past of HAIRS[key]) {
+      for (const [side, value, word] of [
+        ['below', def.min - past, 'below'],
+        ['above', def.max + past, 'above'],
+      ]) {
+        it(`${key}: ${value}${ENGINES[key].unit} is ${word} a ${def.min}–${def.max} band`, () => {
+          const { a, status } = assess(key, flat(value))
+          expect(a.current.value).toBe(value)
+
+          /* Said in words, on the assessment and on the dose card alike. */
+          expect(everythingSaid(a, status)).toMatch(new RegExp(`${word} your range`))
+          /* And never treated as a tank with nothing to answer for: `idle` is
+             the card that says the dose is matching consumption and the level
+             is where it should be. */
+          expect(status.state).not.toBe('idle')
+        })
+      }
+    }
+  }
+
+  it('the margin plays no part: a level 0.1ppm past the edge reads exactly as one 5ppm past', () => {
+    const def = defOf('calcium')
+    const hair = assess('calcium', flat(def.max + 0.1))
+    const more = assess('calcium', flat(def.max + 5))
+    expect(hair.status.state).toBe(more.status.state)
+    expect(hair.a.action).toBe(more.a.action)
+  })
+})
+
+/* ------------------------------------------------------------------ *
+ * 2. The margin decides wording, never whether the app acts.
+ * ------------------------------------------------------------------ */
+
+/* §27's second decision, 15 Aug, correcting the first the same day.
+ *
+ * The first version of this group asserted the opposite: that a level just
+ * inside the margin should HOLD. That was the fault, and the audit in PR #50
+ * is what exposed it — raising the margins made **40 of 70 changed rows
+ * withdraw a dose change**, so a calcium sixteen ppm below its range went from
+ * "increase to 13.1 mL/day" to "hold at 12.0". A margin sized to describe how
+ * far out a level sits had been deciding whether the app spoke at all.
+ *
+ * The rule now: **out of band, by any amount, is what decides whether the app
+ * acts.** The margin may change how the situation is described and nothing
+ * else — it may not gate a recommendation, suppress one, relax a constraint,
+ * or change any figure. These assertions are re-pointed at that rule rather
+ * than deleted; the fixtures and the branch they reach are unchanged, and
+ * every one of them fails against the wiring PR #50 opened with.
+ *
+ * The branch under test is the one `*Worsening` gates: a tank out of band,
+ * moving the wrong way slowly enough to grade "stable", carrying two logged
+ * corrections — the `repeatedCorrections` half of the same condition. The
+ * corrections sit before the reading window so they count toward the repeat
+ * tally without bending the fit through the readings under test. */
+const twoCorrections = (key) => [
+  { id: 'c1', element: key, date: addDays(TODAY, -65), time: '12:00', ml: 20, direction: 'up' },
+  { id: 'c2', element: key, date: addDays(TODAY, -58), time: '12:00', ml: 20, direction: 'up' },
+]
+
+function drifting(key, side, past) {
+  const cfg = ENGINES[key]
+  const def = defOf(key)
+  const last = side === 'below' ? def.min - past : def.max + past
+  const step = side === 'below' ? cfg.drift : -cfg.drift
+  return [last + 3 * step, last + 2 * step, last + step, last]
+}
+
+const ADVERSE_ACTION = { below: 'increase', above: 'decrease' }
+
+describe('§27 — the margin governs wording only, never whether the app acts', () => {
+  for (const key of Object.keys(ENGINES)) {
+    const cfg = ENGINES[key]
+    for (const side of ['below', 'above']) {
+      const eps = cfg.margin / 100
+
+      /* Four distances spanning both margins that have ever been in force:
+         a hair past the edge, past the old borrowed constant, just inside the
+         new margin, and past it. Every one is out of band and drifting further
+         out, so every one must get the same answer. */
+      const DISTANCES = [
+        ['a hair past the edge', cfg.margin / 100],
+        [`past the old ${cfg.oldMargin}${cfg.unit} constant`, cfg.oldMargin + eps],
+        [`just inside ${cfg.margin}${cfg.unit}`, cfg.margin - eps],
+        [`past ${cfg.margin}${cfg.unit}`, cfg.margin + eps],
+      ]
+
+      for (const [label, past] of DISTANCES) {
+        it(`${key} ${side}: ${label} and still drifting out — the app acts`, () => {
+          const { a, def, status } = assess(key, drifting(key, side, past), twoCorrections(key))
+          expect(a.band).toBe('stable')
+          expect(a.current.value < def.min || a.current.value > def.max).toBe(true)
+          /* DEFECT this pins: gated on the margin, the three distances inside
+             it returned "hold" — the app going quiet on a level genuinely out
+             of range. */
+          expect(a.action).toBe(ADVERSE_ACTION[side])
+          /* And the card is not the one that says there is nothing to answer
+             for. What it does say is only about the dose — "the dose no longer
+             matches what the tank uses" — and never that the level is outside
+             the range. That is the `match consumption` answer §28 exists to
+             complete, not something this decision settles. */
+          expect(status.state).not.toBe('idle')
+        })
+      }
+
+      it(`${key} ${side}: all four distances produce the same action — the margin plays no part`, () => {
+        const actions = DISTANCES.map(([, past]) =>
+          assess(key, drifting(key, side, past), twoCorrections(key)).a.action)
+        expect(new Set(actions).size).toBe(1)
+      })
+
+      it(`${key} ${side}: the margin still reports which side of it the level sits`, () => {
+        const inside = assess(key, drifting(key, side, cfg.margin - eps), twoCorrections(key))
+        const beyond = assess(key, drifting(key, side, cfg.margin + eps), twoCorrections(key))
+        /* Wording input, not a gate: the flag differs across the margin while
+           the recommendation either side of it does not. */
+        expect(inside.a.clearlyOut).toBe(false)
+        expect(beyond.a.clearlyOut).toBe(true)
+        expect(inside.a.recommendedDose).toBe(beyond.a.recommendedDose)
+      })
+    }
+  }
+})
+
+/* ------------------------------------------------------------------ *
+ * 3. The margins are their own constants.
+ * ------------------------------------------------------------------ */
+
+const SITES = [
+  { file: 'src/lib/dosing/alkalinity.js', local: 'alkClearlyOut', name: 'ALK_CLEARLY_OUT', value: 0.5 },
+  { file: 'src/lib/dosing/calcium.js', local: 'caClearlyOut', name: 'CA_CLEARLY_OUT', value: 50 },
+  { file: 'src/lib/dosing/helpers.js', local: 'clearlyOut', name: 'MG_CLEARLY_OUT', value: 50 },
+]
+
+/* Where each constant is declared — magnesium's test lives in `helpers.js`,
+   but the constant belongs beside the engine's other magnesium figures. */
+const DECLARED_IN = {
+  ALK_CLEARLY_OUT: 'src/lib/dosing/alkalinity.js',
+  CA_CLEARLY_OUT: 'src/lib/dosing/calcium.js',
+  MG_CLEARLY_OUT: 'src/lib/dosing/magnesium.js',
+}
+
+const EXPORTED = { ALK_CLEARLY_OUT, CA_CLEARLY_OUT, MG_CLEARLY_OUT }
+
+const src = (f) => readFileSync(resolve(process.cwd(), f), 'utf8')
+
+/* The right-hand side of `const <local> = … ;`, comments stripped. */
+function expressionFor(text, local) {
+  const at = text.search(new RegExp(`\\bconst ${local}\\s*=`))
+  if (at < 0) return null
+  const semi = text.indexOf(';', at)
+  return text.slice(text.indexOf('=', at) + 1, semi)
+    .replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '').trim()
+}
+
+describe('§27 — each margin is a named constant of its own', () => {
+  for (const site of SITES) {
+    it(`${site.name} is exported with the decided value`, () => {
+      expect(EXPORTED[site.name]).toBe(site.value)
+    })
+
+    it(`${site.name} is declared as a bare number, derived from nothing`, () => {
+      const decl = expressionFor(src(DECLARED_IN[site.name]), site.name)
+      expect(decl).not.toBeNull()
+      /* DEFECT this prevents: a margin defined as `CA_TREND.stable * 10` or
+         `kitNoise(...)` reads as its own constant and is not one. Pointing it
+         at the kit noise floors was explicitly rejected — how well the kit
+         reads a level is a different question from how far out the level is. */
+      expect(decl).toMatch(/^[0-9]*\.?[0-9]+$/)
+    })
+
+    it(`${site.local} compares against ${site.name} and nothing else`, () => {
+      const expr = expressionFor(src(site.file), site.local)
+      expect(expr).not.toBeNull()
+      expect(expr).toContain(site.name)
+      /* The dimensional fault itself: a distance compared against a rate. */
+      expect(expr).not.toMatch(/_TREND/)
+      /* And no bare literal — 0.2 dKH was dimensionally right and still
+         invisible to anyone looking for the app's out-of-band margins. */
+      expect(expr).not.toMatch(/[0-9]/)
+    })
+  }
+
+  it('no margin is reachable from a trend constant or a kit noise floor', () => {
+    for (const name of Object.keys(DECLARED_IN)) {
+      const decl = expressionFor(src(DECLARED_IN[name]), name)
+      expect(String(decl)).not.toMatch(/TREND|KIT_|kitNoise|kitSigma|SIGMA|PRECISION/)
+    }
+  })
+})
+
+/* ------------------------------------------------------------------ *
+ * 4. The margin is not wired into the gate — structurally, not just by
+ *    behaviour.
+ * ------------------------------------------------------------------ */
+
+/* The behavioural group above would still pass if someone reintroduced the
+   margin into `*Worsening` alongside a second, weaker condition that happened
+   to carry the fixtures. This group reads the source and refuses the wiring
+   itself, which is what §27's "may not gate a recommendation" needs to mean
+   in a file someone is editing a year from now. */
+const GATES = [
+  { file: 'src/lib/dosing/alkalinity.js', gate: 'alkWorsening', margin: 'alkClearlyOut', outOfBand: 'alkOutOfBand' },
+  { file: 'src/lib/dosing/calcium.js', gate: 'caWorsening', margin: 'caClearlyOut', outOfBand: 'caOutOfBand' },
+  { file: 'src/lib/dosing/helpers.js', gate: 'worsening', margin: 'clearlyOut', outOfBand: 'outOfBand' },
+]
+
+describe('§27 — the margin governs wording only: it may not gate', () => {
+  for (const g of GATES) {
+    it(`${g.gate} is sourced from being out of band, not from ${g.margin}`, () => {
+      const expr = expressionFor(src(g.file), g.gate)
+      expect(expr).not.toBeNull()
+      /* DEFECT this prevents: `const caWorsening = caClearlyOut && …`, which
+         is exactly what PR #50 opened with and what made the app go quiet on
+         a calcium 16 ppm below its range. */
+      expect(expr).toContain(g.outOfBand)
+      expect(expr).not.toContain(g.margin)
+      /* No margin constant smuggled in directly either. */
+      expect(expr).not.toMatch(/CLEARLY_OUT/)
+    })
+
+    it(`${g.outOfBand} tests the band edges with no margin added`, () => {
+      const expr = expressionFor(src(g.file), g.outOfBand)
+      expect(expr).not.toBeNull()
+      /* `above || below` — the §26 position triple, nothing else. A tolerance
+         added here would be a margin on "out", which §27 forbids outright. */
+      expect(expr.replace(/\s/g, '')).toBe('above||below')
+    })
+  }
+
+  it('every engine reports clearlyOut as a wording input on the assessment', () => {
+    for (const key of Object.keys(ENGINES)) {
+      const { a } = assess(key, drifting(key, 'below', ENGINES[key].margin * 2), twoCorrections(key))
+      expect(a.clearlyOut).toBe(true)
+    }
+  })
+})

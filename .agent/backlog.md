@@ -1400,6 +1400,126 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
      TW-037 rather than free to ship on its own. -->
 
 
+<!-- 2026-08-15: TW-047 filed while implementing reef-chemistry.md §27 (Dan's
+     decision on needs-dan item 5). Filed UNTAGGED: widening the golden corpus
+     re-records the 5,940-case fingerprint for reasons that have nothing to do
+     with §27, and a fingerprint re-record is exactly the kind of change that
+     must not ride along inside someone else's diff. -->
+
+- [ ] TW-047 The golden sweep cannot see anything gated on two or more logged corrections
+      why: `tests/legacy-port/golden.js` sweeps `withCorrection` as a BOOLEAN — one
+      logged correction or none (golden.js:104, 116-117) — so `repeatedCorrections(
+      corrections, key, nowStamp) >= 2` is false in all 5,940 cases. Every behaviour
+      behind that condition is invisible to the app's widest behavioural net.
+      found: implementing §27. The three `clearlyOut` margins reach an outcome only
+      through `*Worsening`, whose other disjunct (`|trend| >= TREND.stable`) is mutually
+      exclusive with the `band === "stable"` gate the branch sits behind — so the
+      repeats path is the only way in. Moving calcium's margin from 5 ppm to 50, magnesium's
+      from 10 to 50 and alkalinity's from 0.2 dKH to 0.5 changed **0 of 5,940 golden
+      rows**, digest `3a782222dbce41c5` before and after. The same grid re-swept with two
+      corrections changed **70 of 2,970**, 40 of them withdrawing a recommended dose
+      change. A digest that does not move is being read as "behaviour preserved"; here it
+      meant "not exercised".
+      what it needs: a third value in the correction dimension (0, 1, 2), or a separate
+      pinned corpus for the repeats-gated branches. Either re-records the fingerprint —
+      that is the whole cost, and it is why this is not tagged.
+      in plain terms: the app keeps nearly six thousand pretend tanks and checks that its
+      answers for them never change by accident. None of those pretend tanks has ever had
+      two corrections logged against one element, and a handful of the app's rules only
+      come into play when it has. Those rules could be changed by accident today and the
+      check would say nothing.
+      spec: docs/spec/reef-chemistry.md §27 ("Flagged, not changed")
+      repro: node tests/legacy-port/golden.js before and after any change to
+      `ALK_CLEARLY_OUT`/`CA_CLEARLY_OUT`/`MG_CLEARLY_OUT` — digest unchanged either way.
+      tests it needs: the widened sweep is itself the test.
+      owner: implementer, once [approved]
+
+<!-- 2026-08-15: TW-048, TW-049 and TW-050 filed while folding
+     docs/spec/DECISION-drift-back.md into canon (now deleted; §1, §27, §28,
+     §8.4, §11, §13.4). All three UNTAGGED, and for three different reasons.
+     TW-048 is a decision that names an instrument and explicitly does not
+     design it — four questions are recorded unanswered inside §28 itself.
+     TW-049 is a threshold Dan declined to choose, in as many words. TW-050
+     moves `action` values and therefore needs its own audit. None of the
+     three is a "the decision is recorded so the code may follow" case. -->
+
+- [ ] TW-048 Drift back — the third dosing instrument exists in canon and in no code
+      why: reef-chemistry.md §28, decided 2026-08-15. A deliberate under-dose lets the
+      tank draw a level back down; there is no additive that lowers alkalinity, calcium
+      or magnesium, so this is the only way down and the app cannot offer it. Today a
+      keeper at 455 ppm against a 400-450 band is told to decrease the dose to match
+      consumption, which parks calcium at 455 and calls it finished — the `off-target`
+      card (state.js:459 onward).
+      what §28 already settles, so it is not re-argued: target is §9's middle-third
+      arrival zone; the rate is consumption's, not chosen; a duration estimate is
+      required because it IS the decision the user makes; §3's rails still cap the cut;
+      the return dose is recomputed not replayed; §9's two-reading arrival test and
+      calendar expiry both apply.
+      what §28 leaves open, and must not be answered by an agent: new wizard state vs
+      correction plan with a negative delta (wizard-states.md §3 gains a row either way,
+      and which row depends on this); whether the upward case is built at all; how the
+      offer is presented; what happens if the user does nothing.
+      in plain terms: if your alkalinity climbs above your range there is nothing you can
+      pour to bring it down — you dose less than the tank uses and let it fall. The app
+      has never been able to offer that, so it tells you to cut the dose to the point the
+      level stops moving, which leaves you sitting above your range indefinitely.
+      spec: docs/spec/reef-chemistry.md §28, §1 (the three instruments and the
+      downward-only asymmetry), §9 (the machinery it reuses)
+      repro: none — the feature does not exist. §28's "Enforced by" says so plainly
+      rather than implying a test.
+      tests it needs: all of them; none exist.
+      owner: needs a design decision from Dan before an implementer, once [approved]
+
+- [ ] TW-049 §8.4's step-cap relaxation has no threshold of its own
+      why: reef-chemistry.md §13.4, opened 2026-08-15 and deliberately left unanswered.
+      §8.4 says the 25% cap relaxes when the level is "outside its band and still moving
+      further out — see §11". `capDoseStep` (src/lib/dosing/helpers.js:51-60) relaxes on
+      something else entirely: 50% when the level is outside §2's SAFE_BOUNDS, 100% when
+      outside them and heading further out. Band and safe bounds are different layers —
+      400-450 against 350-500 for calcium — so the sentence and the code have been
+      describing different tanks.
+      confirmed live 2026-08-15: `capDoseStep` reads `SAFE_BOUNDS[def.key]` and nothing
+      else; it has never referenced a band edge, `clearlyOut`, or any §27 margin.
+      **neither side is authorised to move.** Dan settled only what the source may NOT
+      be: not §27's wording margins, not a trend constant, not a borrowed figure of any
+      kind. Relaxing the cap is a stronger action than an ordinary change and may well
+      deserve more evidence than a bare edge crossing — but the figure must be chosen for
+      relaxing a step cap, and Dan explicitly did not choose it.
+      in plain terms: the app normally will not change your daily dose by more than a
+      quarter at once. There is a rule about when it is allowed to jump further, the
+      written rule and the working rule disagree about when that is, and the number that
+      would settle it has not been picked.
+      spec: docs/spec/reef-chemistry.md §8.4, §13.4
+      repro: read src/lib/dosing/helpers.js:51-60 against docs/spec/reef-chemistry.md §8.4
+      tests it needs: whatever the chosen threshold turns out to be; nothing can be
+      written until it is.
+      owner: Dan chooses the threshold; implementer once [approved]
+
+- [ ] TW-050 `action` reads "increase" for a change of zero, in all three engines
+      why: `out.action = next > out.currentDose ? "increase" : next < out.currentDose ?
+      "decrease" : "hold"` (alkalinity.js:922, calcium.js:629, helpers.js:1114 — the same
+      line three times). `next` has been rounded to one decimal; `currentDose` has not.
+      A current dose of 10.799999999999999 against a recommendation rounded to 10.8 makes
+      `next > currentDose` true by 1.8e-15, so the app labels a zero change an increase.
+      found 2026-08-15 in the §27 rework audit: 5 of 36 changed rows, all alkalinity at
+      8.98 against an 8.8 ceiling, report `action: "increase"` while recommending exactly
+      the 10.8 mL/day already being poured. Pre-existing — the comparison predates §27 —
+      but newly reachable, because those rows now take the act path.
+      why it matters beyond cosmetics: `action` is read by the dose card and the wizard,
+      and "increase" on a tank above its range is the wrong word in the one direction
+      where a keeper is least able to check it against their own judgement.
+      in plain terms: the app can tell you to increase your dose and then hand you the
+      same number you are already dosing, because two ways of writing 10.8 disagree in
+      the fifteenth decimal place.
+      not fixed here: comparing rounded against rounded changes `action` values, which is
+      a behavioural change across all three engines and needs its own by-element sweep.
+      spec: none — arithmetic, not chemistry. No constant moves.
+      repro: assessAlkalinity with dailyDoseMl 9, a logged dose of 10.8 (9 × 1.2), and a
+      last reading of 8.98 against the shipped 8.2-8.8 band, two logged corrections.
+      tests it needs: one per engine — a recommendation equal to the current dose grades
+      `hold`, whatever the float representations.
+      owner: implementer, once [approved]
+
 ## Blocked
 
 - [ ] [blocked] TW-022 `verify:deadcode` lands advisory — three unread `useMemo` values

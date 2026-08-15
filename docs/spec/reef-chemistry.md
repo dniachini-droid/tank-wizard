@@ -13,7 +13,13 @@ August 2026** on the spec owner's authority — position is the last reading.
 fixed; the "user may tighten a rail" clause is withdrawn, and
 tighten-never-loosen is recorded against §2's bands, where it belongs. The
 three companion decisions of the same authorisation are `wizard-states.md`
-§15, §20 and the new §22.
+§15, §20 and the new §22. **§27 added, and §1, §8.4, §11 and §13 amended,
+15 August 2026** on the spec owner's authority — out and clearly out are two
+questions, then the same day the margins were confined to wording only, and a
+third dosing instrument was named. Folded in from
+`docs/spec/DECISION-drift-back.md` (now deleted), the same way §25 was folded
+in from `DECISION-reef-chemistry-engine.md`. **§28 added 15 August 2026** —
+drift back.
 
 > Agents never edit this file. Disagreements → `.agent/spec-challenges.md`.
 
@@ -35,16 +41,54 @@ app settings, not here.
 
 ## 1. The distinction everything rests on
 
+**Amended 15 Aug (Dan, spec owner): two instruments become three.** The first
+two are unchanged and nothing below withdraws them; the third was missing, and
+its absence is why the app had nothing useful to say to a tank sitting above
+its range.
+
 - A **daily dose** replaces what the tank consumes. It **holds** a level. It
   cannot move one in any reasonable time.
 - A **correction** is a one-off or temporary elevated dose. It **moves** a
   level. It is not a maintenance figure and must be returned from.
+- A **drift back** is a deliberate under-dose. It **lets the tank draw a level
+  down** by consuming more than is supplied. It is not a maintenance figure
+  either, and it must be returned from.
 
 Most confusing advice in reef software comes from conflating these. When the
 app says "the dose is right, the level is not", that is this distinction.
 
-Three wizard states exist purely to express it. Collapsing them into "increase
-the dose" makes the app give advice that cannot work.
+Three wizard states exist purely to express the first two. Collapsing them into
+"increase the dose" makes the app give advice that cannot work.
+
+### The asymmetry, stated
+
+**The third instrument is downward-only in practice, and that is not an
+oversight.**
+
+In principle the picture is symmetric. A level that has climbed out of band is
+being over-dosed, and a level that has fallen out of band is being under-dosed;
+either way there are two offers, one that parks the level where it is by
+matching consumption, and one that goes further and walks it back to the middle
+of the band.
+
+In practice the two directions have different answers already available:
+
+- **Upward — an instrument exists.** Over-dosing to raise a level is close
+  enough to a correction (§9) that the existing instrument may serve. Whether
+  it should, or whether the upward case deserves its own offer, is not settled
+  — see §28.
+- **Downward — nothing exists.** There is no additive that lowers alkalinity,
+  calcium or magnesium. Coming down happens by dosing less and waiting, which
+  is neither holding nor correcting, and until 15 August the app had no name
+  for it and no way to offer it. **Where a rise is corrected by adding, a fall
+  in the other direction can only be waited out**, and the waiting is the
+  instrument.
+
+The practical consequence is the one that matters: **when a level has climbed
+out of band, "hold" is not one of the options.** The current dose is above
+consumption by definition — that is what made it climb — so leaving it alone
+means continuing to climb. Both available answers decrease the dose; they
+differ only in how far. §28 is that choice.
 
 ---
 
@@ -561,6 +605,15 @@ No dose changes by more than **25%** at once. Sourced: dosing guides describe
 Relaxed only when the level is **outside its band and still moving further
 out** — see §11 for how that is determined.
 
+**Open, 15 Aug — the relaxation needs a threshold chosen for this job, and
+does not have one.** Relaxing the cap is a stronger action than an ordinary
+change, and requiring more than a bare edge crossing for it may well be right.
+But it must be sourced from a constant chosen for *relaxing a step cap*, not
+borrowed — not from §27's wording margins, and not from a trend constant.
+**This decision does not choose it and nothing here changes today.** Recorded
+as §13.4 with what is already known: the sentence above and the code have
+diverged, and neither is authorised to move until the threshold is settled.
+
 ### 8.5 Rate ceiling
 
 The new dose must not move the level faster than §3.
@@ -746,6 +799,15 @@ Two qualifiers:
   a fortnight, 0.02 dKH/day is 0.28 dKH — well above a Hanna's 0.1 — so a trend
   fitted over enough readings can see it. A single pair cannot.
 
+**Its two inputs are band position and trend direction. Not a margin.**
+Recorded explicitly 15 Aug because the question was asked: "outside its band"
+here means past the edge by any amount, exactly as §27 requires, and the only
+threshold in this rule is the noise floor on the *movement*. §27's out-of-band
+margins have no part in grading and must never be wired into it. Nothing in the
+code needed changing for this — `outOfBandWorsening` already takes position,
+trend and the noise floor and never took a margin — which is why it is written
+down rather than fixed.
+
 This replaces the dose-gap halving (§7), which was a patch for this fault.
 
 ---
@@ -798,6 +860,19 @@ on whether it validates band/alert consistency. **Answered 14 Aug: it does** —
 §18 carries the rule forward, and `wizard-states.md` §13 gives the vocabulary and
 boundary rules it returns. The function itself still does not exist
 (`.agent/backlog.md` TW-002).
+
+**13.4 §8.4's step-cap relaxation has no threshold of its own.** Opened 15 Aug
+by the owner, deliberately left unanswered. §8.4 says the 25% cap relaxes when
+the level is "outside its band and still moving further out — see §11". The
+code relaxes on something else: `capDoseStep` (`helpers.js:51-60`) widens to
+50% when the level is outside §2's **safe bounds**, and to 100% when it is
+outside them *and* heading further out. Band and safe bounds are two different
+layers — 400–450 against 350–500 for calcium — so the sentence and the code
+have been describing different tanks. **Neither is authorised to move.** What
+is settled is only what the source may not be: not §27's wording margins, not
+a trend constant, not a borrowed figure of any kind. What it should be is a
+judgement about how much evidence justifies a larger-than-ordinary step, and
+belongs with whoever chooses it. Filed as `.agent/backlog.md` TW-049.
 
 ---
 
@@ -876,6 +951,13 @@ here.
 | L ↔ US gal | 1 US gal = **3.78541 L** |
 | L ↔ imp gal | 1 imp gal = **4.54609 L** — must be distinguished from US gal |
 | °C ↔ °F | F = C × 9/5 + 32 |
+| "Clearly out" margin — calcium (§27) | **50 ppm past the band edge** |
+| "Clearly out" margin — magnesium (§27) | **50 ppm past the band edge** |
+| "Clearly out" margin — alkalinity (§27) | **0.5 dKH past the band edge** |
+
+The three margins are distances, never rates, and never a fraction of the band
+width. They answer only "is this clearly out"; "is this out" carries no margin
+at all. See §27.
 
 Scope, unchanged: **three-part dosing** — alkalinity, calcium and magnesium as
 separate additives. Not two-part, not kalkwasser, not calcium reactor.
@@ -1507,6 +1589,9 @@ Also flagged, separately: `caClearlyOut` and `clearlyOut` compare a **distance**
 in ppm against `CA_TREND.stable` (5 ppm/**week**) and `MG_TREND.stable` (10
 ppm/**week**), which are rate constants. The comparison is dimensionally wrong
 whichever measure feeds it, and predates this decision. Not touched here.
+**Settled 15 Aug by §27**, which gives the three margins their own named
+constants and moves the figures; the position they are measured from is still
+this section's.
 
 ### Enforced by
 
@@ -1544,3 +1629,447 @@ screen. How fast it is moving, what your corals are using, and what to pour
 still come from the whole history, because a single test cannot tell you those
 things. A test you actually did will never again be overruled about the one
 thing it is definitely qualified to answer.
+
+---
+
+## 27. Out, and clearly out
+
+**Decided 15 Aug (Dan, spec owner): out and clearly out are two different
+questions and get two different numbers.**
+
+**A level is out the moment it is past the band edge by any amount.** 455 ppm
+against a 400–450 band is out. There is no margin on this, no tolerance and no
+rounding toward the band.
+
+**A level is clearly out once it is past the edge by a fixed margin: calcium
+50 ppm, magnesium 50 ppm, alkalinity 0.5 dKH.** Fixed figures, not scaled to
+band width — a keeper who widens their band has not decided that being far out
+matters less.
+
+**Amended the same day, before anything shipped: "clearly out" is a wording
+distinction and nothing else.** It changes how the app describes the
+situation. **It may not gate a recommendation, suppress one, relax a
+constraint, or change any figure.** The margins above are unchanged and were
+never the problem; what they were wired into was. The full rule, the fault
+that produced it and its cost are in "The second decision" below, which is
+part of this section and not an appendix to it.
+
+This closes `.agent/needs-dan.md` item 5 as its option (b) taken further: the
+margins become named constants of their own, and the figures move. Option (c)
+— pointing them at §5's kit noise floors — was **not** taken. How well a kit
+can see a level is a third question again, and tying the margins to it would
+mean that changing a test kit in Setup changed how far out of range a tank had
+to be before the app called it clearly out.
+
+### What was wrong
+
+`caClearlyOut` (`calcium.js`) and magnesium's `clearlyOut` (`helpers.js`) asked
+whether a level was far enough past its band edge to count as clearly out, and
+answered it like this:
+
+```js
+const caClearlyOut = above ? (posNow - def.max) > CA_TREND.stable
+  : below ? (def.min - posNow) > CA_TREND.stable : false;
+```
+
+The left side is a **distance in ppm**. `CA_TREND.stable` is **5 ppm per week**
+and `MG_TREND.stable` is **10 ppm per week** — rate constants, declared as such
+in their own comments (`calcium.js:28`, "ppm/week — below this, treat as test
+variation"). Comparing the two is a category error. Nothing was visibly wrong
+on screen; the harm was ahead of us, in the next person to move a trend
+constant for trend reasons and silently move the out-of-band margin with it.
+
+Alkalinity's `alkClearlyOut` did not have the dimensional fault — it compared
+against a literal `0.2`, which is a dKH distance — but 0.2 dKH is too small
+under this decision, and an unnamed literal is invisible to anyone looking for
+the app's out-of-band margins.
+
+### The rule
+
+1. **Out has no margin.** `inRange` / `above` / `below`, and every sentence and
+   badge derived from them, test the last reading (§26) against `def.min` and
+   `def.max` with nothing added to either. A level 0.1 ppm past the edge is out
+   and is said to be out.
+2. **Clearly out is a fixed distance past the edge**, in the parameter's own
+   unit: `ALK_CLEARLY_OUT` 0.5 dKH, `CA_CLEARLY_OUT` 50 ppm, `MG_CLEARLY_OUT`
+   50 ppm. Each is declared beside its engine's other constants as a bare
+   number, derived from nothing.
+3. **The two families of constant never touch.** A margin must not be defined
+   in terms of a trend constant, a kit noise floor (`KIT_PRECISION`,
+   `KIT_SIGMA`), or a band width. **Adjusting how fast counts as moving must
+   never change how far counts as out**, and the reverse.
+
+### What the rule covers
+
+`alkClearlyOut`, `caClearlyOut` and `clearlyOut` — the three margin tests, one
+per engine. Each feeds exactly one thing: the `*Worsening` flag that decides
+whether a level outside its band and still drifting further out may be held on
+a sub-noise trend.
+
+Nothing else moves. The position those distances are measured from is §26's and
+is untouched. The trend constants keep their values and their meanings. The
+12%-of-band `nearEdge` proximity, §11's grading qualifiers, the dose-gap
+trigger and every rate ceiling are untouched.
+
+### What it costs, measured
+
+> **This is the cost of the first wiring, which was withdrawn the same day.**
+> The measurements are kept because they are what exposed the fault — the
+> "40 rows withdraw a dose change" line below is the evidence the second
+> decision was argued from. What actually ships is in "The second decision".
+
+**The 5,940-case golden sweep does not move: `3a782222dbce41c5` before and
+after.** That is not evidence the change is inert — it is evidence the corpus
+cannot see it, and the reason is worth recording. `clearlyOut` only ever
+reaches an outcome through `*Worsening`, which additionally requires either a
+trend at or above the element's own "stable" rate — which would have taken the
+band off "stable" and skipped the branch entirely — or **two** logged
+corrections. `golden.js` logs at most one. The margin is unreachable in every
+one of its 5,940 cases, at either the old figures or the new ones.
+
+So the change was audited on the same grid with the correction count swept
+0, 1 and 2 — 2,970 cases each, old engine against new:
+
+| Logged corrections | Cases | Rows changed |
+|---|---|---|
+| 0 | 2,970 | 0 |
+| 1 | 2,970 | 0 |
+| 2 | 2,970 | **70** |
+
+The 70, by element and direction:
+
+| Element | Direction | Transition | Card | Rows |
+|---|---|---|---|---|
+| alkalinity | below | `increase → hold` | `suggested → suggested` | 17 |
+| alkalinity | above | `decrease → hold` | `suggested → off-target` | 17 |
+| calcium | below | `increase → hold` | `suggested → suggested` | 3 |
+| calcium | above | `decrease → hold` | `suggested → off-target` | 3 |
+| calcium | below | `hold → hold` | `off-target → suggested` | 10 |
+| calcium | above | `hold → hold` | `off-target → off-target` | 10 |
+| magnesium | below | `hold → hold` | `off-target → suggested` | 5 |
+| magnesium | above | `hold → hold` | `off-target → off-target` | 5 |
+
+Symmetric: 35 below, 35 above. 34 alkalinity, 26 calcium, 10 magnesium.
+
+- **40 rows withdraw a dose change**, `increase`/`decrease → hold`. The
+  recommended dose reverts to what the keeper is already pouring, a move of
+  **0.9% to 10.1%**. The largest is calcium at 384 ppm — 16 ppm below a 400–450
+  band, on a trend of 0 ppm a week — where the app recommended 13.1 mL/day and
+  now holds at 12.0. An alkalinity example: 7.93 dKH against 8.2–8.8, 9.7 mL/day
+  → hold at 9.0. **This is the cost of the decision, not a side effect of it**:
+  a level that is out, but not clearly out, on a trend the test cannot resolve,
+  is no longer grounds for changing the daily dose.
+- **30 rows keep the same dose and change only what is said about it.** These
+  previously fell past the stable-hold branch and explained themselves in
+  consumption arithmetic; they now take that branch and say plainly that the
+  level is holding outside the range, naming the figure and the side. Where the
+  level is below the band, the card also now offers the one-off correction that
+  branch carries. `recommendedDose` is identical on all 30.
+- **0 rows changed whose last reading is in band.** The margin governs only
+  levels already out.
+- **0 rows became `idle`** — the card that says the dose is matching
+  consumption and there is nothing to answer for.
+- **0 rows stopped saying the level is above or below the range.** Out is still
+  out, and still said, on every one of the 70.
+- **All 70 changed rows sit strictly between the old margin and the new one** —
+  alkalinity 0.204–0.408 dKH past the edge, calcium 15–50 ppm, magnesium 45 ppm.
+  Nothing outside that window moved, in either direction, for any element.
+
+### The second decision — the margin governs wording, nothing else
+
+**Decided 15 Aug (Dan, spec owner), correcting the decision above before it
+shipped.** The margins are right. Their wiring was not.
+
+#### What went wrong
+
+`clearlyOut` fed the `*Worsening` flag, and that flag decides whether the app
+acts at all. So raising the margins raised the bar for speaking, and the audit
+above measured the result without naming it: **40 of the 70 changed rows
+withdrew a dose change.** Calcium at 384 ppm — sixteen below a 400–450 band —
+went from "increase to 13.1 mL/day" to "hold at 12.0".
+
+Raising a margin meant for describing how far out a level sits made the app go
+quiet on levels that are genuinely out of range. That is the opposite of what
+was wanted, and it is the whole reason a margin may not be a gate.
+
+#### The rule
+
+**A level is out of band the moment it is past the edge by any amount, and
+that is what decides whether the app acts.** 455 against 400–450 is out, and
+the app responds.
+
+**"Clearly out" changes how the app describes the situation and nothing else.
+It may not gate a recommendation, suppress one, relax a constraint, or change
+any figure.** A margin that decides whether the app speaks is not a wording
+distinction, whatever it is called.
+
+The two questions and their three answers are therefore:
+
+| Question | Answered by | May govern |
+|---|---|---|
+| Is it out? | past `def.min`/`def.max` by any amount | whether the app acts |
+| Is it clearly out? | past the edge by 50 ppm / 50 ppm / 0.5 dKH | wording |
+| Is it moving? | §11's grading — position and trend direction | whether the movement is credible |
+
+#### Where the three uses stood, checked rather than assumed
+
+The decision named three consumers of `clearlyOut`. Only one of them was real:
+
+- **The act/hold decision — real, and severed.** The three `*Worsening` flags
+  now take a plain out-of-band test. Each engine still computes its
+  `clearlyOut` and now reports it on the assessment as a wording input.
+- **§11's grading — never took a margin.** `outOfBandWorsening` takes band
+  position, trend direction and the noise floor, and always did. Nothing to
+  re-source; §11 now says so explicitly so nobody wires one in.
+- **§8.4's step-cap relaxation — never took a margin either, and is a
+  different problem.** It relaxes on §2's safe bounds, not on the band at all,
+  which is not what §8.4's own sentence says. **Left exactly as it is** and
+  opened as §13.4; choosing its threshold is not authorised here.
+
+#### What it costs, measured
+
+Same grid, same sweep, three engines compared: **A** = this file before §27
+(margins 5 ppm / 10 ppm / 0.2 dKH, wired into the gate), **B** = the first
+wiring (50 / 50 / 0.5, wired into the gate), **C** = what ships (50 / 50 / 0.5,
+wording only).
+
+**The 40 rows that withdrew a dose change: all 40 recover main's
+recommendation exactly** — same action, same millilitres, to the digit. The 30
+that changed wording only under B are byte-identical to A again. B is fully
+undone.
+
+Against A — what actually changes on the tree today — **36 of 2,970 rows, all
+alkalinity:**
+
+| Direction | Transition | Rows |
+|---|---|---|
+| below | `hold → increase` | 13 |
+| below | `hold → hold` (wording and card only) | 5 |
+| above | `hold → decrease` | 8 |
+| above | `hold → increase` (a zero change mislabelled — see below) | 5 |
+| above | `hold → hold` (wording and card only) | 5 |
+
+Symmetric, 18 below and 18 above. **Every one of the 36 sits within 0.012 and
+0.192 dKH of its band edge** — inside the old 0.2 dKH margin, which is exactly
+the window the old wiring silenced. Dose figures move by 0.0% to 2.8%. **0
+rows whose last reading is in band changed; 0 became `idle`; 0 went from acting
+to holding.** Calcium and magnesium do not move at all: their old margins,
+5 ppm and 10 ppm, were smaller than any grid step near the edge.
+
+The direction of the change is the point: **26 rows go from holding to acting**
+on a level that is out of band and drifting further out. None goes the other
+way.
+
+#### Two things this surfaces, neither fixed here
+
+**The act path never says the level is out of range.** When the app acts it
+says "the dose no longer matches what the tank uses" and names the new
+millilitres; it does not say the level is above or below the band. Under the
+old wiring these rows took the hold branch, which did say it. So the app
+speaks now where it used to be quiet, but it speaks only about the dose. That
+is precisely the gap §28 exists to close, and it is named there rather than
+patched with copy here.
+
+**`action` can read "increase" for a change of zero.** Five of the 36 —
+alkalinity at 8.98 against an 8.8 ceiling — report `action: "increase"` while
+recommending the same 10.8 mL/day the keeper is already pouring. The cause is
+arithmetic, not chemistry: `next` is rounded to a tenth (10.8) and compared
+against an unrounded `currentDose` (10.799999999999999), so `next >
+currentDose` is true by 1.8 × 10⁻¹⁵ (`alkalinity.js:922`, `calcium.js:629`,
+`helpers.js:1114` — all three engines, identically). Pre-existing and newly
+reachable, not introduced. Filed as `.agent/backlog.md` TW-050; fixing it moves
+`action` values and needs its own audit.
+
+### Flagged, not changed
+
+**The golden sweep is blind to this margin, and to anything else gated on two
+or more logged corrections.** Its `withCorrection` dimension is a boolean — one
+correction or none — so `repeatedCorrections(...) >= 2` is false in all 5,940
+cases. That is a gap in the app's widest behavioural net, not a fault in this
+decision, and it is not fixed here: widening the corpus re-records the
+fingerprint for reasons unrelated to §27 and belongs in its own item. Filed as
+`.agent/backlog.md` TW-047.
+
+### Enforced by
+
+Per §14, named rather than asserted:
+
+- `src/test/defects/clearly-out-margins.test.js` — 66 assertions, in four
+  groups:
+  - **13** pin the no-margin half of "out": each element, each direction, a
+    hair past the edge is said to be out and never reaches the `idle` card.
+  - **36** pin the wording-only rule behaviourally. Four distances — a hair
+    past the edge, past the old borrowed constant, just inside the new margin,
+    and past it — must all produce the same action on a level drifting further
+    out, in both directions on all three engines, while `clearlyOut` itself
+    differs across the margin and the recommended dose does not.
+  - **10** pin the constants: exported at their decided values, each declared
+    as a bare number, each `clearlyOut` expression naming its own constant with
+    no `_TREND` reference and no numeric literal.
+  - **7** pin the wiring structurally, by reading the source: each
+    `*Worsening` expression must name the out-of-band test, must not name its
+    `clearlyOut`, and must contain no `CLEARLY_OUT` constant; each out-of-band
+    test must be `above || below` and nothing else. Behaviour alone would let
+    the margin back in beside a second condition that happened to carry the
+    fixtures; this group refuses the wiring itself.
+
+  **22 of the original 47 failed against the code before the first decision;
+  37 of the 66 fail against the wiring the first decision shipped with.**
+- `tests/legacy-port/invariants.js` — the app never says "nothing to do" about
+  a level outside its band. Unchanged and still green; the audit above confirms
+  no row reached `idle`.
+
+### In plain terms
+
+Your range is 400 to 450. At 455 your calcium is out. Not "nearly out", not
+"out within tolerance" — out, and the app says so, exactly as it does at 500.
+That has not changed and now cannot quietly change.
+
+The app also has a second phrase for a level that is a long way out rather than
+a hair out — 50 ppm past your range for calcium and magnesium, 0.5 dKH for
+alkalinity. **That phrase is only a phrase.** It changes how the app puts
+things. It does not change what the app does, and it never decides whether the
+app says anything at all.
+
+That last sentence is the correction, and it is worth being blunt about why it
+was needed. For a few hours on 15 August those three numbers *were* the point
+at which the app decided to speak — which meant making them bigger made the app
+quieter. A calcium sixteen below your range stopped getting a dose change and
+started getting "hold". Nobody intended that; it was only visible once the
+change was measured against six thousand simulated tanks. Being out of your
+range is what makes the app speak, at one ppm past the edge as at fifty. How
+far out you are only changes how it words the answer.
+
+Underneath, two of those three numbers were not distances at all. They were the
+figures for *how fast* a level counts as moving in a week, borrowed to answer
+*how far* it sits from your range — different kinds of measurement entirely,
+like answering "how far is the shop" with "twenty minutes' walk" and then
+treating the answer as metres. Nothing on screen looked wrong. The danger was
+that the next person to adjust what counts as a fast week would, without
+knowing it, have changed what counts as far out of range. The two now have
+their own numbers, written down here, and a test that fails if anyone ties them
+back together.
+
+---
+
+## 28. Drift back
+
+**Decided 15 Aug (Dan, spec owner): a deliberate under-dose is a third
+instrument, and the app must be able to offer it.** §1 carries the model; this
+section carries what the instrument is, what it needs, and what is not settled.
+
+> *"If you're at 420, 430, 440, and then you go to 455 — you're not holding.
+> You have to decrease your dose. Do you mean decrease your dose to match
+> consumption, or decrease your dose to let it drift down?"*
+
+That question has two right answers and the app currently gives only one.
+
+### The two offers
+
+When a level has climbed out of band, the current dose is above consumption by
+definition — that is what made it climb. **Leaving the dose alone means
+continuing to climb, so "hold" is not on the menu. Both offers decrease the
+dose; they differ in how far.**
+
+| Offer | What it does | Where you end up |
+|---|---|---|
+| **Match consumption** | decrease to the point the level stops moving | parked out of band, stable |
+| **Drift back** | decrease further, so consumption exceeds supply | walks down to the middle third, then returns to maintenance |
+
+The smaller cut parks you where you are. The larger cut brings you home.
+
+**Today the app offers only the first**, and calls it finished — that is the
+`off-target` card, and it is why a keeper at 455 gets told to decrease the dose
+and is then left at 455. §27's second decision makes the app speak in that
+state; this section is what it should say.
+
+### What drift back is not
+
+**Not a correction (§9).** A correction is a one-off or temporary *elevated*
+dose from a known quantity, sized by §21's formula, delivered over days and
+verified on arrival. Drift back adds nothing — it removes.
+
+**Not a maintenance change (§6, §7).** A maintenance dose is the app's best
+estimate of what the tank uses. A drift-back dose is deliberately below that,
+on purpose, with a planned end.
+
+**It is a temporary dose change with a return** — structurally closest to a
+correction plan: a target, an expected duration, an arrival test, a return
+dose.
+
+### What it needs
+
+Named, not designed. Most of the machinery exists and is cited rather than
+reinvented.
+
+- **A target: the middle third of the band**, §9's arrival zone, for §9's
+  reason — stopping at the edge leaves one week of ordinary drift from being
+  out again.
+- **A rate that is not chosen.** How fast a level falls is set by consumption
+  minus what is still being dosed, and consumption is the tank's, not the
+  app's. §9's "lowering is limited by consumption" already states this. **The
+  user's only real lever is how deep to cut**; the rate follows.
+- **A duration estimate, because that is the actual decision.** *"About nine
+  days"* against *"stays at 455"* is the choice being made, and an offer
+  without it is not a choice.
+- **§3's rails still apply.** A drift back must not pull a level down faster
+  than the rail allows, which caps how deep the cut may go. The rail is not
+  relaxed for being deliberate.
+- **A return dose, recomputed not replayed** — §9's rule, for §9's reason: a
+  plan running while demand grows must not hand back a figure that is now
+  short.
+- **An arrival test, with §9's two-reading confirmation.** Reaching the zone
+  mid-fall is passing through, not arriving.
+- **Expiry on the calendar**, per §9. An unattended drift back must not run for
+  a month.
+
+### What is not settled
+
+Recorded rather than answered. **None of these is authorised.**
+
+- **Whether it is a new wizard state or a variant of the correction plan.**
+  Structurally it is a correction plan with a negative delta, which argues for
+  reuse. But §1's distinction is load-bearing and collapsing the two may cost
+  more than it saves. `wizard-states.md` §3's table gains a row either way, and
+  which row it is depends on this answer — which is why no row has been added
+  yet.
+- **Whether the upward case is built at all.** Over-dosing to walk a level up
+  is close enough to a correction that §9 may already serve. §1's asymmetry
+  says the downward case is the one with no instrument; it does not say the
+  upward case needs a second one.
+- **How the offer is presented** — two buttons, a slider, or the wizard picking
+  one and naming the other.
+- **What happens if the user does nothing.** The level keeps climbing. Whether
+  the app escalates, and how, is unaddressed.
+
+### Enforced by
+
+**Nothing yet, and that is stated rather than implied.** §14 exists because
+this document once claimed enforcement it did not have. No code implements
+drift back; no test asserts it. The item is `.agent/backlog.md` TW-048,
+untagged — the decision settles that the instrument exists and what it must
+respect, not that it may be built without a design.
+
+### In plain terms
+
+If your alkalinity has climbed above your range, there is no product you can
+add to bring it down. The only way down is to dose less than your corals use
+and let them pull it down for you. Every reefkeeper knows this; the app did
+not.
+
+So when your calcium reads 455 against a range topping out at 450, there are
+two sensible things to do and the app has only ever offered one of them. It
+says "your dose is more than the tank uses, cut it back" — and if you do
+exactly that, calcium stops climbing and sits at 455 forever. Correct advice,
+useless outcome.
+
+The missing offer is the bigger cut: dose deliberately less than the tank
+uses, let calcium fall to the middle of your range over about a week, and then
+go back to the normal dose. Same action, further, with an end date. What you
+actually need to choose between is *"stays at 455"* and *"about nine days"*,
+and the app should be the one telling you it is nine.
+
+None of that is built. This section says what it is and what it must respect —
+your rails, your range, a return to normal dosing, and an expiry so a plan you
+forget about does not run all month — so that when it is built, it is built
+once and correctly.
