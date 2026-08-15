@@ -33,6 +33,29 @@ const T = L.todayStr();
  * existed and the harness never used it. */
 const NOW = L.dayNum(T) + 12 / 24;   /* midday, well clear of the fixtures */
 
+/* The same failure one step further out. Pinning `now` made a run reproducible
+ * within a day; it did not make one reproducible across days.
+ *
+ * Every fixture below is dated relative to `T`, and some of the text the
+ * engines produce quotes those dates back verbatim — "A one-off correction is
+ * logged on 2026-08-11, inside the period these readings cover". That absolute
+ * date is baked into the snapshot, so the corpus stops matching itself the
+ * morning after it is recorded: 29 of 5,940 rows change, the digest changes,
+ * and `npm run verify` fails on a tree nobody touched. Every PR opened on a
+ * later day than the last re-record inherits a red gate that has nothing to do
+ * with its diff.
+ *
+ * The dates are not noise — which day a message names is exactly the sort of
+ * thing this sweep should catch changing — so they are rewritten relative to
+ * `T` rather than dropped. `T-3` still says "three days before today", still
+ * changes if the engine starts naming a different day, and says the same thing
+ * whenever the sweep is run.
+ */
+const relDates = (s) => String(s).replace(/\d{4}-\d{2}-\d{2}/g, (d) => {
+  const n = Math.round(L.dayNum(d) - L.dayNum(T));
+  return `T${n >= 0 ? '+' : ''}${n}`;
+});
+
 const defs = L.PARAM_DEFS;
 const SNAPSHOT = path.join(__dirname, 'golden.json');
 
@@ -135,7 +158,8 @@ function fingerprint() {
                   parts.push(o ? `${o.possible ? 'y' : 'n'}:${o.dose == null ? '' : Math.round(o.dose * 10) / 10}:${o.days || ''}` : '');
                 } catch (e) { parts.push('OFFER THREW'); }
               }
-              rows.push(`${key}|${offset}|${slope}|${count}|${withDose}|${withCorrection}|` + parts.join('~'));
+              rows.push(`${key}|${offset}|${slope}|${count}|${withDose}|${withCorrection}|`
+                + parts.map(relDates).join('~'));
             }
           }
         }

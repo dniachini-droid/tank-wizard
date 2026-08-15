@@ -60,10 +60,96 @@ export async function buildBackup() {
   };
 }
 
+/* The natural key each list merges on. Merging is by natural key, never by id,
+   because ids are regenerated and would let the same reading in twice.
+
+   Written once and shared by the preview and the restore. It used to be two
+   copies of the same object literal, one in each function, which is how they
+   came to disagree about what counted as a duplicate.
+
+   Time of day is part of the key for readings and dose changes because a day
+   is not the unit either of them happens in. Two alkalinity tests, one before
+   the morning dose and one after the evening one, is the ordinary way to find
+   out what a dose did; two dose changes in a day is what a staged plan looks
+   like when you change your mind. On `param|date` alone the pair collided and
+   the second was dropped, silently, on every restore.
+
+   `r.time || ""` rather than requiring a time: rows written before times were
+   recorded have none, and they must still match themselves, or restoring an
+   old file would duplicate every row in it. */
+export const NATURAL_KEYS = {
+  "readings": (r) => `${r.param}|${r.date}|${r.time || ""}`,
+  "icp-tests": (r) => r.date,
+  "water-changes": (r) => `${r.date}|${r.litres}`,
+  "dose-log": (r) => `${r.element || "alkalinity"}|${r.date}|${r.time || ""}`,
+  "lighting-log": (r) => r.date,
+  "task-log": (r) => `${r.taskId}|${r.date}`,
+  "tasks-custom": (r) => r.id,
+  "reminders": (r) => r.id,
+};
+
+/* Only entries the app can actually use are counted. Two problems otherwise:
+   a null in any list threw while building the key, so a single bad entry
+   made the whole file unreadable with no explanation; and a string or a
+   number in the readings list was counted as an importable record, so the
+   preview promised more than the restore would deliver and the difference
+   vanished silently. */
+const usable = (rows) => (Array.isArray(rows) ? rows : [])
+  .filter((r) => r && typeof r === "object" && !Array.isArray(r));
+
+/* One merge, run by the preview and by the restore, so the number on the
+   confirmation screen is the number of rows that actually arrive.
+
+   The preview used to count the incoming rows that were absent from current
+   state, which is not the same question: it deduped the file against the
+   device but never against itself, while the restore deduped both ways. A
+   file holding the same entry twice was previewed as two recoveries and
+   delivered as one, and nothing said so. */
+export function planMerge(currentRows, incomingRows, keyFn) {
+  const merged = usable(currentRows);
+  const have = new Set(merged.map(keyFn));
+  const kept = [];
+  for (const row of usable(incomingRows)) {
+    const k = keyFn(row);
+    if (have.has(k)) continue;
+    have.add(k);
+    kept.push(row);
+  }
+  return { merged, kept };
+}
+
+const isRange = (v) => v && typeof v === "object" && !Array.isArray(v);
+const sameRange = (a, b) => (a == null && b == null)
+  || (isRange(a) && isRange(b) && a.min === b.min && a.max === b.max);
+
+/* Which parameters the file and this device disagree about, with both values,
+   so a restore can show them rather than pick one.
+
+   A target present on one side and absent on the other is a disagreement too:
+   absent means "use the app's default band", which is a different band from
+   whatever the other side names, and history reads the same either way. */
+export function rangeConflicts(fileRanges, deviceRanges) {
+  /* A file that says nothing about targets is not disagreeing with anything —
+     the same reading the correction plans below get. Absence has three shapes
+     and none of them may be read as "go back to the defaults": a file written
+     before this key was collected has no member at all, a device that has
+     never customised a band writes an explicit null, and `{}` is what
+     `loadKey("custom-ranges", {})` hands back for the same device. Asking the
+     user to choose between their targets and no targets on every restore of
+     an ordinary file would be noise, and the answer that matters — keep what
+     is on this device — is the one absence already implies. */
+  if (!isRange(fileRanges) || Object.keys(fileRanges).length === 0) return [];
+  const f = fileRanges;
+  const d = isRange(deviceRanges) ? deviceRanges : {};
+  const params = [...new Set([...Object.keys(d), ...Object.keys(f)])].sort();
+  return params
+    .filter((p) => !sameRange(d[p], f[p]))
+    .map((p) => ({ param: p, device: isRange(d[p]) ? d[p] : null, file: isRange(f[p]) ? f[p] : null }));
+}
+
 /* Describe a backup file without writing anything, so the restore can be seen
-   before it happens. Merging is by natural key, never by id, because ids are
-   regenerated and would let the same reading in twice. */
-export function inspectBackup(parsed, current) {
+   before it happens. */
+export function inspectBackup(parsed, current, deviceRanges = null) {
   if (!parsed || parsed.format !== "dans-tank-backup") {
     return { ok: false, reason: "That doesn't look like a backup from this app." };
   }
@@ -71,61 +157,56 @@ export function inspectBackup(parsed, current) {
     return { ok: false, reason: "The file is missing its data." };
   }
   const b = parsed.data;
-  const keyOf = {
-    "readings": (r) => `${r.param}|${r.date}`,
-    "icp-tests": (r) => r.date,
-    "water-changes": (r) => `${r.date}|${r.litres}`,
-    "dose-log": (r) => `${r.element || "alkalinity"}|${r.date}`,
-    "lighting-log": (r) => r.date,
-    "task-log": (r) => `${r.taskId}|${r.date}`,
-    "tasks-custom": (r) => r.id,
-    "reminders": (r) => r.id,
-  };
-  /* Only entries the app can actually use are counted. Two problems otherwise:
-     a null in any list threw while building the key, so a single bad entry
-     made the whole file unreadable with no explanation; and a string or a
-     number in the readings list was counted as an importable record, so the
-     preview promised more than the restore would deliver and the difference
-     vanished silently.
-
-     Unusable entries are reported rather than ignored — telling someone their
+  /* Unusable entries are reported rather than ignored — telling someone their
      backup had 412 readings when 9 of them cannot be read is the difference
      between a restore they can trust and one that quietly loses data. */
   const summary = [];
   let skipped = 0;
-  for (const key of Object.keys(keyOf)) {
+  for (const key of Object.keys(NATURAL_KEYS)) {
     const raw = Array.isArray(b[key]) ? b[key] : [];
-    const incoming = raw.filter((r) => r && typeof r === "object" && !Array.isArray(r));
+    const incoming = usable(raw);
     skipped += raw.length - incoming.length;
-    const have = new Set();
-    for (const r of (current[key] || [])) {
-      if (r && typeof r === "object") have.add(keyOf[key](r));
-    }
-    const fresh = incoming.filter((r) => !have.has(keyOf[key](r))).length;
-    if (raw.length) summary.push({ key, total: incoming.length, fresh, skipped: raw.length - incoming.length });
+    const { kept } = planMerge(current[key], incoming, NATURAL_KEYS[key]);
+    if (raw.length) summary.push({ key, total: incoming.length, fresh: kept.length, skipped: raw.length - incoming.length });
   }
   const hasSettings = b["tank-settings"] && typeof b["tank-settings"] === "object";
   return {
     ok: true, summary, hasSettings, skipped,
     createdAt: parsed.createdAt,
-    hasRanges: b["custom-ranges"] && Object.keys(b["custom-ranges"]).length > 0,
+    rangeConflicts: rangeConflicts(b["custom-ranges"], deviceRanges),
   };
 }
 
 /* Merge rather than replace. Restoring the same file twice changes nothing the
-   second time, and restoring an old backup never removes newer entries. */
-export async function restoreBackup(parsed, current, applySettings) {
+   second time, and restoring an old backup never removes newer entries.
+
+   `options.ranges` says what to do about the target bands, and there is no
+   default that can be applied quietly. Every band a reading is classified
+   against is computed live from `custom-ranges` — the log's colours, the
+   chart's shading, every tooltip — so writing the file's copy over the
+   device's re-labels the entire history, including readings logged after the
+   file was written, and keeping the device's copy silently discards a target
+   the user may be restoring on purpose. Both directions change what the app
+   says about the past, so when the two disagree the caller must have asked:
+   "keep" leaves this device's targets alone, "file" takes the backup's.
+   Anything else is refused before a single row is written. */
+export async function restoreBackup(parsed, current, applySettings, options = {}) {
   const b = parsed.data;
-  const keyOf = {
-    "readings": (r) => `${r.param}|${r.date}`,
-    "icp-tests": (r) => r.date,
-    "water-changes": (r) => `${r.date}|${r.litres}`,
-    "dose-log": (r) => `${r.element || "alkalinity"}|${r.date}`,
-    "lighting-log": (r) => r.date,
-    "task-log": (r) => `${r.taskId}|${r.date}`,
-    "tasks-custom": (r) => r.id,
-    "reminders": (r) => r.id,
-  };
+
+  /* Read from storage rather than from `current`, which carries only the
+     eight list keys the preview counts. */
+  const deviceRanges = await loadKey("custom-ranges", null);
+  const conflicts = rangeConflicts(b["custom-ranges"], deviceRanges);
+  const choice = options.ranges;
+  if (conflicts.length && choice !== "keep" && choice !== "file") {
+    /* Refused up front, so a caller that has not been taught to ask fails
+       loudly and completely instead of writing half a restore and rewriting
+       the targets on its way past. */
+    throw new Error(
+      `This backup's target ranges differ from this device's for ${conflicts.map((c) => c.param).join(", ")}. `
+      + `Restoring must say which to keep — pass options.ranges as "keep" or "file".`);
+  }
+
   /* The same guard the inspector applies. The inspector was hardened against
      nulls and non-objects; this function, which does the actual writing, was
      not — so a file the preview cheerfully described as ready to import threw
@@ -135,21 +216,12 @@ export async function restoreBackup(parsed, current, applySettings) {
 
      A preview that promises what the restore cannot deliver is worse than a
      refusal, because the refusal at least happens before anything is written. */
-  const usable = (rows) => (Array.isArray(rows) ? rows : [])
-    .filter((r) => r && typeof r === "object" && !Array.isArray(r));
-
   const result = {};
-  for (const key of Object.keys(keyOf)) {
+  for (const key of Object.keys(NATURAL_KEYS)) {
     const incoming = usable(b[key]);
     if (!incoming.length) { result[key] = usable(current[key]); continue; }
-    const merged = usable(current[key]);
-    const have = new Set(merged.map(keyOf[key]));
-    for (const row of incoming) {
-      const k = keyOf[key](row);
-      if (have.has(k)) continue;
-      have.add(k);
-      merged.push({ ...row, id: row.id || uid() });
-    }
+    const { merged, kept } = planMerge(current[key], incoming, NATURAL_KEYS[key]);
+    for (const row of kept) merged.push({ ...row, id: row.id || uid() });
     merged.sort((x, y) => ((x.date || "") < (y.date || "") ? 1 : -1));
     await saveKey(key, merged);
     result[key] = merged;
@@ -167,9 +239,13 @@ export async function restoreBackup(parsed, current, applySettings) {
     await saveKey("kit-changes", b["kit-changes"]);
     result["kit-changes"] = b["kit-changes"];
   }
-  if (b["custom-ranges"]) {
-    await saveKey("custom-ranges", b["custom-ranges"]);
-    result["custom-ranges"] = b["custom-ranges"];
+  /* Only on an explicit "use the backup's targets". Every parameter the two
+     agree on already holds the same band, so the file's copy IS the answer for
+     the whole set — there is nothing to merge, only a side to take. */
+  if (choice === "file" && conflicts.length) {
+    const next = isRange(b["custom-ranges"]) ? b["custom-ranges"] : {};
+    await saveKey("custom-ranges", next);
+    result["custom-ranges"] = next;
   }
 
   /* An in-progress correction is merged per parameter rather than replaced

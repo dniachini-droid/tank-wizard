@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Btn, Field, SectionTitle, findingKey, inputCls } from './DoseExpectation.jsx'
 import { Card, DeleteButton } from './ErrorBoundary.jsx'
 import { InfoBlock } from './Insights.jsx'
@@ -8,7 +8,7 @@ import { CORRECTIONS, computeCorrection, fmtDoseMass } from '../lib/analytics/co
 import { kitSigma } from '../lib/analytics/measurement-noise.js'
 import { fmtAmount } from '../lib/analytics/time-in-range.js'
 import { byNewest } from '../lib/analytics/time-of-day.js'
-import { fileHandleSupported, loadFileHandle, regrantAndWrite, restoreSnapshot, ringList, saveFileHandle, shareBackup, shareSupported, writeBackupToHandle } from '../lib/auto-backup.js'
+import { fileHandleSupported, loadFileHandle, readSnapshot, regrantAndWrite, restoreSnapshot, ringList, saveFileHandle, shareBackup, shareSupported, writeBackupToHandle } from '../lib/auto-backup.js'
 import { BACKUP_LABELS, buildBackup, downloadCsv, downloadJson, inspectBackup, requestPersistence, restoreBackup } from '../lib/backup.jsx'
 import { daysBetween, fmtDate, fmtShort, todayStr } from '../lib/dates.js'
 import { buildCsv } from '../lib/export-csv.js'
@@ -22,12 +22,18 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
   waterChanges = [], icps = [], lighting = [], taskLog = [], allTasks = [],
   onAddLighting, onDeleteLighting, onRestored, onPlayIntro,
   onRestoreFinding, onRestoreAllFindings,
-  customTasks = [], dismissedList = [] }) {
+  customTasks = [], dismissedList = [], customRanges = {},
+  corrections = [], onDeleteCorrection = null }) {
 
   const [vol, setVol] = useState((settings.volumeL == null ? "" : String(settings.volumeL)));
   const [backupAt, setBackupAt] = useState(null);
   const [restoreMsg, setRestoreMsg] = useState(null);
   const [pending, setPending] = useState(null);
+  /* "keep" or "file" — what to do about target bands the incoming copy and
+     this device disagree about. Null until the user says, and the restore
+     will not run without it, because both answers rewrite how the whole log
+     reads and neither is the app's to assume. */
+  const [rangeChoice, setRangeChoice] = useState(null);
   const [persistState, setPersistState] = useState(null);
 
   /* The automatic side of backup: the snapshots this device holds, and the
@@ -35,6 +41,28 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
      actually protecting the user rather than what ought to be. */
   const [snapshots, setSnapshots] = useState([]);
   const [fileState, setFileState] = useState(null);
+
+  /* The eight lists a restore merges into, in the shape both the preview and
+     the restore expect. It was written out three times, once per call site,
+     which is how the snapshot path came to be given the same arguments but
+     none of the same checks. */
+  const restoreCurrent = () => ({
+    "readings": readings, "icp-tests": icps, "water-changes": waterChanges,
+    "dose-log": doseLog, "lighting-log": lighting, "task-log": taskLog,
+    "tasks-custom": customTasks,
+  });
+
+  const rangeConflicts = pending && pending.info.rangeConflicts ? pending.info.rangeConflicts : [];
+
+  /* The preview renders above the snapshot list, so a snapshot restored from
+     the bottom of the panel would otherwise put its confirmation off-screen
+     and read as a tap that did nothing. Jumped rather than animated: this is
+     a correction to where the page already is, not an effect. */
+  const previewRef = useRef(null);
+  useEffect(() => {
+    const el = previewRef.current;
+    if (pending && el && typeof el.scrollIntoView === "function") el.scrollIntoView({ block: "nearest" });
+  }, [pending]);
 
   const refreshAuto = async () => {
     setSnapshots(await ringList());
@@ -366,6 +394,52 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
         </InfoBlock>
       )}
 
+      {/* --- One-off corrections, as their own kind of entry ---
+
+          A correction is not a dose change and is not a reading, and it was
+          previously neither listed nor exported anywhere. The engines have
+          always read it — it is what stops a rise being scored as the tank
+          suddenly needing less — so the app was reasoning permanently from
+          something the user had no way to look at, check or take back. Its
+          own block rather than a row in Doser changes, because the two hold
+          different quantities: a dose change is mL per day and stays set, a
+          correction is a single addition in mL and is over once it is in. */}
+      {corrections.length > 0 && (
+        <InfoBlock icon={Calculator} eyebrow="History" title="One-off corrections" tone="#B8541A"
+          collapsible
+          summary={`${corrections.length} correction${corrections.length === 1 ? "" : "s"} logged`}>
+          <div className="divide-y divide-app">
+            {[...corrections].sort(byNewest).map((c) => {
+              const el = DOSE_ELEMENTS.find((e) => e.key === (c.element || "alkalinity"));
+              const label = el ? el.label.toLowerCase() : "alkalinity";
+              const down = c.direction === "down" || c.ml < 0;
+              return (
+                <div key={c.id} className="flex items-center justify-between gap-2 py-2.5">
+                  <div className="min-w-0">
+                    <div className="text-[13px] font-black text-ink">
+                      {fmtAmount(Math.abs(c.ml))} mL of {label}
+                    </div>
+                    <div className="text-[11px] text-ink2 font-semibold">
+                      {fmtDate(c.date)}{c.time ? ` · ${c.time}` : ""}
+                      {" · "}{down ? "to bring it down" : "one-off, on top of the daily dose"}
+                    </div>
+                  </div>
+                  {onDeleteCorrection && (
+                    <DeleteButton onDelete={() => onDeleteCorrection(c.id)} size={13}
+                      confirmMessage="Correction removed" />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-[12px] text-ink2 font-medium leading-relaxed mt-3">
+            The app treats the rise these caused as your doing rather than as the tank needing less,
+            so they stay in the reasoning for as long as they are listed here. Removing one you
+            logged by mistake takes it back out of that reasoning too.
+          </p>
+        </InfoBlock>
+      )}
+
       {/* --- 9. Correction calculator --- */}
       <InfoBlock icon={Calculator} eyebrow="Actions" title="Correction calculator" tone="#B8541A"
         collapsible
@@ -596,13 +670,10 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
               if (!file) return;
               try {
                 const parsed = JSON.parse(await file.text());
-                const info = inspectBackup(parsed, {
-                  "readings": readings, "icp-tests": icps, "water-changes": waterChanges,
-                  "dose-log": doseLog, "lighting-log": lighting, "task-log": taskLog,
-                  "tasks-custom": customTasks,
-                });
+                const info = inspectBackup(parsed, restoreCurrent(), customRanges);
                 if (!info.ok) { setRestoreMsg(info.reason); return; }
-                setPending({ parsed, info });
+                setPending({ kind: "file", parsed, info });
+                setRangeChoice(null);
                 setRestoreMsg(null);
               } catch (err) {
                 setRestoreMsg("That file couldn't be read as a backup.");
@@ -611,9 +682,10 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
         </label>
 
         {pending && (
-          <div className="mt-3 rounded-xl border-2 p-3" style={{ borderColor: "#0B7C8640", background: "#0B7C8608" }}>
+          <div ref={previewRef} className="mt-3 rounded-xl border-2 p-3" style={{ borderColor: "#0B7C8640", background: "#0B7C8608" }}>
             <div className="text-[11px] font-extrabold uppercase tracking-wide text-ink2 mb-1.5">
-              Backup from {pending.info.createdAt ? fmtDate(pending.info.createdAt.slice(0, 10)) : "an unknown date"}
+              {pending.kind === "snapshot" ? "Snapshot" : "Backup"} from{" "}
+              {pending.info.createdAt ? fmtDate(pending.info.createdAt.slice(0, 10)) : "an unknown date"}
             </div>
             {/* Entries the file holds but the app cannot read. Counting them as
                 importable made the preview promise more than the restore would
@@ -638,24 +710,92 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
               ))}
             </div>
             <p className="text-[11px] text-ink2 font-medium leading-relaxed mb-2">
-              Restoring adds anything missing and leaves what you already have alone, so nothing is
-              overwritten or duplicated. Running the same file twice changes nothing the second time.
+              Your readings, doses and other entries are only ever added to — nothing is overwritten
+              or duplicated, and running the same file twice changes nothing the second time.
             </p>
+
+            {/* Target bands are the one thing a restore cannot merge, and the
+                one thing it used to overwrite without saying so. Every reading
+                in the log is coloured, shaded and described against these
+                bands as it is drawn — nothing records what band a reading was
+                in when it was logged — so taking the file's copy silently
+                re-labels months of history, including tests logged after the
+                backup was made. Keeping this device's copy is just as much a
+                decision, so neither is taken on the user's behalf. */}
+            {rangeConflicts.length > 0 && (
+              <div className="rounded-lg border-2 p-2.5 mb-2" style={{ borderColor: "#A2621B55", background: "#A2621B12" }}>
+                <div className="text-[11px] font-black mb-1" style={{ color: "#8A5A18" }}>
+                  This {pending.kind === "snapshot" ? "snapshot" : "backup"}'s targets are not the ones set here
+                </div>
+                <div className="space-y-1 my-1.5">
+                  {rangeConflicts.map((c) => {
+                    const def = paramDefs.find((d) => d.key === c.param);
+                    const unit = def && def.unit ? def.unit : "";
+                    const band = (r) => (r ? `${r.min}–${r.max}${unit}` : "the app's own band");
+                    return (
+                      <div key={c.param} className="text-[11px] font-semibold text-ink2 leading-relaxed">
+                        <span className="font-black text-ink">{def ? def.label : c.param}</span>
+                        {" — here "}<span className="font-black">{band(c.device)}</span>
+                        {", in this file "}<span className="font-black">{band(c.file)}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-[11px] font-medium leading-relaxed mb-2" style={{ color: "#45605F" }}>
+                  Your whole log is judged against whichever you pick, not just what comes back in
+                  this restore — every past reading is re-labelled the moment you choose. Everything
+                  else above is restored either way.
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[["keep", "Keep the ones set here"], ["file", `Use the ${pending.kind === "snapshot" ? "snapshot" : "file"}'s`]].map(([v, label]) => (
+                    <button key={v} onClick={() => setRangeChoice(v)}
+                      aria-pressed={rangeChoice === v}
+                      className="rounded-lg border-2 px-2 py-2 text-[11px] font-extrabold leading-tight"
+                      style={{ borderColor: rangeChoice === v ? "#8A5A18" : "#E3ECEA",
+                               background: rangeChoice === v ? "#A2621B22" : "#fff",
+                               color: rangeChoice === v ? "#8A5A18" : "#45605F" }}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-2">
-              <Btn variant="ghost" onClick={() => setPending(null)}>Cancel</Btn>
-              <Btn onClick={async () => {
-                const merged = await restoreBackup(pending.parsed, {
-                  "readings": readings, "icp-tests": icps, "water-changes": waterChanges,
-                  "dose-log": doseLog, "lighting-log": lighting, "task-log": taskLog,
-                  "tasks-custom": customTasks,
-                }, true);
+              <Btn variant="ghost" onClick={() => { setPending(null); setRangeChoice(null); }}>Cancel</Btn>
+              <Btn disabled={rangeConflicts.length > 0 && !rangeChoice} onClick={async () => {
+                const opts = { ranges: rangeChoice || "keep" };
+                const merged = pending.kind === "snapshot"
+                  ? await restoreSnapshot(pending.key, restoreCurrent(), true, opts)
+                  : await restoreBackup(pending.parsed, restoreCurrent(), true, opts);
+                if (!merged) {
+                  setPending(null); setRangeChoice(null);
+                  setRestoreMsg("That snapshot could not be read.");
+                  setTimeout(() => setRestoreMsg(null), 8000);
+                  return;
+                }
                 onRestored(merged);
                 const added = pending.info.summary.reduce((a, r) => a + r.fresh, 0);
+                /* The old message said "nothing was overwritten", which was
+                   false for the one field that was. It now reports what was
+                   decided about the targets, because that is the part a user
+                   cannot see happening. */
+                const ranges = rangeConflicts.length === 0 ? ""
+                  : rangeChoice === "file" ? " Your targets now come from this file."
+                  : " The targets set on this device were kept.";
                 setPending(null);
-                setRestoreMsg(added ? `Restored — ${added} entries added.` : "Nothing new to add; your data already matched that file.");
+                setRangeChoice(null);
+                setRestoreMsg((added
+                  ? `Restored — ${added} ${added === 1 ? "entry" : "entries"} added.`
+                  : "Nothing new to add; your data already matched that file.") + ranges);
                 setTimeout(() => setRestoreMsg(null), 8000);
               }}>Restore</Btn>
             </div>
+            {rangeConflicts.length > 0 && !rangeChoice && (
+              <p className="text-[11px] font-bold mt-2" style={{ color: "#8A5A18" }}>
+                Choose what happens to the targets first.
+              </p>
+            )}
           </div>
         )}
 
@@ -718,15 +858,21 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
                   <span className="text-[12px] font-bold text-ink2">
                     {fmtDate(s.key.slice(0, 10))} · {s.counts.readings || 0} readings
                   </span>
+                  {/* Through the same preview the file restore uses. The ring
+                      was the one path that wrote on a single tap with nothing
+                      shown first, which is how a snapshot could re-label a
+                      whole log against an old target before anyone saw it. */}
                   <Btn variant="ghost" onClick={async () => {
-                    const merged = await restoreSnapshot(s.key, {
-                      "readings": readings, "icp-tests": icps, "water-changes": waterChanges,
-                      "dose-log": doseLog, "lighting-log": lighting, "task-log": taskLog,
-                      "tasks-custom": customTasks,
-                    }, true);
-                    if (merged) onRestored(merged);
-                    setRestoreMsg(merged ? "Snapshot restored — anything missing was added, nothing was overwritten." : "That snapshot could not be read.");
-                    setTimeout(() => setRestoreMsg(null), 8000);
+                    const parsed = await readSnapshot(s.key);
+                    const info = parsed && inspectBackup(parsed, restoreCurrent(), customRanges);
+                    if (!info || !info.ok) {
+                      setRestoreMsg("That snapshot could not be read.");
+                      setTimeout(() => setRestoreMsg(null), 8000);
+                      return;
+                    }
+                    setPending({ kind: "snapshot", key: s.key, parsed, info });
+                    setRangeChoice(null);
+                    setRestoreMsg(null);
                   }}>Restore</Btn>
                 </div>
               ))}
@@ -741,7 +887,7 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
           </p>
           <Btn variant="ghost" className="w-full sm:w-auto"
             onClick={() => downloadCsv(
-              buildCsv({ readings, icps, lighting, taskLog, doseLog, waterChanges, allTasks }),
+              buildCsv({ readings, icps, lighting, taskLog, doseLog, waterChanges, allTasks, corrections }),
               `dans-tank-${todayStr()}.csv`)}>
             <span className="flex items-center justify-center gap-1.5"><Download size={14} /> Download CSV</span>
           </Btn>

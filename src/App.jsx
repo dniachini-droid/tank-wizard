@@ -1066,8 +1066,21 @@ export function ReefConsoleInner() {
         param: d.element || "alkalinity",
         text: `${el ? el.label : "Dose"} set to ${d.ml} mL/day` });
     }
+    /* One-off corrections, on the chart for the same reason dose changes are:
+       a step in a line is unreadable without the thing that caused it, and a
+       correction is the most common cause of one. The engines have always
+       known about these; the charts did not, so a rise the app was privately
+       attributing to a correction looked unexplained to the person reading
+       it. Marked distinctly from a dose change because it is a single
+       addition in mL, not a new daily rate. */
+    for (const c of corrections) {
+      const el = DOSE_ELEMENTS.find((e) => e.key === (c.element || "alkalinity"));
+      ev.push({ date: c.date, icon: "+", color: "#B8541A", kind: "Correction",
+        param: c.element || "alkalinity",
+        text: `${fmtAmount(Math.abs(c.ml))} mL one-off ${el ? el.label.toLowerCase() : "alkalinity"} correction` });
+    }
     return ev.sort(byOldest);
-  }, [lighting, doseLog]);
+  }, [lighting, doseLog, corrections]);
 
   const alerts = useMemo(() => {
     return paramDefs.map((def) => ({ def, reading: latestByParam[def.key] }))
@@ -1392,7 +1405,8 @@ export function ReefConsoleInner() {
               waterChanges={waterChanges} icps={icps} lighting={lighting}
               taskLog={taskLog} allTasks={allTasks}
               onAddLighting={addLighting} onDeleteLighting={deleteLighting}
-              customTasks={customTasks} onRestored={applyRestore}
+              customTasks={customTasks} onRestored={applyRestore} customRanges={customRanges}
+              corrections={corrections} onDeleteCorrection={deleteCorrection}
               onPlayIntro={() => setSplash(true)}
               dismissedList={dismissedList} onRestoreFinding={restoreFinding}
               onRestoreAllFindings={restoreAllFindings} />
