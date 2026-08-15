@@ -57,7 +57,3 @@ export function strengthPlausible(element, settings) {
   if (v >= r.lo && v <= r.hi) return { ok: true };
   return { ok: false, value: v, ...r };
 }
-
-/* A last backstop on the resulting dose, deliberately loose: two millilitres
-   per litre per day is beyond any real system, so this only catches
-   combinations the strength test somehow lets through. */

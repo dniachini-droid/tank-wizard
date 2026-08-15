@@ -100,7 +100,7 @@ export function computeStability(def, readings) {
 
   const g = gradeSpread(def, useRows);
   if (!g) {
-    return { grade: "unknown", label: "Not enough data", rule, fmtRate: "\u2014",
+    return { grade: "unknown", label: "Not enough data", rule,
       detail: "Log another reading to establish a trend", readingCount: all.length,
       spread: 0, spanDays: 1, netChange: 0, typicalRate: 0, fmtRate: "\u2014",
       pattern: "flat", atResolution: false, maxDelta: 0 };
