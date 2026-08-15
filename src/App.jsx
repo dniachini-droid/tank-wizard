@@ -1405,7 +1405,7 @@ export function ReefConsoleInner() {
               waterChanges={waterChanges} icps={icps} lighting={lighting}
               taskLog={taskLog} allTasks={allTasks}
               onAddLighting={addLighting} onDeleteLighting={deleteLighting}
-              customTasks={customTasks} onRestored={applyRestore}
+              customTasks={customTasks} onRestored={applyRestore} customRanges={customRanges}
               corrections={corrections} onDeleteCorrection={deleteCorrection}
               onPlayIntro={() => setSplash(true)}
               dismissedList={dismissedList} onRestoreFinding={restoreFinding}

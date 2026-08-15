@@ -15,8 +15,35 @@ import { todayStr } from '../lib/dates.js'
  */
 export function DoseChangeSheet({ def, element, current, recommended, suggested, plan, onCancel, onSave }) {
   const [ml, setMl] = useState(String(recommended != null ? recommended : current));
+  /* The figure the field was last filled from, so a changed recommendation can
+     be told apart from a re-render that changed nothing. */
+  const [seeded, setSeeded] = useState(recommended);
   const [date, setDate] = useState(todayStr());
   const [time, setTime] = useState(nowTime());
+
+  /* The amount used to be seeded once and never looked at again, which was
+     wrong wherever this sheet outlives the figure that opened it — and a
+     staged plan is exactly that. "Step to 7.50" and "Go to 9.90" sit side by
+     side and open the SAME already-mounted sheet, so tapping one and then the
+     other left the field holding 7.5 while the button just pressed promised
+     9.9. Press Record and the dose written to the log, and to every engine
+     reading it, is the one that was not chosen.
+
+     Re-seeding whenever `recommended` moves, rather than only when the field
+     looks untouched: a shortcut tap IS the user naming a number, and it must
+     win over anything typed before it, or the button and the box disagree
+     again in the other direction. A hand-typed amount survives every render
+     that leaves the recommendation where it was, which is all of them but
+     this one — and when it does not survive, the new figure is visible in the
+     field rather than hidden behind an unchanged one.
+
+     Adjusted during render rather than in an effect so there is never a
+     painted frame showing the superseded number. */
+  if (recommended !== seeded) {
+    setSeeded(recommended);
+    setMl(String(recommended != null ? recommended : current));
+  }
+
   const val = parseFloat(ml);
   const valid = isFinite(val) && val >= 0;
   const ref = suggested != null ? suggested : recommended;
