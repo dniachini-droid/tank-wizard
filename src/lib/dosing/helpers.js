@@ -377,7 +377,26 @@ export function canLowerByDose(def, dailySupply) {
    cannot do the job — lowering magnesium, most obviously, where stopping the
    dose entirely would take the better part of a year. */
 export function proposeCorrection(a, def, settings, pace) {
-  if (!a || !a.current || !a.effectPerMl || !(a.effectPerMl > 0)) return null;
+  if (!a) return null;
+  if (!a.current || !a.effectPerMl || !(a.effectPerMl > 0)) {
+    /* This is the exact shape assessAlkalinity/assessCalcium/assessMagnesium
+       leave `a` in when they refused before ever setting `current` or
+       `effectPerMl` — which happens specifically when net volume is unset
+       (missingDoseInputs). A bare null here is indistinguishable from "there
+       is nothing to correct", so the missing input has to be named
+       (reef-chemistry.md §17, §12) rather than swallowed. When the
+       assessment failed for some other reason (e.g. volume is set but the
+       solution strength is not), the existing silent null is left alone —
+       that path is out of this item's scope. */
+    const vol = Number(settings && settings.volumeL);
+    if (!isFinite(vol) || vol <= 0) {
+      return {
+        possible: false,
+        why: `Set your tank's net volume in Setup before a correction can be worked out — every millilitre figure here is per litre of water, so nothing is calculated until it is entered.`,
+      };
+    }
+    return null;
+  }
   const level = a.current.value;
   const inBand = level >= def.min && level <= def.max;
   if (inBand) return null;
