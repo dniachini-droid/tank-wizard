@@ -8,14 +8,33 @@ Decisions no agent may make. Newest at top. Dan clears this file.
 
 ### ~~9. `PARAM_DEFS.alkalinity.color` is byte-identical to `STATUS_COLOR.ok` — the mirror of the phosphate fault~~ — closed 2026-08-15, see Decisions
 
-Resolved as **option (b)**: alkalinity's brand colour moves, on the same reasoning as
-phosphate's and potassium's, and the severity colours stay put. Option (c) — extending
-§15's colour registry to the verdict tones, which would have pulled in nitrate and
-salinity — was **not** taken; those two stay as they are. Filed as **TW-046**, which
-carries the one thing this decision does not settle: no replacement hex is named yet,
-and `#0B7C86` turns out to be the app's own brand teal as well as `STATUS_COLOR.ok`,
-so the colour has to be chosen on purpose. The workup below is left in place because
-its framing of the two directions of harm is what the decision turns on.
+Resolved as **option (a) — leave it.** Alkalinity's brand colour does **not** change.
+
+This item was first closed the same day as option (b), "alkalinity moves too", and
+that reading was **reversed later on 2026-08-15** once the filing work showed what
+`#0B7C86` actually is. Both entries are in Decisions; the later one supersedes the
+earlier one and says so. Recorded this way rather than overwritten, because the thing
+that changed was the evidence, not the owner's mind about the principle.
+
+What settled it: `#0B7C86` is not merely `STATUS_COLOR.ok`. It is also
+`STABILITY_COLOR.green`, the `dialled` verdict tone, the `tight` consistency colour,
+and the app's own brand teal — **134 sites across 23 files.** Moving
+`PARAM_DEFS.alkalinity.color` alone would take alkalinity's chart out of the house
+palette to solve a problem the badge beside it already covers, and **TW-037's alert
+tier is the proper answer to "an alarming reading must not look calm."**
+
+Option (c) — extending §15's colour registry to the verdict tones, which would have
+pulled in nitrate and salinity — was **not** taken either, in the first pass or this
+one. Those two stay exactly as they are.
+
+**Phosphate and potassium are not touched by this.** They stay changed under TW-044.
+Their harm points the other way — a healthy reading drawn in the alarm colour — and
+the badge does not rescue them. The asymmetry is the whole reason this item resolves
+differently from the two it was filed alongside.
+
+TW-046 is closed as decided-against, under Done in `.agent/backlog.md`, with its
+evidence kept. The workup below is left in place for the same reason: its framing of
+the two directions of harm is exactly what the decision turns on.
 
 Found 2026-08-14 while applying the colour half of decision 4, and **not covered by
 it**. That decision named phosphate (`#C4285B` = danger red) and potassium (`#926A09`
@@ -181,8 +200,9 @@ decision.
 - ~~**Colour-registry gap**~~ — **closed 2026-08-14.** §15 gained the colour registry
   and both named collisions are settled: phosphate `#9B3A8C`, potassium `#5F7A12`.
   The severity colours are unchanged. A third collision the note did not name
-  (`alkalinity` = `ok`) was item 9 above — **closed 2026-08-15**, alkalinity moves
-  too, filed as TW-046.
+  (`alkalinity` = `ok`) was item 9 above — **closed 2026-08-15: alkalinity does not
+  change.** The badge already covers it and TW-037's alert tier is the proper answer.
+  TW-046 closed decided-against.
 - ~~**"Notice" wording**~~ — **closed 2026-08-14.** `notice` is registered in §15 as
   the single term; "Worth knowing about", "Hidden notes"/"Notes" and "notification"
   are banned, TW-031's confirmation sentence is restated, and "Got it — hide this"
@@ -420,7 +440,62 @@ previously borrowed from "how fast a level counts as moving in a week", which
 is a different kind of measurement entirely; they now have their own, and a
 test fails if anyone ties them back together.
 
-### 2026-08-15 (earlier) — Dan, spec owner: four items approved for implementation, and alkalinity's colour moves too
+### 2026-08-15 (earlier the same day) — Dan, spec owner: alkalinity's colour stays; TW-045 approved and coupled to TW-037
+
+**Supersedes decision 2 of the entry below**, filed earlier the same day. Decision 1
+of that entry — the four items approved — stands untouched and is not reopened here.
+
+**1. Alkalinity's brand colour does NOT change. TW-046 is closed, decided against.**
+(Open item 9, resolved as **option (a)** — leave it.)
+
+`#0B7C86` is not merely `STATUS_COLOR.ok`. It is also `STABILITY_COLOR.green`, the
+`dialled` verdict tone, the `tight` consistency colour, and the app's brand teal,
+across **134 sites in 23 files**. Moving `PARAM_DEFS.alkalinity.color` alone would
+take alkalinity's chart out of the house palette to solve a problem the badge beside
+it already covers, and **TW-037's alert tier is the proper answer to "an alarming
+reading must not look calm."**
+
+**Phosphate and potassium stay changed.** TW-044 is unaffected and stays approved.
+Their harm points the other way and the badge does not rescue them — a healthy
+reading drawn in the alarm colour is not a contradiction the badge resolves, it is
+one the badge contradicts. That asymmetry is why three collisions found in one pass
+do not get one answer.
+
+Option (c) is still not taken: nitrate `#2A8050` and salinity `#1D6FA5` keep matching
+the `controlled` and `steady-off` verdict tones. Nothing in §15's colour registry
+extends to verdict tones.
+
+*What reversed it, recorded plainly:* nothing about the principle changed. The earlier
+decision was taken on the evidence in item 9, which named `STATUS_COLOR.ok` and no
+other role for the colour. Filing TW-046 surfaced the other four roles and the site
+count, and that is what the reversal is built on. The earlier entry is left standing
+below rather than rewritten.
+
+*One loose end this creates, flagged rather than buried:*
+`PARAM_DEFS.alkalinity.color` still equals `STATUS_COLOR.ok` byte for byte, by
+decision. TW-044's suggested registry test — "no PARAM_DEFS colour equals any
+STATUS_COLOR value" — would therefore fail on alkalinity if written that broadly.
+Whoever builds TW-044 must scope it to what the registry governs, or carry a named
+alkalinity exception citing this decision. Noted on TW-044 itself as well.
+
+**2. TW-045 is approved, and lands with TW-037.**
+
+The §22 checker is `[approved]` and moved into "Approved for implementation". Its
+checks assert the behaviour TW-037 creates, so **the two ship as one change** —
+neither alone. Shipping the rename and the tier without the checker leaves §22
+enforced by nothing, which is the state §10 calls "an intention" and **the state that
+let §7 rot**. The ordering is written onto both items, not just this entry, because an
+ordering constraint recorded only in a decisions log is one nobody reads at
+implementation time.
+
+This closes the hazard flagged when the first four were approved without it.
+
+### 2026-08-15 (superseded in part — see above) — Dan, spec owner: four items approved for implementation, and alkalinity's colour moves too
+
+> **Decision 2 below (alkalinity's colour moves) was reversed later the same day.**
+> Alkalinity does not change; see the entry above. Decision 1 — the four approvals —
+> stands. The entry is kept whole because the evidence it records is what the
+> reversal was argued from.
 
 Two separate acts in one message, kept apart here because they authorise different
 things.
@@ -456,7 +531,11 @@ they must land with TW-037 or immediately after. TW-037 shipping alone leaves §
 enforced by nothing, which is the state §10 calls "an intention" and §7 is the worked
 example of. Flagged rather than assumed: approving it was not asked for.
 
-**2. Alkalinity's brand colour moves too.** (Open item 9, **option (b)**.) Same
+**2. Alkalinity's brand colour moves too.** — ~~**REVERSED 2026-08-15, later the same
+day. Alkalinity does not change.**~~ See the entry above; the two bullets at the end
+of this decision are what the reversal was argued from. Left standing, not rewritten.
+
+(Open item 9, **option (b)**.) Same
 reasoning as phosphate and potassium: a parameter's identity colour must not be a
 status colour. The severity colours stay put — as in decision 4, changing one of those
 instead would be a different item. **Option (c) was not taken**: §15's colour registry

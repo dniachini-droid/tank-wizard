@@ -350,12 +350,13 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
      after the phase-8b three above and NOT next: TW-001 still is.
      Two ordering constraints carried over from the items themselves, both
      still live:
-       - TW-045, the §22 checker, is NOT approved. Its checks (2) and (3)
-         assert behaviour TW-037 creates and must land with it or immediately
-         after. TW-037 shipping alone means §22 is enforced by nothing, which
-         is the state §10 calls "an intention".
        - TW-043 is the copy half only. The hide-confirmation sentence lands
-         with TW-031, not here, or the string lands twice. -->
+         with TW-031, not here, or the string lands twice.
+       - TW-045, the §22 checker, was NOT approved with the four. **It was
+         approved 2026-08-15 (later the same day) and must land WITH TW-037.**
+         See the ordering line on both items. The hazard that note was filed
+         against is closed, and it is recorded here rather than deleted
+         because the reason the two are coupled is the point. -->
 
 - [ ] [approved] TW-037 Implement §22 — rename `drifting` to `unsettled`, give the verdicts an alert tier, make "unknown" refuse
       UNBLOCKED 2026-08-14 by Dan's four-decision authorisation (.agent/needs-dan.md,
@@ -401,6 +402,17 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       test (exactly six, no seventh); a tier test (a steady tank at alert-low does not
       render calmer than its band); a refusal test (a def with no consistency rule
       refuses and names what is missing)
+      ORDERING, set 2026-08-15: **TW-045 lands with this item, in the same change.**
+      TW-045's checks (2) and (3) assert exactly the behaviour parts (2) and (3) here
+      create, and shipping the rename and the tier without the checker leaves §22
+      enforced by nothing — the state §10 calls "an intention", and the state that let
+      §7 rot. Neither item ships alone.
+      part (2) also absorbs a job that is NOT TW-046's: "an alarming reading must not
+      look calm" is answered here, by the alert tier, not by moving a brand colour.
+      That is the reasoning that closed TW-046 — see .agent/needs-dan.md, Decisions,
+      2026-08-15 (later). It raises the stakes on part (2) rather than changing it:
+      the tier is now the only thing standing between an alert-low alkalinity reading
+      and a calm-looking chart.
       owner: implementer
       original finding, unchanged, for the evidence:
       why: reading-meaning.js's computeControl invents six headline categories not in
@@ -531,10 +543,18 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       NOT in scope: PARAM_DEFS.alkalinity.color #0B7C86 == STATUS_COLOR.ok. Found in
       the same pass, not named in the four-decision authorisation, and its harm points
       the other way (an alarming chart that looks healthy). It was open item 9 in
-      .agent/needs-dan.md; **decided 2026-08-15** — alkalinity moves too, on the same
-      reasoning, severity colours still stay — and filed separately as **TW-046**.
-      Still must not be swept in with these two: TW-046 has no hex yet, and shipping
-      this item does not wait on it.
+      .agent/needs-dan.md, and it is now **settled: alkalinity does NOT change.**
+      Decided 2026-08-15 (later the same day) — `#0B7C86` is also the app's brand
+      teal, `STABILITY_COLOR.green`, the `dialled` tone and the `tight` consistency
+      colour across 134 sites, the badge beside the chart already covers the harm,
+      and TW-037's alert tier is the proper answer to it. Closed as TW-046 under
+      Done, decided-against. **This item is unaffected and stays approved** — the two
+      cases are not symmetrical, and the decision says why.
+      one consequence for THIS item, and it is easy to miss: the registry test named
+      under "tests it needs" below cannot be written as a blanket "no PARAM_DEFS
+      colour equals any STATUS_COLOR value", because alkalinity will still violate
+      that by design. Scope it to the colours §15's registry governs, or carry a
+      named alkalinity exception citing the 2026-08-15 decision.
       in plain terms: your phosphate chart is drawn in the exact red the app uses to
       mean danger, so a perfect phosphate reading still looks like an alarm. Potassium
       is drawn in the exact amber that means low. Two colour changes; the danger
@@ -547,6 +567,35 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       tests it needs: a registry test that no PARAM_DEFS colour equals any
       STATUS_COLOR value, which would have caught both and will catch the next one.
       owner: implementer
+
+
+- [ ] [approved] TW-045 Nothing asserts §22 — the consistency verdicts have no checker
+      why: docs/spec/wizard-states.md §22 says so in its own Enforced-by section. Per
+      §10, a rule with no checker is an intention, and §7 is what that erodes into.
+      Three checks, all cheap:
+        (1) the verdict set is exactly {dialled, controlled, steady-off, unsettled,
+            loose, sliding} — a seventh verdict fails the build, exactly as an
+            invented band does under §13;
+        (2) no verdict renders calmer than its own reading's §13 band — the alert-tier
+            rule, and the one with a livestock consequence;
+        (3) an ungradeable parameter refuses and names what is missing, rather than
+            grading.
+      ordering: (1) can land before TW-037; (2) and (3) assert behaviour TW-037
+      creates and must land with it or immediately after, not before, or they are red
+      on arrival for a reason nobody will remember.
+      in plain terms: the rules about the steadiness words are written down but
+      nothing in the build checks them, so they will quietly stop being true. This is
+      the check.
+      spec: docs/spec/wizard-states.md §22 (Enforced by), §10 (a rule with no checker)
+      related: TW-028 extends wordingcheck for §19/§20; this is the §22 half and the
+      two should be looked at together to avoid two checkers over one file.
+      owner: implementer
+      ORDERING, set 2026-08-15 when this was approved: **lands with TW-037, not
+      before and not after.** Checks (2) and (3) assert behaviour TW-037 creates —
+      run before it they are red on arrival for a reason nobody will remember; run
+      after it, §22 ships enforced by nothing, which is the state §10 calls "an
+      intention" and is exactly what let §7 rot. Check (1), the verdict-set test,
+      is the one part that can stand alone if the two are ever split.
 
 ## Needs Dan's approval
 
@@ -1344,100 +1393,12 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
      three were untagged and needed [approved] before any code moved. TW-043 and
      TW-044 are copy and colour, not chemistry; TW-045 is the checker that
      stops §22 eroding the way §7 did.
-     2026-08-15: TW-043 and TW-044 were approved and have moved to "Approved
-     for implementation". **TW-045 was not**, and stays here. That split is a
-     live ordering hazard rather than a filing detail — §22's checks (2) and
-     (3) assert behaviour TW-037 creates, and TW-037 is now approved without
-     them. See the note above TW-037 in the approved section. -->
+     2026-08-15: all three are now approved and have moved to "Approved for
+     implementation" — TW-043 and TW-044 first, TW-045 later the same day. This
+     comment is left behind deliberately: it records why the three were filed
+     together and untagged, which is still the reason TW-045 is coupled to
+     TW-037 rather than free to ship on its own. -->
 
-- [ ] TW-045 Nothing asserts §22 — the consistency verdicts have no checker
-      why: docs/spec/wizard-states.md §22 says so in its own Enforced-by section. Per
-      §10, a rule with no checker is an intention, and §7 is what that erodes into.
-      Three checks, all cheap:
-        (1) the verdict set is exactly {dialled, controlled, steady-off, unsettled,
-            loose, sliding} — a seventh verdict fails the build, exactly as an
-            invented band does under §13;
-        (2) no verdict renders calmer than its own reading's §13 band — the alert-tier
-            rule, and the one with a livestock consequence;
-        (3) an ungradeable parameter refuses and names what is missing, rather than
-            grading.
-      ordering: (1) can land before TW-037; (2) and (3) assert behaviour TW-037
-      creates and must land with it or immediately after, not before, or they are red
-      on arrival for a reason nobody will remember.
-      in plain terms: the rules about the steadiness words are written down but
-      nothing in the build checks them, so they will quietly stop being true. This is
-      the check.
-      spec: docs/spec/wizard-states.md §22 (Enforced by), §10 (a rule with no checker)
-      related: TW-028 extends wordingcheck for §19/§20; this is the §22 half and the
-      two should be looked at together to avoid two checkers over one file.
-      owner: implementer, once [approved]
-
-<!-- 2026-08-15: TW-046 filed from Dan's decision on needs-dan item 9
-     (.agent/needs-dan.md, "alkalinity's brand colour moves too"). Filed
-     UNTAGGED, deliberately: Dan recorded the decision and asked for it to be
-     filed as its own item in the same message that approved TW-037/039/043/044
-     by name. TW-046 was not among the four, and the 2026-08-14 precedent is
-     explicit that a spec decision is not itself authorisation to ship code —
-     "untagged means the implementer may not act on it". It also has no hex yet.
-     If Dan wants it moving with TW-044, adding [approved] and a colour is all
-     it needs. -->
-
-- [ ] TW-046 `PARAM_DEFS.alkalinity.color` is byte-identical to `STATUS_COLOR.ok`
-      why: decided 2026-08-15 (.agent/needs-dan.md item 9, option (b)). Alkalinity's
-      brand colour moves for the same reason phosphate's and potassium's do under
-      TW-044 — a parameter's identity colour must not be a status colour. The
-      direction of harm is the opposite of phosphate's and is the worse of the two:
-      phosphate's fault makes a healthy chart look like an alarm, alkalinity's makes
-      every alkalinity chart carry the colour that means "in range", including on a
-      tank sitting at alert-low. The severity colours do not move — same as TW-044.
-      confirmed live 2026-08-15: `src/lib/constants.js:26` alkalinity `#0B7C86` ==
-      `src/lib/dates.js:31` `STATUS_COLOR.ok` `#0B7C86`, byte for byte.
-      **this is materially harder than TW-044 and the difference is not obvious.**
-      TW-044's two literals are brand-only: `#C4285B` has 38 sites in src/ but exactly
-      one is a param colour (constants.js:33) and the rest are legitimate act/danger
-      tone; `#926A09` has 4, one param colour and two lighting-marker uses. Alkalinity's
-      `#0B7C86` has **134 sites across 23 files** and wears five hats at once:
-        - `PARAM_DEFS.alkalinity.color` (constants.js:26) — the one this item moves
-        - `STATUS_COLOR.ok` (dates.js:31) — the collision
-        - `STABILITY_COLOR.green` (stability-engine.js:164)
-        - the `dialled` verdict tone and the `tight` consistency colour
-          (reading-meaning.js:208, :165)
-        - the app's own brand teal — `.text-teal-brand` / `.bg-teal-brand`
-          (App.jsx:1218-1219), the boot screen (base.css:254), the dose chart
-          event marker (App.jsx:1065), and ~120 component tone uses
-      Only the first moves. The consequence to decide before starting: alkalinity's
-      chart stops matching the app's brand teal, which nothing else in the palette
-      does. That is a visual-identity call, not a mechanical rename, and it is the
-      reason this is filed rather than folded into TW-044.
-      **no hex is named yet.** The decision settles that it moves, not what to. It must
-      clear, at once: `#0B7C86` (ok teal), `#2AA7B0` (pH cyan), and the rest of
-      PARAM_DEFS — salinity `#1D6FA5`, calcium `#B8541A`, magnesium `#7B4FCB`,
-      nitrate `#2A8050`, ammonia `#D0342C`, plus TW-044's incoming phosphate `#9B3A8C`
-      and potassium `#5F7A12`. Derive the figures rather than eyeballing, to the same
-      standard TW-044 was held to: contrast against the `#F3F7F6` page (§18 floor 4.5:1
-      text, 3:1 chart stroke) and CIE76 separation from every colour above, reported
-      alongside the palette's current tightest pair. Note that alkalinity/pH IS that
-      tightest pair today at 16.4 — moving alkalinity is the one change that can
-      improve it, and must not make it worse.
-      NOT in scope, and this is the same carve-out the decision makes: `nitrate`
-      `#2A8050` == the `controlled` verdict tone and `salinity` `#1D6FA5` == the
-      `steady-off` tone (reading-meaning.js:211, :215). Those are verdict tones, not
-      `STATUS_COLOR` entries, so they sit outside §15's colour registry as written —
-      item 9's option (c), which would have pulled them in, was **not** taken.
-      in plain terms: your alkalinity chart is drawn in exactly the green-blue the app
-      uses to say "this is in range", so it is drawn that way even when your alkalinity
-      is not. Phosphate had the same fault pointing the other way and that one is
-      already agreed. The catch is that this particular teal is also the app's own
-      house colour, so moving it changes how alkalinity looks against everything else —
-      which is why it needs a colour picked on purpose rather than swapped in.
-      spec: docs/spec/wizard-states.md §15 (the colour registry), §18 (contrast floor)
-      decision: .agent/needs-dan.md, Decisions, 2026-08-15
-      repro: grep -n 'color:' src/lib/constants.js against grep -n 'STATUS_COLOR'
-      src/lib/dates.js — run again 2026-08-15, still byte-identical.
-      tests it needs: none of its own. TW-044's registry test — no PARAM_DEFS colour
-      equals any STATUS_COLOR value — covers this the moment it exists, and will fail
-      until this item lands. Whichever of the two ships second turns that test green.
-      owner: implementer, once [approved] and once a hex is chosen
 
 <!-- 2026-08-15: TW-047 filed while implementing reef-chemistry.md §27 (Dan's
      decision on needs-dan item 5). Filed UNTAGGED: widening the golden corpus
@@ -1534,6 +1495,96 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       owner: Dan approves the dependency; implementer wires it in once approved
 
 ## Done
+
+<!-- 2026-08-15 (later the same day): TW-046 is CLOSED, DECIDED AGAINST. It is
+     filed under Done because that is where closed items live in this file, not
+     because anything was built — nothing was. Alkalinity's brand colour does
+     NOT change. The item's full text is kept verbatim below the closure note,
+     per AGENTS.md rule 4: the evidence it gathered is what the decision turned
+     on, and deleting it would leave the decision looking arbitrary.
+     Phosphate and potassium are NOT affected — TW-044 stands, approved and
+     unchanged. The two cases are not symmetrical, and the decision says why. -->
+
+- [x] TW-046 `PARAM_DEFS.alkalinity.color` is byte-identical to `STATUS_COLOR.ok`
+      **CLOSED 2026-08-15 — DECIDED AGAINST. Nothing was implemented.**
+      Decision: .agent/needs-dan.md, Decisions, 2026-08-15 (later the same day),
+      which supersedes decision 2 of the entry filed earlier that day. needs-dan
+      item 9 resolves as **option (a)** — leave it — for alkalinity alone.
+      Why the reversal, in the owner's terms: `#0B7C86` is not merely
+      `STATUS_COLOR.ok`. It is also `STABILITY_COLOR.green`, the `dialled` verdict
+      tone, the `tight` consistency colour, and the app's brand teal — 134 sites
+      across 23 files. Moving `PARAM_DEFS.alkalinity.color` alone would take
+      alkalinity's chart out of the house palette to solve a problem the badge
+      beside it already covers, and **TW-037's alert tier is the proper answer to
+      "an alarming reading must not look calm."**
+      Why phosphate and potassium still change: their harm points the other way —
+      a healthy reading rendered in the alarm colour — and the badge does not
+      rescue them. A calm badge beside an alarming chart is a contradiction the
+      user resolves correctly; an alarming chart beside a calm badge is one they
+      resolve by distrusting the app. TW-044 is unaffected and stays approved.
+      What this leaves live, and it is not nothing: `PARAM_DEFS.alkalinity.color`
+      still equals `STATUS_COLOR.ok` byte for byte, and TW-044's suggested registry
+      test — "no PARAM_DEFS colour equals any STATUS_COLOR value" — would fail on
+      alkalinity if written that broadly. Whoever builds TW-044 must scope that
+      test to the colours the registry actually governs, or carry a named
+      exception for alkalinity with this decision cited. Flagged here because it
+      is the one way this closure could silently break the item that stays open.
+      ---- original item text, unchanged, for the evidence ----
+      why: decided 2026-08-15 (.agent/needs-dan.md item 9, option (b)). Alkalinity's
+      brand colour moves for the same reason phosphate's and potassium's do under
+      TW-044 — a parameter's identity colour must not be a status colour. The
+      direction of harm is the opposite of phosphate's and is the worse of the two:
+      phosphate's fault makes a healthy chart look like an alarm, alkalinity's makes
+      every alkalinity chart carry the colour that means "in range", including on a
+      tank sitting at alert-low. The severity colours do not move — same as TW-044.
+      confirmed live 2026-08-15: `src/lib/constants.js:26` alkalinity `#0B7C86` ==
+      `src/lib/dates.js:31` `STATUS_COLOR.ok` `#0B7C86`, byte for byte.
+      **this is materially harder than TW-044 and the difference is not obvious.**
+      TW-044's two literals are brand-only: `#C4285B` has 38 sites in src/ but exactly
+      one is a param colour (constants.js:33) and the rest are legitimate act/danger
+      tone; `#926A09` has 4, one param colour and two lighting-marker uses. Alkalinity's
+      `#0B7C86` has **134 sites across 23 files** and wears five hats at once:
+        - `PARAM_DEFS.alkalinity.color` (constants.js:26) — the one this item moves
+        - `STATUS_COLOR.ok` (dates.js:31) — the collision
+        - `STABILITY_COLOR.green` (stability-engine.js:164)
+        - the `dialled` verdict tone and the `tight` consistency colour
+          (reading-meaning.js:208, :165)
+        - the app's own brand teal — `.text-teal-brand` / `.bg-teal-brand`
+          (App.jsx:1218-1219), the boot screen (base.css:254), the dose chart
+          event marker (App.jsx:1065), and ~120 component tone uses
+      Only the first moves. The consequence to decide before starting: alkalinity's
+      chart stops matching the app's brand teal, which nothing else in the palette
+      does. That is a visual-identity call, not a mechanical rename, and it is the
+      reason this is filed rather than folded into TW-044.
+      **no hex is named yet.** The decision settles that it moves, not what to. It must
+      clear, at once: `#0B7C86` (ok teal), `#2AA7B0` (pH cyan), and the rest of
+      PARAM_DEFS — salinity `#1D6FA5`, calcium `#B8541A`, magnesium `#7B4FCB`,
+      nitrate `#2A8050`, ammonia `#D0342C`, plus TW-044's incoming phosphate `#9B3A8C`
+      and potassium `#5F7A12`. Derive the figures rather than eyeballing, to the same
+      standard TW-044 was held to: contrast against the `#F3F7F6` page (§18 floor 4.5:1
+      text, 3:1 chart stroke) and CIE76 separation from every colour above, reported
+      alongside the palette's current tightest pair. Note that alkalinity/pH IS that
+      tightest pair today at 16.4 — moving alkalinity is the one change that can
+      improve it, and must not make it worse.
+      NOT in scope, and this is the same carve-out the decision makes: `nitrate`
+      `#2A8050` == the `controlled` verdict tone and `salinity` `#1D6FA5` == the
+      `steady-off` tone (reading-meaning.js:211, :215). Those are verdict tones, not
+      `STATUS_COLOR` entries, so they sit outside §15's colour registry as written —
+      item 9's option (c), which would have pulled them in, was **not** taken.
+      in plain terms: your alkalinity chart is drawn in exactly the green-blue the app
+      uses to say "this is in range", so it is drawn that way even when your alkalinity
+      is not. Phosphate had the same fault pointing the other way and that one is
+      already agreed. The catch is that this particular teal is also the app's own
+      house colour, so moving it changes how alkalinity looks against everything else —
+      which is why it needs a colour picked on purpose rather than swapped in.
+      spec: docs/spec/wizard-states.md §15 (the colour registry), §18 (contrast floor)
+      decision: .agent/needs-dan.md, Decisions, 2026-08-15
+      repro: grep -n 'color:' src/lib/constants.js against grep -n 'STATUS_COLOR'
+      src/lib/dates.js — run again 2026-08-15, still byte-identical.
+      tests it needs: none of its own. TW-044's registry test — no PARAM_DEFS colour
+      equals any STATUS_COLOR value — covers this the moment it exists, and will fail
+      until this item lands. Whichever of the two ships second turns that test green.
+      owner: nobody — decided against, not implemented.
 
 - [x] [schema] TW-D11 The remaining 23 storage keys move to IndexedDB, behind the unchanged loadKey/saveKey contract
       why: photos left localStorage in c7ed9d0; everything else stayed in a synchronous
