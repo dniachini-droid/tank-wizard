@@ -279,6 +279,15 @@ export function correctionProgress(plan, def, readings, today, maintenanceNow) {
      whatever band — the shipped default or a user's own — is in force. */
   const bandWidth = def.max - def.min;
   const midpoint = (def.min + def.max) / 2;
+  /* This read treats the floor as an absolute value in the element's own
+     unit, which holds for every element that reaches this function today —
+     the three "absolute"-mode entries, verified against §9's worked table.
+     STABILITY_RULES' two "percent"-mode entries (phosphate, nitrate) carry a
+     proportion in the same field, and read here it would bind: at phosphate's
+     default band, 2 × 0.02 beats bandWidth/3 and sets the zone to 57% of the
+     band where §9 asks for a middle third. Whoever wires either parameter
+     into a correction path must settle that floor's unit first —
+     .agent/backlog.md TW-029 works up the options. */
   const noiseFloor = (STABILITY_RULES[def.key] || {}).noiseFloor || 0;
   const zoneWidth = Math.min(bandWidth, Math.max(bandWidth / 3, 2 * noiseFloor));
   const zoneMin = midpoint - zoneWidth / 2;

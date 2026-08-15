@@ -1286,6 +1286,20 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       reach `far-out-low` — would have caught this and is the obvious first
       artefact of the item.
       owner: Dan for the phosphate/nitrate reasoning first, then implementer
+      progress 2026-08-15: the removal half executed by
+      routines/20-phosphate-nitrate.md on Dan's direct instruction (branch
+      claude/phosphate-nitrate-routine-7lovsr). Both generic loops now skip
+      phosphate and nitrate (findings.js `NUTRIENTS_AWAITING_OWN_RULES`); the
+      latent noiseFloor unit misread is flagged in a comment at its read site
+      (helpers.js `correctionProgress`), behaviour unchanged; the repro test
+      exists (src/test/defects/phosphate-nitrate-borrowed-reasoning.test.js,
+      verified to catch the pre-change behaviour) and strips.js's
+      trend-resolution block now asserts the removal. One husbandry
+      expectation ("nitrate 80 is excessive") suspended with its reasoning —
+      the only path that fired it was the removed loop, and canon has no
+      nitrate upper-warning figure. The reasoning half is now
+      .agent/needs-dan.md item 10 (nine decisions, worked up). Item stays
+      open until the canon entries exist and are implemented.
 
 - [ ] TW-030 Salinity is not assessed at all
       phase: 8b — the second thing reef-chemistry.md §25 names as missing.
