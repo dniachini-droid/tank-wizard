@@ -876,6 +876,13 @@ here.
 | L ↔ US gal | 1 US gal = **3.78541 L** |
 | L ↔ imp gal | 1 imp gal = **4.54609 L** — must be distinguished from US gal |
 | °C ↔ °F | F = C × 9/5 + 32 |
+| "Clearly out" margin — calcium (§27) | **50 ppm past the band edge** |
+| "Clearly out" margin — magnesium (§27) | **50 ppm past the band edge** |
+| "Clearly out" margin — alkalinity (§27) | **0.5 dKH past the band edge** |
+
+The three margins are distances, never rates, and never a fraction of the band
+width. They answer only "is this clearly out"; "is this out" carries no margin
+at all. See §27.
 
 Scope, unchanged: **three-part dosing** — alkalinity, calcium and magnesium as
 separate additives. Not two-part, not kalkwasser, not calcium reactor.
@@ -1507,6 +1514,9 @@ Also flagged, separately: `caClearlyOut` and `clearlyOut` compare a **distance**
 in ppm against `CA_TREND.stable` (5 ppm/**week**) and `MG_TREND.stable` (10
 ppm/**week**), which are rate constants. The comparison is dimensionally wrong
 whichever measure feeds it, and predates this decision. Not touched here.
+**Settled 15 Aug by §27**, which gives the three margins their own named
+constants and moves the figures; the position they are measured from is still
+this section's.
 
 ### Enforced by
 
@@ -1544,3 +1554,186 @@ screen. How fast it is moving, what your corals are using, and what to pour
 still come from the whole history, because a single test cannot tell you those
 things. A test you actually did will never again be overruled about the one
 thing it is definitely qualified to answer.
+
+---
+
+## 27. Out, and clearly out
+
+**Decided 15 Aug (Dan, spec owner): out and clearly out are two different
+questions and get two different numbers.**
+
+**A level is out the moment it is past the band edge by any amount.** 455 ppm
+against a 400–450 band is out. There is no margin on this, no tolerance and no
+rounding toward the band.
+
+**A level is clearly out once it is past the edge by a fixed margin: calcium
+50 ppm, magnesium 50 ppm, alkalinity 0.5 dKH.** Fixed figures, not scaled to
+band width — a keeper who widens their band has not decided that being far out
+matters less.
+
+This closes `.agent/needs-dan.md` item 5 as its option (b) taken further: the
+margins become named constants of their own, and the figures move. Option (c)
+— pointing them at §5's kit noise floors — was **not** taken. How well a kit
+can see a level is a third question again, and tying the margins to it would
+mean that changing a test kit in Setup changed how far out of range a tank had
+to be before the app called it clearly out.
+
+### What was wrong
+
+`caClearlyOut` (`calcium.js`) and magnesium's `clearlyOut` (`helpers.js`) asked
+whether a level was far enough past its band edge to count as clearly out, and
+answered it like this:
+
+```js
+const caClearlyOut = above ? (posNow - def.max) > CA_TREND.stable
+  : below ? (def.min - posNow) > CA_TREND.stable : false;
+```
+
+The left side is a **distance in ppm**. `CA_TREND.stable` is **5 ppm per week**
+and `MG_TREND.stable` is **10 ppm per week** — rate constants, declared as such
+in their own comments (`calcium.js:28`, "ppm/week — below this, treat as test
+variation"). Comparing the two is a category error. Nothing was visibly wrong
+on screen; the harm was ahead of us, in the next person to move a trend
+constant for trend reasons and silently move the out-of-band margin with it.
+
+Alkalinity's `alkClearlyOut` did not have the dimensional fault — it compared
+against a literal `0.2`, which is a dKH distance — but 0.2 dKH is too small
+under this decision, and an unnamed literal is invisible to anyone looking for
+the app's out-of-band margins.
+
+### The rule
+
+1. **Out has no margin.** `inRange` / `above` / `below`, and every sentence and
+   badge derived from them, test the last reading (§26) against `def.min` and
+   `def.max` with nothing added to either. A level 0.1 ppm past the edge is out
+   and is said to be out.
+2. **Clearly out is a fixed distance past the edge**, in the parameter's own
+   unit: `ALK_CLEARLY_OUT` 0.5 dKH, `CA_CLEARLY_OUT` 50 ppm, `MG_CLEARLY_OUT`
+   50 ppm. Each is declared beside its engine's other constants as a bare
+   number, derived from nothing.
+3. **The two families of constant never touch.** A margin must not be defined
+   in terms of a trend constant, a kit noise floor (`KIT_PRECISION`,
+   `KIT_SIGMA`), or a band width. **Adjusting how fast counts as moving must
+   never change how far counts as out**, and the reverse.
+
+### What the rule covers
+
+`alkClearlyOut`, `caClearlyOut` and `clearlyOut` — the three margin tests, one
+per engine. Each feeds exactly one thing: the `*Worsening` flag that decides
+whether a level outside its band and still drifting further out may be held on
+a sub-noise trend.
+
+Nothing else moves. The position those distances are measured from is §26's and
+is untouched. The trend constants keep their values and their meanings. The
+12%-of-band `nearEdge` proximity, §11's grading qualifiers, the dose-gap
+trigger and every rate ceiling are untouched.
+
+### What it costs, measured
+
+**The 5,940-case golden sweep does not move: `3a782222dbce41c5` before and
+after.** That is not evidence the change is inert — it is evidence the corpus
+cannot see it, and the reason is worth recording. `clearlyOut` only ever
+reaches an outcome through `*Worsening`, which additionally requires either a
+trend at or above the element's own "stable" rate — which would have taken the
+band off "stable" and skipped the branch entirely — or **two** logged
+corrections. `golden.js` logs at most one. The margin is unreachable in every
+one of its 5,940 cases, at either the old figures or the new ones.
+
+So the change was audited on the same grid with the correction count swept
+0, 1 and 2 — 2,970 cases each, old engine against new:
+
+| Logged corrections | Cases | Rows changed |
+|---|---|---|
+| 0 | 2,970 | 0 |
+| 1 | 2,970 | 0 |
+| 2 | 2,970 | **70** |
+
+The 70, by element and direction:
+
+| Element | Direction | Transition | Card | Rows |
+|---|---|---|---|---|
+| alkalinity | below | `increase → hold` | `suggested → suggested` | 17 |
+| alkalinity | above | `decrease → hold` | `suggested → off-target` | 17 |
+| calcium | below | `increase → hold` | `suggested → suggested` | 3 |
+| calcium | above | `decrease → hold` | `suggested → off-target` | 3 |
+| calcium | below | `hold → hold` | `off-target → suggested` | 10 |
+| calcium | above | `hold → hold` | `off-target → off-target` | 10 |
+| magnesium | below | `hold → hold` | `off-target → suggested` | 5 |
+| magnesium | above | `hold → hold` | `off-target → off-target` | 5 |
+
+Symmetric: 35 below, 35 above. 34 alkalinity, 26 calcium, 10 magnesium.
+
+- **40 rows withdraw a dose change**, `increase`/`decrease → hold`. The
+  recommended dose reverts to what the keeper is already pouring, a move of
+  **0.9% to 10.1%**. The largest is calcium at 384 ppm — 16 ppm below a 400–450
+  band, on a trend of 0 ppm a week — where the app recommended 13.1 mL/day and
+  now holds at 12.0. An alkalinity example: 7.93 dKH against 8.2–8.8, 9.7 mL/day
+  → hold at 9.0. **This is the cost of the decision, not a side effect of it**:
+  a level that is out, but not clearly out, on a trend the test cannot resolve,
+  is no longer grounds for changing the daily dose.
+- **30 rows keep the same dose and change only what is said about it.** These
+  previously fell past the stable-hold branch and explained themselves in
+  consumption arithmetic; they now take that branch and say plainly that the
+  level is holding outside the range, naming the figure and the side. Where the
+  level is below the band, the card also now offers the one-off correction that
+  branch carries. `recommendedDose` is identical on all 30.
+- **0 rows changed whose last reading is in band.** The margin governs only
+  levels already out.
+- **0 rows became `idle`** — the card that says the dose is matching
+  consumption and there is nothing to answer for.
+- **0 rows stopped saying the level is above or below the range.** Out is still
+  out, and still said, on every one of the 70.
+- **All 70 changed rows sit strictly between the old margin and the new one** —
+  alkalinity 0.204–0.408 dKH past the edge, calcium 15–50 ppm, magnesium 45 ppm.
+  Nothing outside that window moved, in either direction, for any element.
+
+### Flagged, not changed
+
+**The golden sweep is blind to this margin, and to anything else gated on two
+or more logged corrections.** Its `withCorrection` dimension is a boolean — one
+correction or none — so `repeatedCorrections(...) >= 2` is false in all 5,940
+cases. That is a gap in the app's widest behavioural net, not a fault in this
+decision, and it is not fixed here: widening the corpus re-records the
+fingerprint for reasons unrelated to §27 and belongs in its own item. Filed as
+`.agent/backlog.md` TW-047.
+
+### Enforced by
+
+Per §14, named rather than asserted:
+
+- `src/test/defects/clearly-out-margins.test.js` — 47 assertions. 13 pin the
+  no-margin half (each element, each direction, a hair past the edge). 24 pin
+  the margin itself, at the new figure, past the old figure, and just inside
+  both, in both directions on all three engines. 10 are structural: each margin
+  is exported at its decided value, is declared as a bare number, and each
+  `clearlyOut` expression names its margin constant and contains no `_TREND`
+  reference and no numeric literal. **22 of the 47 fail against the code as it
+  stood before this rule.**
+- `tests/legacy-port/invariants.js` — the app never says "nothing to do" about
+  a level outside its band. Unchanged and still green; the audit above confirms
+  no row reached `idle`.
+
+### In plain terms
+
+Your range is 400 to 450. At 455 your calcium is out. Not "nearly out", not
+"out within tolerance" — out, and the app says so, exactly as it does at 500.
+That has not changed and now cannot quietly change.
+
+What has changed is the second question the app asks after that one: *how far*
+out. There is a point past your range where a level that is drifting the wrong
+way, however slowly, is worth changing the daily dose over. Below that point it
+is worth telling you about, and worth correcting in one go if a correction is
+possible, but not worth chasing with the dose — because the movement is smaller
+than your test kit can honestly measure, and chasing it is how the up-down-up
+oscillation starts. That point is now 50 ppm for calcium and magnesium and
+0.5 dKH for alkalinity.
+
+Underneath, two of those three numbers were not distances at all. They were the
+figures for *how fast* a level counts as moving in a week, borrowed to answer
+*how far* it sits from your range — different kinds of measurement entirely,
+like answering "how far is the shop" with "twenty minutes' walk" and then
+treating the answer as metres. Nothing on screen looked wrong. The danger was
+that the next person to adjust what counts as a fast week would, without
+knowing it, have changed what counts as far out of range. The two now have
+their own numbers, written down here, and a test that fails if anyone ties them
+back together.

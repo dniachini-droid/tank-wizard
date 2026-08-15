@@ -1439,6 +1439,40 @@ Ordered. Top = next. **Only `[approved]` items may be implemented.**
       until this item lands. Whichever of the two ships second turns that test green.
       owner: implementer, once [approved] and once a hex is chosen
 
+<!-- 2026-08-15: TW-047 filed while implementing reef-chemistry.md §27 (Dan's
+     decision on needs-dan item 5). Filed UNTAGGED: widening the golden corpus
+     re-records the 5,940-case fingerprint for reasons that have nothing to do
+     with §27, and a fingerprint re-record is exactly the kind of change that
+     must not ride along inside someone else's diff. -->
+
+- [ ] TW-047 The golden sweep cannot see anything gated on two or more logged corrections
+      why: `tests/legacy-port/golden.js` sweeps `withCorrection` as a BOOLEAN — one
+      logged correction or none (golden.js:104, 116-117) — so `repeatedCorrections(
+      corrections, key, nowStamp) >= 2` is false in all 5,940 cases. Every behaviour
+      behind that condition is invisible to the app's widest behavioural net.
+      found: implementing §27. The three `clearlyOut` margins reach an outcome only
+      through `*Worsening`, whose other disjunct (`|trend| >= TREND.stable`) is mutually
+      exclusive with the `band === "stable"` gate the branch sits behind — so the
+      repeats path is the only way in. Moving calcium's margin from 5 ppm to 50, magnesium's
+      from 10 to 50 and alkalinity's from 0.2 dKH to 0.5 changed **0 of 5,940 golden
+      rows**, digest `3a782222dbce41c5` before and after. The same grid re-swept with two
+      corrections changed **70 of 2,970**, 40 of them withdrawing a recommended dose
+      change. A digest that does not move is being read as "behaviour preserved"; here it
+      meant "not exercised".
+      what it needs: a third value in the correction dimension (0, 1, 2), or a separate
+      pinned corpus for the repeats-gated branches. Either re-records the fingerprint —
+      that is the whole cost, and it is why this is not tagged.
+      in plain terms: the app keeps nearly six thousand pretend tanks and checks that its
+      answers for them never change by accident. None of those pretend tanks has ever had
+      two corrections logged against one element, and a handful of the app's rules only
+      come into play when it has. Those rules could be changed by accident today and the
+      check would say nothing.
+      spec: docs/spec/reef-chemistry.md §27 ("Flagged, not changed")
+      repro: node tests/legacy-port/golden.js before and after any change to
+      `ALK_CLEARLY_OUT`/`CA_CLEARLY_OUT`/`MG_CLEARLY_OUT` — digest unchanged either way.
+      tests it needs: the widened sweep is itself the test.
+      owner: implementer, once [approved]
+
 ## Blocked
 
 - [ ] [blocked] TW-022 `verify:deadcode` lands advisory — three unread `useMemo` values

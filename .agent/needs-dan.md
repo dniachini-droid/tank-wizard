@@ -194,7 +194,15 @@ decision.
   anything ships — noted here rather than filed as backlog work, since it's a
   registry/copy decision, not implementation.
 
-### 5. `caClearlyOut`/`clearlyOut` compare a distance against a rate
+### ~~5. `caClearlyOut`/`clearlyOut` compare a distance against a rate~~ — closed 2026-08-15, see Decisions
+
+Resolved as **option (b), taken further**: each element gets its own named margin
+constant, and the figures move — calcium 50 ppm, magnesium 50 ppm, alkalinity
+0.5 dKH, replacing 5 ppm, 10 ppm and a literal 0.2. Option (c) — the kit noise
+floors — was **not** taken. Recorded as `reef-chemistry.md` §27 and shipped;
+the workup below is left in place because its statement of the fault is what
+the decision turns on, and because option (b)'s "so nothing moves" clause is the
+one part of it that Dan did not take.
 
 Found while implementing §26 (position is the last reading) and left alone:
 not authorised, and wrong in a way that predates the decision.
@@ -362,7 +370,57 @@ column — where naming the banned term is the point.
 
 ## Decisions
 
-### 2026-08-15 (latest) — Dan, spec owner: four items approved for implementation, and alkalinity's colour moves too
+### 2026-08-15 (latest) — Dan, spec owner: out and clearly out are two questions and get two numbers
+
+Closes open item 5, and authorises the spec edit that records it. Recorded as
+`reef-chemistry.md` **§27**, and — unlike the 14 August night — this one is
+**code as well as spec**: the decision names figures, and figures that are not
+in the code are not decisions.
+
+**Out has no margin.** A level is out the moment it is past the band edge by
+any amount. 455 ppm against a 400–450 band is out. No tolerance, no rounding
+toward the band. This half already held in the code and is now pinned so it
+cannot quietly acquire a margin later.
+
+**Clearly out is a fixed distance past the edge**: calcium **50 ppm**,
+magnesium **50 ppm**, alkalinity **0.5 dKH**. Fixed figures, not scaled to band
+width. Each is now its own named constant — `CA_CLEARLY_OUT`, `MG_CLEARLY_OUT`,
+`ALK_CLEARLY_OUT` — declared beside its engine's other constants as a bare
+number, derived from nothing.
+
+**Item 5's option (b), taken further.** Option (b) offered named constants "set
+to today's effective values so nothing moves". Dan took the naming and moved
+the values: 5 ppm → 50, 10 ppm → 50, 0.2 dKH → 0.5. **Option (c) was not
+taken** — the margins must not point at the kit noise floors, because how well
+a kit reads a level is a third question again, and tying the two together would
+mean changing a test kit in Setup changed how far out of range a tank had to be
+before the app called it clearly out. The rule Dan stated in as many words:
+*adjusting how fast counts as moving must never change how far counts as out.*
+
+**What it cost, and the thing worth Dan's eye.** The 5,940-case golden
+fingerprint did **not** move — `3a782222dbce41c5` before and after — and that
+is not because the change is inert. The corpus cannot reach the branch: it logs
+at most one correction per case, and the margin only decides anything on two or
+more. Re-swept on the same grid with two corrections, **70 of 2,970 rows
+change**, symmetric 35 below / 35 above, 34 alkalinity / 26 calcium / 10
+magnesium. 40 of them withdraw a recommended dose change (0.9%–10.1%, largest
+calcium 13.1 → 12.0 mL/day); 30 keep the dose and change only the wording. No
+row became "nothing to do", no in-band row moved, and no row stopped saying the
+level is outside its range. The blind spot itself is filed as **TW-047**,
+untagged — fixing it re-records the fingerprint and must not ride inside
+someone else's diff.
+
+**In plain terms.** Your range is 400 to 450; at 455 your calcium is out, and
+the app says so, exactly as it does at 500. That has not changed. What has
+changed is the second question — *how far* out — which is what decides whether
+the app changes your daily dose over a drift too small for your test kit to
+measure honestly. That point is now 50 ppm past your range for calcium and
+magnesium, and 0.5 dKH for alkalinity. Two of those three numbers were
+previously borrowed from "how fast a level counts as moving in a week", which
+is a different kind of measurement entirely; they now have their own, and a
+test fails if anyone ties them back together.
+
+### 2026-08-15 (earlier) — Dan, spec owner: four items approved for implementation, and alkalinity's colour moves too
 
 Two separate acts in one message, kept apart here because they authorise different
 things.

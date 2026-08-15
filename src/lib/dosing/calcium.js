@@ -30,6 +30,13 @@ export const CA_TREND = {
   meaningful: 20,   /* at or above this, verify before acting */
 };
 
+/* reef-chemistry.md §27 — how far past the edge counts as CLEARLY out.
+   A distance in ppm, never a rate. See `ALK_CLEARLY_OUT` in alkalinity.js for
+   the full reasoning; the short version is that this line read
+   `> CA_TREND.stable` — 5 ppm per WEEK against a distance in ppm — and moving
+   the trend constant silently moved the out-of-band margin with it. */
+export const CA_CLEARLY_OUT = 50;
+
 export const CA_SETTLE_DAYS = 7;
 
 export function caEffectPerMl(settings) {
@@ -474,8 +481,8 @@ export function assessCalcium({ readings, doseLog = [], waterChanges = [], setti
   /* Sections 9, 27 and 48: hold unless the movement is credible — unless
      calcium is already outside the range and still moving away from it, where
      even a small persistent trend needs answering (section 24). */
-  const caClearlyOut = above ? (posNow - def.max) > CA_TREND.stable
-    : below ? (def.min - posNow) > CA_TREND.stable : false;
+  const caClearlyOut = above ? (posNow - def.max) > CA_CLEARLY_OUT
+    : below ? (def.min - posNow) > CA_CLEARLY_OUT : false;
   const caRepeats = repeatedCorrections(corrections, "calcium", nowStamp);
   const caWorsening = caClearlyOut
     && (Math.abs(out.trendPerWeek) >= CA_TREND.stable || caRepeats >= 2)

@@ -5,7 +5,7 @@ import { dayNum } from '../analytics/water-changes.js'
 import { daysBetween, todayStr } from '../dates.js'
 import { alkAnomaly, alkEffectPerMl, alkFit, alkIntervals, alkStamp, applyDoseConstraints, directionConsistent, noteCurrentAndInterventions, rateLimitDose, trendConfirmed } from './alkalinity.js'
 import { CA_TREND, caEffectPerMl, pickTrendWindow, repeatedCorrections, solveSlowEffect } from './calcium.js'
-import { MG_SETTLE_DAYS, MG_TREND, strengthPlausible } from './magnesium.js'
+import { MG_CLEARLY_OUT, MG_SETTLE_DAYS, MG_TREND, strengthPlausible } from './magnesium.js'
 import { SAFE_BOUNDS } from '../findings.js'
 import { STABILITY_RULES } from '../stability-engine.js'
 
@@ -965,8 +965,8 @@ export function assessMagnesium({ readings, doseLog = [], waterChanges = [], set
      while the tank is inside its range, or heading back into it. Below range
      and still falling, even slowly, is a leak that never gets fixed if a
      sub-threshold trend always returns "hold" (section 29). */
-  const clearlyOut = above ? (posNow - def.max) > MG_TREND.stable
-    : below ? (def.min - posNow) > MG_TREND.stable : false;
+  const clearlyOut = above ? (posNow - def.max) > MG_CLEARLY_OUT
+    : below ? (def.min - posNow) > MG_CLEARLY_OUT : false;
   const mgRepeats = repeatedCorrections(corrections, "magnesium", nowStamp);
   /* Exposed so the wording can mention it: the count is computed here, and
      the branch that needs it returns before anything further down. */

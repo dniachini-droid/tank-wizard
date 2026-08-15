@@ -31,6 +31,28 @@ export const ALK_TREND = {
   meaningful: 0.30,    /* at or above this in ~24h, act early */
 };
 
+/* reef-chemistry.md §27 — how far past the edge counts as CLEARLY out.
+ *
+ * A distance in dKH, not a rate: it is measured against how far the level sits
+ * beyond `def.min`/`def.max`, never against how fast it is moving. Out and
+ * clearly out are two different questions — a level is out the moment it is
+ * past the edge by any amount, and that test carries no margin at all
+ * (`above`/`below`, below). This is the second question, and only this one.
+ *
+ * Fixed, not a fraction of the band: a keeper who widens their alkalinity band
+ * has not decided that being far out matters less.
+ *
+ * Deliberately its own constant, and deliberately a bare number. It was a
+ * literal 0.2 here and `CA_TREND.stable`/`MG_TREND.stable` — rate constants in
+ * ppm per week — in the other two engines, which is the dimensional fault
+ * `.agent/needs-dan.md` item 5 reported. Adjusting how fast counts as moving
+ * must never change how far counts as out, so this must not be derived from
+ * the trend constants; nor from the kit noise floors (`KIT_PRECISION`,
+ * `KIT_SIGMA`), which answer a third question again — what the kit can see.
+ * Pinned by `src/test/defects/clearly-out-margins.test.js`.
+ */
+export const ALK_CLEARLY_OUT = 0.5;
+
 /* Hours the new dose must run before a routine reassessment. */
 export const ALK_SETTLE_HOURS = 48;
 export const ALK_EARLY_HOURS = 24;
@@ -716,8 +738,8 @@ export function assessAlkalinity({ readings, doseLog = [], waterChanges = [], se
   /* Step 6 — do not react to small movements, unless alkalinity is already
      outside the band and still drifting further out. A trend below the noise
      floor still empties a tank given enough weeks. */
-  const alkClearlyOut = above ? (posNow - def.max) > 0.2
-    : below ? (def.min - posNow) > 0.2 : false;
+  const alkClearlyOut = above ? (posNow - def.max) > ALK_CLEARLY_OUT
+    : below ? (def.min - posNow) > ALK_CLEARLY_OUT : false;
   const alkRepeats = repeatedCorrections(corrections, "alkalinity", nowStamp);
   const alkWorsening = alkClearlyOut
     && (Math.abs(trend) >= ALK_TREND.stable || alkRepeats >= 2)
