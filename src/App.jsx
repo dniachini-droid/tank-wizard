@@ -778,7 +778,7 @@ export function ReefConsoleInner() {
   const restoreNotes = async () => {
     setDismissed({});
     await saveKey("findings-dismissed", {});
-    notify("Hidden notes restored");
+    notify("Hidden notices restored");
   };
 
   const restoreFinding = async (key) => {
