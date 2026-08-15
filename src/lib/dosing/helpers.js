@@ -965,12 +965,16 @@ export function assessMagnesium({ readings, doseLog = [], waterChanges = [], set
      while the tank is inside its range, or heading back into it. Below range
      and still falling, even slowly, is a leak that never gets fixed if a
      sub-threshold trend always returns "hold" (section 29). */
+  /* §27, second decision: the gate is OUT OF BAND, by any amount — never the
+     margin. See the note at the same site in calcium.js. */
+  const outOfBand = above || below;
   const clearlyOut = above ? (posNow - def.max) > MG_CLEARLY_OUT
     : below ? (def.min - posNow) > MG_CLEARLY_OUT : false;
+  out.clearlyOut = clearlyOut;
   const mgRepeats = repeatedCorrections(corrections, "magnesium", nowStamp);
   /* Exposed so the wording can mention it: the count is computed here, and
      the branch that needs it returns before anything further down. */
-  const worsening = clearlyOut
+  const worsening = outOfBand
     && (Math.abs(out.trendPerWeek) >= MG_TREND.stable || mgRepeats >= 2)
     && ((below && out.trendPerDay <= 0) || (above && out.trendPerDay >= 0));
   if (out.band === "stable" && !worsening

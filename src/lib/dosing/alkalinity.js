@@ -738,10 +738,14 @@ export function assessAlkalinity({ readings, doseLog = [], waterChanges = [], se
   /* Step 6 — do not react to small movements, unless alkalinity is already
      outside the band and still drifting further out. A trend below the noise
      floor still empties a tank given enough weeks. */
+  /* §27, second decision: the gate is OUT OF BAND, by any amount — never the
+     margin. See the note at the same site in calcium.js. */
+  const alkOutOfBand = above || below;
   const alkClearlyOut = above ? (posNow - def.max) > ALK_CLEARLY_OUT
     : below ? (def.min - posNow) > ALK_CLEARLY_OUT : false;
+  out.clearlyOut = alkClearlyOut;
   const alkRepeats = repeatedCorrections(corrections, "alkalinity", nowStamp);
-  const alkWorsening = alkClearlyOut
+  const alkWorsening = alkOutOfBand
     && (Math.abs(trend) >= ALK_TREND.stable || alkRepeats >= 2)
     && ((below && trend <= 0) || (above && trend >= 0));
   /* "Stable" is a statement about the trend, not about the dose. A tank losing

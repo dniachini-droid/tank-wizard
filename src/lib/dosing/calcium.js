@@ -480,11 +480,19 @@ export function assessCalcium({ readings, doseLog = [], waterChanges = [], setti
 
   /* Sections 9, 27 and 48: hold unless the movement is credible — unless
      calcium is already outside the range and still moving away from it, where
-     even a small persistent trend needs answering (section 24). */
+     even a small persistent trend needs answering (section 24).
+
+     §27, second decision: the gate is OUT OF BAND, by any amount. It was
+     `caClearlyOut`, and that was the fault — a margin sized to describe how
+     far out a level sits was deciding whether the app spoke at all, so raising
+     it from 5 ppm to 50 made the app go quiet on calcium sixteen below its
+     range. The margin below is wording only and must never come back here. */
+  const caOutOfBand = above || below;
   const caClearlyOut = above ? (posNow - def.max) > CA_CLEARLY_OUT
     : below ? (def.min - posNow) > CA_CLEARLY_OUT : false;
+  out.clearlyOut = caClearlyOut;
   const caRepeats = repeatedCorrections(corrections, "calcium", nowStamp);
-  const caWorsening = caClearlyOut
+  const caWorsening = caOutOfBand
     && (Math.abs(out.trendPerWeek) >= CA_TREND.stable || caRepeats >= 2)
     && ((below && out.trendPerDay <= 0) || (above && out.trendPerDay >= 0));
   if (out.band === "stable" && !caWorsening

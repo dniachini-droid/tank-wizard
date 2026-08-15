@@ -69,6 +69,40 @@ Merged main in and resolved, 2026-08-15.
 
 Not merged. That stays Dan's.
 
+## Second owner decision, same day — the margins are confined to wording
+
+`docs/spec/DECISION-drift-back.md` landed on main. Two parts, both authorised,
+folded into canon and the loose file deleted — the same treatment §25 got from
+`DECISION-reef-chemistry-engine.md`.
+
+**Part one — `clearlyOut` governs wording only.** The first wiring made the
+margin a gate, and PR #50's own audit measured the cost without naming it: 40 of
+70 changed rows withdrew a dose change. The gate now takes plain out-of-band,
+by any amount. §27 carries the constraint so the margin cannot be wired back in
+by someone reading only that section.
+
+- §11 needed nothing — `outOfBandWorsening` never took a margin. Written down
+  rather than changed.
+- §8.4 left exactly as it is and opened as §13.4 / TW-049. It relaxes on §2's
+  safe bounds, not on the band, which is not what §8.4 says — flagged, not
+  resolved, threshold not chosen.
+
+**Part two — §1 gains a third instrument** (daily dose holds, correction moves,
+drift back lets the tank draw a level down), with the downward-only asymmetry
+stated, and **§28** carries what drift back needs and what is not settled.
+Filed as TW-048, untagged.
+
+**The audit answer:** all 40 rows recover main's recommendation exactly, action
+and millilitres. Net against main: 36 rows, all alkalinity, all within 0.192 dKH
+of the edge; 26 hold → act; 0 in band, 0 idle, 0 act → hold.
+
+Two things surfaced, both filed rather than patched: the act path never says the
+level is out of range (§28's territory), and `action` can read "increase" for a
+change of zero on a float comparison (TW-050).
+
+Re-verified: `npm run verify` — ALL BLOCKING CHECKS PASSED. `npx vitest run` —
+538 tests, the same 64 pre-existing failures, name for name.
+
 ## Full account
 
 `.agent/log/2026-08-15-clearly-out-margins.md`.
