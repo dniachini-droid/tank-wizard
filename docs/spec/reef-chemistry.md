@@ -36,7 +36,18 @@ duration instead. Folded in from
 daily dose too, the gate's four boundaries are fixed, and the alert-low floor
 and the measured cost are recorded; written while the rule was built for the
 first time (Stage 2a), having sat in canon since 13 August with no
-implementation anywhere.
+implementation anywhere. **§5, §11, §18, §29.7 and §29.8 amended, and §30 and
+§31 added, 16 August 2026** on the spec owner's authority — Stage 5, the
+numbers: eleven decisions answering Part 1 of `.agent/gap-report.md`, folded in
+from `docs/spec/stage-5-the-numbers.md`. One noise-floor table for every
+parameter the app assesses, every figure absolute; movement is magnitude **or**
+persistence; alert levels for the two parameters that needed them and none for
+the two that do not; the evidence bar for each of the three claims the app makes
+about movement; and the findings thresholds that survive, ratified. §18's
+retarget clause is withdrawn, which settles the one place canon contradicted
+itself — §28 wins. Its surfaces half is `wizard-states.md` §13, §15, §22, §25.1
+and §25.2, where the health score and `paramContext` are deleted, position gets
+one word, and the steadiness panel follows the window the keeper picked.
 
 > Agents never edit this file. Disagreements → `.agent/spec-challenges.md`.
 
@@ -297,12 +308,71 @@ reflects what reefkeepers actually do and what magnesium's movement justifies.
 
 ## 5. Kit noise floors
 
+**Amended 16 Aug (Dan, spec owner): one table, every parameter the app grades
+movement on, every figure absolute.** Three tables were live and `buildFindings`
+consulted all three in one pass — `KIT_PRECISION` (four figures per element, one
+per test-kit brand), `KIT_SIGMA` (a second set, half this one's on alkalinity)
+and `STABILITY_RULES.noiseFloor`. **`KIT_PRECISION` and `KIT_SIGMA` go. This
+table is the only noise floor in the app.**
+
+| Parameter | Noise floor |
+|---|---|
 | Alkalinity | 0.1 dKH |
 | Calcium | 10 ppm |
 | Magnesium | 30 ppm |
+| Nitrate | 1.0 ppm |
+| Phosphate | 0.01 ppm |
+| Salinity | 0.2 ppt |
+| Potassium | 20 ppm |
+| pH | 0.1 |
 
 Movement smaller than this is the kit, not the tank. No trend, verdict or dose
 change may be founded on a difference below the floor.
+
+**All absolute. Percent mode is abolished.** No floor in this app scales with
+the reading it is applied to. Two parameters had a proportional floor and both
+are stated here in their own units instead; §29.7's mode column is amended to
+match.
+
+**Per parameter, not per test kit.** Per-kit is arguably the more truthful model
+— a Hanna checker really does resolve better than a Red Sea kit — and it is
+rejected anyway: it is one more variable in an app that already has too many,
+and a Setup question asked in order to derive a threshold from the answer is the
+shape of thing `wizard-states.md` §21 warns about. The kit-precision *question*
+stays canonical there as a fact Setup may ask; the twelve figures it fed — four
+test kits across three elements — do not.
+
+### Nitrate — this was blocking §29 outright
+
+**§29.5 requires nitrate's trend to clear "§5's noise floor", and §5 had no
+nitrate entry. The rule as written could not be implemented.** It can now.
+
+The app's figure was 1.0 in *percent* mode — 1% of the reading, so 0.1 ppm on a
+tank at 10. No hobby nitrate kit resolves anywhere near that, which is the
+proportional mode's own argument against itself.
+
+### Phosphate — neither of the app's options was right
+
+The app used 0.02 in percent mode. Absolute 0.02 would swallow a fifth of
+§29.2's 0.03–0.10 suggested band; 2% of a 0.10 reading is 0.002, far below what
+any kit shows.
+
+**0.01 ppm is the kit's own resolution** — a Hanna phosphate checker reads to
+0.01, so anything smaller is beneath measurement.
+
+### Ammonia is deliberately not in this table
+
+Ammonia is graded on detectability, not on movement: its target is zero, so
+there is nothing to fit a floor against. §18 carries its alert level. It still
+has no chemistry section of its own, which is recorded as open rather than left
+to be discovered — `.agent/needs-dan.md`, and G-22 of `.agent/gap-report.md`.
+
+### A consequence, accepted
+
+The settle-window formula feeds on these figures, so windows shift slightly. A
+Red Sea alkalinity user's floor was 0.20 and is now 0.10, so their settle window
+shortens. **§7's formula and its 2–5 / 7–30 day clamps are unchanged.** Accepted
+on the decision, not flagged for a second look.
 
 ---
 
@@ -977,6 +1047,52 @@ down rather than fixed.
 
 This replaces the dose-gap halving (§7), which was a patch for this fault.
 
+### The movement rule — added 16 August
+
+**Decided 16 Aug (Dan, spec owner): movement is magnitude *or* persistence, and
+the four thresholds that graded it become one rule.**
+
+The rule above says what may never be called stable. It did not say what counts
+as moving in the first place, and four separate families of threshold were
+answering that on their own: the engines' `ALK_TREND` / `CA_TREND` / `MG_TREND`,
+`DRIFT_GUIDE` per week, `RATE_RULES` per day *and* per week, and
+`CONSISTENCY_RULES`' spread across a window. Four different physical quantities
+for one element, each correct against its own constant, which is how a 0.6
+dKH/week drift came to be "hold" in the wizard and amber on the history modal at
+the same instant.
+
+**First, which quantity: per day.** It is how the tank is actually thought about
+— *"losing about 0.1 a day"* — and it is what the engines already use. Weekly is
+the same figure multiplied. A spread over a window is a different measurement
+altogether and is not a rate at all.
+
+**Then the rule.** A level is moving if **either**:
+
+- **the fitted daily rate exceeds the element's threshold** — 0.10 dKH/day for
+  alkalinity, and the engines' existing `CA_TREND` and `MG_TREND` figures at
+  their own scales, 5 ppm/week for calcium and 10 ppm/week for magnesium.
+  Those two are stated per week and mean the same rate; the conversion is
+  arithmetic, not a second rule; **or**
+- **the direction has held consistently across the window and the total
+  movement over it clears §5's noise floor.**
+
+> *"Anything under 0.10 per day is stable, yes — but if it shows less movement
+> per day and it's consistent over multiple days, it is a swing."*
+
+**This is why a single threshold was never going to work.** 0.02 dKH/day for
+three days is noise. The same rate for ten days is 0.2 dKH and it is real. The
+second test is what the noise floor was always for — slope **times** window, not
+slope alone — and it simply was not being used that way anywhere.
+
+**What this retires.** `DRIFT_GUIDE`, `RATE_RULES` and `CONSISTENCY_RULES` have
+no part in grading movement. `CONSISTENCY_RULES` survives only where
+`wizard-states.md` §22's steadiness verdicts need a spread, which is the other
+question — *how steady has this been* — and not this one.
+
+**The rule at the top of this section still outranks both limbs.** A level
+outside its band and moving further out is never graded stable, whatever the
+rate and whatever the window says.
+
 ---
 
 ## 12. What the app refuses to do
@@ -1230,15 +1346,69 @@ alkalinity — under §2's 0.6 range it runs from 0.3 to 1.0 dKH from the
 midpoint — and the app must handle a reading landing exactly on either edge
 correctly (`wizard-states.md` §13).
 
+### The parameters that had no alert tier — added 16 August
+
+**Decided 16 Aug (Dan, spec owner).** The three above were the only parameters
+with a *needs attention* tier. `positionBand` could never return one for the
+other six, however far out they went — a silent two-band vocabulary that no
+document admitted to. **Ammonia and salinity get a tier. Potassium and pH do
+not. Phosphate and nitrate already had their answer.**
+
+| Parameter | Alert low | Alert high |
+|---|---|---|
+| Ammonia | — | **anything detectable** |
+| Salinity | **below 33 ppt** | **above 36 ppt** |
+
+**These two are fixed levels, not offsets from a midpoint**, which is the one
+structural difference from the three above and is deliberate in both cases.
+
+**Ammonia — anything detectable.** The target is zero, so there is no band edge
+to hang a margin from and no midpoint that means anything. The tier fires above
+whatever the kit can resolve. §5 records why ammonia has no noise floor and that
+it still needs a chemistry section of its own.
+
+**Salinity — below 33 or above 36 ppt.** Sourced rather than judged. The target
+is 35 ppt / 1.025 SG and most reef tanks run 33–35; below 31 kills coral over
+prolonged exposure, and at 38 and above soft corals melt and hard coral tissue
+peels. `SAFE_BOUNDS`' 32–37 matches consensus, and this tier sits inside it —
+**outside where anyone runs, not yet at harm**, which is what an alert level is
+for.
+
+**Potassium and pH get no alert tier.** They are parameters you watch rather
+than act on urgently, and a tier that never justifies an action is a colour
+change pretending to be information.
+
+**Phosphate and nitrate are already answered** by §29.4's two fixed warnings —
+below 0.03 and above 50 — which serve this purpose under §29's own rules and are
+not restated as alert levels here.
+
 **The bands and the alert thresholds must never be allowed to overlap or
 invert.** `classifyReading` validates this on every call and returns
 `insufficient-data` with a configuration error if a user has set them
 inconsistently. This answers §13.3 for the band/alert half of that open item.
 
 **Universal rule regardless of the chosen target range:** stability at a
-slightly sub-optimal number beats movement toward an optimal one. If a value
-sits outside the user's target range but the series is stable, the app suggests
-reconsidering the range before suggesting a correction.
+slightly sub-optimal number beats movement toward an optimal one.
+
+**The clause that followed it is withdrawn — 16 August (Dan, spec owner).** It
+read: *"If a value sits outside the user's target range but the series is
+stable, the app suggests reconsidering the range before suggesting a
+correction."* §28.2, written two days later, gives that exact state — stable and
+out of band — as the one occasion when the app offers to **walk the level
+home**. Two sections, one state, opposite answers, and the app was doing the
+first: *"Change the target range to 8.7–9.3? Use this."*
+
+**§28 wins.** Offering to move the goalposts is a strange default; the range was
+set for a reason, and a range that moves to meet the reading cannot then be
+evidence about the reading. What remains of the universal rule is the sentence
+above it — get steady first — which is §28.1 and §28.2 in one line and does not
+depend on this clause at all.
+
+Withdrawing it removes behaviour that exists today: `computeControl`'s
+`suggestWorth`, the retarget offer it feeds, and `SnoozeSheet`'s *"the target
+range is the thing to change rather than the dose"* all go with the clause. The
+user may still edit their own range in Setup at any time — §2 is untouched.
+**What the app may no longer do is propose it.**
 
 ---
 
@@ -2653,20 +2823,42 @@ theirs.
 
 | | Test cadence | Analysis window | Mode |
 |---|---|---|---|
-| Phosphate | 7 days | **14 days** | proportional |
-| Nitrate | 7 days | **28 days** | proportional |
+| Phosphate | 7 days | **14 days** | ~~proportional~~ **absolute — amended 16 Aug** |
+| Nitrate | 7 days | **28 days** | ~~proportional~~ **absolute — amended 16 Aug** |
 
-**Ratified as they stand.** The stability layer already used these figures
-(`src/lib/stability-engine.js`) and they were right, but they were habit rather
-than canon; this makes them canon. §4's rule that windows are flat and never
-stretched applies here too: refuse rather than reach.
+**The windows are ratified as they stand.** The stability layer already used
+these figures (`src/lib/stability-engine.js`) and they were right, but they were
+habit rather than canon; this makes them canon. §4's rule that windows are flat
+and never stretched applies here too: refuse rather than reach.
 
-The proportional mode is deliberate and matches Dan's *"if it is bouncing
-around, it should be more lax"* — a fixed ppm tolerance behaves very differently
-on a tank at 0.05 than on one at 0.30, and these are parameters people run
-across that whole spread.
+**The mode column is amended, and this subsection's argument for it is
+withdrawn — 16 Aug (Dan, spec owner).** It read that the proportional mode was
+deliberate and matched *"if it is bouncing around, it should be more lax"*,
+because a fixed ppm tolerance behaves very differently on a tank at 0.05 than on
+one at 0.30. §5 now carries one noise floor per parameter and every one of them
+is absolute, phosphate at **0.01 ppm** and nitrate at **1.0 ppm**.
+
+The reason the argument does not survive is that the figures it was defending
+did not do what it claimed. Nitrate's 1.0 in percent mode is 0.1 ppm on a tank
+at 10 — a floor *beneath* what any hobby kit resolves, on the parameter §29.5's
+trend rule depends on. Phosphate's 0.02 in percent mode is 0.002 ppm at 0.10,
+five times finer than a Hanna checker reads. **A proportional floor was making
+the app more sensitive where it was already at the limit of measurement**, which
+is the opposite of the laxity it was chosen for. The absolute figures are the
+kits' own resolutions and never fall below them.
+
+The laxity that decision was reaching for is not lost: it lives in §29.5's
+count, which is what keeps the app quiet about a parameter that oscillates.
 
 ### 29.8 The noise-floor unit question is closed as unreachable by design
+
+**Amended 16 Aug: closed twice over.** §5's one-table decision removes the
+premise — there are no proportional noise floors left anywhere in the app to
+reconcile with anything, and phosphate's floor is now stated in ppm like every
+other. What follows is the original closure and stands as the reason no branch
+was ever added; the abolition of percent mode makes the question moot as well as
+unreachable, and the two are recorded separately because they are two different
+arguments and either one alone closes it.
 
 Item 10's decision 8 offered three ways to reconcile `STABILITY_RULES`'
 proportional noise floors with `correctionProgress`, which reads that field as
@@ -2738,3 +2930,163 @@ saying nothing.
 
 None of this is built yet. This section is the rules; the work to make the app
 follow them is filed and waiting on your approval.
+
+---
+
+## 30. Evidence — what it takes to claim movement
+
+**Added 16 Aug (Dan, spec owner)**, answering what `.agent/gap-report.md` called
+its own top priority: *"If you answer one thing from this report, answer that."*
+Four registered cards — `wizard-states.md` §24.7, §24.8, §24.21 and §24.22 —
+cannot be built without these bars, and the states behind them are the four
+`doseStatus` cannot express (TW-026).
+
+**Three claims, three bars, and they are not interchangeable.** Each is a claim
+the app makes out loud, so each needs its own evidence, and the middle one is
+deliberately the lowest of the three.
+
+Both figures in every bar are derived, not minted: **the movement is a multiple
+of that element's §5 noise floor, and the interval is that element's §4 test
+cadence.** No parameter gets a fourth hardcoded constant out of this section.
+
+### 30.1 To establish movement from nothing
+
+> **Three readings, one direction, and total movement clearing §5's noise
+> floor.**
+
+`docs/journeys/journey-1-alkalinity.md` §5: *"One reading is notice, two is a
+signal, three is a fact. … The app's evidence gates are about statistics; this
+is about patience."*
+
+Two readings are a difference. The third is what makes it a trend, and the noise
+floor across the three is what stops the rule firing on kit resolution. This is
+the bar §29.5 already sets for nitrate, stated once here for every parameter
+rather than per section.
+
+**It is a claim about consecutive readings, not about a fitted line**, which is
+why it is a count and a floor rather than a significance test.
+
+### 30.2 To claim a dose change is being contradicted
+
+> **Two readings, both dated after the change, at least one test cadence apart,
+> moving two to three times §5's noise floor in the direction opposite to what
+> the change intended.**
+
+**Proportional to the element, not one figure.** The earlier draft of this rule
+quoted 0.2–0.3 dKH, which is alkalinity's case mistaken for the rule:
+
+| | Movement | Interval |
+|---|---|---|
+| Alkalinity | 0.2–0.3 dKH | 2 days |
+| Calcium | 20–30 ppm | 7 days |
+| Magnesium | 60–90 ppm | 21 days |
+
+Every cell reads off §5 and §4. Any parameter added later gets its row the same
+way and no decision is needed to produce it.
+
+**The interval is one test cadence, not 24 hours.** The earlier draft said *"at
+least 24 hours apart"* and **that is withdrawn**: two magnesium readings are
+three weeks apart by definition, so a 24-hour rule neither constrains magnesium
+nor means anything for it. A cadence apart is the same intent — two readings
+that are genuinely two readings, not one test repeated at a different time of
+day — expressed in a unit that survives contact with the other two elements.
+
+**The bar is lower than 30.1's, deliberately.** A dose change creates an
+expectation, so breaking it is informative immediately, where a trend from
+nothing has to earn its third reading. Two readings against an expectation say
+more than two readings against nothing.
+
+### 30.3 To claim no response at all
+
+> **Two readings after the change, both within §5's noise floor of each other.**
+
+From `journey-1-alkalinity.md`: *"that's two days of an increased dose and it
+hasn't actually moved — at that point I'd increase the dose further."*
+
+**An expected response that does not arrive is evidence.** This is the bar the
+app has never had in any form: today a level that has not budged since a change
+reads exactly like a level nobody has touched.
+
+### What this section does not settle
+
+Two relationships are left open rather than answered by implication, because
+answering them by implication is how a fifth engine gets built:
+
+- **30.1 against `directional()`.** The dosed elements have a statistical gate
+  in the code — four rows, three steps, two thirds agreeing — that answers a
+  neighbouring question about a fitted line. §29.5 records why nitrate uses the
+  patience rule instead of that gate; **which governs where both could apply is
+  not decided here.**
+- **The confirming case.** 30.2 is the bar for claiming a change is being
+  contradicted. Whether claiming a change *worked* uses the same bar, or stays
+  where it is today as a stability question under §11, is open. `wizard-states.md`
+  §24.6 is the card that depends on the answer.
+
+Both are carried in `.agent/needs-dan.md` and against TW-026.
+
+### Enforced by
+
+**Nothing yet, and that is stated rather than implied**, per §14. No code
+implements any of the three bars: `doseStatus` reads a band and a fitted rate
+with no reading count and no minimum spacing anywhere in the path. The
+implementation is filed as **TW-066**, untagged.
+
+### In plain terms
+
+Three different things the app can say about your tank, and how sure it has to
+be before it says each one.
+
+To tell you a level is moving when nothing has happened: three tests going the
+same way, and the total change has to be bigger than your kit can resolve. One
+test is a notice, two is a signal, three is a fact.
+
+To tell you the dose change you made is being contradicted — you raised it and
+it is still falling: two tests since the change, at least one normal testing
+interval apart, and the move has to be two or three times what the kit could
+have imagined. That is a lower bar on purpose, because you were expecting
+something and the opposite happened, and that is worth hearing straight away.
+
+To tell you nothing happened at all: two tests since the change that are the
+same within the kit's resolution. A change that does nothing is information too,
+and the app has never once been able to say it.
+
+---
+
+## 31. The findings thresholds that survive
+
+**Ratified 16 Aug (Dan, spec owner) at their current values.** Most of
+`buildFindings`' unnamed numbers belong to findings that Part 3 of
+`.agent/gap-report.md` deletes and are not ratified here or anywhere — a number
+attached to a deleted finding needs no canon entry. These five survive the
+deletion, so they are named:
+
+| Finding | Threshold |
+|---|---|
+| Implausible alkalinity consumption | > 2 dKH/day |
+| Implausible calcium consumption | > 30 ppm/day |
+| Ionic ratio off | more than 15% either side of §20's 7.15 coupling |
+| pH high | > 8.45 |
+| CO2 signature | pH < 7.9 with alkalinity in range |
+
+**Ratified, not redesigned.** Each has been live and none has produced a
+complaint; the fault they shared was having no entry in canon, not having the
+wrong value. The first two are implausibility guards on the app's own
+arithmetic and sit above any real tank's consumption by a wide margin, which is
+what they are for — they catch a bad reading or a bad volume, not a hungry tank.
+
+Their wording is `wizard-states.md` §25.4's business, not this section's.
+
+### Enforced by
+
+Nothing asserts these five as canon figures today; they are literals at their
+call sites in `src/lib/findings.js`. Filed as **TW-074**, untagged — the work is
+to cite this section where each is defined and pin it with a test, not to change
+a value.
+
+### In plain terms
+
+Five of the app's checks keep the numbers they already had — two that catch an
+impossible consumption figure, one on the calcium-to-alkalinity relationship,
+and two on pH. They were right; they were just not written down anywhere. Now
+they are. Everything else with an unexplained number in that file belongs to a
+check that is being removed, and a number on its way out does not need a rule.

@@ -6,6 +6,92 @@ Decisions no agent may make. Newest at top. Dan clears this file.
 
 ## Open
 
+### 12. What Stage 5 left open when the numbers went into canon — 2026-08-16
+
+Filed by the run that folded `docs/spec/stage-5-the-numbers.md` into canon.
+**Eleven decisions answered Part 1 of the gap report; these did not get
+answered, and three more were surfaced by the fold itself.** None blocks Stage
+6a, and every one of them is Dan's.
+
+**The nine the decision itself carried forward:**
+
+**1. The collapsed tank summary headline (G-27)** — now the most pressing of
+these, because deleting the health score (`wizard-states.md` §25.1) leaves no
+tank-level view at all. The candidate recorded with the deletion is something of
+the shape *"3 of 6 in range, 2 need attention"* — checkable against the tiles
+below it, which is the property the score never had.
+
+**2. What the parameter tile's chip shows (G-9)** — deferred rather than
+decided. The tile turned out to be better than the code suggested, and its two
+real faults were the vocabulary split (now §15's **range** decision) and bands
+that do not match canon's defaults.
+
+**3. Ammonia needs its own chemistry section (G-22).** §18 now gives it an alert
+level — anything detectable — and §5 records why it has no noise floor. What it
+does not have is a section: `reef-chemistry.md` §13's seven bands do not fit a
+parameter whose target is zero.
+
+**4. The four cards with no state (G-1 to G-4)** — `due`, `worked` route 12, the
+negative-consumption hold and its three-consecutive escalation, and the
+tested-but-inconclusive case.
+
+**5. Whether `drifting` produces a notice (G-21)**, and the "heading out of
+range" warning that currently reconciles two windows in prose.
+
+**6. The kit-accuracy findings (D-1)** — worked up with three options and not
+decided. §5's decision removes the per-kit noise table but not this question.
+
+**7. Notice ordering (G-28).**
+
+**8. What an "N of M in range" claim may count (G-29)** — which G-27's candidate
+headline depends on.
+
+**9. What a notice *type* is, for the off switch (G-31)**, and where relationship
+notices sit (`wizard-states.md` §25.6 item 4, still open from Stage 3).
+
+**The three the fold surfaced, which are new:**
+
+**10. The severity colours mean direction on one screen and tier on another.**
+§15's mapping is redone in the four registered colours — calm, raised, alert,
+ungradeable — because §22 needs an escalation that a direction-keyed mapping
+cannot give. But `paramStatus` (`src/lib/dates.js:25-29`) already uses `low` for
+*under the minimum* and `high` for *over the maximum*, on the wizard, the dose
+expectation, the reading context and the backup export. **Same two colours, two
+meanings, and this registry exists to stop exactly that.** Three options: move
+`paramStatus` to the tier reading; keep direction there and stop using these four
+colours for it; or register a name for the distinction. TW-072 carries it and
+cannot be built until it is answered.
+
+**11. Two relationships `reef-chemistry.md` §30 deliberately did not settle.**
+How §30.1's three-readings bar sits against `directional()`'s four-row
+statistical gate where both could apply — §29.5 answered it for nitrate and only
+for nitrate. And whether claiming a dose change **worked** uses §30.2's
+contradiction bar or stays a stability question under §11; `wizard-states.md`
+§24.6 is the card that depends on the answer.
+
+**12. `settings.mgAlertLow` (N-2), which Stage 5 did not reach.** A live
+per-user override at `src/lib/dosing/magnesium-gate.js:55`, with no Setup field
+and no canon entry. §18 says alert thresholds are `[user]` adjustable; §21 says
+Setup asks facts, not judgements, and names notification thresholds as a
+judgement. **The two read against each other and the app has half of each.**
+
+**In plain terms.** Eleven questions about numbers are answered and written
+down. Twelve things are still waiting on you, and only one of them is urgent:
+the score out of 100 on your front screen is being deleted, and the line that
+replaces it — how many parameters are in range, how many need attention — is
+yours to write, because nothing else on that screen speaks for the whole tank.
+
+Two are traps rather than gaps. The app's four status colours currently mean
+"too low" and "too high" on some screens, and the new rule needs them to mean
+"out of range" and "needs attention" — the same amber meaning two different
+things depending where you look, which is the exact fault the colour registry
+was written to prevent. And your magnesium alert level can be overridden by a
+setting that has no field to set it in.
+
+The rest are the ordinary queue: ammonia still has no chemistry section of its
+own, four situations still have no card, and the notice list still needs its
+ordering and its off switch settled.
+
 ### 11. The four questions Stage 3 left open when the message specification went into canon — 2026-08-16
 
 Filed by the run that folded `message-spec-2-wizard-remaining.md` and
@@ -584,7 +670,113 @@ column — where naming the banned term is the point.
 
 ## Decisions
 
-### 2026-08-16 (latest) — Dan, spec owner: the message specification finishes, and Stage 3 with it
+### 2026-08-16 (latest) — Dan, spec owner: Stage 5, the numbers — eleven decisions, and canon stops contradicting itself
+
+`docs/spec/stage-5-the-numbers.md` folded into canon on the owner's authority,
+the same way the three message specifications were earlier the same day. **Docs
+only.** Part 1 of `.agent/gap-report.md` is answered; what it leaves open is
+Open item 12 above. The implementation is **TW-064 to TW-074**, all untagged.
+
+**One noise-floor table, and percent mode is abolished** (`reef-chemistry.md`
+§5). Three tables were live and `buildFindings` consulted all three in one pass,
+so the same reading counted as movement in one place and as noise in another.
+`KIT_PRECISION` and `KIT_SIGMA` go. Eight parameters, one absolute figure each,
+**nitrate 1.0 ppm and phosphate 0.01 ppm added** — which unblocks §29.5, a canon
+rule that required "§5's noise floor" for nitrate when §5 had no nitrate row and
+therefore could not be implemented at all. Per parameter, not per test kit: the
+per-kit model is arguably more truthful and is rejected anyway, because §21 does
+not want a Setup question asked in order to derive a threshold from the answer.
+
+**Movement is magnitude *or* persistence** (§11). Four threshold families graded
+one element on four different physical quantities, which is how a 0.6 dKH/week
+drift was `hold` in the wizard and amber on the history modal at the same
+instant. One rule now: the fitted daily rate clears the element's threshold, **or**
+the direction has held and the total across the window clears the noise floor.
+*"Anything under 0.10 per day is stable, yes — but if it shows less movement per
+day and it's consistent over multiple days, it is a swing."* Slope times window,
+not slope alone — which is what the noise floor was always for.
+
+**The evidence rules, which the gap report called the one thing to answer if only
+one thing got answered** (§30). Three claims, three bars, every figure derived
+from §5 and §4 rather than minted: three readings one direction to establish
+movement from nothing; two readings **one test cadence apart** moving **two to
+three times that element's noise floor** the wrong way to claim a dose change is
+being contradicted; two readings within the noise floor of each other to claim no
+response at all. **Two figures from the earlier draft are withdrawn** — the flat
+0.2-0.3 dKH, which was alkalinity's case mistaken for the rule, and the 24-hour
+interval, which never constrained magnesium, whose readings are three weeks apart
+by definition.
+
+**Alert levels for the two parameters that needed them** (§18): ammonia at
+anything detectable, salinity below 33 or above 36 ppt. **Potassium and pH get
+none, by decision** — watch-them parameters, and a tier that never justifies an
+action is a colour change pretending to be information. Six of nine parameters
+previously could not reach an alert band however far out they went, ammonia
+included.
+
+**§28 wins over §18, and the contradiction is closed.** §18 said the app should
+suggest reconsidering the range when a level sits outside it but holds steady;
+§28.2, written two days later, makes that exact state the occasion to offer to
+walk the level home. The app was doing the first: *"Change the target range to
+8.7-9.3? Use this."* **§18's clause is withdrawn** — the range was set for a
+reason, and a range that moves to meet the reading cannot then be evidence about
+the reading. `suggestWorth`, the retarget offer and `SnoozeSheet`'s copy go with
+it; the user may still edit their own range whenever they like, the app just may
+not propose it.
+
+**The health score is deleted** (`wizard-states.md` §25.1) — nineteen constants,
+one number on the front screen, no canon entry of any kind, and already caught
+showing 42 while its own working panel summed to 71. The reason is the app's own
+first wording rule: state it, then show the basis. **`paramContext` is deleted
+and nothing replaces it** (§25.2) — eight prose blocks quoting fifteen unnamed
+figures, one of which tells a keeper calcium runs happily to 550 where §2 caps
+it at 500 *because above that it pulls alkalinity down*, plus the app's largest
+concentration of §23.5 and §29.6 breaches.
+
+**The steadiness panel follows the window you picked** (§25.2, amending its own
+rule 1, and §22 with it). The buttons stay, the panel grades the selection and
+names it in the heading. Fixing the window would have deleted a control in order
+to make a sentence true, when the sentence can simply be made true.
+
+**One word for position** (§15): **in range**, **above range**, **below range**.
+The banner said "Out of range" directly above a tile saying "ABOVE BAND". And
+**four severity colours, not six** — `TONE_TIER`'s six included four registered
+nowhere, and an unregistered colour is the same fault as an unregistered word.
+**That one has a catch and it is Open item 10 above:** the four registered
+colours already mean *direction* in `paramStatus`, and the new mapping needs them
+to mean *tier*.
+
+**Five findings thresholds ratified as they stand** (§31) — the two implausible
+consumption guards, the ionic ratio's 15%, pH high at 8.45 and the CO2 signature.
+Right all along; the fault was having no entry in canon.
+
+**Verification.** Docs only — canon, the source specification reduced to a
+decision record, eleven items filed untagged, TW-026 and TW-059 corrected where
+this decision overtook them. No code touched.
+
+**In plain terms.** Every number the app was using to decide what to tell you is
+now written down in your spec, and where it had several answers to one question
+it now has one. It had three different ideas of how small a change is too small
+to trust, and four different rulers for whether your alkalinity is moving —
+which is why one screen could say it was rising while the panel underneath said
+it had fallen half a point a week.
+
+It can now also say three things it has never been able to say: that a level is
+genuinely moving, that the dose change you made is being contradicted, and that
+nothing happened at all — each with a stated amount of evidence behind it, scaled
+to the parameter, so magnesium is not held to alkalinity's timetable.
+
+Two things on your screens are being removed. The score out of 100, because
+nothing in your spec ever said what it meant and it cannot be checked. And the
+explanatory paragraphs under the history chart, one of which told you 550 calcium
+was fine when your own rules stop at 500 because higher pulls your alkalinity
+down. Nothing replaces either yet — the summary line that replaces the score is
+the one thing on the open list worth your attention soon.
+
+And when a level sits outside your range but holds steady, the app stops offering
+to change your range to fit it.
+
+### 2026-08-16 (previously latest) — Dan, spec owner: the message specification finishes, and Stage 3 with it
 
 Parts 2 and 3 of the message specification folded into canon on the owner's
 authority, the same way part 1 was earlier the same day. **Docs only.** The

@@ -25,6 +25,14 @@ remaining wizard cards, and the surfaces that render them, folded in from
 `docs/spec/message-spec-3-surfaces.md` the same way part 1 was. **That
 completes Stage 3 of `THE-ENGINE-PLAN-v2.md`.** The four questions it leaves
 open are carried at §25.6; `reef-chemistry.md` §9 is amended alongside it.
+**§13, §15, §22, §25.1 and §25.2 amended 16 August 2026** on the spec owner's
+authority — Stage 5, the numbers, folded in from
+`docs/spec/stage-5-the-numbers.md`. Position gets one word — **range** — and the
+severity colour mapping is redone in the four colours §15 actually registers.
+**The health score is deleted** from §25.1 and **`paramContext` from §25.2**,
+with nothing replacing either. The steadiness panel grades the window the keeper
+selected and names it, which amends §25.2's own rule 1 and §22 with it. Its
+arithmetic half is `reef-chemistry.md` §5, §11, §18, §30 and §31.
 
 > Agents never edit this file. Disagreements → `.agent/spec-challenges.md`.
 
@@ -525,7 +533,25 @@ recorded does not depend on where the number came from.
 
 Thresholds are `reef-chemistry.md` §2 (band, safe bounds) and §18 (alert
 levels). Whether movement counts as `drifting` at all is the kit noise floor
-over the fitted window, §5 and §11 there — never a single pair of readings.
+over the fitted window, §5 and §11 there — never a single pair of readings, and
+under §11's 16 August rule a rate below the element's threshold still counts as
+movement where the direction has held and the total across the window clears the
+floor.
+
+**Which parameters can reach the two alert bands — amended 16 August.** Until
+now only alkalinity, calcium and magnesium had alert thresholds, so `alert-low`
+and `alert-high` were unreachable for the other six however far out they went:
+seven bands on paper, five in practice, and nothing said so. `reef-chemistry.md`
+§18 now adds **ammonia** (anything detectable, high only) and **salinity**
+(below 33, above 36 ppt), and states that **potassium and pH have no alert tier
+at all**, which is a decision rather than an omission. Phosphate and nitrate
+answer the same need through §29.4's two fixed warnings.
+
+**A parameter with no alert tier still has all seven bands available to it in
+this table** — it simply never classifies into two of them, in the same way a
+parameter with no target range set classifies `insufficient-data`. **No surface
+may invent a third position vocabulary for those parameters**, which is what a
+silent two-band set had become.
 
 ### Boundary rules — fixed, no exceptions
 
@@ -599,8 +625,10 @@ One word per concept, everywhere. Any synonym is a finding.
 
 | Concept | The word to use | Never use |
 |---|---|---|
-| within no-action band | **in range** | fine, good, OK, normal, healthy, ideal, in target, on target |
-| outside no-action band | **out of range** | bad, off, abnormal, dangerous, off target, off-target |
+| within no-action band | **in range** | fine, good, OK, normal, healthy, ideal, in target, on target, in band |
+| outside no-action band | **out of range** | bad, off, abnormal, dangerous, off target, off-target, out of band |
+| outside it, on the high side | **above range** | above band, over band, high band, over target |
+| outside it, on the low side | **below range** | below band, under band, low band, under target |
 | at/beyond alert threshold | **needs attention** | critical, urgent, emergency, danger |
 | moving toward an edge, **inside** the band | **drifting** | trending, slipping, creeping |
 | the user's chosen band — a minimum and a maximum | **target range** — always both words | bare "target", target band, ideal, optimal, recommended level, correct |
@@ -666,6 +694,19 @@ both directions: the card says *"Plan a gradual return to 8.5 dKH"* going up
 and going down alike. The same category as the `off-target` state id above —
 canon's own word, never rendered.
 
+**range** wins the position vocabulary outright — registered 16 August, Stage 5,
+and the shortest entry in this registry to state and the most visible to get
+wrong. The dashboard banner said *"Out of range"*; the tile directly beneath it
+said *"ABOVE BAND"*. **Same reading, same instant, two vocabularies**, found by
+Dan on the app on 16 August.
+
+**Tiles read `in range`, `above range`, `below range`.** "Band" is canon's own
+word for the thing — §13's seven of them, §2's edges — and it stays canon's, in
+the same category as the `off-target` state id and "drift back": **the app never
+says it out loud.** This is not a new rule, it is the first two rows of this
+table applied to the two directions they never spelled out, which is exactly the
+gap a synonym walked through.
+
 **hide** and **off** are registered 16 August with §25, and the reason they are
 two entries rather than one is the whole of §25.1's escalation: **hide is per
 notice and temporary — a superseding verdict brings it back automatically —
@@ -709,6 +750,56 @@ rule one level down — colours instead of words.
   its direction of harm is the mirror of phosphate's — an alarming chart that
   looks healthy, rather than a healthy chart that looks alarming. Recorded as
   an open one-liner in `.agent/needs-dan.md` rather than changed here.
+
+#### Four severity colours, not six — added 16 August
+
+**Decided 16 Aug (Dan, spec owner).** `TONE_TIER`
+(`src/lib/analytics/reading-meaning.js:121`) maps **six** hex colours to three
+tiers, to implement §22's rule that a verdict never renders calmer than its own
+reading. Four of those six — `#2A8050`, `#1D6FA5`, `#A2621B`, `#C4285B` — are
+registered nowhere. **The mapping is redone in the four colours above and
+nothing else.**
+
+| Tier | Colour | Registered as |
+|---|---|---|
+| calm — the reading is `in-band` or `drifting` | `#0B7C86` | `ok` |
+| raised — `out-of-band-low` or `out-of-band-high` | `#926A09` | `low` |
+| alert — `alert-low` or `alert-high` | `#C4285B` | `high` |
+| ungradeable — `insufficient-data` | `#9FB0AE` | `unknown` |
+
+**The tiers are §13's bands, not a fifth severity scale**, which is §22's
+existing rule stated as a table: the tier comes from the latest reading's band,
+the verdict word is untouched, and a verdict never renders calmer than the tier.
+The fourth row is the refusal case §22 already carries — an ungradeable
+parameter renders in the unknown colour rather than falling through to a calm
+one.
+
+**Two reasons, and the second is the general one.** Six severity colours is more
+than anyone distinguishes at a glance, so the extra two were carrying no
+information a keeper could read. And **an unregistered colour is the same fault
+as an unregistered word** — this registry exists because a colour means
+something to a user whether or not anyone wrote down what, and four of the six
+meant whatever the reader guessed.
+
+**One collision this creates, worked up and not resolved here.** The four
+colours are used elsewhere to mean **direction**, not tier: `paramStatus`
+(`src/lib/dates.js:25-29`) returns `low` for a value under its minimum and
+`high` for one over its maximum, and `DosingWizard`, `DoseExpectation`,
+`ReadingContext` and the backup export all colour by that. Under the mapping
+above, `low` `#926A09` means *out of range, either side* and `high` `#C4285B`
+means *at the alert tier, either side*. **The same two colours would then mean
+one thing on a verdict and another on a chip**, which is the fault this registry
+exists to prevent, one level down from words.
+
+The mapping above is what §22 needs — a lethal low and a mildly low rendering
+identically is the exact failure §22's tier was added to stop, and a
+direction-keyed mapping cannot escalate. The mapping is therefore the decided
+one. **What is not decided is what happens to `paramStatus`'s colouring**: it
+either moves to the tier reading, or keeps direction and stops using these four
+colours, or the registry gains a name for the distinction. Three options, one
+answer needed, **and it is Dan's** — `.agent/needs-dan.md`, and TW-072 carries
+it so the implementation cannot pick one by accident. `STATUS_COLOR`'s four
+values do not move either way.
 
 ---
 
@@ -1176,9 +1267,12 @@ the six verdicts directly.** The verdict set, the thresholds, the grading and
 the tier above are all unchanged; what changes is the panel around them.
 
 - **The panel leads with its window, as a heading** — and the window it names
-  is the one the verdict was actually graded over, `reef-chemistry.md` §4's
-  analysis window for that parameter. A verdict graded over 14 days under a
-  heading saying 30 is the contradiction of 16 August in a new place.
+  is the one the verdict was actually graded over. A verdict graded over 14 days
+  under a heading saying 30 is the contradiction of 16 August in a new place.
+  **Amended later the same day (Stage 5): that window is the one the keeper
+  selected on the panel, not §4's analysis window.** The panel offers 7 / 30 /
+  90 / All and grades whatever is picked; the buttons stay, the grading follows
+  the selection, and the heading names it. §25.2 carries the decision.
 - **The panel never uses direction words.** Direction is the wizard's, worked
   from the last few readings; consistency is the panel's, worked over the
   window. The two never compete because they never make the same kind of
@@ -1889,6 +1983,35 @@ brought back from the tank summary. §20's mapping of **serious** — severity
 point that the confirmation is a speed bump rather than a class of notice that
 cannot be hidden.
 
+#### The health score is deleted — 16 August
+
+**Decided 16 Aug (Dan, spec owner), Stage 5.** A 0–100 number on the front of
+the app, computed from **nineteen constants** in `src/lib/narrative-engine.js`,
+with **no canon entry of any kind** — not a band, not a verdict, not a notice,
+not a message. It has already been caught showing 42 while its own working panel
+summed to 71.
+
+**Deleted, along with `ScoreBreakdown`, the score colour bands and the headline
+score bands.**
+
+**The reason is §23.1, the app's own first wording rule: state it, then show the
+basis.** A single number claiming to summarise a tank's health is the least
+checkable thing in the app — there is no basis to show, only nineteen weights
+nobody has seen. Every other number the app puts on screen can be traced to a
+reading, a band or a formula in `reef-chemistry.md`; this one traces to a blend
+of a blend.
+
+**What replaces it: nothing yet, and there is already a candidate.** The
+collapsed layer above shows a summary headline, and that headline is unspecified
+(G-27 of `.agent/gap-report.md`) and needs writing regardless. Something of the
+shape *"3 of 6 in range, 2 need attention"* is a tank-level summary a keeper can
+check against the tiles below it, which is the property the score never had.
+
+**Decide it when G-27 is decided.** It is recorded here so that deleting the
+score does not quietly remove the only tank-level view without anyone noticing
+that is what happened — and G-29 already carries the separate question of what
+an "N of M in range" claim may count.
+
 #### App-level notices do not belong here
 
 No backup in three weeks, storage nearly full, a test kit expiring — **these
@@ -1930,11 +2053,33 @@ a number:
 > **Over the last 30 days**
 > Wide swing — 1.1 dKH between highest and lowest. 18% of readings in range.
 
-**The heading states the window the verdict was actually graded over.** That is
-`reef-chemistry.md` §4's analysis window for the parameter — 14 days for
-alkalinity, 28 for calcium and magnesium — so "Over the last 30 days" above is
-the shape of the heading, not a new window. A panel heading that names a window
-the grading did not use is the same defect this rule was written to fix.
+**The heading states the window the verdict was actually graded over.** A panel
+heading that names a window the grading did not use is the same defect this rule
+was written to fix.
+
+**Amended 16 August (Dan, spec owner), later the same day — Stage 5.** As first
+written, this rule fixed the window per parameter: `reef-chemistry.md` §4's
+analysis window, 14 days for alkalinity and 28 for calcium and magnesium. **The
+app offers 7 / 30 / 90 / All and grades whatever the keeper picks, and that is
+the behaviour that stays.**
+
+> **The buttons stay. The panel grades the selected window and names it in its
+> heading.**
+
+> *"Over the last 90 days — wide swing, 1.1 dKH between highest and lowest."*
+
+No data is hidden, no button is removed and the chart is untouched. **The rule
+§25.2 was written to enforce is satisfied either way** — a verdict must say what
+it judged — and it is satisfied by the heading naming the selection, which is
+the honest description of what the panel actually did. Fixing the window would
+have deleted a control the keeper uses in order to make a sentence true, when
+the sentence can simply be made true.
+
+**This does not touch §4.** The analysis window remains what the wizard's
+arithmetic runs on — consumption, dose gaps, `reef-chemistry.md` §11's movement
+rule. The panel is the other question, over the span the keeper asked about, and
+the two are now visibly different questions rather than accidentally different
+numbers.
 
 **2. The panel never uses direction words.** No rising, no falling, no
 climbing, no drifting up or down. **Direction belongs to the wizard.** The
@@ -1960,6 +2105,37 @@ different enough**, and the caption reads as clutter within months.
 
 **Revisit only if the built screen still feels contradictory. Fix the panel
 before captioning it.**
+
+#### `paramContext` is deleted, and nothing replaces it — 16 August
+
+**Decided 16 Aug (Dan, spec owner), Stage 5.** Eight prose blocks
+(`src/lib/analytics/reading-meaning.js:17-87`) fire whenever the last reading is
+outside the user's band and render on this modal below the steadiness verdict.
+Between them they quote about fifteen figures canon has never named, against a
+band the keeper set themselves.
+
+**One of them contradicts canon outright:** it tells a keeper that tanks run
+happily up to around 500–550 ppm calcium, where `reef-chemistry.md` §2 caps
+calcium at 500 **because above that it pulls alkalinity down**. Others quote
+magnesium's *"1300–1400 most guides quote"* against §2's 1275–1425, a phosphate
+figure of 0.15 that appears nowhere, and a full set of potassium numbers for a
+parameter canon has no reasoning about at all.
+
+**Most of the block also breaches §23.5 and `reef-chemistry.md` §29.6** — never
+speculate about causes, and no suggested levers: *"water changes are the likely
+source"*, *"low magnesium is usually the reason calcium won't hold"*, *"a little
+more feeding is normally the fix"*, *"dose nitrate back up to around 5 ppm"*.
+
+**Nothing replaces it.** The band says where the level is and the verdict says
+how steady it has been; **explaining what that means is the kind of writing that
+goes stale and then contradicts something else**, which is precisely what
+happened here. A keeper who wants to know why 550 is or is not fine is asking a
+question this app has decided not to answer — see §25.5 on Insights, which is
+the same instinct and is deliberately unspecified for the same reason.
+
+The figures that *were* canon all along — 0.5 dKH/day (`reef-chemistry.md` §3's
+rail) and the 380 ppm calcium floor (§2 layer 1) — are not lost with the block:
+they are in canon, which is where a surface should have been reading them from.
 
 ### 25.3 The reading confirmation
 

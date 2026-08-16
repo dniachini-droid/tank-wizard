@@ -6,6 +6,20 @@ and the highest-value open items in Part 2.
 Every figure below was live in the app and named nowhere in canon. Each is now
 canon.
 
+**Folded into canon 16 August 2026, and this file is now the decision record
+rather than the reference.** The evidence rules are `reef-chemistry.md` §30 and
+the ratified findings thresholds are §31; the one noise-floor table is §5, the
+movement rule §11, the two new alert levels and the withdrawal of the retarget
+clause §18, and §29.7's mode column is amended to match §5. On the surfaces
+side, `wizard-states.md` §15 registers **above range** and **below range** and
+carries the four-colour severity mapping, §25.1 deletes the health score, §25.2
+deletes `paramContext` and follows the keeper's selected window, §22 is amended
+with it, and §13 records which parameters can reach an alert band. **Where this
+file and canon differ, canon wins.**
+
+The implementation is filed as **TW-064** to **TW-074**, all untagged, and the
+open items at the end of this file are `.agent/needs-dan.md` item 12.
+
 ---
 
 # 1. The evidence rules — the report's own top priority
