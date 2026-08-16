@@ -3,7 +3,7 @@ routine: owner decision — needs-dan item 10, all nine phosphate/nitrate decisi
 started: 2026-08-16
 status: complete
 last completed step: §29 written, item 10 closed, TW-054..060 filed, read-site comment landed, all gates green
-next step: none from this run. Dan's two remaining lines (nitrate's reading count, the phosphate count's same-side question) unblock TW-057 and TW-058; TW-054..060 need `[approved]` before any of it ships.
+next step: none from this run. Dan closed both open questions the same day; TW-054..060 need `[approved]` before any of it ships.
 in-flight: nothing
 branch: claude/reef-chemistry-spec-aqe29s (harness-designated)
 uncommitted work: no
@@ -56,23 +56,30 @@ comment and no behaviour.
        compared by name against the clean tree: **0 new, 0 fixed**.
 6. [x] log written — `.agent/log/2026-08-16-phosphate-nitrate-canon.md`
 7. [x] commit, push
-8. [ ] **PR not opened by this run.** The session harness forbids opening one
-       without an explicit request, which is narrower than AGENTS.md #13.
-       Flagged to Dan in the same breath as the push rather than left silent —
-       a branch with no PR is unfinished work and this run knows it.
+8. [x] **second pass, same day** — Dan closed both open questions; §29.5
+       rewritten, §29's header amended to say nothing in the section is open,
+       TW-057 and TW-058 unblocked. Re-verified: **ALL BLOCKING CHECKS
+       PASSED**, golden unchanged at `3a782222dbce41c5`.
+9. [x] PR opened, at Dan's explicit request in the same message.
 
-## Two residues, not invented away
+## Two residues, raised and then closed the same day
 
-Named in §29.5 and carried on the items that need them; neither blocks anything
-else.
+Named in §29.5 on the first pass rather than invented away. Dan answered both
+before anything shipped.
 
-- **Nitrate's trend evidence bar.** *"three readings, one direction, clearing
-  the noise floor"* against *"the same evidence bar as the dosed elements"* —
+- **Nitrate's trend evidence bar** — *"three readings, one direction, clearing
+  the noise floor"* against *"the same evidence bar as the dosed elements"*,
   and that bar is `directional()`: four readings, three steps, two thirds
-  agreeing. Three readings is two steps. TW-058, half two only.
-- **Whether the phosphate count needs the same side.** *"Three of the last four
-  readings outside the band"* — either side literally, one side by its stated
-  purpose. Two above and one below is the separating case. TW-057.
+  agreeing. **Answered: three readings, and explicitly not the statistical
+  gate.** The "same evidence bar" phrase is withdrawn as loose wording; the
+  rule is `journey-1-alkalinity.md` §5 — *one is notice, two is a signal, three
+  is a fact; the app's evidence gates are about statistics, this is about
+  patience*. §5's noise floor stays in force, so the count drops and the
+  measurement standard does not.
+- **Whether the count needs the same side** — either side literally, one side
+  by its stated purpose. **Answered: same side.** Two above and one below does
+  not count; that is a tank bouncing, which is what phosphate does when nothing
+  is wrong.
 
 ## Full account
 

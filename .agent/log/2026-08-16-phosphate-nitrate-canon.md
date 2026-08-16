@@ -19,7 +19,7 @@ subsections plus enforcement and a plain-language layer:
 | §29.2 | bands: phosphate 0.03–0.10, nitrate 5–15; safe bounds 0.01–0.5 and 0.5–50; legitimate range wider than the dosed elements |
 | §29.3 | out has no margin; clearly out at 0.10 ppm / 10 ppm; wording only |
 | §29.4 | the two fixed warnings, both band-independent, and the `SAFE_BOUNDS` collision resolved |
-| §29.5 | count not slope; nitrate's own model; two residues named |
+| §29.5 | count not slope; nitrate's own model; two residues named, then closed on the second pass |
 | §29.6 | no dose, no correction, no levers — the one place canon overrides journey 5 |
 | §29.7 | windows ratified: 14 days and 28 days, proportional |
 | §29.8 | the `correctionProgress` unit question closed as unreachable by design |
@@ -54,10 +54,13 @@ correction path — which §29.6 forbids. Dan asked for this comment by name.
 
 No constant, threshold, formula or behaviour was touched.
 
-## Two things Dan's answers did not settle, and neither was invented away
+## Two things Dan's answers did not settle — raised, then closed the same day
 
-Both are in §29.5, on the items that need them (TW-057, TW-058), and neither
-blocks anything else.
+Both were named in §29.5 rather than invented away, and Dan answered both
+before anything shipped. Recorded here in the order it happened, because the
+question is what the answer turns on.
+
+**Raised on the first pass:**
 
 1. **Nitrate's trend evidence bar.** Dan: *"three readings, one direction,
    clearing the noise floor"* **and** *"at the same evidence bar as the dosed
@@ -68,6 +71,38 @@ blocks anything else.
    four readings outside the band"* reads literally as either side; its stated
    purpose — *this is where you have been living* — reads as one side. Two
    above and one below is the separating case.
+
+**Answered on the second pass, later the same day:**
+
+1. **Three readings, one direction, clearing the noise floor — and explicitly
+   not the four-reading statistical gate.** Dan: *"My 'same evidence bar' was
+   loose wording — the practical rule from journey 1 is what I meant."* The
+   phrase is withdrawn from §29.5 and the rule is
+   `journey-1-alkalinity.md` §5: *"One reading is notice, two is a signal,
+   three is a fact. … The app's evidence gates are about statistics; this is
+   about patience."* §29.5 now carries **why the lower count is not a lower
+   standard**: `directional()` is a test about a fitted line, and nitrate is
+   not being fitted — it is watched for a run of three, a claim about
+   consecutive readings. §5's noise floor stays in force, so what drops is the
+   count, not the measurement standard. TW-058 carries the same reasoning,
+   because "widen it to four for consistency" is the obvious wrong instinct at
+   implementation time.
+2. **Same side. Two above and one below does not count.** Dan: *"The point of
+   the count is where the level has been living; a reading bouncing above then
+   below is not that."* Three high and one low is a tank living high; two high,
+   one low and one high is a tank bouncing, which is what phosphate does when
+   nothing is wrong — so the literal either-side reading would have fired
+   hardest on exactly the behaviour the count exists to stop the app talking
+   about. TW-057's first test artefact is now the negative case: above, above,
+   below, above produces **nothing**.
+
+Both items are unblocked; neither is approved. §29's header states that nothing
+in the section is open, so a later reader does not go looking.
+
+Phosphate does not converge on nitrate as a result: it gets no direction
+language at any bar, however patient. A run of three on a parameter that
+oscillates between 0.20 and 0.15 is what oscillation looks like. The two are
+separated by the buffering, not by the evidence.
 
 ## Three consequences worth naming, all analysed rather than escalated
 

@@ -2082,6 +2082,14 @@ once and correctly.
 item 10, in one pass, with the spec edit authorised.** This is the canon entry
 §25's coverage table said was written **nowhere**. It is written here.
 
+**Amended the same day, before anything shipped.** The first pass left two
+questions in §29.5 open, because Dan's answers gave two different numbers for
+one of them. Both are now settled and §29.5 carries them: **the count is
+same-side**, and **nitrate's trend bar is three readings, not the dosed
+elements' four-reading statistical gate** — the phrase "the same evidence bar
+as the dosed elements" is withdrawn as loose wording. **Nothing in this section
+is open.**
+
 §25 settled **where** the reasoning lives — one engine — and deliberately
 settled nothing about its content. TW-029 removed the borrowed reasoning on
 15 August, which left these two saying less than they should rather than saying
@@ -2225,11 +2233,23 @@ to 0.20, then down to 0.15, then up to 0.19, then down. It doesn't work like
 that."* Direction language on a parameter that bounces this hard is a confident
 statement about a movement nobody measured.
 
-> **The phosphate count: three of the last four readings outside the band.**
+> **The count: three of the last four readings outside the band, on the same
+> side.**
+
+**Same side, decided 16 Aug on the second pass.** Two above and one below does
+not count. *"The point of the count is where the level has been living; a
+reading bouncing above then below is not that."* Three high and one low is a
+tank living high; two high, one low and one high is a tank bouncing, which is
+what phosphate does when nothing is wrong. The literal reading — any three
+outside, either side — would fire hardest on exactly the behaviour §29.5 exists
+to stop the app talking about.
 
 Two things it says that a slope cannot — *this is where you have been living*,
 and *this is not one odd test*. Nothing in the app counts this today;
 everything else fits a line. It is a new mechanism, not a retuned one.
+
+The count is the same mechanism for both parameters. Nitrate has it too
+(alongside its trend, below); it is not phosphate's alone.
 
 **No direction language for phosphate anywhere**, including the stability
 layer's. The `drift:` claims sit on the stability layer's own fold-mode rules
@@ -2246,24 +2266,37 @@ all. Randy Holmes-Farley's illustration — add 1 ppm phosphate and 100 ppm
 nitrate to a tank and nitrate rises the full 100 while phosphate rises under
 0.1.
 
-**Nitrate's trend sits at the same evidence bar as the dosed elements** — one
-direction, clearing §5's noise floor. It earns no easier test for being a
-nutrient and no harder one either.
+**Nitrate's trend bar, decided 16 Aug on the second pass:**
 
-**Two things this leaves for a further decision, named rather than assumed:**
+> **Three readings, one direction, clearing §5's noise floor.**
 
-- **The reading count in nitrate's trend bar.** Dan's words are *"three
-  readings, one direction, clearing the noise floor"*, and *"the same evidence
-  bar as the dosed elements"*. The dosed elements' bar is four readings — three
-  steps, two thirds of them agreeing. Three readings is two steps. The two
-  halves of the sentence give different numbers and an implementer needs one.
-- **Whether the phosphate count requires the same side.** *"Three of the last
-  four readings outside the band"* reads literally as either side, but its
-  stated purpose — *this is where you have been living* — reads as one side.
-  Two above and one below in the last four is the case that separates them.
+**This is deliberately *not* the four-reading, three-step statistical gate the
+dosed elements use** (`directional()` — four rows, three steps, two thirds
+agreeing). The first pass of this section recorded the bar as *"the same
+evidence bar as the dosed elements"* on Dan's own phrase; **that phrase was
+loose wording and is withdrawn.** The rule he meant is the practical one from
+`journey-1-alkalinity.md` §5:
 
-Neither is invented here. Until one is settled, nitrate's trend takes the
-dosed-element bar unchanged and the count is not built.
+> *"One reading is notice, two is a signal, three is a fact. … The app's
+> evidence gates are about statistics; this is about patience."*
+
+Three readings is two steps, and both must go the same way — the third reading
+is what turns a signal into a fact. The movement across the three must clear
+§5's noise floor, which is the part that stops the rule firing on kit
+resolution.
+
+**Why the softer bar is right here and not a slackening.** The statistical gate
+exists to keep a regression from claiming a slope through scatter. Nitrate is
+not being fitted — it is being watched for a run of three, which is a claim
+about consecutive readings rather than about a line. Applying the gate meant
+importing a test designed for a different question, which is the defect §25
+names. The noise floor stays in force, so this is a lower *count*, not a lower
+standard of measurement.
+
+**The two parameters do not converge.** Phosphate gets no direction language at
+any bar, however patient — a run of three on a parameter that oscillates
+between 0.20 and 0.15 is what oscillation looks like, not a trend. The
+difference is the buffering, not the evidence.
 
 ### 29.6 No dose, no correction, no levers
 

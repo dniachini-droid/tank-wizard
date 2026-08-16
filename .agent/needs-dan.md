@@ -25,11 +25,12 @@ of journey 5's "name the options" and the one place canon overrides the journey
 unreachable by design rather than resolved (§29.8); windows ratified at 14 and
 28 days (§29.7).
 
-**Two residues, both named in §29.5 and neither invented away.** The reading
-count in nitrate's trend bar — "three readings" against the dosed elements' bar
-of four — and whether the phosphate count of three-of-four requires the same
-side of the band. Each is a line from Dan and blocks only the two items that
-need the number.
+**Two residues were named in §29.5 on the first pass, and Dan closed both the
+same day**, before anything shipped: the count is **same side**, and nitrate's
+trend bar is **three readings, one direction, clearing the noise floor** — not
+the dosed elements' four-reading statistical gate, and the phrase "the same
+evidence bar as the dosed elements" is withdrawn as loose wording. **Nothing in
+§29 is open.** See the second Decisions entry for 16 August.
 
 The workup below is left in place, per the file's habit: it is the statement of
 the problem the decision answers, and its account of what TW-029 removed is the
@@ -529,7 +530,65 @@ column — where naming the banned term is the point.
 
 ## Decisions
 
-### 2026-08-16 (latest) — Dan, spec owner: phosphate and nitrate get their own rules — nine decisions in one pass
+### 2026-08-16 (latest) — Dan, spec owner: the count is same-side, and nitrate's trend is patience rather than statistics
+
+Closes the two questions §29.5 left open on the first pass, the same day and
+before anything shipped. Recorded in `reef-chemistry.md` §29.5, with §29's
+header amended to say the section carries nothing open. **Still spec and filing
+only** — TW-057 and TW-058 are unblocked, not approved.
+
+**1. Nitrate's trend bar is three readings, one direction, clearing the noise
+floor.** Explicitly **not** the four-reading, three-step statistical gate the
+dosed elements use (`directional()` — four rows, three steps, two thirds
+agreeing). Dan: *"My 'same evidence bar' was loose wording — the practical rule
+from journey 1 is what I meant."* That phrase is **withdrawn** from §29.5 and
+the rule is `journey-1-alkalinity.md` §5: *"One reading is notice, two is a
+signal, three is a fact. … The app's evidence gates are about statistics; this
+is about patience."*
+
+Why this is not a slackening, and the distinction is the point: the statistical
+gate exists to stop a regression claiming a slope through scatter. Nitrate is
+not being fitted — it is being watched for a run of three, which is a claim
+about consecutive readings rather than about a line. Importing the gate would
+have been a test designed for a different question, which is the defect §25
+names. **§5's noise floor stays in force**, so this is a lower count, not a
+lower standard of measurement.
+
+**2. The count is three of the last four on the same side.** Two above and one
+below does not count. Dan: *"The point of the count is where the level has been
+living; a reading bouncing above then below is not that."* Three high and one
+low is a tank living high; two high, one low, one high is a tank bouncing —
+which is what phosphate does when nothing is wrong. The literal reading (any
+three outside, either side) would have fired hardest on exactly the behaviour
+§29.5 exists to stop the app talking about.
+
+**What this does not change.** Phosphate still gets no direction language at
+any bar, however patient. A run of three on a parameter that oscillates between
+0.20 and 0.15 is what oscillation looks like. The two parameters are separated
+by the buffering, not by the evidence, and a softer trend bar for nitrate does
+not bring phosphate closer to having one.
+
+**Verification.** Spec and filing only. The one code change on this branch
+remains a comment. `npm run verify` re-run on the amended tree: all blocking
+checks passed; golden 5,940 cases unchanged at `3a782222dbce41c5`.
+
+**In plain terms.** Two small things, both about how many tests it takes before
+the app says something.
+
+For nitrate: three tests in a row moving the same way, by more than your kit
+can misread, and the app will say nitrate is rising. Not the stricter
+four-test statistical version your alkalinity gets — that one exists to stop
+the app drawing a line through scatter, and this is not a line, it is a run of
+three. Your own rule from the alkalinity journey: one reading is notice, two is
+a signal, three is a fact.
+
+For the count: three of your last four outside your range, **on the same
+side**. Three high and one low is a tank sitting high and worth saying so. Two
+high, one low, one high is phosphate doing what phosphate does, and the app
+stays quiet — which is the whole reason the count exists instead of a trend
+line.
+
+### 2026-08-16 (earlier the same day) — Dan, spec owner: phosphate and nitrate get their own rules — nine decisions in one pass
 
 Closes open item 10 entirely, and authorises the spec edit that records it.
 Recorded as `docs/spec/reef-chemistry.md` **§29**. **Spec only — the
@@ -591,14 +650,15 @@ neither will**, so the branch is unreachable **by design** rather than by an
 accident of today's call sites. A comment at the read site records that, so the
 next reader finds the reason instead of re-deriving the options.
 
-**Two things left open, and named rather than smoothed over.** Nitrate's trend
-bar is described two ways in one sentence — *"three readings"* against the
-dosed elements' bar of **four** readings and three steps — and an implementer
-needs one number. And *"three of the last four readings outside the band"*
-reads literally as either side of the band, while its stated purpose (*this is
-where you have been living*) reads as one side; two above and one below is the
-case that separates them. Both are a line from Dan and each blocks only the
-item that needs it.
+**Two things left open, and named rather than smoothed over** —
+~~**both closed by the entry above, the same day, before anything shipped.**~~
+Nitrate's trend bar was described two ways in one sentence — *"three readings"*
+against the dosed elements' bar of **four** readings and three steps — and an
+implementer needed one number. And *"three of the last four readings outside
+the band"* read literally as either side of the band, while its stated purpose
+(*this is where you have been living*) read as one side; two above and one
+below is the case that separates them. Left standing rather than deleted: the
+statement of each question is what its answer turns on.
 
 **Verification.** Spec and filing only; no chemistry constant, no threshold and
 no behaviour was touched, so no behavioural claim is made. The one code edit is
