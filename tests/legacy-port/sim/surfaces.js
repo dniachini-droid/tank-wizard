@@ -146,7 +146,7 @@ function run(seed, opts) {
         const os = st.correctionOffers[k] || {};
         const offer = ['quick', 'steady', 'gentle'].map((n) => os[n]).find((o) => o && o.possible);
         if (offer) {
-          plans = { ...plans, [k]: { target: offer.target, returnDose: offer.returnDose,
+          plans = { ...plans, [k]: { target: offer.aimPoint, returnDose: offer.returnDose,
             startedAt: dayDate(day), startValue: level[k], pace: offer.pace, dose: offer.dose, days: offer.days } };
           dose[k] = offer.dose; settings[DOSEF[k]] = dose[k];
           doseLog.push({ element: k, date: dayDate(day), time: '21:00', ml: offer.dose });

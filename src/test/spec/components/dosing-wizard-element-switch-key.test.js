@@ -33,7 +33,7 @@ function makeAssessment(overrides) {
     recommendedDose: 5.2,
     explanation: "test explanation",
     current: { value: 8.0 },
-    target: { min: 8.5, max: 9.5 },
+    targetRange: { min: 8.5, max: 9.5 },
     used: [],
     maintenanceDose: 6,
     nextCheck: "Test again in 48 hours.",

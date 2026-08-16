@@ -60,7 +60,7 @@ describe('§7.3 — round DOWN on the first correction of any parameter', () => 
      8.2-8.8; mid moved from 9.0 to 8.5, and LEVEL moved down by the same 0.5
      dKH so `toMid`, and everything derived from it below, is unchanged). That
      is exactly the "steady, out of band" case the protocol turns into a
-     one-off, additive-only correction (`out.targetCorrection`) — the FIRST
+     one-off, additive-only correction (`out.correction`) — the FIRST
      correction for this parameter, so §7.3 requires it round down.
      effect is set to a clean 0.02 dKH/mL so the raw, unrounded corretion
      (toMid / effect) lands on 31.37 mL — a fraction whose nearest-0.1 rounding
@@ -82,8 +82,8 @@ describe('§7.3 — round DOWN on the first correction of any parameter', () => 
     expect(out.ok).toBe(true);
     expect(out.band).toBe('stable');
     expect(out.action).toBe('hold'); // the daily dose itself is not changing
-    expect(out.targetCorrection).toBeTruthy();
-    expect(out.targetCorrection.direction).toBe('up');
+    expect(out.correction).toBeTruthy();
+    expect(out.correction.direction).toBe('up');
   });
 
   it('the raw correction is 31.37 mL, which nearest-0.1 and floor-to-0.1 disagree on', () => {
@@ -98,7 +98,7 @@ describe('§7.3 — round DOWN on the first correction of any parameter', () => 
        which rounds 313.7 up to 314 => 31.4 mL — over-correcting on the very
        first dose, which is the one case the spec singles out as
        unrecoverable. */
-    expect(out.targetCorrection.oneOffMl).toBe(31.3);
+    expect(out.correction.oneOffMl).toBe(31.3);
   });
 });
 
@@ -124,7 +124,7 @@ describe('§3 — the out-of-band edge is inclusive (worked example 9)', () => {
        alkalinity engine's `out` initializer, unlike calcium's and
        magnesium's, does not default this field to null — it is simply never
        set, i.e. undefined — so falsy is the correct check here.) */
-    expect(out.targetCorrection).toBeFalsy();
+    expect(out.correction).toBeFalsy();
   });
 });
 

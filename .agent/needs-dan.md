@@ -335,7 +335,7 @@ testing pattern steady" deserves its own words at all, not just a rename.
 Blocks `.agent/items/TW-037.md` TW-037 (code-side fix), filed `[blocked]` pending this
 decision.
 
-### 6. One-line notes — 2026-08-14 — two of three closed
+### ~~6. One-line notes — 2026-08-14~~ — all three closed
 
 - ~~**Colour-registry gap**~~ — **closed 2026-08-14.** §15 gained the colour registry
   and both named collisions are settled: phosphate `#9B3A8C`, potassium `#5F7A12`.
@@ -347,12 +347,23 @@ decision.
   the single term; "Worth knowing about", "Hidden notes"/"Notes" and "notification"
   are banned, TW-031's confirmation sentence is restated, and "Got it — hide this"
   is recorded as a non-violation (no noun).
-- **"Target" rename** (terminology-auditor) — **still open, parked by the owner
-  2026-08-14 pending a review of all four uses.** "Target" is used for four structurally
-  different concepts in one modal: the value the user types, the app's computed aim
-  point, the whole band, and a synonym for in-band. A rename needs your sign-off before
-  anything ships — noted here rather than filed as backlog work, since it's a
-  registry/copy decision, not implementation.
+- ~~**"Target" rename**~~ (terminology-auditor) — **closed 2026-08-16, signed off by
+  the owner.** The review the 14 Aug parking asked for ran on 15 Aug
+  (`.agent/target-terminology-audit.md`; it found six uses, not four) and Dan took its
+  recommended option, settling the prior question first: **there is no target point —
+  the user sets a minimum and a maximum, one range, two edges.** A point inside the
+  band was considered and rejected (a range within a range is more to configure and
+  more to explain, for a distinction the trend already makes); `reef-chemistry.md` §2
+  is corrected accordingly. The rename: the band keeps the word as **target range**
+  (always both words, bare "target" banned), the correction's midpoint is the **aim
+  point**, position is **in range** / **out of range** (registered 14 Aug), the mL/day
+  a staged plan works toward is the **planned dose**, and `targetCorrection` →
+  `correction`. Both "a target is a point, not a zone" sentences are rewritten as "the
+  aim point is a point, not a zone". Excluded, per the audit's §11 and Dan's own
+  instruction: TW-035's field split (its own change, parity test as the gate), the
+  `off-target` state id (never rendered; its one rendered leak, "Steady, off target",
+  renamed with the copy), DOM handlers, the lucide icon, touch targets, Triton's own
+  published values, and the CSS class. Registry rows in `wizard-states.md` §15.
 
 ### ~~5. `caClearlyOut`/`clearlyOut` compare a distance against a rate~~ — closed 2026-08-15, see Decisions
 

@@ -77,7 +77,7 @@ single card. Called once per element on every render.
 | `short` | two or three words for the tab strip |
 | `headline` | one sentence |
 | `detail` | one or two sentences of reasoning |
-| `target` | where a plan is heading, when there is one |
+| `target` | where a plan is heading, when there is one — the correction's **aim point** (a level) on one branch, a staged plan's **planned dose** (mL/day) on four others. One field, two physical units; the split is filed as TW-035 and the field keeps its name until that lands |
 | `testOn` | when to test next, when that is the ask |
 
 **Nothing else in the app decides what an element's situation is.** Other
@@ -103,7 +103,7 @@ declined.
 | 9 | `settling` | a staged plan changed the dose, settle window not passed |
 | 10 | `due` | a staged plan is running and no test has been logged |
 | 11 | `worked` | tested, steady, in band |
-| 12 | `worked` | tested, steady, not in band — "steady, off target" |
+| 12 | `worked` | tested, steady, not in band — "steady, out of range" |
 | 13 | `fell-short` | tested, engine still wants more in the same direction |
 | 14 | `overshot` | tested, engine now wants the opposite direction |
 | 15 | `settling` | a plain dose change inside its settle window |
@@ -147,14 +147,14 @@ moving further out is `worsening`, never `stable`, whatever the rate.
 | `correction-stalled` | amber | Taking too long | plan overran |
 | `correction-stalled` | amber | Not responding | plan is not working |
 | `correction-due` | amber | Test now | plan needs a reading |
-| `correction-done` | teal | Target reached | plan arrived — see §4 |
+| `correction-done` | teal | Aim point reached | plan arrived — see §4 |
 | `correcting-dose` | blue | Correction running | plan in progress |
 | `correcting` | blue | Correction running | logged correction in progress |
 | `settling` | blue | Change settling | too soon to judge |
 | `settling` | blue | One more reading | not enough data yet |
 | `due` | amber | Test to confirm | staged plan needs a test |
 | `worked` | teal | Change worked | it did what it should |
-| `worked` | grey | Steady, off target | stable in the wrong place |
+| `worked` | grey | Steady, out of range | stable in the wrong place |
 | `fell-short` | amber | Needs more | the change was too small |
 | `overshot` | amber | Went too far | the change was too large |
 | `recovering` | blue | Coming back | out of band, heading the right way |
@@ -177,11 +177,11 @@ the readings since it started.
 | Flag | Meaning |
 |---|---|
 | `arrived` | two readings inside the arrival zone — see below |
-| `passed` | one reading at or beyond the target. Computed independently of `arrived`; never conflate the two |
+| `passed` | one reading at or beyond the aim point. Computed independently of `arrived`; never conflate the two |
 | `dueNow` | enough time has elapsed that a reading is expected |
 | `overrun` | days > (expected × 2) + 2 |
 | `stalled` | 3+ days in, a reading since, level moved less than the noise floor |
-| `backwards` | 3+ days in, a reading since, level moved away from target |
+| `backwards` | 3+ days in, a reading since, level moved away from the aim point |
 
 `stalled` and `backwards` both require a reading **since the plan started**.
 Without that, the app would judge a correction on the reading that prompted it
@@ -196,8 +196,8 @@ plan with no readings still said "on its way to 9.0 dKH" at day 40.
 The arithmetic is `reef-chemistry.md` §9; this is what it means for the branch.
 Two numbers, kept apart:
 
-- **Where the correction aims** — the midpoint of the band. A target is a point.
-  Unchanged.
+- **Where the correction aims** — the midpoint of the band. The aim point is a
+  point, not a zone. Unchanged.
 - **Where it is judged to have arrived** — a zone. **Changed 14 Aug:** the
   middle third of the band, floored so the zone is never narrower than twice
   that element's noise floor, and clamped to the band. Against the suggested
@@ -214,7 +214,7 @@ the state holds, `testOn` carries "keep testing every 2 days — it may still be
 climbing."
 
 A narrower zone cannot strand the elevated dose. Branch 5 fires on `arrived`
-**or** `passed`, and `passed` needs only one reading at or beyond the target, so
+**or** `passed`, and `passed` needs only one reading at or beyond the aim point, so
 the one-tap "return to your maintenance dose" action is reached either way. The
 cost of a stricter `arrived` is that the confident two-reading wording gets rare
 for calcium and magnesium, not that the correction fails to close.
@@ -429,7 +429,7 @@ calls it. No surface recomputes, reformats or re-decides.
 
 | Concern | The one function | Everything else must call it |
 |---|---|---|
-| Band classification | `classifyReading(param, value, targets)` | wizard, manual entry, test log, dashboard, alerts, history |
+| Band classification | `classifyReading(param, value, targetRanges)` | wizard, manual entry, test log, dashboard, alerts, history |
 | Dose calculation | `calculateDose(...)` per `reef-chemistry.md` §21 (correction) and §6–§8 (maintenance) | wizard, manual adjustment, plan view |
 | Rail enforcement | `applyRails(...)` per `reef-chemistry.md` §3 | every path producing a dose |
 | Consumption rate | `consumptionRate(...)` per `reef-chemistry.md` §22 | trends, wizard, log |
@@ -460,7 +460,7 @@ there were **four** implementations of "what should be dosed" (§0.3, §9.4).
 
 ### Parity requirement
 
-Given identical inputs — same reading, same targets, same net volume, same
+Given identical inputs — same reading, same target ranges, same net volume, same
 product, same history — **all three surfaces must produce the same numbers and
 the same classification.** Differences permitted only in presentation:
 verbosity, layout, and how much reasoning is shown.
@@ -469,7 +469,7 @@ Specifically, the following must be identical across surfaces:
 
 - the band the reading falls in
 - the recommended dose in mL, after rounding and rails
-- the expected delta and days to target
+- the expected delta and days to the aim point
 - whether the app refuses to advise, and the reason
 - whether a multi-day plan is required
 
@@ -480,7 +480,7 @@ Specifically, the following must be identical across surfaces:
   states the rail and the overage, and requires confirmation.
 - A manual adjustment is recorded **as a manual dose**, with both the
   recommended value and the entered value. History must show both.
-- A manual dose never changes the stored targets or the consumption model
+- A manual dose never changes the stored target ranges or the consumption model
   unless the user explicitly asks. One-off means one-off.
 - After a manual dose, the next recommendation is computed from actual dosed
   amounts, not from what was recommended.
@@ -502,7 +502,7 @@ recorded does not depend on where the number came from.
 | `out-of-band-high` | above no-action band, below alert-high | correct slowly |
 | `alert-low` | at or below alert-low | act, and see the magnesium gate (`reef-chemistry.md` §10) |
 | `alert-high` | at or above alert-high | act |
-| `insufficient-data` | cannot classify (missing target, missing volume, too few readings) | refuse and name what's missing |
+| `insufficient-data` | cannot classify (missing target range, missing volume, too few readings) | refuse and name what's missing |
 
 Thresholds are `reef-chemistry.md` §2 (band, safe bounds) and §18 (alert
 levels). Whether movement counts as `drifting` at all is the kit noise floor
@@ -542,7 +542,7 @@ uses the same ones:
 
 1. **What was measured** — parameter, value, unit, and the date/time
 2. **The band** — using §15's terminology, never a synonym
-3. **Why** — brief, referencing the target, not the app's opinion
+3. **Why** — brief, referencing the target range, not the app's opinion
 4. **What happens next** — the recommended action, or explicitly "no action", or
    the refusal and what's missing
 
@@ -566,11 +566,13 @@ One word per concept, everywhere. Any synonym is a finding.
 
 | Concept | The word to use | Never use |
 |---|---|---|
-| within no-action band | **in range** | fine, good, OK, normal, healthy, ideal |
-| outside no-action band | **out of range** | bad, off, abnormal, dangerous |
+| within no-action band | **in range** | fine, good, OK, normal, healthy, ideal, in target, on target |
+| outside no-action band | **out of range** | bad, off, abnormal, dangerous, off target, off-target |
 | at/beyond alert threshold | **needs attention** | critical, urgent, emergency, danger |
 | moving toward an edge, **inside** the band | **drifting** | trending, slipping, creeping |
-| the user's chosen value | **target** | ideal, optimal, recommended level, correct |
+| the user's chosen band — a minimum and a maximum | **target range** — always both words | bare "target", target band, ideal, optimal, recommended level, correct |
+| the single level a correction heads for | **aim point** | target, goal, setpoint |
+| the mL/day a staged plan is working up to | **planned dose** | target, target dose |
 | a suggested dose | **recommended dose** | required, needed, prescribed |
 | net water volume | **net volume** | water volume, tank size, volume, capacity |
 | a user-entered dose | **manual dose** | custom, override, adjusted |
@@ -579,7 +581,7 @@ One word per concept, everywhere. Any synonym is a finding.
 | how steady a parameter has been over the window | **consistency verdict** | control grade, stability score, steadiness rating |
 
 The app never uses "safe" or "unsafe" about any reading. It reports position
-relative to the user's own targets and nothing more. This is a rule about
+relative to the user's own target ranges and nothing more. This is a rule about
 user-facing words only — `reef-chemistry.md` §2's "safe bounds" is the internal
 name of a threshold, and the app does not say it out loud.
 
@@ -600,6 +602,25 @@ canon's own and mean something else: **alert**, which §13 and §18 use for a
 threshold and two band names, and **message**, which is §14's word for the
 four-part thing a notice contains. A notice carries a message; it is not called
 one.
+
+**target range** won the 16 August decision, closing the multi-way use of
+"target" audited in `.agent/target-terminology-audit.md` — four uses in the
+parking note, six in fact. The band the user sets keeps the word, always as
+both words; bare "target" is banned in app copy. The single level a correction
+heads for is the **aim point** — one concept from two sources, typed once into
+Setup's calculator or derived as the range's midpoint — which is the phrase
+this document and `reef-chemistry.md` §9 already used when they needed to be
+exact. The mL/day a staged plan works toward is the **planned dose**. "In
+target", "on target" and "off target" are banned synonyms for the two
+registered position words above. `targetCorrection`, which never held a
+target of any kind, is renamed `correction`. Two things the decision leaves
+alone: the `off-target` **state id** (never rendered — the same category as
+canon's own reserved words below; its one rendered leak, the "Steady, off
+target" tab label, is renamed with the copy), and the `doseStatus.target`
+**field split**, which is a correctness fix gated on its own parity test —
+TW-035, shipped separately. Underneath the rename sits `reef-chemistry.md`
+§2's 16 August structural decision: there is no user-set target point at all —
+one range, two edges, midpoint derived.
 
 **unsettled** and **drifting** are the pair this registry exists for: near
 opposites that shared one word until 14 August. `drifting` is §13's band word —
@@ -640,11 +661,12 @@ rule one level down — colours instead of words.
 ## 16. History truthfulness
 
 - A logged entry records **what the app said at the time**: the classification,
-  the recommendation, and the targets then in force.
-- Changing targets today must **not** retroactively change what history shows
-  was recommended. Recomputing the past against present settings is an S1
+  the recommendation, and the target ranges then in force.
+- Changing target ranges today must **not** retroactively change what history
+  shows was recommended. Recomputing the past against present settings is an S1
   defect.
-- If a target changed, history shows the change as an event in the series.
+- If a target range changed, history shows the change as an event in the
+  series.
 - A manual dose is shown in history as recommended-vs-dosed, always both.
 
 §8's dose-change record — from, to, date, basis reading, expected effect,
@@ -662,7 +684,7 @@ is a finding.
 | band shown | | | | | | |
 | dose mL | | | | | | |
 | expected delta | | | | | | |
-| days to target | | | | | | |
+| days to the aim point | | | | | | |
 | refusal + reason | | | | | | |
 | terminology used | | | | | | |
 | units displayed | | | | | | |
@@ -1092,8 +1114,11 @@ grading, which is the one thing §13's last row exists to prevent.
   words, renames one, adds a tier and closes one fall-through.
 - It does not settle the four-way use of "target" — the value the user types,
   the app's computed aim point, the whole band, and a synonym for in-band, all
-  in one modal. **Parked, pending a review of all four uses** (§15,
-  `.agent/needs-dan.md`).
+  in one modal. Parked 14 Aug pending a review of all four uses; the review
+  found six (`.agent/target-terminology-audit.md`) and the owner **settled it
+  16 Aug** — see §15's registry: **target range** / **aim point** / **in
+  range** / **out of range** / **planned dose**, and `targetCorrection` →
+  `correction`.
 
 ### Enforced by
 

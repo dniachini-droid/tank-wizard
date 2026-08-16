@@ -244,8 +244,8 @@ export const CORRECTION_PACE = { gentle: 0.25, steady: 0.5, quick: 1.0 };
 
 /* How fast a deliberate correction may move a level, which is not the same as
    how far a dose change may shift it. SAFE_DAILY_RISE is the conservative
-   limit on a routine dose adjustment; a correction is a considered act with a
-   target, and the hobby allows more. Using the routine figure produced "86
+   limit on a routine dose adjustment; a correction is a considered act with an
+   aim point, and the hobby allows more. Using the routine figure produced "86
    days at the gentle pace" to move calcium 75 ppm, which nobody would follow.
 
    Sources: alkalinity no more than 1.0 dKH a day and most keepers stay at 0.5;
@@ -367,13 +367,13 @@ export function correctionProgress(plan, def, readings, today, maintenanceNow) {
   const backwards = days >= 3 && measuredSince >= 1
     && ((up && latest.value < plan.startValue) || (!up && latest.value > plan.startValue));
 
-  /* Passing the target must stop the elevated dose immediately, whether or not
+  /* Passing the aim point must stop the elevated dose immediately, whether or not
      a second reading has confirmed it. Waiting for confirmation before easing
      off cost real overshoot in testing: calcium reached its band and kept
      climbing to 702 ppm because its weekly cadence meant two confirming
      readings were a fortnight away, and alkalinity ran to zero on a downward
      correction for the same reason. Confirmation decides when to say "done";
-     passing the target decides when to stop pushing. */
+     passing the aim point decides when to stop pushing. */
   const passed = up ? latest.value >= plan.target : latest.value <= plan.target;
 
   /* And a plan cannot run forever. If it has taken more than twice the days it
@@ -481,9 +481,9 @@ export function proposeCorrection(a, def, settings, pace) {
   /* And any dose change, for the same reason: the dose was altered on the
      strength of this reading and has not been measured since. */
   if (staleAgainst(a.lastDoseChangeAt)) return null;
-  const target = (def.min + def.max) / 2;
-  const up = target > level;
-  const gap = Math.abs(target - level);
+  const aimPoint = (def.min + def.max) / 2;
+  const up = aimPoint > level;
+  const gap = Math.abs(aimPoint - level);
   const maxRate = CORRECTION_MAX_RATE[def.key] || SAFE_DAILY_RISE[def.key] || (def.max - def.min) * 0.5;
   const perDay = maxRate * (CORRECTION_PACE[pace] || CORRECTION_PACE.steady);
   const days = Math.max(1, Math.ceil(gap / perDay));
@@ -506,14 +506,14 @@ export function proposeCorrection(a, def, settings, pace) {
          this pace" for all three paces left the panel with nothing to offer
          when the obvious move was sitting right there. */
       const stopDays = Math.ceil(gap / Math.max(1e-9, maintenance * a.effectPerMl));
-      return { possible: true, atFloor: true, target, gap, up: false,
+      return { possible: true, atFloor: true, aimPoint, gap, up: false,
         days: stopDays, perDay: maintenance * a.effectPerMl, dose: 0,
         returnDose: Math.round(maintenance * 10) / 10, pace,
         note: `Stopping the dose is the fastest ${def.label.toLowerCase()} can fall — the tank has to use it up. About ${stopDays} day${stopDays === 1 ? "" : "s"} to lose ${fmtVal(def, gap)}${def.unit}.` };
     }
     if (dose < 0 || !feasible.possible) {
       const stopDays = Math.ceil(gap / Math.max(1e-9, maintenance * a.effectPerMl));
-      return { possible: false, target, gap, up,
+      return { possible: false, aimPoint, gap, up,
         stopDays,
         why: `Stopping the ${def.label.toLowerCase()} dose entirely would take about ${stopDays > 60 ? `${Math.round(stopDays / 30)} months` : `${stopDays} days`} to bring it down ${fmtVal(def, gap)}${def.unit} — the tank uses too little for the dose to move it. A water change is the practical route.` };
     }
@@ -524,10 +524,10 @@ export function proposeCorrection(a, def, settings, pace) {
      solution. Beyond a few times the normal dose it is the wrong product for
      the job, not the wrong plan. */
   if (up && dose > Math.max(maintenance * 6, maintenance + 40)) {
-    return { possible: false, target, gap, up,
-      why: `Reaching ${fmtVal(def, target)}${def.unit} through your maintenance solution would mean ${fmtAmount(dose)} mL a day against a normal ${fmtAmount(maintenance)} mL — far more than it is mixed for. A dedicated ${def.label.toLowerCase()} supplement or dry salt is the right tool for a gap this size; the daily dose is for holding a level, not moving it this far.` };
+    return { possible: false, aimPoint, gap, up,
+      why: `Reaching ${fmtVal(def, aimPoint)}${def.unit} through your maintenance solution would mean ${fmtAmount(dose)} mL a day against a normal ${fmtAmount(maintenance)} mL — far more than it is mixed for. A dedicated ${def.label.toLowerCase()} supplement or dry salt is the right tool for a gap this size; the daily dose is for holding a level, not moving it this far.` };
   }
-  return { possible: true, target, gap, up, days, perDay, dose, returnDose: Math.round(maintenance * 10) / 10, pace };
+  return { possible: true, aimPoint, gap, up, days, perDay, dose, returnDose: Math.round(maintenance * 10) / 10, pace };
 }
 
 /* Whether the daily dose has drifted from what the tank uses, regardless of
@@ -770,13 +770,13 @@ export function assessMagnesium({ readings, doseLog = [], waterChanges = [], set
   const nowStamp = now != null ? now : (dayNum(todayStr()) + minutesOf(nowTime()) / 1440);
   const out = {
     ok: false, reason: null, element: "magnesium",
-    current: null, target: null, currentDose: null, daysOnDose: null,
+    current: null, targetRange: null, currentDose: null, daysOnDose: null,
     used: [], trendPerDay: null, trendPerWeek: null, band: null, consistent: null,
     supplied: null, consumption: null, maintenanceDose: null,
     recommendedDose: null, action: "hold", explanation: "", nextCheck: "",
     anomaly: null, events: [], effectPerMl: null, effectSolved: null,
     activePlan: null, stage: null, stages: null, planTarget: null, nextTestDue: null,
-    targetCorrection: null, salinityShift: null,
+    correction: null, salinityShift: null,
   };
 
   const effect = mgEffectPerMl(settings);
@@ -806,7 +806,7 @@ export function assessMagnesium({ readings, doseLog = [], waterChanges = [], set
      placement sat inside a branch calcium and magnesium never took, so
      neither could report a correction in progress at all. */
   out.correctionInProgress = pendingCorrection(corrections, def, out.current, todayStr(), settings, readings);
-  out.target = { min: def.min, max: def.max };
+  out.targetRange = { min: def.min, max: def.max };
 
   const changes = (doseLog || [])
     .filter((d) => d.element === "magnesium" && isFinite(d.ml))
@@ -1063,7 +1063,7 @@ export function assessMagnesium({ readings, doseLog = [], waterChanges = [], set
          exist. Also withheld when the strength figure makes the amount absurd,
          because printing the number invites someone to dose it. */
 
-      out.targetCorrection = !above
+      out.correction = !above
         ? {
             direction: "up", toMid,
             days: Math.max(2, Math.ceil(toMid / SAFE_DAILY_RISE[def.key])),
@@ -1079,21 +1079,21 @@ export function assessMagnesium({ readings, doseLog = [], waterChanges = [], set
 
       out.explanation += ` But it is holding at ${fmtVal(def, out.current.value)}${def.unit}, ${above ? "above" : "below"} your range — a dose that matches consumption will keep it there indefinitely.`;
       const repeats = repeatedCorrections(corrections, "magnesium", nowStamp);
-      if (repeats >= 2 && out.targetCorrection) {
+      if (repeats >= 2 && out.correction) {
         out.caution = (out.caution ? out.caution + " " : "")
-          + `You have corrected magnesium ${repeats} times in the last couple of months and it keeps sagging back. That is a sign the daily dose is short rather than the level needing another lift — most often a salt mix below your target feeding weekly water changes. Raising the daily dose by around ${fmtAmount(out.targetCorrection.perDayMl)} mL would carry it instead of correcting again.`;
+          + `You have corrected magnesium ${repeats} times in the last couple of months and it keeps sagging back. That is a sign the daily dose is short rather than the level needing another lift — most often a salt mix below your target range feeding weekly water changes. Raising the daily dose by around ${fmtAmount(out.correction.perDayMl)} mL would carry it instead of correcting again.`;
       }
       out.nextCheck = above
         ? `Let it drift down: hold this dose, or ease it back slightly, and let consumption and water changes bring magnesium toward the range. Magnesium moderately high is rarely urgent.`
-        : out.targetCorrection
-        ? (out.targetCorrection.oneOffMl > 1500
+        : out.correction
+        ? (out.correction.oneOffMl > 1500
           /* Past a couple of litres the figure stops being advice. Quoting
              "roughly 14,438 mL of your maintenance solution" is arithmetically
              correct and useless — nobody pours fourteen litres into a 77 L
              tank. The sibling path in doseStatus was fixed for exactly this
              and this one was missed, which is what a units check is for. */
-          ? `Raising it needs a dedicated magnesium supplement or dry salt — through your maintenance solution it would take litres, which is not what that bottle is mixed for. Work out the dose from the product's own instructions, spread it over at least ${out.targetCorrection.days} days, and log it so the rise is treated as your doing rather than as the tank needing less.`
-          : `Raising it is a separate correction of roughly ${fmtAmount(out.targetCorrection.oneOffMl)} mL of your maintenance solution — which is a lot of liquid, so most people mix a stronger magnesium solution or use the dry salt for this and keep the daily bottle for maintenance. Spread it over at least ${out.targetCorrection.days} days. Log it when you have added it and the rise will be treated as your doing rather than as the tank needing less.`)
+          ? `Raising it needs a dedicated magnesium supplement or dry salt — through your maintenance solution it would take litres, which is not what that bottle is mixed for. Work out the dose from the product's own instructions, spread it over at least ${out.correction.days} days, and log it so the rise is treated as your doing rather than as the tank needing less.`
+          : `Raising it is a separate correction of roughly ${fmtAmount(out.correction.oneOffMl)} mL of your maintenance solution — which is a lot of liquid, so most people mix a stronger magnesium solution or use the dry salt for this and keep the daily bottle for maintenance. Spread it over at least ${out.correction.days} days. Log it when you have added it and the rise will be treated as your doing rather than as the tank needing less.`)
         : `Raising it needs a one-off correction rather than a bigger daily dose, but the amount cannot be worked out until the solution strength in Setup is right.`;
     }
     return out;
@@ -1108,7 +1108,7 @@ export function assessMagnesium({ readings, doseLog = [], waterChanges = [], set
     return out;
   }
 
-  /* Sections 31 to 33: moving toward target is the direction you want. */
+  /* Sections 31 to 33: moving toward the aim point is the direction you want. */
   const startedBelow = maths[0].value < def.min;
   const startedAbove = maths[0].value > def.max;
   /* A tank that began the window outside the range and is heading back is

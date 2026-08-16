@@ -92,15 +92,15 @@ differ only in how far. §28 is that choice.
 
 ---
 
-## 2. Targets — three layers
+## 2. Target ranges — three layers
 
-The app does not impose targets. Reefkeepers legitimately run alkalinity
+The app does not impose target ranges. Reefkeepers legitimately run alkalinity
 anywhere from 7 to 11 dKH, and the right number depends on their corals,
 nutrients and lighting. What the app imposes is the outer limit.
 
 ### Layer 1 — Safe bounds (fixed, not user-adjustable)
 
-Where sources describe actual harm, not merely off-target.
+Where sources describe actual harm, not merely out of range.
 
 | | Safe bounds |
 |---|---|
@@ -112,22 +112,39 @@ Below 380 ppm calcium slows growth; above 500 it pulls alkalinity down. Above
 ~1600 magnesium causes lethargic invertebrates and suppressed uptake. Randy
 Holmes-Farley gives 7–11 dKH as the workable alkalinity range.
 
-**The app refuses to accept a target outside these**, and names the reason.
+**The app refuses to accept a target range outside these**, and names the
+reason.
 
-### Layer 2 — The user's target and band
+### Layer 2 — The user's target range
 
-The user sets a target and a band width. Everything the app says is relative to
-*their* number, not to a hobby consensus.
+**Decided 16 Aug: the user sets a minimum and a maximum. One range, two edges,
+no target point inside it.** Everything the app says is relative to *their*
+range, not to a hobby consensus.
+
+This corrects the sentence that stood here — "the user sets a target and a
+band width" — which described something the app has never done and now never
+will. The gap was tested, not inferred:
+`src/test/spec/classification/band-edges.test.js` records that no target field
+exists anywhere on settings; the user edits two edges directly. A target point
+inside the band was **considered and rejected**: a range within a range is more
+to configure and more to explain, for a distinction the trend already makes.
+Anything in range is fine; movement within the range is worth knowing, and the
+trend covers that.
+
+Where canon needs a single anchor inside the range — the aim point a
+correction heads for (§9), the anchor §18's alert widths hang from — it is the
+**midpoint**, `(min + max) / 2`: derived on the spot, never stored, never
+asked for.
 
 ### Layer 3 — Starting suggestions (editable, never re-applied)
 
 Shown at first setup, clearly labelled as suggestions.
 
-| | Suggested target | Suggested band |
-|---|---|---|
-| Alkalinity | 8.5 dKH | 0.6 total (±0.3) |
-| Calcium | 425 ppm | 50 total (±25) |
-| Magnesium | 1350 ppm | 150 total (±75) |
+| | Suggested target range |
+|---|---|
+| Alkalinity | 8.2 – 8.8 dKH (0.6 wide, midpoint 8.5) |
+| Calcium | 400 – 450 ppm (50 wide, midpoint 425) |
+| Magnesium | 1275 – 1425 ppm (150 wide, midpoint 1350) |
 
 **Decided 13 Aug:** alkalinity's band tightened from 1.0 to 0.6. Published
 guidance puts weekly drift under 0.5 dKH and daily variation under 0.3. A 1.0
@@ -185,7 +202,7 @@ matches). The clause described an intention, not a behaviour.
 
 **Tighten-never-loosen still applies — to bands, where it belongs.** §2's
 layers are its home: the user's band (layer 2) may be as tight as they like
-inside the safe bounds (layer 1), and the app refuses a target outside them
+inside the safe bounds (layer 1), and the app refuses a target range outside them
 (§12). A band is the user's judgement about their own corals and their own
 tank. A rail is a limit on how fast the app may move a live tank. They are not
 the same kind of number, and only one of them is the user's to set.
@@ -223,7 +240,7 @@ itself — and this app's central defect has been numbers disagreeing with each
 other. The cost is a couple of extra days on a rare event.
 
 Coral responds to rate of change, not absolute value, so these apply whether
-the user targets 7 or 11.
+the user's target range sits at 7 or at 11.
 
 ---
 
@@ -636,8 +653,8 @@ Two different numbers, which the 13 August entry ran together and then
 contradicted itself about. They are separated here.
 
 **The aim point is unchanged: the midpoint of the band**, `(min + max) / 2`.
-A target is a point, not a zone. Not the nearest edge — normal drift would take
-it straight back out.
+The aim point is a point, not a zone. Not the nearest edge — normal drift would
+take it straight back out.
 
 **Decided 14 Aug: the arrival test is the middle third of the band, floored so
 the zone is never narrower than twice that element's noise floor (§5).**
@@ -678,7 +695,7 @@ the state holds, the wizard's `testOn` field carries "keep testing every 2 days
 — it may still be climbing."
 
 **A stricter arrival test does not strand the elevated dose.** `passed` — one
-reading at or beyond the target — is computed independently of `arrived`, and
+reading at or beyond the aim point — is computed independently of `arrived`, and
 `correction-done` fires on either (`helpers.js:316`, `state.js:227`), before the
 stalled and backwards branches. What a narrower zone costs is the confident
 two-reading wording, which becomes rarer for calcium and magnesium; what it does
@@ -827,7 +844,7 @@ This replaces the dose-gap halving (§7), which was a patch for this fault.
 - Change a dose by more than 25% at once, except when outside the band and
   moving further out
 - Dose at all when net volume is unset, or use gross volume anywhere (§17)
-- Accept a target outside the §2 safe bounds
+- Accept a target range outside the §2 safe bounds
 - Stretch the analysis window to manufacture a consumption figure
 - Recommend simultaneous alkalinity and calcium dosing (§20)
 - Compute a consumption rate from readings less than 2 days apart (§19)
@@ -1046,31 +1063,32 @@ user to measure properly, once, non-nagging.
 
 ## 18. Alert thresholds and band validation
 
-§2 sets the target, the band and the safe bounds. Two further layers sit
-between the band and the safe bounds and were not carried into §2.
+§2 sets the target range and the safe bounds. Two further layers sit between
+the range and the safe bounds and were not carried into §2.
 
-Default alert thresholds, applied to whatever target the user sets:
+Default alert thresholds, hung from the midpoint of whatever target range the
+user sets — the derived anchor of §2, never a stored value:
 
 | Parameter | Alert low | Alert high |
 |---|---|---|
-| Alkalinity | target − 1.0 dKH | target + 1.0 dKH |
-| Calcium | target − 50 ppm | target + 50 ppm |
-| Magnesium | target − 200 ppm | target + 200 ppm |
+| Alkalinity | midpoint − 1.0 dKH | midpoint + 1.0 dKH |
+| Calcium | midpoint − 50 ppm | midpoint + 50 ppm |
+| Magnesium | midpoint − 200 ppm | midpoint + 200 ppm |
 
 All `[user]` adjustable. The out-of-band window is therefore narrow for
-alkalinity — under §2's 0.6 band it runs from 0.3 to 1.0 dKH from target — and
-the app must handle a reading landing exactly on either edge correctly
-(`wizard-states.md` §13).
+alkalinity — under §2's 0.6 range it runs from 0.3 to 1.0 dKH from the
+midpoint — and the app must handle a reading landing exactly on either edge
+correctly (`wizard-states.md` §13).
 
 **The bands and the alert thresholds must never be allowed to overlap or
 invert.** `classifyReading` validates this on every call and returns
 `insufficient-data` with a configuration error if a user has set them
 inconsistently. This answers §13.3 for the band/alert half of that open item.
 
-**Universal rule regardless of chosen targets:** stability at a slightly
-sub-optimal number beats movement toward an optimal one. If a value sits outside
-the user's target but the series is stable, the app suggests reconsidering the
-target before suggesting a correction.
+**Universal rule regardless of the chosen target range:** stability at a
+slightly sub-optimal number beats movement toward an optimal one. If a value
+sits outside the user's target range but the series is stable, the app suggests
+reconsidering the range before suggesting a correction.
 
 ---
 
@@ -1127,7 +1145,7 @@ level. The maintenance dose that holds a level is §6 to §8, and the two must n
 be confused (§1).
 
 ```
-dose_mL = (target − current) × net_volume_L / potency
+dose_mL = (aim_point − current) × net_volume_L / potency
 ```
 
 `potency` `[user]` = change in the parameter per mL per litre, taken from the
@@ -1142,7 +1160,7 @@ Rules:
    recoverable; over-correcting is not.
 4. Doses above `[user]` mL are split across the day.
 5. Every recommendation states: product, potency used, net volume assumed, mL,
-   expected delta, days to target.
+   expected delta, days to the aim point.
 6. Any missing input is named. The app never substitutes a default silently.
 
 Rule 1 is not the same statement as §8.2's rounding constraint, which orders
@@ -1200,8 +1218,8 @@ band, which predates §2's tightening to 0.6 — the reasoning under test is the
 rail and the multi-day split, not the band width.
 
 ```
-1. GIVEN net 68 L, alk 7.6, target 8.5, product potency such that 1 mL raises
-   68 L by 0.0147 dKH
+1. GIVEN net 68 L, alk 7.6, aim point 8.5, product potency such that 1 mL
+   raises 68 L by 0.0147 dKH
    THEN total need 0.9 dKH = 61 mL; exceeds the 0.5 dKH/day rail
    → 2-day plan; day one capped at 0.5 dKH = 34 mL, rounded DOWN to the doser
      increment; flagged "multi-day correction"
@@ -1213,7 +1231,7 @@ rail and the multi-day split, not the band width.
    THEN implied Ca draw = 0.4 × 7.15 = 2.86 ppm/day
    → flags a 1.36 ppm/day shortfall BEFORE the Ca reading falls
 
-4. GIVEN Mg 1140 with alert-low 1150, and alk 7.4 with target 8.5
+4. GIVEN Mg 1140 with alert-low 1150, and alk 7.4 with aim point 8.5
    THEN addresses magnesium only; explicitly defers the alk correction and says why
 
 5. GIVEN two alk readings 1 day apart
@@ -1230,10 +1248,12 @@ rail and the multi-day split, not the band width.
 8. GIVEN an alk dose and a Ca dose both due
    THEN never scheduled together; separated by ≥4 hours
 
-9. GIVEN alk exactly at the no-action lower edge (target 8.5, band ±0.3 → 8.2)
+9. GIVEN alk exactly at the no-action lower edge (target range 8.2–8.8,
+   lower edge 8.2)
    THEN classified in range, not out of range (edges inclusive of their band)
 
-10. GIVEN target 8.5, upper edge 8.8, stored reading 8.849 displayed as 8.8
+10. GIVEN target range 8.2–8.8, upper edge 8.8, stored reading 8.849 displayed
+    as 8.8
     THEN classified on 8.849 (out of range), not on the displayed 8.8
 ```
 
@@ -1596,7 +1616,7 @@ on the dose card:
   beyond the edge.
 - §11's grading qualifiers, which take their position from the triple above.
 - `doseStatus`'s two position tests — whether a settled dose change worked, and
-  whether the level is off target.
+  whether the level is out of range.
 
 **The measure moves; no threshold moves.** The 0.2 dKH / `CA_TREND.stable` /
 `MG_TREND.stable` margins, the 12%-of-band edge proximity, both §11 qualifiers
@@ -2075,15 +2095,15 @@ estimate of what the tank uses. A drift-back dose is deliberately below that,
 on purpose, with a planned end.
 
 **It is a temporary dose change with a return** — structurally closest to a
-correction plan: a target, an expected duration, an arrival test, a return
-dose.
+correction plan: a destination, an expected duration, an arrival test, a
+return dose.
 
 ### What it needs
 
 Named, not designed. Most of the machinery exists and is cited rather than
 reinvented.
 
-- **A target: the middle third of the band**, §9's arrival zone, for §9's
+- **A destination: the middle third of the band**, §9's arrival zone, for §9's
   reason — stopping at the edge leaves one week of ordinary drift from being
   out again.
 - **A rate that is not chosen.** How fast a level falls is set by consumption
@@ -2211,8 +2231,8 @@ canon, which is where a figure the app acts on belongs.
 **The band is freely editable, and the range of legitimate settings is wider
 than for the dosed elements.** Dan: *"Some people run phosphate up to 0.20,
 even 0.30, 0.40. People have very different ideas of what phosphate level
-should be in their tank."* A user targeting **0.40 ppm phosphate or 40 ppm
-nitrate is not making a mistake**, and the app may not treat them as one, nudge
+should be in their tank."* A user whose target range runs to **0.40 ppm
+phosphate or 40 ppm nitrate is not making a mistake**, and the app may not treat them as one, nudge
 them toward the suggestion, or grade them against it. Layer 3 is a starting
 point for someone with no opinion; it is not the right answer.
 
@@ -2275,7 +2295,7 @@ why it is 0.03 and not 0.01.
 
 **It does not escalate.** At 0.01 ppm the app says the same thing it says at
 0.029. `SAFE_BOUNDS`' phosphate minimum of **0.01 is a floor on what may be set
-as a target** — it governs Setup, not readings — and a reading landing there
+as a target-range edge** — it governs Setup, not readings — and a reading landing there
 adds nothing to what the 0.03 warning already said. This resolves the collision
 item 10 named between the two figures: they are not two answers to one
 question, they are answers to two questions.
@@ -2294,8 +2314,8 @@ opposite of this section. The adjacent live expectation, `'nitrate 25 is high
 but not acute'`, is unaffected and still holds.
 
 **Nitrate has no low warning of its own.** Two warnings is the whole list, and
-`SAFE_BOUNDS`' nitrate minimum of 0.5 ppm is a target floor by exactly the rule
-stated for phosphate's 0.01 above. Near-zero nitrate is not silent — it reaches
+`SAFE_BOUNDS`' nitrate minimum of 0.5 ppm is a target-range floor by exactly
+the rule stated for phosphate's 0.01 above. Near-zero nitrate is not silent — it reaches
 the keeper through the nutrient findings named in §29.3, which judge the two
 nutrients together rather than by a borrowed band rule.
 

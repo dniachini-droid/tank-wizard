@@ -45,11 +45,11 @@ export function readingVerdict(def, result) {
     const safeB = SAFE_BOUNDS[def.key];
     if (safeB && (value < safeB.min || value > safeB.max)) {
       const low = value < safeB.min;
-      const target = cp.target;
-      const stillToGo = target != null ? Math.abs(target - value) : null;
+      const aimPoint = cp.target;
+      const stillToGo = aimPoint != null ? Math.abs(aimPoint - value) : null;
       return { emoji: "\u{1F6A8}", tone: "#C4285B",
         headline: `${fmtVal(def, value)}${unit} — dangerously ${low ? "low" : "high"}`,
-        line: `Outside ${fmtVal(def, safeB.min)}\u2013${fmtVal(def, safeB.max)}${unit}. A correction is running${target != null ? ` toward ${fmtVal(def, target)}${unit}` : ""}${stillToGo != null ? `, and from here that is ${fmtVal(def, stillToGo)}${unit} away — further than the plan assumed` : ""}. Re-test before doing anything else: if this reading is right the plan needs rebuilding from where the tank actually is, and if it is wrong you want to know before acting on it.`,
+        line: `Outside ${fmtVal(def, safeB.min)}\u2013${fmtVal(def, safeB.max)}${unit}. A correction is running${aimPoint != null ? ` toward ${fmtVal(def, aimPoint)}${unit}` : ""}${stillToGo != null ? `, and from here that is ${fmtVal(def, stillToGo)}${unit} away — further than the plan assumed` : ""}. Re-test before doing anything else: if this reading is right the plan needs rebuilding from where the tank actually is, and if it is wrong you want to know before acting on it.`,
         goto: "dosing" };
     }
 
@@ -61,7 +61,7 @@ export function readingVerdict(def, result) {
         headline: `Nice work — ${def.label.toLowerCase()} is back in range`,
         line: cp.arrived
           ? `Two readings back near the middle of your range confirm it. Set the dose back to ${fmtAmount(cp.returnDose)} mL/day in the Dosing Wizard.`
-          : `${fmtVal(def, value)}${unit} has passed your target — stop pushing now and set the dose back to ${fmtAmount(cp.returnDose)} mL/day.`,
+          : `${fmtVal(def, value)}${unit} has passed your aim point — stop pushing now and set the dose back to ${fmtAmount(cp.returnDose)} mL/day.`,
         goto: "dosing" };
     }
     if (ds.state === "correction-stalled" || ds.state === "correction-due") {
@@ -337,7 +337,7 @@ export function readingVerdict(def, result) {
     }
   }
 
-  /* Some parameters have a ceiling rather than a target — ammonia should read
+  /* Some parameters have a ceiling rather than a target range — ammonia should read
      zero, and anything measurable is worth acting on however far it sits
      "inside" the range. */
   if (def.idealAt === "min") {

@@ -279,10 +279,10 @@ export function AllGraphsModal({ paramDefs, readings, chartEvents, onClose, onOp
                   <span className="text-[13px] font-black text-ink truncate">{def.label}</span>
                 </span>
                 <span className="text-[11px] font-bold text-ink2 shrink-0">
-                  {fmtVal(def, data[data.length - 1].value)}{def.unit} · target {fmtVal(def, def.min)}–{fmtVal(def, def.max)}
+                  {fmtVal(def, data[data.length - 1].value)}{def.unit} · target range {fmtVal(def, def.min)}–{fmtVal(def, def.max)}
                 </span>
               </button>
-              <ZoomableLineChart data={data} color={def.color} targetMin={def.min} targetMax={def.max}
+              <ZoomableLineChart data={data} color={def.color} targetRangeMin={def.min} targetRangeMax={def.max}
                 height={150} events={chartEvents.filter((ev) => !ev.param || ev.param === def.key)} />
             </Card>
           ))}

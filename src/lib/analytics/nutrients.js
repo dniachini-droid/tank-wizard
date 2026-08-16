@@ -78,13 +78,13 @@ export function computeNutrientProduction(key, readings, waterChanges, settings,
      P = (litres/volume) x (level - newWater) per week
      so the volume needed to hold any chosen level is
      litres = P x volume / (level - newWater) */
-  const litresToHold = (target) => {
-    const head = target - cNew;
+  const litresToHold = (level) => {
+    const head = level - cNew;
     if (!(head > 0) || netConsumer) return null;
     const litres = (perWeek * s.volumeL) / head;
     return isFinite(litres) && litres > 0 ? litres : null;
   };
-  const holdAtTarget = litresToHold(def.max);
+  const holdAtMax = litresToHold(def.max);
   const holdAtMid = litresToHold((def.min + def.max) / 2);
 
   /* How quickly a change in routine actually lands. Each change removes a
@@ -98,7 +98,7 @@ export function computeNutrientProduction(key, readings, waterChanges, settings,
     removed, perDay, perWeek, wcCount: wcs.length,
     weeklyExport, offsetPct: netConsumer ? null : offsetPct,
     equilibrium, saltFree: cNew === 0, netConsumer,
-    holdAtTarget, holdAtMid, halfLifeDays, currentLitres: avgF * s.volumeL,
+    holdAtMax, holdAtMid, halfLifeDays, currentLitres: avgF * s.volumeL,
   };
 }
 

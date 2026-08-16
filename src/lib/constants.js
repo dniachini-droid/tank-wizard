@@ -2,7 +2,7 @@ import { Activity, Beaker, FlaskConical, LayoutDashboard, ListChecks, Settings2 
 
 /* ---------------------------------- constants ---------------------------------- */
 
-/* Target bands, checked against the hobby consensus rather than assumed.
+/* Target ranges, checked against the hobby consensus rather than assumed.
    Calcium ran 450-500 and magnesium 1450-1500, and both sat entirely ABOVE
    every published range: natural seawater is about 420 ppm calcium and 1290
    ppm magnesium, and the sources converge on 400-450 and 1250-1400. The effect
