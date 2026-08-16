@@ -2,6 +2,13 @@
 
 Dan, 16 August 2026. Owner decisions. Stage 3 of `THE-ENGINE-PLAN-v2.md`.
 
+**Folded into canon 16 August 2026, and this file is now the decision record
+rather than the reference.** The five rules are `wizard-states.md` §23; the
+twelve cards are §24; the dose-advice rule and the ordering rule are
+`reef-chemistry.md` §28, rewritten the same day, with §1 amended alongside it.
+**Where this file and canon differ, canon wins.** What is still open —
+"Still to write", below — is unchanged and lives here until it is decided.
+
 The wizard owns the verdict; every other surface renders it. So its wording is
 settled first and everything else defers to it.
 
@@ -94,15 +101,22 @@ and a return-plan offer can never appear on the same card.
 
 ## What this changes in canon
 
-**§28's drift back needs rewriting.** It currently frames a level that has
-climbed out of band as a choice between two dose figures — match consumption, or
-cut further to walk it down. Under this decision the app offers the first as
-advice and the second as a plan, and the same structure applies going up.
+**§28's drift back needed rewriting, and was rewritten the same day.** It
+framed a level that had climbed out of band as a choice between two dose
+figures — match consumption, or cut further to walk it down. Under this
+decision the app offers the first as advice and the second as a plan, and the
+same structure applies going up.
 
 Drift back is not a special downward case. It is one direction of a general
-mechanism, and the asymmetry §28 records — that upward has no additive and
-downward does — is about *how* the plan is executed, not about whether it is
+mechanism, and the asymmetry §28 records — that downward has no additive and
+upward does — is about *how* the plan is executed, not about whether it is
 offered.
+
+**Done:** §28 is now "Return plans — moving a level on purpose", §28.1 carries
+the stabilise-only rule, §28.2 the ordering rule and its exclusion, and §1's
+asymmetry is amended to say it governs execution. The one question §28 left
+open on 15 August — whether the upward case is built at all — is closed by this
+decision: it is, on the same terms.
 
 ---
 

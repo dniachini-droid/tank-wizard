@@ -19,7 +19,12 @@ questions, then the same day the margins were confined to wording only, and a
 third dosing instrument was named. Folded in from
 `docs/spec/DECISION-drift-back.md` (now deleted), the same way §25 was folded
 in from `DECISION-reef-chemistry-engine.md`. **§28 added 15 August 2026** —
-drift back.
+drift back. **§28 rewritten, and §1 amended, 16 August 2026** on the spec
+owner's authority — automatic dose advice only ever stabilises, and moving a
+level is a plan the user opts into, symmetrical in both directions and offered
+only once the level is stable. Folded in from
+`docs/spec/message-spec-1-wizard.md`, whose wording half is `wizard-states.md`
+§23 and §24.
 
 > Agents never edit this file. Disagreements → `.agent/spec-challenges.md`.
 
@@ -54,6 +59,11 @@ its range.
   down** by consuming more than is supplied. It is not a maintenance figure
   either, and it must be returned from.
 
+**Amended 16 Aug (Dan, spec owner): the second and third are two executions of
+one offer.** Moving a level, in either direction, is a **return plan** the user
+opts into; which of the two instruments carries it out follows from the
+direction and is not a separate decision the user makes. §28 is the mechanism.
+
 Most confusing advice in reef software comes from conflating these. When the
 app says "the dose is right, the level is not", that is this distinction.
 
@@ -65,18 +75,23 @@ Three wizard states exist purely to express the first two. Collapsing them into
 **The third instrument is downward-only in practice, and that is not an
 oversight.**
 
-In principle the picture is symmetric. A level that has climbed out of band is
-being over-dosed, and a level that has fallen out of band is being under-dosed;
-either way there are two offers, one that parks the level where it is by
-matching consumption, and one that goes further and walks it back to the middle
-of the band.
+**Amended 16 Aug (Dan, spec owner): the asymmetry is about how a plan executes,
+not about which direction gets offered.** Both directions are offered, on the
+same terms, and the app's unprompted advice is the same in both — match
+consumption. What differs is what the plan does once opted into.
 
-In practice the two directions have different answers already available:
+The offer is symmetric. A level that has climbed out of band is being
+over-dosed, and a level that has fallen out of band is being under-dosed;
+either way the app's advice is to match consumption, and either way walking the
+level back to the middle of the band is a plan offered on top of that advice
+and never folded into the dose figure.
 
-- **Upward — an instrument exists.** Over-dosing to raise a level is close
-  enough to a correction (§9) that the existing instrument may serve. Whether
-  it should, or whether the upward case deserves its own offer, is not settled
-  — see §28.
+The **execution** is not symmetric, and that is the asymmetry this section
+records:
+
+- **Upward — an additive exists.** A level is walked up by dosing above
+  consumption, which is close enough to a correction (§9) that the existing
+  instrument carries the plan.
 - **Downward — nothing exists.** There is no additive that lowers alkalinity,
   calcium or magnesium. Coming down happens by dosing less and waiting, which
   is neither holding nor correcting, and until 15 August the app had no name
@@ -84,11 +99,16 @@ In practice the two directions have different answers already available:
   in the other direction can only be waited out**, and the waiting is the
   instrument.
 
-The practical consequence is the one that matters: **when a level has climbed
-out of band, "hold" is not one of the options.** The current dose is above
-consumption by definition — that is what made it climb — so leaving it alone
-means continuing to climb. Both available answers decrease the dose; they
-differ only in how far. §28 is that choice.
+One practical consequence survives the amendment unchanged: **when a level has
+climbed out of band, "hold" is not one of the options.** The current dose is
+above consumption by definition — that is what made it climb — so leaving it
+alone means continuing to climb, and the dose advice is to decrease to the
+point the level stops moving.
+
+What has changed is what comes after it. That advice is the whole of the
+advice: it parks the level, and parking it is the point. Walking it home is not
+a second dose figure to weigh against the first — it is a plan, offered only
+once the level is actually stable. §28 is that plan.
 
 ---
 
@@ -2053,103 +2073,175 @@ back together.
 
 ---
 
-## 28. Drift back
+## 28. Return plans — moving a level on purpose
 
 **Decided 15 Aug (Dan, spec owner): a deliberate under-dose is a third
-instrument, and the app must be able to offer it.** §1 carries the model; this
-section carries what the instrument is, what it needs, and what is not settled.
+instrument, and the app must be able to offer it.** **Rewritten 16 Aug (Dan,
+spec owner): it is one direction of a general mechanism, and it is a plan
+rather than one of two dose figures.** §1 carries the model; this section
+carries what the mechanism is, when it may be offered, what it needs, and what
+is not settled.
 
 > *"If you're at 420, 430, 440, and then you go to 455 — you're not holding.
 > You have to decrease your dose. Do you mean decrease your dose to match
 > consumption, or decrease your dose to let it drift down?"*
 
-That question has two right answers and the app currently gives only one.
+That question is what started this section. The 15 August answer was *both, and
+the user picks*. **The 16 August answer is that only one of them is a dose
+figure at all.**
 
-### The two offers
+### 28.1 The rule the rest of this section obeys
 
-When a level has climbed out of band, the current dose is above consumption by
-definition — that is what made it climb. **Leaving the dose alone means
-continuing to climb, so "hold" is not on the menu. Both offers decrease the
-dose; they differ in how far.**
+**Automatic dose advice only ever stabilises.**
 
-| Offer | What it does | Where you end up |
-|---|---|---|
-| **Match consumption** | decrease to the point the level stops moving | parked out of band, stable |
-| **Drift back** | decrease further, so consumption exceeds supply | walks down to the middle third, then returns to maintenance |
+> *"When alkalinity decreases, what I usually do is match my dose to
+> consumption — to stabilise it first, not provide more than consumption. Once
+> I've confirmed it's stable, then I can increase the daily dose slightly to
+> bring it up."*
 
-The smaller cut parks you where you are. The larger cut brings you home.
+Unprompted, the app recommends one thing: the dose that matches consumption. It
+never recommends a dose above or below consumption in order to move a level.
+**Moving a level is always a plan the user opts into.** The app may offer the
+plan; it never folds it into the dose figure.
 
-**Today the app offers only the first**, and calls it finished — that is the
-`off-target` card, and it is why a keeper at 455 gets told to decrease the dose
-and is then left at 455. §27's second decision makes the app speak in that
-state; this section is what it should say.
+This is not a wording preference. A dose figure that quietly contains a
+deliberate move is a figure the user cannot check — the whole point of §7's
+dose gap is that the recommended dose is *what the tank uses*, and a number
+that is sometimes that and sometimes that-plus-an-intention is neither.
 
-### What drift back is not
+### 28.2 The ordering rule — stabilise first
 
-**Not a correction (§9).** A correction is a one-off or temporary *elevated*
-dose from a known quantity, sized by §21's formula, delivered over days and
-verified on arrival. Drift back adds nothing — it removes.
+**A return plan is offered only when the level is stable and out of band.**
+
+If a level is moving, the only advice is to match consumption. A deliberate
+move laid on top of an unintended one means the level is travelling for two
+reasons at once, and no reading can separate them: the plan cannot be judged to
+have worked, and the underlying drift cannot be seen to have stopped.
+
+Two consequences, and both are testable:
+
+1. **A dose-change suggestion and a return-plan offer may never appear
+   together.** Not on the same card, not on the same surface, not in the same
+   sentence. The two conditions are mutually exclusive by construction — one
+   requires the level to be moving, the other requires it not to be — so any
+   surface showing both has a fault, not a hard case.
+2. **"Stable" here is §11's word, not a loose one.** Movement below the kit
+   noise floor over the fitted window (§5, §4). A level that is out of band and
+   moving is `recovering` or `worsening` (`wizard-states.md` §2, branch 21) and
+   gets dose advice only.
+
+### 28.3 One mechanism, two directions
+
+When a level is stable and out of band, the dose already matches consumption —
+that is what "stable" means — so the dose figure has nothing left to say. It
+holds the level where it is, and where it is, is wrong. That is the whole
+occasion for a plan.
+
+| | What it is | What it does | Where you end up |
+|---|---|---|---|
+| **Match consumption** | advice, unprompted, a dose figure | the level stops moving | parked, wherever it is |
+| **Return plan** | an offer the user opts into, never a dose figure | supply is set away from consumption on purpose, with an end | the middle third of the band, then back to maintenance |
+
+**Drift back is this mechanism going down.** A level walked up is the same
+mechanism going up. Neither is a special case of the other, and the app offers
+both on the same terms: same trigger condition, same destination, same rails,
+same return, same expiry.
+
+**Today the app offers neither.** It offers the first row and calls it
+finished — that is the `off-target` card, and it is why a keeper at 455 gets
+told to decrease the dose and is then left at 455. §27's second decision makes
+the app speak in that state; this section is what it should offer once it does.
+
+### 28.4 What a return plan is not
+
+**Not a correction (§9).** A correction is a one-off or temporary elevated dose
+from a known quantity, sized by §21's formula, delivered over days and verified
+on arrival. It is the instrument a return plan *uses* going up; it is not the
+same thing as the offer.
 
 **Not a maintenance change (§6, §7).** A maintenance dose is the app's best
-estimate of what the tank uses. A drift-back dose is deliberately below that,
-on purpose, with a planned end.
+estimate of what the tank uses. A return plan's dose is deliberately away from
+that, on purpose, with a planned end.
 
-**It is a temporary dose change with a return** — structurally closest to a
-correction plan: a destination, an expected duration, an arrival test, a
-return dose.
+**Not advice.** This is the 16 August distinction and the one an implementer is
+most likely to lose: the app may *offer* a plan, but until the user takes it
+the recommended dose is unchanged and still matches consumption.
 
-### What it needs
+**It is a temporary dose change with a return** — structurally a plan: a
+destination, an expected duration, an arrival test, a return dose.
+
+### 28.5 What it needs
 
 Named, not designed. Most of the machinery exists and is cited rather than
-reinvented.
+reinvented. All of it applies in both directions.
 
 - **A destination: the middle third of the band**, §9's arrival zone, for §9's
   reason — stopping at the edge leaves one week of ordinary drift from being
   out again.
-- **A rate that is not chosen.** How fast a level falls is set by consumption
-  minus what is still being dosed, and consumption is the tank's, not the
-  app's. §9's "lowering is limited by consumption" already states this. **The
-  user's only real lever is how deep to cut**; the rate follows.
+- **A rate that is not chosen, going down.** How fast a level falls is set by
+  consumption minus what is still being dosed, and consumption is the tank's,
+  not the app's. §9's "lowering is limited by consumption" already states this.
+  **The user's only real lever downward is how deep to cut**; the rate follows.
+  Going up the rate is chosen, within the rails, because the additive supplies
+  it — that is the §1 asymmetry, and it is the only place in this section where
+  the two directions differ.
 - **A duration estimate, because that is the actual decision.** *"About nine
   days"* against *"stays at 455"* is the choice being made, and an offer
-  without it is not a choice.
-- **§3's rails still apply.** A drift back must not pull a level down faster
-  than the rail allows, which caps how deep the cut may go. The rail is not
-  relaxed for being deliberate.
+  without it is not a choice. This holds in both directions.
+- **§3's rails still apply.** A plan must not pull a level down, or push it up,
+  faster than the rail allows, which caps how deep the cut or how large the
+  addition may go. The rails are not relaxed for being deliberate.
 - **A return dose, recomputed not replayed** — §9's rule, for §9's reason: a
   plan running while demand grows must not hand back a figure that is now
   short.
 - **An arrival test, with §9's two-reading confirmation.** Reaching the zone
-  mid-fall is passing through, not arriving.
-- **Expiry on the calendar**, per §9. An unattended drift back must not run for
-  a month.
+  mid-travel is passing through, not arriving.
+- **Expiry on the calendar**, per §9. An unattended plan must not run for a
+  month.
 
-### What is not settled
+### 28.6 What is not settled
 
 Recorded rather than answered. **None of these is authorised.**
 
 - **Whether it is a new wizard state or a variant of the correction plan.**
-  Structurally it is a correction plan with a negative delta, which argues for
+  Structurally it is a correction plan with a signed delta, which argues for
   reuse. But §1's distinction is load-bearing and collapsing the two may cost
   more than it saves. `wizard-states.md` §3's table gains a row either way, and
   which row it is depends on this answer — which is why no row has been added
   yet.
-- **Whether the upward case is built at all.** Over-dosing to walk a level up
-  is close enough to a correction that §9 may already serve. §1's asymmetry
-  says the downward case is the one with no instrument; it does not say the
-  upward case needs a second one.
-- **How the offer is presented** — two buttons, a slider, or the wizard picking
-  one and naming the other.
-- **What happens if the user does nothing.** The level keeps climbing. Whether
-  the app escalates, and how, is unaddressed.
+- **Which wizard states satisfy "stable and out of band".** §28.2 gives the
+  condition; branch 21c (`off-target`) plainly meets it, and route 12
+  (`worked`, tested steady and not in band) appears to as well. Whether a level
+  that has just finished a staged plan should be offered a return plan in the
+  same breath is a question for Stage 4's gap report, not an answer to be
+  guessed at by an implementer. `wizard-states.md` §24 records it against the
+  card.
+- **How the offer is presented.** Constrained now rather than settled: it is
+  one offer, not two dose buttons, and it may not share a card with a
+  dose-change suggestion (§28.2). Whether it is a link, a sheet or a step in
+  the wizard is open.
+- **What happens if the user does nothing.** The level stays where it is —
+  stable, out of band, by definition of when the offer appeared. Whether the
+  app repeats the offer, and how often, is unaddressed. §20's supersede-not-
+  stack rule constrains the answer.
+
+**One thing that was open on 15 August is now closed:** *"whether the upward
+case is built at all"*. It is built. Symmetrical, same terms, same section.
 
 ### Enforced by
 
 **Nothing yet, and that is stated rather than implied.** §14 exists because
-this document once claimed enforcement it did not have. No code implements
-drift back; no test asserts it. The item is `.agent/items/TW-048.md`,
-untagged — the decision settles that the instrument exists and what it must
-respect, not that it may be built without a design.
+this document once claimed enforcement it did not have. No code implements a
+return plan in either direction; no test asserts one. The item is
+`.agent/items/TW-048.md`, untagged — the decision settles that the mechanism
+exists, when it may be offered and what it must respect, not that it may be
+built without a design.
+
+**One rule of this section is testable against the app as it stands**, before
+any of it is built: §28.2's exclusion — no surface may show a dose-change
+suggestion and a return-plan offer together — and §28.1's — no recommended dose
+figure may be anything but the figure that matches consumption. Both are
+assertions about code that exists today.
 
 ### In plain terms
 
@@ -2158,17 +2250,25 @@ add to bring it down. The only way down is to dose less than your corals use
 and let them pull it down for you. Every reefkeeper knows this; the app did
 not.
 
-So when your calcium reads 455 against a range topping out at 450, there are
-two sensible things to do and the app has only ever offered one of them. It
-says "your dose is more than the tank uses, cut it back" — and if you do
-exactly that, calcium stops climbing and sits at 455 forever. Correct advice,
-useless outcome.
+So when your calcium reads 455 against a range topping out at 450, the app
+tells you to cut the dose back to what the tank actually uses — and if you do
+exactly that, calcium stops climbing and sits at 455. That is the right advice
+and it is deliberately all the advice: your calcium has stopped moving, which
+is the thing that needed fixing first.
 
-The missing offer is the bigger cut: dose deliberately less than the tank
-uses, let calcium fall to the middle of your range over about a week, and then
-go back to the normal dose. Same action, further, with an end date. What you
-actually need to choose between is *"stays at 455"* and *"about nine days"*,
-and the app should be the one telling you it is nine.
+What was missing is the next offer, and it comes after: once you are steady at
+455, the app can offer to walk you home — dose deliberately less than the tank
+uses, let calcium fall to the middle of your range over about a week, then go
+back to normal dosing. About nine days, against staying at 455. That is a
+choice you make, not a number the app quietly changes.
+
+The same thing works upward, and it is now written the same way. If alkalinity
+has settled at 7.8 against a range starting at 8.2, the app does not secretly
+over-dose you to bring it up. It gets you steady, then offers you the trip.
+
+The reason it is in that order is simple: if the app moved your level while it
+was already moving on its own, you would have no way of telling which was
+which. One thing at a time, and you can see each one work.
 
 None of that is built. This section says what it is and what it must respect —
 your rails, your range, a return to normal dosing, and an expiry so a plan you
