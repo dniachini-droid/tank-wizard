@@ -59,7 +59,10 @@ describe('§5 / worked example 3 — flagging a calcium shortfall implied by alk
     { id: 'a1', param: 'alkalinity', date: '2026-08-01', value: 8.9 },
     { id: 'a2', param: 'alkalinity', date: '2026-08-13', value: 8.5 },
   ];
-  const settings = { ...DEFAULT_SETTINGS, volumeL: 100 };
+  const settings = { ...DEFAULT_SETTINGS, volumeL: 100,
+    /* Explicit since §16 stopped the app shipping strengths; these are the
+       figures this file used to inherit. */
+    dkhPerMlPer100L: 0.0533, caPpmPerMlPer100L: 0.36, mgPpmPerMlPer100L: 0.024 };
 
   it('precondition: there is genuinely no calcium reading in this fixture', () => {
     expect(readings.filter((r) => r.param === 'calcium').length).toBe(0);
@@ -88,7 +91,10 @@ describe('§5 / worked example 7 — Ca falling while alk is flat: not calcifica
     { id: 'c1', param: 'calcium', date: '2026-08-01', value: 450 },
     { id: 'c2', param: 'calcium', date: '2026-08-13', value: 428 },
   ];
-  const settings = { ...DEFAULT_SETTINGS, volumeL: 100 };
+  const settings = { ...DEFAULT_SETTINGS, volumeL: 100,
+    /* Explicit since §16 stopped the app shipping strengths; these are the
+       figures this file used to inherit. */
+    dkhPerMlPer100L: 0.0533, caPpmPerMlPer100L: 0.36, mgPpmPerMlPer100L: 0.024 };
 
   it('precondition: the ratio is well outside the balanced band (ca-heavy) — this scenario actually exercises the diagnosis', () => {
     const result = computeIonicBalance(readings, settings);
@@ -127,7 +133,10 @@ describe('§5 magnesium gate — computeDoseAdvice must not recommend calcium co
     { id: 'm2', param: 'magnesium', date: '2026-08-07', value: 1160 },
     { id: 'm3', param: 'magnesium', date: '2026-08-13', value: 1140 },
   ];
-  const settings = { ...DEFAULT_SETTINGS, volumeL: 100 };
+  const settings = { ...DEFAULT_SETTINGS, volumeL: 100,
+    /* Explicit since §16 stopped the app shipping strengths; these are the
+       figures this file used to inherit. */
+    dkhPerMlPer100L: 0.0533, caPpmPerMlPer100L: 0.36, mgPpmPerMlPer100L: 0.024 };
 
   it('precondition: taken alone, the calcium engine would call for a dose adjustment', () => {
     const out = computeDoseAdvice(readings, [], PARAM_DEFS, null, settings);

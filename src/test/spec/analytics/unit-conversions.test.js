@@ -58,15 +58,28 @@ describe('ppm == mg/L: identical, never converted (icp-calibration / icp-referen
 })
 
 describe('Ca:alk consumption ratio — 7.15 ppm Ca per 1.0 dKH (§1, S1-defect-if-changed)', () => {
-  it('SPEC VIOLATION: DOSE_ELEMENTS default calcium/alkalinity strengths imply a ratio other than 7.15', () => {
+  it('WITHDRAWN — a product strength is not the ratio, and there are no default strengths to check', () => {
+    /* This asserted that DOSE_ELEMENTS' default calcium and alkalinity
+       strengths must imply 7.15, on the reasoning that both described the
+       same product line so their ratio was "the ratio the app hands a new
+       user as balanced".
+       That reasoning is a category error, and the 16 August owner decision
+       rejected it explicitly (reef-chemistry.md §16, "The ratio is not a
+       product strength"). 7.15 is stoichiometry and governs COUPLING. What a
+       bottle delivers per mL is a fact about that bottle. The old defaults
+       implied 6.77 because the Aquaforest 1:1 recipe genuinely is slightly
+       calcium-light against 7.15 — a true statement about the product, not a
+       violation. Making the strengths satisfy this assertion would have made
+       the app claim a bottle delivers something it does not, and under-dosed
+       calcium by the difference.
+       It is doubly moot now: the app ships no default strengths at all, since
+       only the user's own bottle can say (see
+       src/test/defects/unset-solution-strength.test.js). Both halves are
+       asserted here so the withdrawal is checked rather than merely stated. */
     const alkEl = DOSE_ELEMENTS.find((e) => e.key === 'alkalinity')
     const caEl = DOSE_ELEMENTS.find((e) => e.key === 'calcium')
-    /* Both defaults describe the same reference product line at the same
-       (double) strength, so the ratio between them is the ratio the app
-       hands a new user as "balanced". §1 fixes that ratio at 7.15 ppm Ca per
-       1.0 dKH. */
-    const impliedRatio = caEl.defaultStrength / alkEl.defaultStrength
-    expect(impliedRatio).toBeCloseTo(7.15, 2)
+    expect(alkEl.defaultStrength).toBeUndefined()
+    expect(caEl.defaultStrength).toBeUndefined()
   })
 
   it('magnesium demand is NOT derived from the calcification (Ca:alk) ratio — it uses its own dose settings only', () => {

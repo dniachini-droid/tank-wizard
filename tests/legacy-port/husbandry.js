@@ -16,6 +16,16 @@
 const path = require('path');
 const L = require(path.join(__dirname, '..', '..', 'build', 'engines-new.cjs'));
 
+/* The app ships no solution strengths — only the user's own bottle can say
+   what a product delivers (docs/spec/reef-chemistry.md §16), and an unset
+   strength is refused and named. These simulated tanks stand in for CONFIGURED
+   tanks, so they state the strengths explicitly. The figures are the ones this
+   harness used to inherit from DEFAULT_SETTINGS, so every expectation is
+   unchanged. Cases that deliberately probe a missing or null strength set
+   their own and are untouched. */
+const TANK_STRENGTHS = { dkhPerMlPer100L: 0.0533, caPpmPerMlPer100L: 0.36, mgPpmPerMlPer100L: 0.024 };
+
+
 const T = L.todayStr();
 const defs = L.PARAM_DEFS;
 let bad = 0, checked = 0;
@@ -32,7 +42,7 @@ const run = (vals) => {
     const r = readings.filter((x) => x.param === d.key).sort((a, b) => (a.date < b.date ? 1 : -1));
     latest[d.key] = r[0] || null;
   }
-  const settings = { ...L.DEFAULT_SETTINGS, volumeL: 77 };
+  const settings = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77 };
   const findings = L.buildFindings({ readings, icps: [], paramDefs: defs, settings,
     doseLog: [], waterChanges: [], latestByParam: latest }).findings;
   const states = [];
@@ -114,7 +124,7 @@ expect('pH 7.6 is flagged', { ph: 7.6 }, (r) => saysAnything(r, /ph|carbon/i));
      3.5 ppm a day had no citation and made a gentle correction take 86 days —
      so the test was asserting numbers the app no longer claims. */
   const LIMIT = { ...L.SAFE_DAILY_RISE };
-  const settings = { ...L.DEFAULT_SETTINGS, volumeL: 77 };
+  const settings = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77 };
   for (const [k, lim] of Object.entries(LIMIT)) {
     const def = defs.find((d) => d.key === k);
     const readings = [];
@@ -389,7 +399,7 @@ if (bad) process.exit(1);
  */
 {
   let bad = 0;
-  const mixed = { ...L.DEFAULT_SETTINGS,
+  const mixed = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS,
     testKits: { alkalinity: 'hanna', calcium: 'redsea', magnesium: 'salifert' } };
 
   for (const [key, kit] of Object.entries(mixed.testKits)) {
@@ -402,7 +412,7 @@ if (bad) process.exit(1);
   }
 
   /* An existing setup with only the old single value must keep working. */
-  const legacy = { ...L.DEFAULT_SETTINGS, testKits: undefined, testKit: 'salifert' };
+  const legacy = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, testKits: undefined, testKit: 'salifert' };
   for (const key of ['alkalinity', 'calcium', 'magnesium']) {
     if (L.kitNoise(key, legacy) !== L.KIT_PRECISION.salifert[key]) {
       console.log(`  FAIL ${key}: a legacy single-kit setting stopped being honoured`);
@@ -441,7 +451,7 @@ if (bad) process.exit(1);
  */
 {
   let bad = 0;
-  const S = { ...L.DEFAULT_SETTINGS, volumeL: 77,
+  const S = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77,
     testKits: { alkalinity: 'hanna', calcium: 'redsea', magnesium: 'salifert' } };
   const supply = { alkalinity: 0.62, calcium: 4.2, magnesium: 0.35 };
 

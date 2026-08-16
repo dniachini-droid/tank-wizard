@@ -12,6 +12,16 @@
  */
 const path=require('path');
 const L=require(path.join(__dirname, '..', '..', 'build', 'engines-new.cjs'));
+
+/* The app ships no solution strengths — only the user's own bottle can say
+   what a product delivers (docs/spec/reef-chemistry.md §16), and an unset
+   strength is refused and named. These simulated tanks stand in for CONFIGURED
+   tanks, so they state the strengths explicitly. The figures are the ones this
+   harness used to inherit from DEFAULT_SETTINGS, so every expectation is
+   unchanged. Cases that deliberately probe a missing or null strength set
+   their own and are untouched. */
+const TANK_STRENGTHS = { dkhPerMlPer100L: 0.0533, caPpmPerMlPer100L: 0.36, mgPpmPerMlPer100L: 0.024 };
+
 const defs=L.PARAM_DEFS, T=L.todayStr();
 let rnd=Number(process.env.SEED||1); const rand=()=>{rnd=(rnd*1103515245+12345)%2147483648;return rnd/2147483648;};
 const pick=a=>a[Math.floor(rand()*a.length)];
@@ -36,7 +46,7 @@ for(let i=0;i<RUNS;i++){
     }
   }
   const latest={}; for(const d of defs){const r=readings.filter(x=>x.param===d.key).sort((a,b)=>a.date<b.date?1:-1); latest[d.key]=r[0]||null;}
-  const S={...L.DEFAULT_SETTINGS,volumeL:pick([20,77,200,800,2000])};
+  const S={...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS,volumeL:pick([20,77,200,800,2000])};
   let f,states=[],ov,claims;
   try{
     f=L.buildFindings({readings,icps:[],paramDefs:defs,settings:S,doseLog:[],waterChanges:[],latestByParam:latest}).findings;
@@ -152,7 +162,7 @@ if(ks.length) process.exit(1);
 {
   const defs7 = L.PARAM_DEFS;
   const T10 = L.todayStr();
-  const S10 = { ...L.DEFAULT_SETTINGS, volumeL: 77 };
+  const S10 = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77 };
   let bad = 0, checked = 0;
 
   const run = (key, shape) => {
@@ -290,7 +300,7 @@ if(ks.length) process.exit(1);
   for (const key of Object.keys(CFG)) {
     const def = L.PARAM_DEFS.find((d) => d.key === key);
     const span = def.max - def.min, mid = (def.min + def.max) / 2;
-    const S16 = { ...L.DEFAULT_SETTINGS, volumeL: 77, ...CFG[key] };
+    const S16 = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77, ...CFG[key] };
     for (const off of [-2, -1.2, -0.6, 0, 0.6, 1.2, 2]) {
       const v = mid + span * off;
       const readings = [];
@@ -337,7 +347,7 @@ if(ks.length) process.exit(1);
   let bad = 0, checked = 0;
 
   const window = ({ ago, dose, vals, now, waterChange = false, prevDose = 9 }) => {
-    const S = { ...L.DEFAULT_SETTINGS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: dose };
+    const S = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: dose };
     const readings = vals.map((v, i) =>
       ({ param: 'alkalinity', date: L.addDays(TD, -(vals.length - i)), time: '20:00', value: v }));
     const doseLog = [
@@ -458,7 +468,7 @@ if(ks.length) process.exit(1);
   /* A correction plan still wins: that behaviour was built and tested first and
      must not be displaced. */
   {
-    const S = { ...L.DEFAULT_SETTINGS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: 14 };
+    const S = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: 14 };
     const readings = [8.2, 8.3, 8.4, 8.5, 8.6].map((v, i) =>
       ({ param: 'alkalinity', date: L.addDays(TD, -(5 - i)), time: '20:00', value: v }));
     const doseLog = [{ element: 'alkalinity', date: L.addDays(TD, -2), time: '21:00', ml: 14 }];
@@ -504,7 +514,7 @@ if(ks.length) process.exit(1);
   let bad = 0, checked = 0;
 
   const throughTheApp = ({ ago, dose, vals, now }) => {
-    const S = { ...L.DEFAULT_SETTINGS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: dose };
+    const S = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: dose };
     const readings = vals.map((v, i) =>
       ({ param: 'alkalinity', date: L.addDays(TD2, -(vals.length - i)), time: '20:00', value: v }));
     for (const k of ['calcium', 'magnesium', 'nitrate', 'phosphate', 'ph']) {
@@ -568,7 +578,7 @@ if(ks.length) process.exit(1);
 
   /* And with no dose change at all it must stay quiet, through the same path. */
   {
-    const S = { ...L.DEFAULT_SETTINGS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: 9 };
+    const S = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: 9 };
     const readings = [8.9, 9.0, 9.0, 9.1, 9.0].map((v, i) =>
       ({ param: 'alkalinity', date: L.addDays(TD2, -(5 - i)), time: '20:00', value: v }));
     const after = L.deriveTankState({ readings, icps: [], paramDefs: L.PARAM_DEFS,
@@ -591,7 +601,7 @@ if(ks.length) process.exit(1);
    * cut, both silently take their defaults and every other assertion here
    * still passes. */
   {
-    const S = { ...L.DEFAULT_SETTINGS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: 7 };
+    const S = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: 7 };
     const readings = [9.6, 9.5, 9.4, 9.3, 9.2].map((v, i) =>
       ({ param: 'alkalinity', date: L.addDays(TD2, -(5 - i)), time: '20:00', value: v }));
     /* Lowered: 12 mL down to 7. */
@@ -645,7 +655,7 @@ if(ks.length) process.exit(1);
   let bad = 0, checked = 0;
 
   const both = (o) => {
-    const S = { ...L.DEFAULT_SETTINGS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: o.dose };
+    const S = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: o.dose };
     const readings = o.vals.map((v, i) =>
       ({ param: 'alkalinity', date: L.addDays(TO, -(o.vals.length - i)), time: '20:00', value: v }));
     for (const k of ['calcium', 'magnesium', 'nitrate', 'phosphate', 'ph']) {
@@ -762,7 +772,7 @@ if(ks.length) process.exit(1);
   const speak = (key, { ago, vals, now }) => {
     const c = ELEMENTS[key];
     const def = L.PARAM_DEFS.find((d) => d.key === key);
-    const S = { ...L.DEFAULT_SETTINGS, volumeL: 77, [c.strength]: c.s, [c.dose]: c.to };
+    const S = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77, [c.strength]: c.s, [c.dose]: c.to };
     const readings = vals.map((v, i) =>
       ({ param: key, date: L.addDays(TE, -((vals.length - i) * 2)), time: '20:00',
          value: Math.round(v * 1000) / 1000 }));
@@ -831,7 +841,7 @@ if(ks.length) process.exit(1);
   let bad = 0, checked = 0;
 
   const after = ({ from, to, vals, now }) => {
-    const S = { ...L.DEFAULT_SETTINGS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: to };
+    const S = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: to };
     const readings = vals.map((v, i) =>
       ({ param: 'alkalinity', date: L.addDays(TW, -(vals.length - i) * 2), time: '20:00', value: v }));
     const doseLog = [
@@ -903,7 +913,7 @@ if(ks.length) process.exit(1);
   let bad = 0, checked = 0;
 
   const withChanges = (ages, doses) => {
-    const S = { ...L.DEFAULT_SETTINGS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: doses[doses.length - 1] };
+    const S = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: doses[doses.length - 1] };
     const readings = [8.4, 8.5, 8.6, 8.7].map((v, i) =>
       ({ param: 'alkalinity', date: L.addDays(TR, -(4 - i)), time: '20:00', value: v }));
     const doseLog = ages.map((age, i) =>
@@ -978,7 +988,7 @@ if(ks.length) process.exit(1);
   let bad = 0, checked = 0;
 
   const after = ({ from, to, vals }) => {
-    const S = { ...L.DEFAULT_SETTINGS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: to };
+    const S = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: to };
     const readings = vals.map((v, i) =>
       ({ param: 'alkalinity', date: L.addDays(TH, -(vals.length - i) * 2), time: '20:00', value: v }));
     const doseLog = [

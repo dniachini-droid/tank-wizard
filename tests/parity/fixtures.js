@@ -77,7 +77,13 @@ export const mgGateFixture = {
   // confirmed to trigger the gate in computeDoseAdvice — kept identical here
   // so this file's precondition is not a fixture I invented but the same one
   // another Wave A auditor already verified.
-  settings: { ...DEFAULT_SETTINGS, volumeL: 100, dailyDoseMl: 8, magDoseMl: 8 },
+  /* The strengths are explicit since §16 stopped the app shipping them; these
+     are the figures this fixture used to inherit from DEFAULT_SETTINGS, so the
+     gate question it was built to ask is unchanged. Without them assessAlkalinity
+     refuses for a missing strength, which would make the SPEC VIOLATION below
+     "pass" for entirely the wrong reason. */
+  settings: { ...DEFAULT_SETTINGS, volumeL: 100, dailyDoseMl: 8, magDoseMl: 8,
+    dkhPerMlPer100L: 0.0533, caPpmPerMlPer100L: 0.36, mgPpmPerMlPer100L: 0.024 },
 };
 mgGateFixture.allReadings = [...mgGateFixture.alkReadings, ...mgGateFixture.mgReadings];
 

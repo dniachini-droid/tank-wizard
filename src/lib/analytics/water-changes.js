@@ -1,18 +1,4 @@
-import { CA_PER_DKH } from './calcification.js'
 import { parseLocal } from '../dates.js'
-
-/* The shipped two-part strengths. The alkalinity part is the product's own
-   figure; the calcium part is DERIVED from it at §16's Ca:alk ratio, so the
-   pairing the app ships always implies the ratio calcification consumes.
-   They used to be two independent product figures whose ratio was 6.77, and
-   Setup's blank-field default (0.3611) and this table (0.36) did not even
-   agree with each other. One constant, two derived values, no drift.
-
-   They live here, beside DEFAULT_SETTINGS, rather than in consumption.js with
-   DOSE_ELEMENTS: consumption.js already imports DEFAULT_SETTINGS from this
-   module, so defining them there and importing them back would be a cycle. */
-export const ALK_DEFAULT_STRENGTH = 0.0533;
-export const CA_DEFAULT_STRENGTH = Math.round(ALK_DEFAULT_STRENGTH * CA_PER_DKH * 1e4) / 1e4;
 
 /* --- Water change history ---
  * 10L every Monday since the tank was set up. Seeded once so the nutrient
@@ -46,29 +32,34 @@ export const DEFAULT_SETTINGS = {
      refuse and name it as the missing input instead (reef-chemistry.md §17,
      §21 rule 6, §12). */
   volumeL: null,
-  /* The alkalinity figure is the actual mix rather than a label: Aquaforest
-     Balling at 2x standard, 101 g soda ash per L = 1906 meq/L, so 1 mL into
-     100 L gives 0.0533 dKH. */
-  dailyDoseMl: 8, dkhPerMlPer100L: ALK_DEFAULT_STRENGTH,
-  /* The calcium figure is DERIVED from it, at §16's Ca:alk ratio, and is the
-     same one DOSE_ELEMENTS ships — one pairing, from one constant, so Setup's
-     blank-field default and the engine's dosing default cannot disagree. They
-     did: 0.36 here against 0.3611 there, implying 6.75 and 6.77 respectively,
-     both against the spec-fixed 7.15.
-     Magnesium is taken from the product's own figure rather than derived:
-     Aquaforest's magnesium part raises 100 L by 1.2 ppm per 100 mL at standard
-     strength, so 0.012 ppm/mL/100L, and 0.024 at the double-strength mix used
-     here. Commercial magnesium supplements really are this dilute — magnesium
-     sits near 1400 ppm, so shifting it is inherently a large-volume job, and a
-     figure that looks implausibly small next to the calcium part is correct. */
-  calciumDoseMl: 9, caPpmPerMlPer100L: CA_DEFAULT_STRENGTH,
-  magDoseMl: 8, mgPpmPerMlPer100L: 0.024,
+  /* The three solution strengths are deliberately absent, for the same reason
+     `volumeL` is and with the same consequence — the engines refuse and name
+     the missing input rather than assuming one (reef-chemistry.md §12, §16,
+     §17).
+
+     A strength is a property of the bottle in the user's cupboard: what that
+     product delivers per mL at the dilution THEY mixed. The app cannot check
+     it, every dose and consumption figure is scaled by it, and a plausible
+     default is worse than a blank — a blank shows that nothing was set, while
+     a default hides it behind a number that looks considered.
+
+     These previously shipped as 0.0533 / 0.3611 / 0.024, the Aquaforest 2x
+     Balling figures. They were real measurements of one particular recipe,
+     which is exactly the problem: they are correct for one cupboard and
+     silently wrong for every other. Owner decision, 16 August.
+
+     Note this is NOT the Ca:alk ratio question. §16's 7.15 governs how the two
+     are consumed together, and it is stoichiometry. What a bottle delivers is
+     a different kind of fact, and the two must never be reconciled — see §16.
+
+     Doses are not defaults in the same sense and are left as they were: the
+     user knows what their doser is set to, and a dose without a strength
+     produces no recommendation anyway. */
+  dailyDoseMl: 8,
+  calciumDoseMl: 9,
+  magDoseMl: 8,
   waterChangeL: 10,
 };
-
-/* Stoichiometry: 1 meq/L of alkalinity pairs with 20 ppm calcium, and
-   1 meq/L = 2.8 dKH. So each dKH of alkalinity consumed corresponds to
-   roughly 7.14 ppm of calcium consumed in a balanced system. */
 
 /* Calendar-day index. Built from local midnight and divided after removing the
    timezone offset, so a day is always a day regardless of DST. */

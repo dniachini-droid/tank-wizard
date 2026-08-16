@@ -10,6 +10,16 @@
 const path = require('path');
 const L = require(path.join(__dirname, '..', '..', 'build', 'engines-new.cjs'));
 
+/* The app ships no solution strengths — only the user's own bottle can say
+   what a product delivers (docs/spec/reef-chemistry.md §16), and an unset
+   strength is refused and named. These simulated tanks stand in for CONFIGURED
+   tanks, so they state the strengths explicitly. The figures are the ones this
+   harness used to inherit from DEFAULT_SETTINGS, so every expectation is
+   unchanged. Cases that deliberately probe a missing or null strength set
+   their own and are untouched. */
+const TANK_STRENGTHS = { dkhPerMlPer100L: 0.0533, caPpmPerMlPer100L: 0.36, mgPpmPerMlPer100L: 0.024 };
+
+
 const T = L.todayStr();
 const defs = L.PARAM_DEFS;
 let rnd = 606060;
@@ -40,7 +50,7 @@ for (let i = 0; i < RUNS; i++) {
     const r = readings.filter((x) => x.param === d.key).sort((a, b) => (a.date < b.date ? 1 : -1));
     latest[d.key] = r[0] || null;
   }
-  const settings = { ...L.DEFAULT_SETTINGS, volumeL: pick([20, 77, 200, 800]) };
+  const settings = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: pick([20, 77, 200, 800]) };
 
   let findings, states = [], assessments = {};
   try {
@@ -162,7 +172,7 @@ if (keys.length) process.exit(1);
       const r = readings.filter((x) => x.param === d.key).sort((a, b) => (a.date < b.date ? 1 : -1));
       latest[d.key] = r[0] || null;
     }
-    const settings = { ...L.DEFAULT_SETTINGS, volumeL: pick2([77, 200]) };
+    const settings = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: pick2([77, 200]) };
     let findings;
     try {
       findings = L.buildFindings({ readings, icps: [], paramDefs: defs2, settings,
@@ -215,7 +225,7 @@ if (keys.length) process.exit(1);
 {
   const defs6 = L.PARAM_DEFS;
   const T9 = L.todayStr();
-  const S9 = { ...L.DEFAULT_SETTINGS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: 9.3 };
+  const S9 = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: 9.3 };
   const build = (corrections) => {
     const readings = [8.0, 8.05, 8.1, 8.2, 8.35].map((v, i) =>
       ({ param: 'alkalinity', date: L.addDays(T9, -(4 - i)), time: '20:00', value: v }));
@@ -266,7 +276,7 @@ if (keys.length) process.exit(1);
 {
   const defs8 = L.PARAM_DEFS;
   const T12 = L.todayStr();
-  const S12 = { ...L.DEFAULT_SETTINGS, volumeL: 77, caPpmPerMlPer100L: 0.36, calciumDoseMl: 12 };
+  const S12 = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77, caPpmPerMlPer100L: 0.36, calciumDoseMl: 12 };
   const build = (vals, plans, dose) => {
     const r = vals.map((v, i) => ({ param: 'calcium', date: L.addDays(T12, -(vals.length - 1 - i)), time: '20:00', value: v }));
     for (const k of defs8.map((d) => d.key)) {
@@ -347,7 +357,7 @@ if (keys.length) process.exit(1);
 {
   const akDef6 = L.PARAM_DEFS.find((d) => d.key === 'alkalinity');
   const T13 = L.todayStr();
-  const S13 = { ...L.DEFAULT_SETTINGS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: 12.6 };
+  const S13 = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: 12.6 };
   const mk = (offset, vals) => vals.map((v, i) =>
     ({ param: 'alkalinity', date: L.addDays(T13, offset + i), time: '20:00', value: v }));
   const planAt = (offset, days) => ({ alkalinity: { target: 9.0, returnDose: 9,
@@ -399,7 +409,7 @@ if (keys.length) process.exit(1);
 {
   const caDef2 = L.PARAM_DEFS.find((d) => d.key === 'calcium');
   const T14 = L.todayStr();
-  const S14 = { ...L.DEFAULT_SETTINGS, volumeL: 77, caPpmPerMlPer100L: 0.36, calciumDoseMl: 9 };
+  const S14 = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77, caPpmPerMlPer100L: 0.36, calciumDoseMl: 9 };
   const at = (v) => {
     const r = [];
     for (let j = 8; j > 0; j--) r.push({ param: 'calcium', date: L.addDays(T14, -j * 2), time: '20:00', value: v });
@@ -466,7 +476,7 @@ if (keys.length) process.exit(1);
     const level = where === 'below'
       ? Math.max(sb.min + (def.min - sb.min) * 0.3, def.min - (def.max - def.min))
       : Math.min(sb.max - (sb.max - def.max) * 0.3, def.max + (def.max - def.min));
-    const S15 = { ...L.DEFAULT_SETTINGS, volumeL: 77, ...extra };
+    const S15 = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77, ...extra };
     const readings = [];
     for (let j = 8; j > 0; j--) readings.push({ param: key, date: L.addDays(T15, -j * 2), time: '20:00', value: level });
     const a = fn({ readings, doseLog: [], waterChanges: [], corrections: [], settings: S15,
@@ -513,7 +523,7 @@ if (keys.length) process.exit(1);
 {
   const akDef7 = L.PARAM_DEFS.find((d) => d.key === 'alkalinity');
   const T17 = L.todayStr();
-  const S17 = { ...L.DEFAULT_SETTINGS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: 8.7 };
+  const S17 = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: 8.7 };
   const unattended = (age) => {
     const readings = [];
     for (let j = 4; j > 0; j--) readings.push({ param: 'alkalinity', date: L.addDays(T17, -age - j), time: '20:00', value: 8.35 });
@@ -563,7 +573,7 @@ if (keys.length) process.exit(1);
 {
   const akDef8 = L.PARAM_DEFS.find((d) => d.key === 'alkalinity');
   const T18 = L.todayStr();
-  const S18 = { ...L.DEFAULT_SETTINGS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: 8.7 };
+  const S18 = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: 8.7 };
   let bad = 0, checked = 0;
 
   /* A plan that has been running while demand climbed. */
@@ -626,7 +636,7 @@ if (keys.length) process.exit(1);
 {
   const akDefX = L.PARAM_DEFS.find((d) => d.key === 'alkalinity');
   const TX = L.todayStr();
-  const SX = { ...L.DEFAULT_SETTINGS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: 9 };
+  const SX = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77, dkhPerMlPer100L: 0.0533, dailyDoseMl: 9 };
   let bad = 0, checked = 0;
 
   const tank = (v) => {
@@ -683,7 +693,7 @@ if (keys.length) process.exit(1);
 {
   const caDef = L.PARAM_DEFS.find((d) => d.key === 'calcium');
   const TS = L.todayStr();
-  const SS = { ...L.DEFAULT_SETTINGS, volumeL: 77, caPpmPerMlPer100L: 0.36, calciumDoseMl: 9.2 };
+  const SS = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77, caPpmPerMlPer100L: 0.36, calciumDoseMl: 9.2 };
   let bad = 0, checked = 0;
 
   const assess = ({ readingAge, correctionAge = null, planAge = null, doseChangeAge = null }) => {
@@ -752,7 +762,7 @@ if (keys.length) process.exit(1);
 {
   const caDef = L.PARAM_DEFS.find((d) => d.key === 'calcium');
   const TC = L.todayStr();
-  const SC = { ...L.DEFAULT_SETTINGS, volumeL: 77, caPpmPerMlPer100L: 0.36, calciumDoseMl: 9.2 };
+  const SC = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77, caPpmPerMlPer100L: 0.36, calciumDoseMl: 9.2 };
   let bad = 0, checked = 0;
 
   const assess = ({ readingAge, correctionAge = null, planAge = null, doseChangeAge = null }) => {

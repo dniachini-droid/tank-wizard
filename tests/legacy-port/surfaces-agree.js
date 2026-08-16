@@ -17,6 +17,16 @@ const path = require('path');
 const L = require(path.join(__dirname, '..', '..', 'build', 'engines-new.cjs'));
 const { makeRng } = require(path.join(__dirname, 'sim', 'rng.js'));
 
+/* The app ships no solution strengths — only the user's own bottle can say
+   what a product delivers (docs/spec/reef-chemistry.md §16), and an unset
+   strength is refused and named. These simulated tanks stand in for CONFIGURED
+   tanks, so they state the strengths explicitly. The figures are the ones this
+   harness used to inherit from DEFAULT_SETTINGS, so every expectation is
+   unchanged. Cases that deliberately probe a missing or null strength set
+   their own and are untouched. */
+const TANK_STRENGTHS = { dkhPerMlPer100L: 0.0533, caPpmPerMlPer100L: 0.36, mgPpmPerMlPer100L: 0.024 };
+
+
 const T = L.todayStr();
 const defs = L.PARAM_DEFS;
 let bad = 0, checked = 0;
@@ -48,7 +58,7 @@ for (let seed = 1; seed <= 600; seed++) {
 
   let st;
   try { st = L.deriveTankState({ readings, icps: [], paramDefs: defs,
-    settings: { ...L.DEFAULT_SETTINGS, volumeL: 77 } }); }
+    settings: { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77 } }); }
   catch (e) { console.log(`  FAIL seed ${seed}: deriving threw — ${e.message}`); bad++; continue; }
 
   const level = st.latestByParam[key];

@@ -12,6 +12,16 @@
 const path = require('path');
 const L = require(path.join(__dirname, '..', '..', 'build', 'engines-new.cjs'));
 
+/* The app ships no solution strengths — only the user's own bottle can say
+   what a product delivers (docs/spec/reef-chemistry.md §16), and an unset
+   strength is refused and named. These simulated tanks stand in for CONFIGURED
+   tanks, so they state the strengths explicitly. The figures are the ones this
+   harness used to inherit from DEFAULT_SETTINGS, so every expectation is
+   unchanged. Cases that deliberately probe a missing or null strength set
+   their own and are untouched. */
+const TANK_STRENGTHS = { dkhPerMlPer100L: 0.0533, caPpmPerMlPer100L: 0.36, mgPpmPerMlPer100L: 0.024 };
+
+
 const T = L.todayStr();
 const defs = L.PARAM_DEFS;
 let bad = 0, checked = 0;
@@ -35,7 +45,7 @@ const tank = (key, o) => {
   const strengthField = { alkalinity: 'dkhPerMlPer100L', calcium: 'caPpmPerMlPer100L', magnesium: 'mgPpmPerMlPer100L' }[key];
   const doseField = { alkalinity: 'dailyDoseMl', calcium: 'calciumDoseMl', magnesium: 'magDoseMl' }[key];
   const strength = { alkalinity: 0.0533, calcium: 0.36, magnesium: 0.024 }[key];
-  const S = { ...L.DEFAULT_SETTINGS, volumeL: 77,
+  const S = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77,
     [strengthField]: o.strength != null ? o.strength : strength,
     [doseField]: o.dose };
   const readings = o.vals.map((v, i) =>
@@ -150,7 +160,7 @@ if (bad) process.exit(1);
     const doseField = { alkalinity: 'dailyDoseMl', calcium: 'calciumDoseMl', magnesium: 'magDoseMl' }[key];
     const strength = { alkalinity: 0.0533, calcium: 0.36, magnesium: 0.024 }[key];
     const dose = Math.round((4 + rnd() * 20) * 10) / 10;
-    const S = { ...L.DEFAULT_SETTINGS, volumeL: 77, [strengthField]: strength, [doseField]: dose };
+    const S = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77, [strengthField]: strength, [doseField]: dose };
 
     const readings = [];
     let v0 = def.min + span * (rnd() * 1.4 - 0.2);

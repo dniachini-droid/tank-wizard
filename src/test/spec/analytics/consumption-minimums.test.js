@@ -24,7 +24,13 @@ import { describe, expect, it } from 'vitest'
 import { computeConsumption, computeElementConsumption } from '../../../lib/analytics/consumption.js'
 import { DEFAULT_SETTINGS } from '../../../lib/analytics/water-changes.js'
 
-const S = { ...DEFAULT_SETTINGS, volumeL: 68 }
+/* The app no longer ships solution strengths — only the user's own bottle can
+   say what a product delivers (reef-chemistry.md §16), so a fixture standing
+   in for a dosing tank has to state its own. These are exactly the figures
+   this suite used to inherit from DEFAULT_SETTINGS, so every expectation
+   below is unchanged by their becoming explicit. */
+const S = { ...DEFAULT_SETTINGS, volumeL: 68,
+  dkhPerMlPer100L: 0.0533, caPpmPerMlPer100L: 0.36, mgPpmPerMlPer100L: 0.024 }
 const alk = (date, value) => ({ id: date, param: 'alkalinity', date, value })
 
 describe('computeConsumption (alkalinity-specific rate) vs the §8 floor', () => {

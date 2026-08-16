@@ -112,7 +112,10 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
 
   useEffect(() => {
     setElemDose(String(settings[elem.doseField] ?? 0));
-    setElemStrength(String(settings[elem.strengthField] ?? elem.defaultStrength));
+    /* Empty when nothing is stored, and deliberately not pre-filled with a
+       suggestion. A figure the user has not checked against their own bottle
+       is the problem this removed, not a convenience (reef-chemistry.md §16). */
+    setElemStrength(settings[elem.strengthField] == null ? "" : String(settings[elem.strengthField]));
     setSigmaVal(String(kitSigma(elem.key, settings)));
     setSaveMsg(null);
   }, [settings, elemKey]);
@@ -153,10 +156,15 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
     setTimeout(() => setSaveMsg(null), 2500);
   };
 
+  /* Clearing the field stores nothing, rather than falling back to some other
+     tank's product. Exactly what saveVolume does above, for the same reason:
+     the app would rather refuse than dose from a figure nobody checked. */
   const saveStrength = async () => {
-    await onSaveSettings({ ...settings, [elem.strengthField]: strengthNum || elem.defaultStrength });
-    setSaveMsg("Product strength saved.");
-    setTimeout(() => setSaveMsg(null), 2500);
+    await onSaveSettings({ ...settings, [elem.strengthField]: strengthNum > 0 ? strengthNum : null });
+    setSaveMsg(strengthNum > 0
+      ? "Product strength saved."
+      : `${elem.label} strength cleared. Dosing advice and corrections will not be calculated until you enter it.`);
+    setTimeout(() => setSaveMsg(null), 3500);
   };
 
   const elemLog = useMemo(

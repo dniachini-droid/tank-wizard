@@ -326,7 +326,43 @@ export function buildFindings({ readings, icps, paramDefs, settings, doseLog, wa
   for (const el of DOSE_ELEMENTS) {
     const c = calibrateDoseStrength(el.key, readings, doseLog, waterChanges, settings);
     if (!c) continue;
-    if (c.status === "ok" && !c.enteredInside && !c.implausible) {
+    /* `entered > 0` is part of the condition, not an afterthought: with no
+       strength entered there is nothing for the solved figure to disagree
+       WITH, and the claim came out as "not the undefined entered in Setup".
+       An absent strength is a different finding — strength-missing, below —
+       and saying both would be two claims about one gap. */
+    /* Read from settings, not from `c.entered`: calibrateDoseStrength's early
+       returns ("novolume", "nochanges") carry no `entered` at all, so trusting
+       it there would report a strength as missing on any tank that simply has
+       no dose-change history to calibrate from. */
+    const enteredVal = Number(settings[el.strengthField]);
+    const haveEntered = isFinite(enteredVal) && enteredVal > 0;
+    const dosed = settings[el.doseField] > 0;
+
+    /* Missing beats mismatched, and it is asked FIRST and independently of the
+       calibration status. Two reasons. A strength that was never entered has
+       nothing for a solved figure to disagree with, and the mismatch claim
+       rendered it literally — "not the undefined entered in Setup". And the
+       missing case used to be reachable only from `nochanges`/`nodata`, so a
+       tank with enough dose history to calibrate got no claim at all about the
+       gap that mattered most. */
+    if (dosed && !haveEntered) {
+      add({
+        id: "strength-missing-" + el.key,
+        params: [el.key],
+        scope: "dosing",
+        severity: "act",
+        title: "dose strength missing",
+        detail: `You're dosing ${el.label.toLowerCase()} but Setup has no usable strength for it, so the app can't work out what those millilitres deliver. Enter how much 1 mL raises 100L and the consumption and dosing figures will start working.`,
+      });
+      continue;
+    }
+
+    /* `haveEntered` again, and not only in the dosing branch above: a tank
+       that has stopped dosing but still has dose-change history calibrates
+       fine, and with no strength entered the claim read "not the undefined
+       entered in Setup". There is no mismatch without both figures. */
+    if (c.status === "ok" && haveEntered && !c.enteredInside && !c.implausible) {
       add({
         id: "strength-" + el.key,
         params: [el.key],
@@ -335,26 +371,10 @@ export function buildFindings({ readings, icps, paramDefs, settings, doseLog, wa
         title: "dose strength looks wrong",
         detail: `Your own dose changes imply ${el.label.toLowerCase()} delivers ${c.median.toFixed(4)} ${el.strengthLabel}, not the ${c.entered} entered in Setup. Every millilitre figure for ${el.label.toLowerCase()} is scaled by that, so correct it before acting on any dose advice.`,
       });
-    } else if (c.status === "nochanges" || c.status === "nodata") {
-      const dosed = settings[el.doseField] > 0;
-      const strengthVal = settings[el.strengthField];
-      const strengthOk = typeof strengthVal === "number" && isFinite(strengthVal) && strengthVal > 0;
-      if (dosed && !strengthOk) {
-        /* Dosing with no usable strength means every millilitre figure for this
-           element is meaningless, which matters more than verification. */
-        add({
-          id: "strength-missing-" + el.key,
-          params: [el.key],
-          scope: "dosing",
-          severity: "act",
-          title: "dose strength missing",
-          detail: `You're dosing ${el.label.toLowerCase()} but Setup has no usable strength for it, so the app can't work out what those millilitres deliver. Enter how much 1 mL raises 100L and the consumption and dosing figures will start working.`,
-        });
-      } else if (dosed) {
-        /* Collected and reported once below. Three separate findings saying the
-           same sentence about three elements read as three problems. */
-        unverified.push(el);
-      }
+    } else if ((c.status === "nochanges" || c.status === "nodata") && dosed) {
+      /* Collected and reported once below. Three separate findings saying the
+         same sentence about three elements read as three problems. */
+      unverified.push(el);
     }
   }
 

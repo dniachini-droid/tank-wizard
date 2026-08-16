@@ -8,6 +8,16 @@
 const path = require('path');
 const L = require(path.join(__dirname, '..', '..', 'build', 'engines-new.cjs'));
 
+/* The app ships no solution strengths — only the user's own bottle can say
+   what a product delivers (docs/spec/reef-chemistry.md §16), and an unset
+   strength is refused and named. These simulated tanks stand in for CONFIGURED
+   tanks, so they state the strengths explicitly. The figures are the ones this
+   harness used to inherit from DEFAULT_SETTINGS, so every expectation is
+   unchanged. Cases that deliberately probe a missing or null strength set
+   their own and are untouched. */
+const TANK_STRENGTHS = { dkhPerMlPer100L: 0.0533, caPpmPerMlPer100L: 0.36, mgPpmPerMlPer100L: 0.024 };
+
+
 const T = L.todayStr();
 const defs = L.PARAM_DEFS;
 let rnd = 424242;
@@ -39,7 +49,7 @@ for (let i = 0; i < RUNS; i++) {
     const r = readings.filter((x) => x.param === d.key).sort((a, b) => (a.date < b.date ? 1 : -1));
     latest[d.key] = r[0] || null;
   }
-  const settings = { ...L.DEFAULT_SETTINGS, volumeL: pick([20, 77, 200, 800]) };
+  const settings = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: pick([20, 77, 200, 800]) };
   let findings = [], states = [];
   try {
     findings = L.buildFindings({ readings, icps: [], paramDefs: defs, settings,
@@ -170,7 +180,7 @@ if (keys.length) process.exit(1);
     latest[d.key] = r[0] || null;
   }
   const f = L2.buildFindings({ readings, icps: [], paramDefs: defs2,
-    settings: L2.DEFAULT_SETTINGS, doseLog: [], waterChanges: [], latestByParam: latest });
+    settings: { ...L2.DEFAULT_SETTINGS, ...TANK_STRENGTHS }, doseLog: [], waterChanges: [], latestByParam: latest });
   const claims = L2.buildBriefing(readings, latest, defs2, f.findings, [], {});
   for (const c of claims) {
     checked++;
@@ -209,7 +219,7 @@ if (keys.length) process.exit(1);
       value: latest.alkalinity ? latest.alkalinity.value : 8.6 }]);
     const l2 = { ...latest, alkalinity: later[later.length - 1] };
     const f3 = L2.buildFindings({ readings: later, icps: [], paramDefs: defs2,
-      settings: L2.DEFAULT_SETTINGS, doseLog: [], waterChanges: [], latestByParam: l2 });
+      settings: { ...L2.DEFAULT_SETTINGS, ...TANK_STRENGTHS }, doseLog: [], waterChanges: [], latestByParam: l2 });
     const back = L2.buildBriefing(later, l2, defs2, f3.findings, states, { dismissed: hidden })
       .some((c) => c.id === 'dose:alkalinity');
     if (!back) { console.log('  FAIL suggestion did not return after the next test'); bad++; }
@@ -262,7 +272,7 @@ if (keys.length) process.exit(1);
       latest[d.key] = r[0] || null;
     }
     const all = L.buildFindings({ readings, icps: [], paramDefs: defs3,
-      settings: L.DEFAULT_SETTINGS, doseLog: [], waterChanges: [], latestByParam: latest }).findings;
+      settings: { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS }, doseLog: [], waterChanges: [], latestByParam: latest }).findings;
     const claim = L.buildBriefing(readings, latest, defs3, all, [], {}).find((c) => c.id === 'solid');
     if (!claim) continue;
     checked++;
