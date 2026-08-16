@@ -617,7 +617,7 @@ export function ParamHistoryModal({ def, readings, onClose, onSaveRange, onReset
                 return (
                   <div className="mb-4">
                     <div className="text-[11px] font-extrabold uppercase tracking-wide text-ink2 mb-1.5">
-                      Worth knowing about {def.label.toLowerCase()}
+                      Notices for {def.label.toLowerCase()}
                     </div>
                     <FindingList items={fs} onDismiss={onDismissFinding} />
                   </div>
