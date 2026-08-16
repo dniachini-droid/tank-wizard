@@ -1100,14 +1100,33 @@ itself is §6, and the analysis windows are §4.
 - Readings across a recorded kit change do not combine (§19).
 - The rate is always reported with the interval it came from.
 
-**Overtaken in part by §6's 14 August decision.** The previous canon also said
-"a water change between readings must be accounted for or the span discarded."
-For the three dosing engines that is now settled the other way: water changes
-stay in the trend fit, and only logged corrections are subtracted, for the
-reasons in §6. The line is kept here because it still describes the
-analytics-layer `consumptionRate`, which does account for water changes
-(`computeElementConsumption`) — but the two layers now answer the same question
-differently, and **that divergence is not resolved**. It needs one answer.
+**Overtaken by §6's 14 August decision. The divergence is closed — 16 August.**
+The previous canon also said "a water change between readings must be accounted
+for or the span discarded." That is now settled the other way, everywhere:
+water changes stay in the trend fit, only logged corrections are subtracted,
+and consumption is `dosed - netChangeInTank` — the engines' `supplied -
+trendPerDay` — at every layer. The analytics-layer `consumptionRate`
+(`computeElementConsumption`) used to add a mass-balance term for water changes
+and no longer does. There was never a case for two answers to one question; the
+engines' answer is the one kept, for the reasons in §6.
+
+**Deferred, not rejected.** The subtraction is a real effect, not a
+sophistication: a large water change against a mismatched salt shifts
+alkalinity by two to three noise floors, which is well inside what the app
+claims to resolve. It will matter eventually. It is not done now because the
+correction is only as good as the salt-mix figures the user entered in Setup,
+and most of those are wrong — a default carried over, a batch that varies from
+the label, or a number never entered at all. A correction computed from a wrong
+salt figure does not leave the reading uncorrected; it moves it somewhere else
+and reports the result with the same confidence. Between an honest figure that
+ignores water changes and a corrected one built on a number nobody checked, the
+first is the safer thing to show, and it is the one the engines already show.
+
+Revisit when there is a reason to — the salt-mix figures becoming trustworthy
+(measured rather than assumed, or validated against a reading taken straight
+after a change) is the reason to look again, and the largest single water
+change on record shifting a parameter by more than three noise floors is the
+signal that the wait has cost something.
 
 ---
 
