@@ -1,4 +1,18 @@
+import { CA_PER_DKH } from './calcification.js'
 import { parseLocal } from '../dates.js'
+
+/* The shipped two-part strengths. The alkalinity part is the product's own
+   figure; the calcium part is DERIVED from it at §16's Ca:alk ratio, so the
+   pairing the app ships always implies the ratio calcification consumes.
+   They used to be two independent product figures whose ratio was 6.77, and
+   Setup's blank-field default (0.3611) and this table (0.36) did not even
+   agree with each other. One constant, two derived values, no drift.
+
+   They live here, beside DEFAULT_SETTINGS, rather than in consumption.js with
+   DOSE_ELEMENTS: consumption.js already imports DEFAULT_SETTINGS from this
+   module, so defining them there and importing them back would be a cycle. */
+export const ALK_DEFAULT_STRENGTH = 0.0533;
+export const CA_DEFAULT_STRENGTH = Math.round(ALK_DEFAULT_STRENGTH * CA_PER_DKH * 1e4) / 1e4;
 
 /* --- Water change history ---
  * 10L every Monday since the tank was set up. Seeded once so the nutrient
@@ -32,22 +46,22 @@ export const DEFAULT_SETTINGS = {
      refuse and name it as the missing input instead (reef-chemistry.md §17,
      §21 rule 6, §12). */
   volumeL: null,
-  /* Derived from the actual mix rather than a label. Aquaforest Balling at 2x
-     standard: 101 g soda ash per L = 1906 meq/L, so 1 mL into 100 L gives
-     0.0533 dKH. Calcium: 100 g AF Calcium per L (anhydrous CaCl2, 36.1% Ca)
-     = 36,110 ppm, so 1 mL into 100 L gives 0.3611 ppm. Their ratio is
-     6.77 ppm per dKH, which is what a balanced 1:1 recipe must produce. */
-  dailyDoseMl: 8, dkhPerMlPer100L: 0.0533,
-  /* Calcium default is derived rather than guessed: a balanced two-part
-     delivers ~7.14 ppm of calcium per dKH of alkalinity, so a 0.03 dKH/mL/100L
-     alkalinity part pairs with ~0.21 ppm/mL/100L on the calcium side.
+  /* The alkalinity figure is the actual mix rather than a label: Aquaforest
+     Balling at 2x standard, 101 g soda ash per L = 1906 meq/L, so 1 mL into
+     100 L gives 0.0533 dKH. */
+  dailyDoseMl: 8, dkhPerMlPer100L: ALK_DEFAULT_STRENGTH,
+  /* The calcium figure is DERIVED from it, at §16's Ca:alk ratio, and is the
+     same one DOSE_ELEMENTS ships — one pairing, from one constant, so Setup's
+     blank-field default and the engine's dosing default cannot disagree. They
+     did: 0.36 here against 0.3611 there, implying 6.75 and 6.77 respectively,
+     both against the spec-fixed 7.15.
      Magnesium is taken from the product's own figure rather than derived:
      Aquaforest's magnesium part raises 100 L by 1.2 ppm per 100 mL at standard
      strength, so 0.012 ppm/mL/100L, and 0.024 at the double-strength mix used
      here. Commercial magnesium supplements really are this dilute — magnesium
      sits near 1400 ppm, so shifting it is inherently a large-volume job, and a
      figure that looks implausibly small next to the calcium part is correct. */
-  calciumDoseMl: 9, caPpmPerMlPer100L: 0.36,
+  calciumDoseMl: 9, caPpmPerMlPer100L: CA_DEFAULT_STRENGTH,
   magDoseMl: 8, mgPpmPerMlPer100L: 0.024,
   waterChangeL: 10,
 };

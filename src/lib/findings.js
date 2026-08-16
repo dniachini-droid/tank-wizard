@@ -1,3 +1,4 @@
+import { CA_PER_DKH } from './analytics/calcification.js'
 import { DOSE_ELEMENTS, computeConsumption } from './analytics/consumption.js'
 import { calibrateDoseStrength } from './analytics/dose-strength.js'
 import { computeIonicBalance } from './analytics/drift.js'
@@ -409,7 +410,7 @@ export function buildFindings({ readings, icps, paramDefs, settings, doseLog, wa
         scope: "dosing",
         severity: "act",
         title: "calcium use looks too high to be real",
-        detail: `The figures imply ${caPerDay.toFixed(0)} ppm of calcium consumed a day, which no reef sustains — it would pair with ${(caPerDay / 6.75).toFixed(1)} dKH of alkalinity. Check the calcium dose and strength in Setup before trusting any calcium figure.`,
+        detail: `The figures imply ${caPerDay.toFixed(0)} ppm of calcium consumed a day, which no reef sustains — it would pair with ${(caPerDay / CA_PER_DKH).toFixed(1)} dKH of alkalinity. Check the calcium dose and strength in Setup before trusting any calcium figure.`,
       });
     }
   }

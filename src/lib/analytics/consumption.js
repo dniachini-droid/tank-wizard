@@ -1,6 +1,7 @@
+import { CA_PER_DKH } from './calcification.js'
 import { SALT_MIX } from './salt-baseline.js'
 import { byOldest, regressionSlope, windowRows } from './time-of-day.js'
-import { DEFAULT_SETTINGS } from './water-changes.js'
+import { ALK_DEFAULT_STRENGTH, CA_DEFAULT_STRENGTH, DEFAULT_SETTINGS } from './water-changes.js'
 import { PARAM_DEFS } from '../constants.js'
 import { daysBetween, fmtShort, isoLocal } from '../dates.js'
 import { STABILITY_RULES } from '../stability-engine.js'
@@ -83,11 +84,11 @@ export function computeConsumption(readings, settings) {
    dose log can be driven by a single dropdown rather than stacking all three. */
 export const DOSE_ELEMENTS = [
   { key: "alkalinity", label: "Alkalinity", doseField: "dailyDoseMl", strengthField: "dkhPerMlPer100L",
-    unit: "dKH", strengthLabel: "dKH/mL/100L", strengthStep: 0.005, defaultStrength: 0.0533,
+    unit: "dKH", strengthLabel: "dKH/mL/100L", strengthStep: 0.005, defaultStrength: ALK_DEFAULT_STRENGTH,
     hint: "Aquaforest Balling at 2x standard (101 g soda ash per litre) works out at 0.0533 dKH per mL per 100L. Their standard strength is half that." },
   { key: "calcium", label: "Calcium", doseField: "calciumDoseMl", strengthField: "caPpmPerMlPer100L",
-    unit: "ppm", strengthLabel: "ppm/mL/100L", strengthStep: 0.01, defaultStrength: 0.3611,
-    hint: "Aquaforest Balling at 2x standard (100 g AF Calcium per litre) works out at 0.3611 ppm per mL per 100L. Paired with the alkalinity part that gives 6.8 ppm calcium per dKH — the ratio corals actually consume." },
+    unit: "ppm", strengthLabel: "ppm/mL/100L", strengthStep: 0.01, defaultStrength: CA_DEFAULT_STRENGTH,
+    hint: `This default is set to pair with the alkalinity part at ${CA_PER_DKH} ppm calcium per dKH — the ratio calcification actually consumes. Check your own bottle and enter its figure: mixes vary, and a 1:1 Balling recipe at 100 g AF Calcium per litre comes out slightly calcium-light against that ratio.` },
   { key: "magnesium", label: "Magnesium", doseField: "magDoseMl", strengthField: "mgPpmPerMlPer100L",
     unit: "ppm", strengthLabel: "ppm/mL/100L", strengthStep: 0.1, defaultStrength: 0.024,
     hint: "Magnesium products vary a lot in concentration — check your bottle. Leave the dose at 0 if water changes alone replenish it." },
