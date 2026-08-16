@@ -48,6 +48,15 @@ retarget clause is withdrawn, which settles the one place canon contradicted
 itself — §28 wins. Its surfaces half is `wizard-states.md` §13, §15, §22, §25.1
 and §25.2, where the health score and `paramContext` are deleted, position gets
 one word, and the steadiness panel follows the window the keeper picked.
+**§24's parts 3 and 4 narrowed, and §28.6's second bullet closed, 16 August
+2026** on the spec owner's authority — the negative-consumption rule finally has
+its wording (`wizard-states.md` §24.24), and the wording is narrower than the
+rule was: **no cause is named at any stage**, so part 4's "wrong Setup strength
+or collapsed demand" is withdrawn and §23.5 holds without exception, and **no
+water change is mentioned**, because §22 settled on the same day that water
+changes are not subtracted from consumption at any layer. §28.6's question of
+which wizard states satisfy stable-and-out-of-band is answered for route 12: it
+does, and it carries the return-plan offer (`wizard-states.md` §24.27).
 
 > Agents never edit this file. Disagreements → `.agent/spec-challenges.md`.
 
@@ -1528,6 +1537,16 @@ after a change) is the reason to look again, and the largest single water
 change on record shifting a parameter by more than three noise floors is the
 signal that the wait has cost something.
 
+**One consequence for wording, recorded here so it is not lost — 16 August.**
+Because the app does not adjust for water changes, **it does not mention them
+either.** §24 part 3's question — *"has a water change been logged?"* — was
+written against the older rule and is withdrawn with it; `wizard-states.md`
+§24.24 names no water change in either of its wordings. A card that asks about
+one implies the answer would change the figure. It would not, by this decision,
+and inviting a keeper to explain away a number the app has deliberately left
+uncorrected is worse than the silence: it makes a stated deferral look like an
+oversight the keeper can fix.
+
 ---
 
 ## 23. Worked examples — executable test vectors
@@ -1653,6 +1672,53 @@ exactly as long as a gaining event lasts**, and cannot catch the cut either.
 The action stays `hold` at every step, including the escalation. Escalating
 changes what is said, never what is dosed.
 
+#### Parts 3 and 4 narrowed when the wording was written — 16 August
+
+**Decided 16 Aug (Dan, spec owner).** The four parts above stood for two days
+with no card to render them. The card is `wizard-states.md` §24.24, and writing
+it narrowed two of them. **Parts 1 and 2 are untouched, and part 4's trigger is
+untouched.** What moves is only what the app is permitted to say.
+
+**Part 3's water-change half is withdrawn entirely.** The app does not mention a
+water change on this card, in either direction — it does not ask whether one was
+logged and it does not name one that was. The reason is §22, settled the same
+day: **water changes stay in the trend fit and are not subtracted from
+consumption**, at any layer, and the analytics-layer mass-balance term that used
+to do it was removed. Part 3 was written on 14 August against the older rule,
+where a water change was a correction the app owed the arithmetic. It no longer
+is. Asking about one now invites the keeper to explain away a figure the app has
+decided not to correct for, and then does nothing with the answer — and §22's
+deferral is explicit that the correction is real and is not being made. **A card
+that names it reads as though it were.**
+
+**Part 3's one-off correction half survives in one direction only.** Naming a
+correction the keeper **logged** is a statement of fact from the record and is
+still required. Naming one as **missing** is naming a cause — part 2's own
+prohibition, applied to part 3's own example — and is withdrawn. What §24.24
+carries from part 3 is the retest: *"Test again in two days."* The rest of the
+sentence — *"this may be a testing error or a change in demand"* — is two of the
+six causes and goes with the ask.
+
+**Part 4's cause is withdrawn.** The escalation says the pattern and stops:
+*"Alkalinity has been rising faster than your dose accounts for since 10 August
+/ Three readings running. The dose is unchanged."* **Naming the wrong Setup
+strength was considered and rejected**; `wizard-states.md` §23.5 holds without
+exception, and the argument is recorded there. Three readings running establish
+that the gain is real and persistent — a fact about the arithmetic. They do not
+choose between the six causes this section itself lists as all consistent with
+it, and the strongest candidate is the most expensive to get wrong: a keeper
+told their Setup strength is probably wrong edits a figure that may be right,
+and every dose computed afterwards is wrong with it.
+
+**The escalation carries no retest instruction either.** By the time it fires,
+three retests two days apart have happened; asking for a fourth on the same
+terms asks for evidence the card has just finished reporting.
+
+**What part 4 still is:** a trigger, a count, and a change of wording. Three
+consecutive, counted the way this section already defines, with nothing logged
+the way this section already defines. The action stays `hold`. Nothing about
+when it fires moves — only what it says when it does.
+
 ### The one qualification — the level outranks the arithmetic
 
 **A level at or over the top of its range and still rising keeps its
@@ -1695,6 +1761,14 @@ the wizard's words instead (`wizard-states.md` §0.3). The `state` stays
 `"idle"`: no dose change is being asked for, which is what every consumer of
 that field reads it to mean.
 
+**The wizard's words are `wizard-states.md` §24.24 — written 16 August, two days
+after this paragraph required them.** Until then this section demanded a card
+that echoed a wizard card that did not exist; the gap is `.agent/gap-report.md`
+G-3 and it is closed. **The mark is not a branch.** `wizard-states.md` §2's
+ordered list does not gain a row for it, because a mark on `idle` is not a state
+and adding a third `idle` route to a first-match list would put the gaining hold
+below two branches that can reach the same reading first.
+
 ### Enforced by
 
 Per §14, named rather than asserted:
@@ -1702,6 +1776,12 @@ Per §14, named rather than asserted:
 - `src/test/defects/negative-consumption.test.js` — all four parts, in all
   three engines, plus the qualification and the dose card. 13 assertions;
   12 of them fail against the code as it stood before this rule.
+  **Its wording assertions are now behind canon**, per the 16 August narrowing:
+  any assertion expecting the card to ask about a water change, or the
+  escalation to name a Setup strength, is asserting a rule that has been
+  withdrawn. The rule's arithmetic half — the hold, the clamp, the trigger, the
+  count and the qualification — is unaffected, and none of those assertions
+  moves. Filed as **TW-075** with the card itself.
 - `tests/legacy-port/invariants.js` — `consumption` and `maintenanceDose` are
   never negative (the clamp survives; the earlier attempt broke this by
   returning before it).
@@ -1722,16 +1802,22 @@ tank was making alkalinity out of nothing. That cut was the problem.
 
 Now it holds your dose where it is and tells you what it actually saw: the
 level is climbing faster than your dose accounts for, and the dose has not been
-changed. It does not guess why, because it cannot. It asks the one thing it
-cannot see for itself — did you do a water change or add a one-off correction?
-— and if you did, and logged it, it says so and moves on. If you did not, it
-suggests testing again in two days, because a bad test result is the cheapest
-explanation to rule out.
+changed. It does not guess why, because it cannot. It asks you to test again in
+two days, because a bad test result is the cheapest explanation to rule out.
+If you logged a one-off correction, it can still name that, because that is
+something you told it rather than something it worked out. What it no longer
+does is ask you whether you did a water change: it stopped adjusting for water
+changes on 16 August, so asking would be inviting you to explain away a number
+it has already decided not to correct.
 
 If it happens three readings running with nothing logged against any of them,
-that stops being one odd result. Then it says so plainly: most likely the
-strength you entered in Setup is wrong, or your tank's demand really has fallen
-away. It still does not change your dose.
+that stops being one odd result, and the app says so — that it has been
+happening since whichever day it started, three readings running, with your dose
+unchanged. **It still does not tell you why**, and that is the 16 August
+decision: naming the likeliest cause was considered and turned down, because the
+likeliest one is your bottle strength in Setup, and a keeper told that figure is
+probably wrong will change a number that may well be right — after which every
+dose the app works out for you is wrong too. It still does not change your dose.
 
 The one exception: if the level is already at or over the top of your range and
 still climbing, you do get told to dose less — because at that point it is the
@@ -2501,7 +2587,9 @@ reinvented. All of it applies in both directions.
 
 ### 28.6 What is not settled
 
-Recorded rather than answered. **None of these is authorised.**
+Recorded rather than answered. **None of these is authorised**, except the
+second, which was answered on 16 August and is struck through with its answer
+kept in place rather than deleted.
 
 - **Whether it is a new wizard state or a variant of the correction plan.**
   Structurally it is a correction plan with a signed delta, which argues for
@@ -2509,13 +2597,23 @@ Recorded rather than answered. **None of these is authorised.**
   more than it saves. `wizard-states.md` §3's table gains a row either way, and
   which row it is depends on this answer — which is why no row has been added
   yet.
-- **Which wizard states satisfy "stable and out of band".** §28.2 gives the
-  condition; branch 21c (`off-target`) plainly meets it, and route 12
-  (`worked`, tested steady and not in band) appears to as well. Whether a level
-  that has just finished a staged plan should be offered a return plan in the
-  same breath is a question for Stage 4's gap report, not an answer to be
-  guessed at by an implementer. `wizard-states.md` §24 records it against the
-  card.
+- ~~**Which wizard states satisfy "stable and out of band".**~~ **Closed
+  16 August (Dan, spec owner) — the answer is both, and it is two states, not
+  three.** §28.2 gives the condition; branch 21c (`off-target`) plainly meets it,
+  and route 12 (`worked`, tested steady and not in band) **does too**. A level
+  that has just finished a staged plan **is** offered a return plan in the same
+  breath, and the card is `wizard-states.md` §24.27. The reason is §28.3's own:
+  once the level is steady the dose matches consumption and the dose figure has
+  nothing left to say — it holds the level where it is, and where it is, is
+  wrong. Withholding the offer would leave the keeper parked below their range
+  reading a card that congratulates them, which is the 455 ppm dead end this
+  section was written about. **Two states satisfy §28.2 as written and no third
+  may acquire the offer** without this condition moving with it;
+  `wizard-states.md` §24.3 is amended to say so. **The one card that renders the
+  phrase without satisfying the condition is §24.23**, far below range and
+  usually neither stable nor still — whether that is a correction wearing the
+  return plan's words, or a case for widening the condition, is untouched here
+  and stays at `wizard-states.md` §25.6 item 2.
 - **How the offer is presented.** Constrained now rather than settled: it is
   one offer, not two dose buttons, and it may not share a card with a
   dose-change suggestion (§28.2). Whether it is a link, a sheet or a step in
@@ -2527,6 +2625,11 @@ Recorded rather than answered. **None of these is authorised.**
 
 **One thing that was open on 15 August is now closed:** *"whether the upward
 case is built at all"*. It is built. Symmetrical, same terms, same section.
+
+**And one that was open on 16 August closed the same day:** which states satisfy
+the condition. Two do, both have cards, and the count is now a testable
+assertion rather than an open question — §28.2's exclusion has a fixed set to
+check against.
 
 ### Enforced by
 
