@@ -6,13 +6,134 @@ Decisions no agent may make. Newest at top. Dan clears this file.
 
 ## Open
 
-### 13. What the four late cards and the summary headline left open — 2026-08-16
+### 14. The four that survive Stage 5b — 2026-08-16
+
+Filed by the run that folded `docs/spec/stage-5b-remaining-items.md` into canon.
+**Eight owner decisions cleared the gap report's open list** — ammonia's own
+section, the notice ordering, the off switch's scope, `drifting`, the
+"heading out of range" deletion, the kit-accuracy split in two parts, and the
+negative-consumption suppression, **and the headline tie-break the ordering
+turned out to answer as well**. **Four things are still yours**, and this entry
+replaces items 12 and 13 as the live list rather than adding to them.
+
+**Scope, stated so the count is not read wider than it is.** These four are what
+is left of the gap report's open list — items 12 and 13's lineage. **Item 11 is
+still open on its own terms** and is not counted here: its questions 1, 2 and 3
+(§9's volume ceiling, the 6.9 dKH card overlap, where app-level notices go) are
+carried in canon at `wizard-states.md` §25.6 items 1–3. Its question 4 closed
+today with the ordering.
+
+**Amended after the merge with main — 16 August.** Two staging documents landed
+on main the same evening, `stage-5b-remaining-items.md` in its original form and
+`stage-5c-last-items.md`. **Neither is folded into canon**, and nothing in either
+may be read as canon until it is. What they change about this list: **entry 1 is
+struck** — the parameter tile is decided in stage-5b decision 1 and is now a fold
+waiting to happen rather than a question for you. **Item 11's three surviving
+questions are answered by stage-5c**, along with magnesium's default band
+(TW-052) and Insights, which survives — again, decided, not folded. **TW-063
+stands and is still open on its own terms.**
+
+**~~1. What the parameter tile's chip shows (G-9).~~ — decided 2026-08-16, and
+not yet in canon.** `docs/spec/stage-5b-remaining-items.md` decision 1 answers
+it: **the tile keeps all five elements.** The value, the slider, the position
+word and the sparkline are **one fact shown four ways** — presentation, and the
+app's first rule working as intended — so there are three claims on the tile, not
+four severities: the position word, the steadiness word and the dose chip,
+**every one sourced from `classifyReading`**. Reskinning is Phase 9 and is not
+that decision.
+
+**This is not a question for you; it is a fold that has not happened.** The
+decision landed on the same day as the fold that answered the other seven and
+after it had run, so canon does not carry it yet. **No agent may treat G-9 as
+open**, and none may fold it without the ordinary authorisation.
+
+**2. What an "N of M in range" claim may count (G-29).** And with it, what a
+completely quiet tank's collapsed headline says, since all three of its slots
+drop when there is nothing to report. The candidate recorded with the health
+score's deletion — *"3 of 6 in range, 2 need attention"* — belongs to this
+question and was not adopted.
+
+**3. The severity colours mean direction on one screen and tier on another.**
+§15's mapping is redone in the four registered colours; `paramStatus`
+(`src/lib/dates.js:25-29`) still uses `low` for *under the minimum* and `high`
+for *over the maximum*, on the wizard, the dose expectation, the reading context
+and the backup export. Three options: move `paramStatus` to the tier reading;
+keep direction there and stop using these four colours for it; or register a name
+for the distinction. **TW-072 cannot be built until it is answered.**
+
+**4. Two relationships `reef-chemistry.md` §30 deliberately did not settle.** How
+§30.1's three-readings bar sits against `directional()`'s four-row statistical
+gate where both could apply — §29.5 answered it for nitrate and only for nitrate.
+And whether claiming a dose change **worked** uses §30.2's contradiction bar or
+stays a stability question under §11; `wizard-states.md` §24.6 depends on the
+answer.
+
+**5. `settings.mgAlertLow` (N-2).** A live per-user override at
+`src/lib/dosing/magnesium-gate.js:55`, with no Setup field and no canon entry.
+§18 says alert thresholds are `[user]` adjustable; §21 says Setup asks facts, not
+judgements, and names notification thresholds as a judgement. **The two read
+against each other and the app has half of each.**
+
+**~~6. What breaks an exact tie in §25.1's headline ordering~~ — closed
+2026-08-16, same day.** Carried from item 13, put back to you with the fold, and
+answered: **the fixed parameter order breaks it too** — alkalinity, calcium,
+magnesium, salinity, nitrate, phosphate, potassium, ammonia. *"It was decided
+about the notice list but it applies to both — one order, one reason."* The
+tiles' own order remains not chosen. `wizard-states.md` §25.1 and §25.6 item 6,
+and TW-076 and TW-081 are amended to share one definition of the order rather
+than carry two.
+
+**Two things the fold derived rather than decided**, both written into §25.1 the
+way §20's mapping of *serious* is — implementable, correctable in one line, and
+not to be mistaken for a decision. **pH is not in the fixed parameter order**: it
+names eight parameters and the app has nine, and pH produces notices (§31's *pH
+high* and *CO2 signature*) despite having no alert tier, so it sorts last — **put
+to you on 16 August, confirmed right, and deliberately left derived** so it keeps
+its one-line correctability. And **relationship notices order among themselves by
+the earliest parameter they name**, because tier 3 needs an internal order for the
+same determinism reason as the rest. **Correct either if it is wrong; neither is
+waiting on you.**
+
+**In plain terms.** Four things left, and none of them is holding anything up.
+One is about what the summary line says when your whole tank is fine. One is a
+trap you already know about: the four status colours mean "too low / too high" on
+some screens and "out of range / needs attention" on others. And two are fine
+print in the evidence rules you set on Sunday.
+
+The fifth — the little chip on each tile — **you answered the same evening**, in
+the copy of stage-5b that landed on main: the tile keeps everything it shows,
+because the value, the slider, the position word and the sparkline are one fact
+shown four ways rather than four opinions. That one is waiting on a fold, not on
+you.
+
+The sixth was the tie — two parameters exactly, identically out of range, and
+which one the summary line names first. **You answered it the same day**: the
+same parameter order the notice list got. That one answer covers both screens,
+which means the headline and the list underneath it can never disagree about
+which of two problems comes first.
+
+### ~~13. What the four late cards and the summary headline left open~~ — 2026-08-16, one closed same day, one carried to item 14
 
 Filed by the run that folded five more owner decisions into canon —
 `wizard-states.md` §24.24–§24.27 and §25.1's collapsed headline, answering
 `.agent/gap-report.md` G-1 to G-4 and G-27. **Two items, both small, neither
 blocking Stage 6c**, and both are also carried in canon at `wizard-states.md`
 §25.6 items 5 and 6.
+
+**~~1. Whether §24.24 gains a wording for a *logged* correction.~~ — closed
+2026-08-16, Stage 5b.** **It does not, and it gains no sentence: the card does
+not fire at all when a one-off correction is logged.** A logged correction is the
+first of the six ordinary causes §24 itself lists, so where one is in the record
+the arithmetic is explained and there is nothing to report. Part 3 is spent
+entirely — no water change in either direction, no missing correction, no logged
+one. `reef-chemistry.md` §24, `wizard-states.md` §24.24 and §25.6 item 5.
+
+**~~2. What breaks an exact tie in §25.1's headline ordering.~~ — closed
+2026-08-16, Stage 5b.** Carried to item 14 and answered there the same day: **the
+fixed parameter order breaks it**, the same one the notice list got. One order,
+one reason.
+
+The original text of both, for the record:
 
 **1. Whether §24.24 gains a wording for a *logged* correction.**
 `reef-chemistry.md` §24 part 3 required the app to name a logged water change or
@@ -38,7 +159,7 @@ two parameters are exactly equally far out of range, which one does the summary
 line name first? Nobody will notice the second until it happens; the first is a
 sentence you may or may not want.
 
-### 12. What Stage 5 left open when the numbers went into canon — 2026-08-16
+### ~~12. What Stage 5 left open when the numbers went into canon~~ — 2026-08-16, seven of twelve now closed; the rest are item 14
 
 Filed by the run that folded `docs/spec/stage-5-the-numbers.md` into canon.
 **Eleven decisions answered Part 1 of the gap report; these did not get
@@ -62,10 +183,12 @@ decided. The tile turned out to be better than the code suggested, and its two
 real faults were the vocabulary split (now §15's **range** decision) and bands
 that do not match canon's defaults.
 
-**3. Ammonia needs its own chemistry section (G-22).** §18 now gives it an alert
-level — anything detectable — and §5 records why it has no noise floor. What it
-does not have is a section: `reef-chemistry.md` §13's seven bands do not fit a
-parameter whose target is zero.
+**~~3. Ammonia needs its own chemistry section (G-22)~~ — closed 2026-08-16,
+Stage 5b.** `reef-chemistry.md` **§32**. Two states — undetectable and
+detectable — and not §13's seven bands, because its target is zero. Silence when
+undetectable; one alert-tier notice on a single reading when detectable; no
+trend, no steadiness verdict, no dose, no analysis window. The
+`CONSISTENCY_RULES` entry and the second finding tier go with it. TW-084.
 
 **~~4. The four cards with no state (G-1 to G-4)~~ — closed 2026-08-16, see
 Decisions.** `due`, `worked` route 12, the negative-consumption hold and its
@@ -74,19 +197,35 @@ three-consecutive escalation, and the tested-but-inconclusive case are
 §24.3's return-plan offer, closing `reef-chemistry.md` §28.6's second bullet, and
 §24's parts 3 and 4 are narrowed so no card names a cause.
 
-**5. Whether `drifting` produces a notice (G-21)**, and the "heading out of
-range" warning that currently reconciles two windows in prose.
+**~~5. Whether `drifting` produces a notice (G-21)~~ — closed 2026-08-16,
+Stage 5b.** **It does not: `drifting` is a tile state and nothing else.** The
+"heading out of range" finding is **deleted entirely**, recorded as a deletion
+with its reason — it is a surface reconciling two time windows in prose, which
+§25.2 replaced with a structural fix. `wizard-states.md` §13 and §25.4. TW-080.
 
-**6. The kit-accuracy findings (D-1)** — worked up with three options and not
-decided. §5's decision removes the per-kit noise table but not this question.
+**~~6. The kit-accuracy findings (D-1)~~ — closed 2026-08-16, Stage 5b**, in two
+parts. **Alkalinity's is deleted outright** — ICP does not measure carbonate
+alkalinity, so the comparison cannot exist. **Calcium's and magnesium's keep the
+observation and lose the verdict**: *"your last three calcium readings sat 25%
+above the lab panel"*, and nothing after it. 5% stays as the trigger; 25% goes
+with the verdict it graded. `reef-chemistry.md` §19. TW-083.
 
-**7. Notice ordering (G-28).**
+**~~7. Notice ordering (G-28)~~ — closed 2026-08-16, Stage 5b.** Four tiers —
+alerts, out of range, relationship notices, then a fixed parameter order
+(alkalinity, calcium, magnesium, salinity, nitrate, phosphate, potassium,
+ammonia). Proportional distance ranks the first two tiers; the fixed order breaks
+ties. `wizard-states.md` §25.1. TW-081.
 
 **8. What an "N of M in range" claim may count (G-29)** — which G-27's candidate
 headline depends on.
 
-**9. What a notice *type* is, for the off switch (G-31)**, and where relationship
-notices sit (`wizard-states.md` §25.6 item 4, still open from Stage 3).
+**~~9. What a notice *type* is, for the off switch (G-31)~~ — closed 2026-08-16,
+Stage 5b, and both halves of it.** **A notice type is a parameter**, and off
+includes alerts and safe-bounds excursions — the same scope hide already has,
+because the keeper ran the test and typed the number in, so the app is choosing
+whether to comment rather than informing them of something they do not have.
+**Relationship notices sit third of four tiers** in the ordering, which closes
+§25.6 item 4 as well. `wizard-states.md` §25.1 and §25.4. TW-082.
 
 **The three the fold surfaced, which are new:**
 
@@ -113,6 +252,11 @@ per-user override at `src/lib/dosing/magnesium-gate.js:55`, with no Setup field
 and no canon entry. §18 says alert thresholds are `[user]` adjustable; §21 says
 Setup asks facts, not judgements, and names notification thresholds as a
 judgement. **The two read against each other and the app has half of each.**
+
+**Superseded by item 14 — 2026-08-16.** Of this item's twelve, **seven are now
+closed**: entries 1 and 4 the same day by the four-cards fold, and entries 3, 5,
+6, 7 and 9 by Stage 5b. **Entries 2, 8, 10, 11 and 12 survive and are item 14's
+first five.** Read item 14 for the live list; this entry stays for its reasoning.
 
 **In plain terms.** Eleven questions about numbers are answered and written
 down. Twelve things were still waiting on you, and the urgent one — the line
@@ -165,10 +309,18 @@ one notice per parameter and nothing else. **Open: Tasks is the likely home and
 the fit is unproven** — Tasks today holds reminders the user created, and these
 are the app noticing something. Work through when Tasks is specified.
 
-**4. Where do relationship notices sit?** The small set that belong to no
-single parameter — two parameters falling together, the magnesium gate — need
-their own slot in a summary that is otherwise one notice per parameter.
-`wizard-states.md` §25.4 has the wording; the placement is open.
+**~~4. Where do relationship notices sit?~~ — closed 2026-08-16, Stage 5b.** The
+notice ordering places them: **the third of four tiers**, after every alert and
+every out-of-range parameter, before everything else, ordered among themselves by
+the earliest parameter they name. `wizard-states.md` §25.1 and §25.4, and §25.6
+item 4. **G-26's other question is not this one and is not closed by it** —
+whether hiding a relationship notice hides it for both parameters is a question
+about hiding, not placement.
+
+The original text, for the record: *the small set that belong to no single
+parameter — two parameters falling together, the magnesium gate — need their own
+slot in a summary that is otherwise one notice per parameter.
+`wizard-states.md` §25.4 has the wording; the placement is open.*
 
 **One thing that is not on this list and is worth a line.** §22's `sliding`
 verdict renders as "Moving up/down fast", and §25.2 now says the steadiness

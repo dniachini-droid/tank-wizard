@@ -9,6 +9,29 @@ proceeds.
 
 ---
 
+## Folded into canon 16 August 2026 — and what this file now is
+
+**This file is the decision record, not the reference.** Decisions 2 to 8 below
+are in canon: ammonia is `reef-chemistry.md` **§32**, its own section; the notice
+ordering and the off switch's scope are `wizard-states.md` **§25.1**;
+`drifting`'s answer is **§13** and the deletion it causes is **§25.4**; the
+relationship-notice placement is **§25.1** and **§25.4**; the kit-accuracy split
+is `reef-chemistry.md` **§19**; and the negative-consumption suppression is
+`reef-chemistry.md` **§24** with `wizard-states.md` **§24.24**. **Where this file
+and canon differ, canon wins.**
+
+**Decision 1 is not in canon.** The fold covered the seven that follow it, and
+the parameter tile (G-9) was still recorded as open when it ran. **It is decided
+here and awaiting a fold** — `.agent/needs-dan.md` item 14 carries it as such,
+and no agent may treat it as unanswered.
+
+The implementation is filed as **TW-080** to **TW-084**, all untagged, plus
+amendments to **TW-075** and **TW-076** where these decisions overtook them.
+**TW-084 is the ammonia item** — it was filed as TW-079 and renumbered when
+Stage 6a took that number on main. The open list at the end of this file is
+reconciled below and is `.agent/needs-dan.md` item 14.
+
+---
 # 1. The parameter tile keeps all five elements
 
 Gap report G-9. `ParamCard` shows the value, a slider with the range edges, a
@@ -194,6 +217,75 @@ No card, no escalation, no counting toward the three-consecutive threshold.
 
 ---
 
+
+# What the fold added, and where to read it
+
+The decisions above are the owner's words. Canon carries them plus the
+consequences the fold had to settle to make them implementable. **Nothing here is
+a new decision** — each is either a restatement, a boundary, or a rule already in
+canon applied to the new text.
+
+**Ammonia** (`reef-chemistry.md` §32). "Undetectable" and "detectable" are given
+a definition the app can apply — **a reading above zero** — because §5 abolished
+per-kit figures and ammonia is not to reacquire one. The single reading is stated
+as carrying **no evidence bar**: §30's three bars are about *movement*, and
+detectability is not a movement claim. `wizard-states.md` §13 is amended to say
+ammonia falls **outside** its seven bands rather than reaching only some of them,
+which is the one place the existing rule did not stretch. The two findings
+`ammonia-high` and `ammonia-detected` collapse to one — a second tier is a band.
+The `CONSISTENCY_RULES` ammonia entry is deleted rather than left as dead
+configuration (§22).
+
+**The ordering** (`wizard-states.md` §25.1). The proportional-distance key is
+stated to be **a ranking key and not a margin**, so `reef-chemistry.md` §27
+rule 3 is untouched — it gates no recommendation and relaxes no constraint. The
+fixed order being a **total order** is what makes the list deterministic, which
+is the property being bought. And it breaks the collapsed headline's tie as well
+as the list's — *one order, one reason* — so the headline and the list beneath it
+can never name two equally out-of-range parameters in opposite orders.
+
+**Off** (`wizard-states.md` §25.1). Recorded as matching **hide** exactly, on
+§20's own reasoning, because two controls with different exception lists teach
+the keeper that the rules are arbitrary. What off does *not* do is stated: the
+reading is still recorded, charted and tiled, and the engine still assesses the
+parameter (§19). It removes the parameter from the notices — the app speaking
+first.
+
+**The deleted warning** (`wizard-states.md` §25.4). Recorded **as a deletion with
+its reason**, next to the others, so the empty slot in the card set is not read
+as an invitation to write a replacement.
+
+**Kit accuracy** (`reef-chemistry.md` §19). The finding's two live figures split:
+**5% is ratified as the trigger** on §31's terms, and **25% goes with the
+severity ladder it graded** — one wording, one severity, at `watch`, because
+`act` would contradict a notice that asks for nothing.
+
+**The negative-consumption suppression** (`reef-chemistry.md` §24). §24 part 3 is
+now **spent entirely** — no water change in either direction, no missing
+correction, no logged one — and the suppression is noted to agree with part 4's
+count, which never counted an interval with a correction logged in it.
+
+---
+
+# Two things the fold derived rather than decided
+
+Both are written into §25.1 the way §20's mapping of *serious* and §25.1's own
+slot table are written — **so the rule is implementable, correctable in one line,
+and not mistaken for a decision.**
+
+**pH is not in the fixed parameter order.** The order names eight parameters and
+the app has nine. pH has no alert tier but does produce notices — §31's *pH high*
+and *CO2 signature* are both ratified. **It sorts last**, after ammonia, as the
+only placement that adds nothing to what was decided. **Put to the owner and
+confirmed right, and left derived rather than promoted** — so it keeps its
+one-line correctability, and so the fixed order still names eight.
+
+**Relationship notices order among themselves by the earliest parameter they
+name** in the fixed order. Tier 3 needs an internal order for the same
+determinism reason as the others.
+
+---
+
 # What is now closed
 
 Every item on the gap report's open list, plus the two carried from tonight's
@@ -211,6 +303,28 @@ headline tie-break, and the logged-correction case.
   remaining role once a plan spreads a correction over days.
 - **Magnesium's default band** ships 1250–1400 against §2 layer 3's 1275–1425
   (TW-052).
-- **TW-063** — the golden sweep is structurally blind to cross-parameter rules,
-  so Stage 6 could break the magnesium gate without the fingerprint moving.
+- **TW-063** — the golden sweep feeds each engine only its own element's
+  readings, so it is structurally blind to cross-parameter rules and could let
+  Stage 6 break the magnesium gate without the fingerprint moving.
 - **Insights** (§25.5) — deliberately unspecified, may not survive.
+
+## Reconciled after the merge — 16 August
+
+Two lists were written against this file on the same day and both are kept.
+
+**Five of the six above are since answered by `stage-5c-last-items.md`** — the
+6.9 dKH overlap, app-level notices going to Tasks, the volume ceiling, magnesium's
+default band, and Insights, which survives. **TW-063 stands.** Stage 5c is a
+staging document like this one and **is not folded into canon**; nothing in it
+may be read as canon until it is.
+
+**Four items are open on the other lineage** — the one `.agent/needs-dan.md`
+items 12 and 13 carried, now item 14: what an **"N of M in range"** claim may
+count (G-29); the **severity colours** meaning direction on one screen and tier
+on another; the **two relationships `reef-chemistry.md` §30 did not settle**; and
+**`settings.mgAlertLow`** (N-2). None blocks Stage 6.
+
+**And one is decided here but not in canon: the parameter tile** (G-9, decision 1
+above). It was open when the fold ran and closed by this file. It is carried at
+item 14 as **decided, awaiting a fold** — not as a question for the owner, and
+not as canon.

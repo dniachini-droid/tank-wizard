@@ -372,9 +372,13 @@ any kit shows.
 ### Ammonia is deliberately not in this table
 
 Ammonia is graded on detectability, not on movement: its target is zero, so
-there is nothing to fit a floor against. §18 carries its alert level. It still
-has no chemistry section of its own, which is recorded as open rather than left
-to be discovered — `.agent/needs-dan.md`, and G-22 of `.agent/gap-report.md`.
+there is nothing to fit a floor against. §18 carries its alert level.
+
+**It now has its section — §32, decided 16 August, Stage 5b**, and this entry is
+amended with it: ammonia has no noise floor because it is **never graded for
+movement at all**, not merely because a floor is hard to site. §32.5 states it
+as a rule rather than as a consequence of this table, and §32 also states that
+ammonia will not gain a row here later.
 
 ### A consequence, accepted
 
@@ -1373,8 +1377,14 @@ structural difference from the three above and is deliberate in both cases.
 
 **Ammonia — anything detectable.** The target is zero, so there is no band edge
 to hang a margin from and no midpoint that means anything. The tier fires above
-whatever the kit can resolve. §5 records why ammonia has no noise floor and that
-it still needs a chemistry section of its own.
+whatever the kit can resolve. §5 records why ammonia has no noise floor.
+
+**§32 is now that section, and it tightens this row rather than restating it —
+16 August, Stage 5b.** *"Anything detectable"* is given a definition the app can
+apply: **a reading above zero**, since §5 abolished per-kit figures and ammonia
+is not to reacquire one. §32 also settles what this table cannot say — that
+ammonia has **two states and not seven bands**, that it is **silent at zero**,
+and that the tier fires on **one reading** with no evidence bar in front of it.
 
 **Salinity — below 33 or above 36 ppt.** Sourced rather than judged. The target
 is 35 ppt / 1.025 SG and most reef tanks run 33–35; below 31 kills coral over
@@ -1436,6 +1446,88 @@ user may still edit their own range in Setup at any time — §2 is untouched.
 - **Kit change flag `[user]`.** When the user records a change of test kit or
   brand, the app marks that point and must not read the step change across it as
   consumption or trend. It requests a fresh baseline.
+
+### The lab-paired comparison — decided 16 August, Stage 5b
+
+**Decided 16 Aug (Dan, spec owner).** `.agent/gap-report.md` D-1 was the one
+deletion in that report worked up with three options rather than taken as
+written, and it is answered in two parts, differently, because the two halves
+are not the same question.
+
+The finding at issue is `kit-<param>` (`findings.js:191-211`), which compares a
+run of the keeper's own readings against ICP panels taken alongside them and
+says: *"Your alkalinity kit read 25% higher than the lab across 3 paired
+comparisons … worth replacing the reagent before acting on it."* **The rule it
+breaches is the third bullet above, and `wizard-states.md` §14 states the same
+thing.** The argument for an exception was that the rule's stated reasoning —
+*absolute accuracy is not required, users target stability against their own
+kit* — is an argument about **drift**, and an independent lab measurement is not
+drift.
+
+#### Alkalinity: deleted outright, and not for the rule's reason
+
+**`kit-alkalinity` goes, and it would go even if the rule above did not exist.**
+
+**ICP does not measure carbonate alkalinity.** An ICP panel measures elements.
+Alkalinity is not an element — it is a titration result, the water's capacity to
+neutralise acid, carried mostly by bicarbonate and carbonate. **The two numbers
+being compared are not measurements of the same quantity**, so the percentage
+between them is not an error, a bias or a calibration offset. It is arithmetic
+on two different properties.
+
+**This is a stronger deletion than option (a).** The other two findings would
+survive a decision to permit lab-paired comparisons; this one would not, because
+there is no comparison to permit. **A finding that cannot be made correct is not
+a candidate for an exception**, and no future decision about ICP reopens it.
+
+#### Calcium and magnesium: the observation survives, the verdict does not
+
+**ICP does measure calcium and magnesium**, as elements, and against the same
+water the keeper's kit measured. The comparison is real.
+
+**What survives is option (c): the statement about the comparison, without the
+statement about the kit.**
+
+> *"Your last three calcium readings sat 25% above the lab panel taken the same
+> day."*
+
+**And nothing after it.** No *"your kit is reading high"*, no *"worth replacing
+the reagent"*, no *"before acting on it"*, and no adjustment to any figure the
+app computes. **The kit is not named as wrong, because the app does not know
+which of the two is wrong** — a lab is a better measurement, not a true one, and
+the sample was drawn, stored and posted by the keeper.
+
+**This is §23.5's shape applied to a number instead of a cause:** report what
+the record contains, stop before the explanation. Two readings disagree, both
+are in the app, and saying so is a fact. Saying which one is right is the
+verdict that goes.
+
+**Nothing downstream moves.** The keeper's readings remain what every band,
+verdict, trend and dose is computed from. This finding corrects nothing,
+suppresses nothing and gates nothing — it is a sentence, and if the keeper acts
+on it the acting is theirs.
+
+**The two live figures split, and neither is redesigned.** `findings.js:199-200`
+carries 5% and 25%: below 5% the finding does not fire at all, and at 25% it
+switches to severity `act` and the harsher of its two wordings.
+
+- **5% is ratified as the trigger**, on §31's terms — it has been live, it has
+  produced no complaint, and its fault was having no entry in canon rather than
+  the wrong value. Below it there is nothing worth remarking on, and a finding
+  that fires on every paired difference is noise.
+- **25% goes with the verdict it graded.** A severity ladder is the app ranking
+  how wrong the kit is, which is precisely the claim being removed. **One
+  wording, one severity, at `watch`** — the observation reports a comparison and
+  asks for nothing, which `act` would contradict.
+
+**No new figure is minted by this decision**, and an implementer may not mint
+one either: the pairing window at the call site
+(`computeCalibration(readings, icps, paramDefs, 7, kitChanges)`) is untouched
+and uncanonised here, which is the state it was already in.
+
+Placement is unchanged and unsettled: `kit-*` is one of the six ids
+`.agent/gap-report.md` G-34 has no home for, and `wizard-states.md` §25.6 item 3
+still owns that question.
 
 ---
 
@@ -1699,6 +1791,55 @@ carries from part 3 is the retest: *"Test again in two days."* The rest of the
 sentence — *"this may be a testing error or a change in demand"* — is two of the
 six causes and goes with the ask.
 
+#### The logged correction closes it — and the answer is silence, not a sentence
+
+**Decided 16 Aug (Dan, spec owner), Stage 5b**, answering the question the
+wording left open at `wizard-states.md` §25.6 item 5 and `.agent/needs-dan.md`
+Open item 13 entry 1: *does §24.24 gain a second wording for the case where a
+one-off correction **has** been logged?*
+
+**No. The card does not fire at all when a one-off correction is logged.**
+
+**Part 3's surviving half is therefore withdrawn too**, and part 3 is now
+entirely spent: not a question about a water change, not a sentence naming a
+missing correction, and not a sentence naming a logged one. **What replaces it
+is a suppression** — the whole of §24 stops short of speaking.
+
+**The reasoning is that a logged correction is not an anomaly.** This section
+opens by listing six ordinary causes of a negative consumption and a one-off
+correction is the first of them. Where one is in the record, **the arithmetic is
+explained and there is nothing to report**: the level rose faster than the
+maintenance dose accounts for because the keeper deliberately poured something
+extra, and the app was told so at the time. A card that says *"alkalinity is
+rising faster than your dose accounts for — you logged a correction on the
+14th"* is the app announcing a surprise and then immediately explaining it away.
+**The keeper does not need to be told the consequence of their own action, in
+the same breath as being told it looked like a problem.**
+
+**This is the cheaper of the two mistakes, and both were priced.** A wording for
+the logged case is a sentence nobody reads; suppressing it costs a real signal
+only if a logged correction and a genuine second cause coincide — and that case
+resolves itself, because part 4's counting rule is unchanged and the run
+resumes as soon as the correction leaves the window.
+
+**Parts 1, 2 and 4 are untouched, and so is every trigger.** Hold is still the
+action. The escalation is still three consecutive negatives with nothing logged,
+still counted from the newest interval backwards, and **"nothing logged" already
+means what it needs to mean here** — no correction for that element dated inside
+the window the trend was fitted over. An interval with a logged correction was
+never counted; it now shows nothing either. **The suppression and the count now
+agree**, which they did not while the card had a wording for a case the count
+excluded.
+
+**What "logged" means is this section's existing definition and gains nothing
+new:** a one-off correction for **that element**, dated inside the window the
+trend was fitted over. A correction for a different element does not suppress
+this card, and neither does one that predates the window. **A water change never
+suppresses it either** — the water-change half is withdrawn in both directions,
+and §22's rule is why: a water change is inside the trend fit and is not
+something the app corrects for, so it cannot be the explanation the app accepts
+for the figure it produced.
+
 **Part 4's cause is withdrawn.** The escalation says the pattern and stops:
 *"Alkalinity has been rising faster than your dose accounts for since 10 August
 / Three readings running. The dose is unchanged."* **Naming the wrong Setup
@@ -1891,9 +2032,17 @@ parameter's thresholds, trend logic or evidence bar.**
 | Group | Parameters | Where its reasoning is written |
 |---|---|---|
 | Dosed, and already assessed | alkalinity, calcium, magnesium | §1–§11, §16–§24 — in full |
-| Assessed with borrowed and wrong reasoning | phosphate, nitrate | **nowhere** — TW-029 |
+| ~~Assessed with borrowed and wrong reasoning~~ **written 16 Aug** | phosphate, nitrate | **§29** |
+| ~~Not assessed at all today~~ **written 16 Aug, Stage 5b** | ammonia | **§32** |
 | Needs its own treatment; not assessed at all today | salinity | **nowhere** — TW-030 |
 | Different data source entirely | ICP panels | **nowhere** — not scheduled |
+
+**Amended 16 August.** This table listed four rows and **ammonia was not one of
+them** — the parameter with the shortest path from a reading to a dead tank was
+missing from the list of what the engine must cover, which `.agent/gap-report.md`
+G-22 found and this row closes. Phosphate and nitrate's *"nowhere"* is closed by
+§29 and ammonia's by §32. **Salinity's is not**, and the sentence below still
+governs it.
 
 **Naming a parameter in this table does not authorise inventing its
 thresholds.** Each of the last three needs its own reasoning written into this
@@ -3193,3 +3342,194 @@ impossible consumption figure, one on the calcium-to-alkalinity relationship,
 and two on pH. They were right; they were just not written down anywhere. Now
 they are. Everything else with an unexplained number in that file belongs to a
 check that is being removed, and a number on its way out does not need a rule.
+
+---
+
+## 32. Ammonia
+
+**Decided 16 Aug (Dan, spec owner), Stage 5b: ammonia gets a section of its own,
+because it does not fit the bands.** This answers G-22 of
+`.agent/gap-report.md` and `.agent/needs-dan.md` Open item 12 entry 3, the last
+of the four parameters the engine covers with no reasoning written for it.
+
+Ammonia has been in the app since before any of this document existed. It is in
+`PARAM_DEFS` with `idealAt: "min"`, it has its own branch in the reading
+confirmation (`ReadingConfirmation.jsx:343-353`), two findings of its own
+(`findings.js:213-236`), and a `CONSISTENCY_RULES` entry it can never use. §5
+records why it has no noise floor and §18 gives it an alert level. **What it has
+never had is a section, and §25's coverage table did not even list it.**
+
+### 32.1 Why a section, and not a row in an existing one
+
+**Every other parameter has a target *range*.** Two edges, a width and a
+midpoint. §2's three layers, §18's alert offsets, §13's seven bands in
+`wizard-states.md`, §25.1's ordering fraction and §27's margins are all built on
+that shape.
+
+**Ammonia's target is zero**, and none of it survives the substitution:
+
+- there is no midpoint to hang an alert offset from — §18 already says so, and
+  states ammonia's tier as a fixed level for that reason;
+- there is no range width to divide a distance by, which is the key §25.1's
+  ordering is built on;
+- there is no lower half at all, so `out-of-band-low`, `alert-low` and half of
+  every rule that pairs a high case with a low one are unreachable;
+- `drifting` — inside the band, trending toward an edge — has no meaning where
+  the band is a point;
+- and `in-band` would have to mean *exactly zero*, which is a value, not a band.
+
+**Six of the seven bands are unreachable and the seventh is a category error.**
+`wizard-states.md` §13 says a parameter with no alert tier still has all seven
+bands available to it and simply never classifies into two of them. **Ammonia is
+the one parameter that rule does not cover**, and §13 is amended to say so
+rather than to stretch.
+
+### 32.2 Two states, and that is the whole classification
+
+| State | Condition | What the app does |
+|---|---|---|
+| **Undetectable** | the reading is zero | **nothing at all** |
+| **Detectable** | the reading is above zero | **one notice, at alert tier** |
+
+**There is no third state and no gradation inside either one.** The app holds no
+per-kit ammonia resolution and does not want one — §5 removed per-kit figures
+from this document entirely, and reintroducing them for the one parameter with
+no noise floor would be the same mistake twice. **What the keeper types is what
+the app judges:** a reading logged as zero is undetectable, and anything above
+it is detectable.
+
+**The two live findings collapse to one.** `ammonia-high` and `ammonia-detected`
+are two tiers over one state. A second tier is a band, and this section has
+none: 0.25 ppm and 2.0 ppm are the same verdict, which is that ammonia is
+present and should not be.
+
+### 32.3 Silence when undetectable
+
+**Ammonia says nothing when it is zero, and this is the decision rather than an
+omission.**
+
+Almost every ammonia reading on an established tank is zero. A parameter that
+confirms it is fine every time it is tested is a line the keeper stops reading,
+and the moment that costs something is the one time it says the other thing.
+**Ammonia buys its alert by never spending it on reassurance.**
+
+Concretely: **no verdict, no notice, no tile state, no entry in the tank summary
+and no clause in §25.1's collapsed headline.** The reading is still stored,
+still charted and still shown as a number on its own tile like any other. What
+it does not get is anything that speaks about it.
+
+**This is the one exception to the default that every parameter renders a
+verdict.** `wizard-states.md` §19 covers every parameter and §20 allows one live
+notice each; **one is a ceiling, not a quota**, and ammonia's ordinary state
+sits under it at zero. §24.1's shape — *"Alkalinity is holding at 8.5 dKH"* —
+has no ammonia equivalent and is not to be written for one.
+
+### 32.4 The notice when detectable
+
+**One notice, at alert tier, on the first reading.** §18 sets the tier and this
+section sets the evidence: **one reading is enough, and no second reading is
+waited for.**
+
+**Ammonia is the only parameter where a single reading is grounds for acting.**
+§30's three evidence bars are bars on claims about *movement* — three readings
+to establish it, two to contradict a dose change, two to claim no response —
+and detectability is not a movement claim. Nothing in §30 applies here and
+nothing from it may be imported: a rule requiring a second detectable ammonia
+reading before saying anything would be an evidence bar on a fact.
+
+**It is serious under §20's mapping**, being alert tier, so hiding it asks for
+the confirmation §20 and §25.1 already specify. That is a speed bump, not an
+exception, and it is not a new class.
+
+**What the notice may say is bounded by rules that already exist.** §14's
+message contract, `wizard-states.md` §23.5 — never speculate about causes — and
+§29.6's no-levers rule read across to a parameter with no dose. **The app names
+the level and stops.** A cycle that has not finished, a dead animal, a filter
+crash, an overfeed and a dosing accident are all consistent with the same
+reading, which is §24's argument in a different section: naming one is a guess
+wearing a diagnosis's clothes. **Naming the target — zero — is not a lever.** It
+is a figure this document holds, and it is the whole of what makes the reading
+mean something.
+
+**The wording itself is not drafted here.** It belongs to `wizard-states.md`
+§24 and §25.4, and it is drafting work constrained by a decided rule rather than
+a decision of its own — the same standing as §25.2's `sliding` headline. Filed
+untagged.
+
+### 32.5 What ammonia does not get — stated, so nothing is inferred
+
+**No trend.** Ammonia is never graded for movement in either direction. §5 has
+no floor for it and will not gain one. Two detectable readings are two
+detectable readings; 0.5 followed by 0.25 is not progress the app reports,
+because the verdict at 0.25 is the verdict at 0.5. **The app never says ammonia
+is falling**, and a keeper watching it come down is reading the chart, which is
+there for exactly that.
+
+**No steadiness verdict.** §22's six consistency verdicts do not apply, and the
+`CONSISTENCY_RULES` ammonia entry — live, and unreachable since it was written —
+goes. Steadiness answers *how consistent has this been over the window*, and a
+parameter whose only acceptable value is a single point has no spread worth
+grading. A tank at zero all month is not *dialled in*; it is normal.
+
+**No dose.** Ammonia is not dosed, has no product, no strength, no rail and no
+maintenance figure. §2's ordered list in `wizard-states.md` does not gain a row,
+§28's return plans do not reach it — there is no level to walk home, only a
+presence that has to be absent — and §12's refusals already cover the rest: the
+app does not compute a correction for a parameter it has no dosing model for.
+
+**No analysis window.** §4 sets none for ammonia and none is implied by
+anything here. **Each reading is judged alone.** That is what §26 — position is
+the last reading — amounts to when there is only ever one question to ask of it,
+and it is why none of §4's cadences, §7's three-reading minimum or §11's
+movement rule has any purchase on this parameter.
+
+### 32.6 The off switch reaches it, and that is intended
+
+`wizard-states.md` §25.1's **off** switch, decided the same day, is **per
+parameter and includes alerts**. **Ammonia's notice can therefore be turned
+off.** This is recorded here rather than left to be discovered, because it is
+the sharpest case the switch has and it was decided with this case in view.
+
+The reasoning §25.1 gives does not weaken for ammonia: **the keeper ran the test
+and typed the number in.** The app is choosing whether to comment on a figure
+already in front of them, not withholding something they do not have. A keeper
+who turns ammonia off has seen the number, and an app that refuses to let them
+is protecting them from their own reading.
+
+### Enforced by
+
+Per §14, named rather than asserted: **nothing asserts any of this today, and
+three live behaviours contradict it.** The two-finding split (`findings.js:213-
+236`), the `CONSISTENCY_RULES` ammonia entry, and the reading confirmation's own
+ammonia branch, which was written before this section existed and has not been
+read against it.
+
+Filed untagged as **TW-084**. The checks it needs: a zero reading producing no
+notice, no verdict and no headline clause anywhere; any positive reading
+producing exactly one alert-tier notice; and no trend, steadiness verdict or
+dose figure reachable for ammonia from any surface.
+
+### In plain terms
+
+Ammonia is the odd one out, because the only number you want is zero. There is
+no range to be inside, so the seven categories the rest of the app uses simply
+do not apply to it.
+
+So it works the other way round from everything else. **When it is zero, the app
+says nothing at all** — no tile colour, no reassuring line, nothing in the
+summary. That is deliberate: if it told you every time that ammonia was fine,
+you would stop reading it, and the one time it mattered you would scroll past.
+
+**The moment it is not zero, you get one notice, straight away, at the top
+tier.** One reading is enough — this is the one thing in the app that does not
+wait for a second test to be sure. It tells you the number and that it should be
+zero, and it does not guess why or tell you what to do, because the app cannot
+see your tank.
+
+It never says ammonia is rising or falling, never grades how steady it has been,
+never suggests a dose, and never looks at a window of readings. There is one
+question — is it zero — and it asks it of the last reading.
+
+And you can turn it off, like anything else. You tested it and you typed the
+number in; the app is deciding whether to comment on something already in front
+of you, not keeping it from you.
