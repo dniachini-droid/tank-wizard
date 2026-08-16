@@ -183,7 +183,31 @@ values, the alert widths. **These are Stage 5's decision list.**
 
 ---
 
-## STAGE 5 — The numbers *(Dan)*
+## STAGE 5 — The numbers *(Dan)* ✅ done
+
+**Done 16 August 2026, in one session**, from `docs/spec/stage-5-the-numbers.md`,
+now folded into canon and reduced to a decision record. **Eleven decisions**
+answering Part 1 of `.agent/gap-report.md`.
+
+**The specification is `reef-chemistry.md` §5, §11, §18, §30 and §31** — one
+noise-floor table for every parameter, all absolute; movement as magnitude or
+persistence; alert levels for ammonia and salinity and none for potassium and
+pH; the three evidence bars; and the five findings thresholds that survive.
+**Its surfaces half is `wizard-states.md` §13, §15, §22, §25.1 and §25.2**,
+where the health score and `paramContext` are deleted, position becomes
+**range**, the severity mapping drops to the four registered colours, and the
+steadiness panel follows the keeper's selected window.
+
+**The one canon-versus-canon contradiction is resolved: §28 wins over §18**, and
+§18's retarget clause is withdrawn.
+
+**Stage 6a takes its thresholds from these sections.** The implementation is
+**TW-064 to TW-074**, all untagged. **Twelve questions are carried open and are
+Dan's** — `.agent/needs-dan.md` Open item 12; the pressing one is G-27, the
+summary headline that replaces the deleted score.
+
+The rest of this section is what the stage was scoped to do, kept as the record
+of what it was asked for.
 
 The chemistry decisions Stage 4 surfaces. Known already:
 
