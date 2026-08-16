@@ -280,14 +280,24 @@ export function correctionProgress(plan, def, readings, today, maintenanceNow) {
   const bandWidth = def.max - def.min;
   const midpoint = (def.min + def.max) / 2;
   /* This read treats the floor as an absolute value in the element's own
-     unit, which holds for every element that reaches this function today —
-     the three "absolute"-mode entries, verified against §9's worked table.
+     unit, which holds for every element that reaches this function — the
+     three "absolute"-mode entries, verified against §9's worked table.
+
      STABILITY_RULES' two "percent"-mode entries (phosphate, nitrate) carry a
      proportion in the same field, and read here it would bind: at phosphate's
      default band, 2 × 0.02 beats bandWidth/3 and sets the zone to 57% of the
-     band where §9 asks for a middle third. Whoever wires either parameter
-     into a correction path must settle that floor's unit first —
-     .agent/backlog.md TW-029 works up the options. */
+     band where §9 asks for a middle third.
+
+     CLOSED, not latent — reef-chemistry.md §29.8, decided 16 Aug. Neither
+     nutrient reaches this function, and per §29.6 neither ever will: the app
+     names their level and stops, so there is no correction (§9) and no drift
+     back (§28) for an arrival zone to belong to. The mismatch is unreachable
+     by design rather than by an accident of today's call sites, so the floors
+     are left alone and no branch is added for a case that cannot occur.
+
+     If you are here because you are giving phosphate or nitrate a correction
+     path, stop: §29.6 forbids it, and §29.8 is the subsection you reopen
+     first. Nothing else can make this read wrong. */
   const noiseFloor = (STABILITY_RULES[def.key] || {}).noiseFloor || 0;
   const zoneWidth = Math.min(bandWidth, Math.max(bandWidth / 3, 2 * noiseFloor));
   const zoneMin = midpoint - zoneWidth / 2;
