@@ -599,7 +599,7 @@ export function ReefConsoleInner() {
            left in storage untouched, and nothing re-reads it. Anyone who has
            not run it keeps whatever they have, per the 16 August decision that
            stored values are left alone for now; confirming the ones that were
-           never typed by hand is TW-054. */
+           never typed by hand is TW-061. */
       const finalSettings = { ...DEFAULT_SETTINGS, ...(st || {}) };
       const doseSeedFields = ["dailyDoseMl", "calciumDoseMl", "magDoseMl"];
       const needsSeed = !st || doseSeedFields.some((f) => st[f] == null);

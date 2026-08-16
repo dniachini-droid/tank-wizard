@@ -592,7 +592,7 @@ concept. The three that shipped alongside it are banned: "Worth knowing about"
 (`src/components/Setup.jsx:478-491`), and "notification" — including in §20's
 confirmation sentence, which is restated there. Owner quotations elsewhere in
 this document are left verbatim; a quotation records what was said, and the
-ban is on what the **app** says. `.agent/backlog.md` TW-031 carries the
+ban is on what the **app** says. `.agent/items/TW-031.md` carries the
 restated sentence.
 
 Two words are deliberately **not** in that never-use column, because they are
@@ -829,7 +829,7 @@ with a line noting hidden notices can be brought back from the tank summary.
 **The sentence changed on 14 August**, from "a serious notification" to "a
 serious notice", when §15 registered **notice** as the one word for the
 concept. The wording was settled before the registry entry existed; the
-decision that created the entry restated it. `.agent/backlog.md` TW-031 quotes
+decision that created the entry restated it. `.agent/items/TW-031.md` quotes
 the restated version.
 
 **Serious** is the app's existing severity vocabulary and not a new category: a
@@ -1100,7 +1100,7 @@ grading, which is the one thing §13's last row exists to prevent.
 Per §10, named rather than asserted: **nothing asserts §22 today.** Three
 checks would: that the verdict set is exactly these six, that no verdict
 renders calmer than its own reading's band, and that an ungradeable parameter
-refuses instead of grading. Filed in `.agent/backlog.md`; until they exist this
+refuses instead of grading. Filed in `.agent/items/`; until they exist this
 section is an intention, and `scripts/verify/wordingcheck.mjs` covers one field
 of one loop in one function.
 

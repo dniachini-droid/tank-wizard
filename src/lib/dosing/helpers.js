@@ -1,5 +1,5 @@
 import { CORRECTION_MAX_RATE, SAFE_DAILY_RISE } from '../analytics/safe-rate.js'
-import { fmtAmount, fmtVal } from '../analytics/time-in-range.js'
+import { amountDecimals, fmtAmount, fmtVal } from '../analytics/time-in-range.js'
 import { byNewest, byOldest, minutesOf, nowTime } from '../analytics/time-of-day.js'
 import { dayNum } from '../analytics/water-changes.js'
 import { daysBetween, todayStr } from '../dates.js'
@@ -57,6 +57,36 @@ export function capDoseStep(wanted, currentDose, level, def, rate) {
   const pct = headingWrong ? 1.0 : unsafe ? 0.5 : DOSE_STEP_CAP;
   const cap = currentDose * pct;
   return Math.max(currentDose - cap, Math.min(currentDose + cap, wanted));
+}
+
+/* ---- Is the recommendation actually a change? -------------------------------
+ *
+ * One implementation for all three engines, because it was one line copied
+ * three times and wrong in all three (TW-050):
+ *
+ *   out.action = next > out.currentDose ? "increase" : ...
+ *
+ * `next` has been rounded to the doser's increment by the dose constraints;
+ * `currentDose` comes out of the dose log and has not. A logged 10.8 stored as
+ * 9 x 1.2 is 10.799999999999999, so the comparison found an "increase" of
+ * 1.8e-15 and the app told the keeper to raise a dose to the figure they were
+ * already pouring.
+ *
+ * So compare at the precision the dose is DISPLAYED to — `fmtAmount`, which is
+ * what every surface renders these through — rather than raw. Two doses that
+ * render as the same text are the same dose as far as the user can act on it,
+ * and a direction the user cannot see is not a direction worth naming.
+ *
+ * The COARSER of the two precisions governs, because fmtAmount scales decimals
+ * to magnitude: 9.999 renders "10.00" and 10.001 renders "10.0", and judging
+ * that pair at 2dp would report a change of 0.002 mL that no display shows.
+ */
+export function doseAction(next, currentDose) {
+  const dp = Math.min(amountDecimals(next), amountDecimals(currentDose));
+  const f = 10 ** dp;
+  const a = Math.round(next * f) / f;
+  const b = Math.round(currentDose * f) / f;
+  return a > b ? "increase" : a < b ? "decrease" : "hold";
 }
 
 /* How far back a dose observation stays usable for bracketing.
@@ -280,14 +310,24 @@ export function correctionProgress(plan, def, readings, today, maintenanceNow) {
   const bandWidth = def.max - def.min;
   const midpoint = (def.min + def.max) / 2;
   /* This read treats the floor as an absolute value in the element's own
-     unit, which holds for every element that reaches this function today —
-     the three "absolute"-mode entries, verified against §9's worked table.
+     unit, which holds for every element that reaches this function — the
+     three "absolute"-mode entries, verified against §9's worked table.
+
      STABILITY_RULES' two "percent"-mode entries (phosphate, nitrate) carry a
      proportion in the same field, and read here it would bind: at phosphate's
      default band, 2 × 0.02 beats bandWidth/3 and sets the zone to 57% of the
-     band where §9 asks for a middle third. Whoever wires either parameter
-     into a correction path must settle that floor's unit first —
-     .agent/backlog.md TW-029 works up the options. */
+     band where §9 asks for a middle third.
+
+     CLOSED, not latent — reef-chemistry.md §29.8, decided 16 Aug. Neither
+     nutrient reaches this function, and per §29.6 neither ever will: the app
+     names their level and stops, so there is no correction (§9) and no drift
+     back (§28) for an arrival zone to belong to. The mismatch is unreachable
+     by design rather than by an accident of today's call sites, so the floors
+     are left alone and no branch is added for a case that cannot occur.
+
+     If you are here because you are giving phosphate or nitrate a correction
+     path, stop: §29.6 forbids it, and §29.8 is the subsection you reopen
+     first. Nothing else can make this read wrong. */
   const noiseFloor = (STABILITY_RULES[def.key] || {}).noiseFloor || 0;
   const zoneWidth = Math.min(bandWidth, Math.max(bandWidth / 3, 2 * noiseFloor));
   const zoneMin = midpoint - zoneWidth / 2;
@@ -1139,7 +1179,7 @@ export function assessMagnesium({ readings, doseLog = [], waterChanges = [], set
 
   out.ok = true;
   out.recommendedDose = next;
-  out.action = next > out.currentDose ? "increase" : next < out.currentDose ? "decrease" : "hold";
+  out.action = doseAction(next, out.currentDose);
   out.staged = mag > 3;
 
   if (out.staged) {

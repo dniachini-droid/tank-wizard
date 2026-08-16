@@ -4,7 +4,7 @@ import { minutesOf, nowTime } from '../analytics/time-of-day.js'
 import { dayNum } from '../analytics/water-changes.js'
 import { todayStr } from '../dates.js'
 import { repeatedCorrections } from './calcium.js'
-import { bracketDose, capDoseStep, correctionPlanFor, correctionProgress, doseDriftedFrom, doseObservations, dosePlausible, gainingHold, missingDoseInputs, outOfBandWorsening, pendingCorrection } from './helpers.js'
+import { bracketDose, capDoseStep, correctionPlanFor, correctionProgress, doseAction, doseDriftedFrom, doseObservations, dosePlausible, gainingHold, missingDoseInputs, outOfBandWorsening, pendingCorrection } from './helpers.js'
 import { strengthPlausible } from './magnesium.js'
 
 /* --- Alkalinity dosing assessment ---
@@ -918,7 +918,7 @@ export function assessAlkalinity({ readings, doseLog = [], waterChanges = [], se
 
   out.ok = true;
   out.recommendedDose = next;
-  out.action = next > out.currentDose ? "increase" : next < out.currentDose ? "decrease" : "hold";
+  out.action = doseAction(next, out.currentDose);
   out.staged = mag > 4;
 
   /* A staged correction is a plan, not a single number. Spelling out the steps

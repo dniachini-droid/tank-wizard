@@ -73,12 +73,17 @@ export function computeConsumption(readings, settings) {
   return { driftPerDay, dosePerDayDkh, consumption, recommendedMl, adjustMl, windows, demandTrend, settings: s, readingCount: rows.length };
 }
 
-/* --- Generalised consumption, water-change aware ---
+/* --- Generalised consumption ---
  *
- * Mass balance: what you added, plus what water changes brought in, minus what
- * stayed, is what the tank consumed.
+ * What you added, minus what stayed, is what the tank consumed.
  *
- *   consumed = dosed + addedByWaterChanges - netChangeInTank
+ *   consumed = dosed - netChangeInTank
+ *
+ * which is the three dosing engines' `supplied - trendPerDay`, taken over the
+ * span rather than per day. Water changes stay in the trend fit and are not
+ * subtracted — §22, closing the divergence where this layer ran an extra
+ * mass-balance correction and the engines did not. The two answered the same
+ * question differently; this is the engines' answer.
  *
  * Each parameter gets its own minimum window because they move at very
  * different speeds. Magnesium demand is roughly a tenth of calcium's, so a
@@ -162,30 +167,12 @@ export function computeElementConsumption(key, readings, waterChanges, settings)
   if (slope == null) return { status: "insufficient", need: 3, have: rows.length, rule, def, days };
   const netChange = slope * spanDays;
 
-  // What water changes contributed across the same span.
+  /* How many water changes fell inside the span. Counted, reported, and
+     deliberately not subtracted: §22. The count is context for the reader —
+     "this is what the tank did across three water changes" — not a term in
+     the balance below. */
   const from = rows[0].date, to = rows[rows.length - 1].date;
   const wcs = (waterChanges || []).filter((w) => w.date >= from && w.date <= to);
-  const saltVal = SALT_MIX.values[key];
-
-  /* A water change moves the level toward the salt's value by a fraction of the
-     volume, so the effect depends on where the tank was AT THAT MOMENT — not on
-     the window's median. Using the median made calcium's contribution vanish
-     whenever the median happened to equal the salt figure, which is exactly
-     what it did here: median 450, salt 450, contribution zero. */
-  let wcContribution = 0;
-  const perChange = [];
-  for (const w of wcs) {
-    const f = Math.min(1, (w.litres || 0) / s.volumeL);
-    if (saltVal == null || f <= 0) continue;
-    let near = rows[0], best = Infinity;
-    for (const r of rows) {
-      const gap = Math.abs(daysBetween(r.date, w.date));
-      if (gap < best) { best = gap; near = r; }
-    }
-    const contribution = f * (saltVal - near.value);
-    wcContribution += contribution;
-    perChange.push({ date: w.date, litres: w.litres, level: near.value, contribution });
-  }
 
   const vals = rows.map((r) => r.value).sort((a, b) => a - b);
   const typical = vals[Math.floor(vals.length / 2)];
@@ -198,7 +185,7 @@ export function computeElementConsumption(key, readings, waterChanges, settings)
   const dosed = dosePerDay * spanDays;
 
   // The balance itself.
-  const consumedTotal = dosed + wcContribution - netChange;
+  const consumedTotal = dosed - netChange;
   const perDay = consumedTotal / spanDays;
 
   // Is the signal bigger than what the test kit can resolve?
@@ -213,8 +200,8 @@ export function computeElementConsumption(key, readings, waterChanges, settings)
 
   return {
     status: "ok", rule, def, rows: rows.length, spanDays, sparse, avgGap,
-    netChange, dosePerDay, dosed, wcContribution, wcCount: wcs.length,
-    consumedTotal, perDay, reliable, saltVal, typical, perChange,
+    netChange, dosePerDay, dosed, wcCount: wcs.length,
+    consumedTotal, perDay, reliable, typical,
     doseConfigured: dosePerDay > 0,
   };
 }
