@@ -140,9 +140,12 @@ logged-correction case, because the card does not fire when a correction is
 logged.** Item 4: **relationship notices are the third of the ordering's four
 tiers.** Item 6: **the fixed parameter order breaks the headline's tie too** —
 one order, one reason. **Three remain in canon**, none blocking anything — §9's
-volume ceiling, the 6.9 dKH overlap and app-level notices in Tasks. **All three
-are answered by `docs/spec/stage-5c-last-items.md`, which is not folded**, so
-canon still carries them as open and they are a fold rather than a question.
+volume ceiling, the 6.9 dKH overlap and app-level notices in Tasks. **Stage 5c
+closed those three on 16 August and they are folded** — the ceiling applies to a
+single day's dose, §24.9 renders on the dashboard and §24.23 in the wizard, and
+Tasks is the home for app-level notices with a count badge. **§25.6's carried
+list is empty of everything it came in with**; four new items replace it,
+numbered 7 to 10.
 
 **Stage 5b closed the rest of Stage 4's open list — 16 August**, seven of its
 eight owner decisions folded from `docs/spec/stage-5b-remaining-items.md`:
@@ -154,12 +157,34 @@ negative-consumption suppression, plus the headline tie-break the ordering turne
 out to answer as well. Filed as **TW-080 to TW-084**. **Four items remain of the
 gap report's open list and all four are Dan's** — `.agent/needs-dan.md` item 14.
 
-**The eighth decision — the parameter tile (G-9) — is decided and not folded.**
-It landed after the fold ran. So did **Stage 5c**, which answers §25.6 items 1–3,
-magnesium's default band and Insights. **Two staging documents are now ahead of
-canon**, and until they are folded canon is the reference and they are not.
+**The eighth decision — the parameter tile (G-9) — is decided and still not
+folded.** It landed after the 5b fold ran and was not in the 5c/6a fold's
+authorisation. **It is a fold waiting to happen, not a question**; canon does not
+carry it and no agent may treat G-9 as open. `.agent/needs-dan.md` item 15.
 
-**Insights was deliberately not specified** and may not survive; see §25.5.
+**Stage 5c and Stage 6a are folded — 16 August**, in one pass, because they
+overlap on magnesium: 5c moves the suggested band to 1250–1400 and 6a rules on
+what a reading of exactly 1150 classifies as. **Fourteen owner decisions**, filed
+as **TW-085 to TW-091**, with TW-052 closed in the code's favour and TW-079 and
+TW-084 amended where the decisions overtook them.
+
+**Stage 5c, five decisions** (`docs/spec/stage-5c-last-items.md`): the card
+placement, Tasks as the home for app-level notices, the volume ceiling per day,
+magnesium's band at 1250–1400 — which also resolves §10's alert inversion, the
+floor now biting on the shipped default — and **Insights survives**, four
+sections removed and the rest specified after 6f.
+
+**Stage 6a, nine decisions** (`docs/spec/stage-6a-decisions.md`, written from the
+owner's answers to `.agent/stage-6a-gaps.md`'s twenty findings): §22's steadiness
+figures for four parameters with five ungraded by decision; salinity's window,
+rate thresholds, clearly-out margin and its alert moved off the range edge; and
+seven rulings on what `classifyReading` returns — the thin series, the shared
+boundary, `drifting`, total movement, the resolution floor's scope, and the alert
+clamp.
+
+**Insights survives.** §25.5 is amended: four sections come out now, and the
+screen is **specified after 6f** rather than deferred — the earlier read of it
+measured the surface's size and not its contents.
 
 The rest of this section is what the stage was scoped to do, kept as the record
 of what it was asked for.
@@ -266,8 +291,13 @@ Each is one number replacing three or four. Each is Dan's.
 
 The new layer, alongside the old, not replacing it yet.
 
-**6a — `classifyReading`.** One function, one vocabulary, canon's seven bands
-plus §22's steadiness axis. Every threshold from Stage 5.
+**6a — `classifyReading`.** ✅ **built 16 August**, TW-079. One function, one
+vocabulary, canon's seven bands plus §22's steadiness axis. Every threshold from
+Stage 5. It reported **twenty gaps** (`.agent/stage-6a-gaps.md`) and **all
+twenty are now answered, closed or recorded** — `docs/spec/stage-6a-decisions.md`,
+folded. The follow-on work is TW-085, TW-086 and TW-090; nothing calls the
+function until 6f. **One of its questions wants an owner before 6f** — whether it
+is handed the correction-adjusted series (T-5).
 
 **6b — The notice model.** One live notice per parameter; a new verdict
 supersedes rather than joins; supersession clears hidden; hiding is global;

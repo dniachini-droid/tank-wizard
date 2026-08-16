@@ -6,7 +6,126 @@ Decisions no agent may make. Newest at top. Dan clears this file.
 
 ## Open
 
-### 14. The four that survive Stage 5b — 2026-08-16
+### 15. What survives the Stage 5c and 6a folds — 2026-08-16
+
+Filed by the run that folded `docs/spec/stage-5c-last-items.md` and
+`docs/spec/stage-6a-decisions.md` into canon in one pass. **Fourteen owner
+decisions** — five from 5c, nine from 6a — **and the whole of
+`wizard-states.md` §25.6's carried list is now closed**: items 1, 2 and 3 went
+here, items 4, 5 and 6 in Stage 5b.
+
+**This entry replaces item 14 as the live list.** Item 14's four surviving
+entries are carried below unchanged as entries 1 to 4; entries 5 to 8 are new.
+**None of the eight blocks Stage 6b or 6c.**
+
+**One thing is a fold and not a question, and it is still outstanding.** Item
+14's struck entry 1 — the parameter tile, G-9, decided in
+`docs/spec/stage-5b-remaining-items.md` decision 1 — **is still not in canon.**
+This run folded 5c and 6a and was not authorised for 5b's first decision, so it
+stays exactly as item 14 described it: **decided, awaiting a fold, and no agent
+may treat G-9 as open.**
+
+**1. What an "N of M in range" claim may count (G-29).** Unchanged from item 14.
+And with it, what a completely quiet tank's collapsed headline says, since all
+three of its slots drop when there is nothing to report. The candidate recorded
+with the health score's deletion — *"3 of 6 in range, 2 need attention"* — belongs
+to this question and was not adopted.
+
+**2. The severity colours mean direction on one screen and tier on another.**
+Unchanged from item 14. §15's mapping is redone in the four registered colours;
+`paramStatus` (`src/lib/dates.js:25-29`) still uses `low` for *under the minimum*
+and `high` for *over the maximum*. Three options: move `paramStatus` to the tier
+reading; keep direction there and stop using these four colours for it; or
+register a name for the distinction. **TW-072 cannot be built until it is
+answered.**
+
+**3. Two relationships `reef-chemistry.md` §30 deliberately did not settle.**
+Unchanged from item 14. How §30.1's three-readings bar sits against
+`directional()`'s four-row statistical gate where both could apply, and whether
+claiming a dose change **worked** uses §30.2's contradiction bar or stays a
+stability question under §11.
+
+**4. `settings.mgAlertLow` (N-2).** Unchanged from item 14. A live per-user
+override at `src/lib/dosing/magnesium-gate.js:55` with no Setup field and no canon
+entry. **Worth a second look now**: §2 layer 3 moved to 1250–1400 on 16 August,
+so magnesium's derived alert-low is 1125 and §10's floor at 1150 bites on the
+shipped default. The override sits on a figure that now matters on every tank
+rather than only on a lower-centred range.
+
+**5. Is §24.23's offer a return plan, or a correction wearing its words?** The
+card reads *"Plan a gradual return"*, which §15 registers as the **return plan**
+phrase, while `reef-chemistry.md` §28.2 offers a return plan only for a level
+**stable and out of band** — and a level at 6.9 dKH is usually neither; §28.5 says
+the instrument going up is a correction. Either the card uses the wrong registered
+phrase or §28's condition needs widening. **This shared an open item with the
+6.9 dKH card overlap, which closed on 16 August without it.** `wizard-states.md`
+§25.6 item 7. **Stage 6c renders this card**, so it wants an answer before that
+stage rather than after.
+
+**6. What a task looks like.** Tasks is now the home for six app-level notices,
+and **nobody has decided how a notice becomes a task** — whether the app writes
+one into the list, whether it can be completed or only resolved by fixing the
+thing, and how the app's entries sit beside the reminders you create in one list.
+The count badge implies they are counted together and says nothing more. **Tasks
+is decided as the home, not as the design**; TW-088 delivers the routing against
+whatever Tasks turns out to be. §25.6 item 8.
+
+**7. Whether `classifyReading` is handed the correction-adjusted series.**
+`reef-chemistry.md` §26 fits trend, direction and consumption over the
+**correction-adjusted** window of §6 — the series with logged corrections
+subtracted. A function handed readings has neither the corrections nor the dose to
+subtract them with, so today it fits what it is given and documents that the
+caller should pass the adjusted series. **This wants an owner before 6f**: a
+switchover that wires it to raw readings makes its movement claim disagree with
+the engines' trend on any tank with a logged correction, which is the exact class
+of disagreement §26 was written to end. `.agent/stage-6a-gaps.md` T-5, §25.6
+item 9.
+
+**8. Salinity's test cadence.** §4 now gives salinity a 14-day analysis window and
+its cadence column is blank. **Nothing is blocked** — the cadence feeds §30.2,
+which is a bar about dose changes, and salinity has no dose — but the table has two
+columns and one is empty. A figure invented to fill it is what §5's per-kit table
+was, so it is asked rather than derived. §25.6 item 10.
+
+**Two things the folds recorded as noted rather than decided**, both implementable
+as they stand and neither waiting on you: whether §22's and §19's span
+requirements — three readings spanning six days, no rate from readings less than
+two days apart — reach a **movement** claim as well as a consumption rate (Q-1;
+canon's own worked example at §11 sits inside both, which is why it is worth
+asking), and whether the reading **at** a recorded kit change belongs to the old
+series or the new (Q-3; treated as the fresh baseline, which is §23 example 6 in
+the shape of a refusal).
+
+**One thing the 6a fold derived rather than decided**, written into
+`wizard-states.md` §22 the way §25.1's fixed-order derivations are — implementable,
+correctable in one line, and not to be mistaken for a decision: **the order the six
+steadiness tests run in.** The eight spread figures, the three measurement rules and
+`sliding`-at-twice are yours; the tree that applies them is derived from §22's own
+six descriptions and is written down only so two surfaces cannot derive it
+differently.
+
+**TW-063 still stands and is still open on its own terms** — the golden sweep
+feeds each engine only its own element's readings, so it is structurally blind to
+cross-parameter rules and could let Stage 6 break the magnesium gate without the
+fingerprint moving. Its two options are costed in the item. **Not counted in the
+eight above**, and not touched by either fold.
+
+**In plain terms.** Eight things, none of them holding anything up. Four you have
+seen before and four are new. The new ones: one card offers to *"plan a gradual
+return"* when what it is actually doing might be a correction, and Stage 6c has to
+pick a word; Tasks is now where the app puts things it wants you to do, and nobody
+has designed what one of those looks like; the new classifier needs to be told
+whether it is being handed readings with your logged corrections already taken out,
+before anything is wired to it; and salinity has a period to judge it over but no
+stated testing interval.
+
+The magnesium one is worth a glance for a different reason than before. Your
+suggested range moved to 1250–1400, which is what the app always shipped — and that
+puts the act-now line at 1125 where the safe floor is 1150, so the floor that used
+to be theoretical now applies to every tank running the defaults. There is a hidden
+per-user override sitting on exactly that figure.
+
+### 14. ~~The four that survive Stage 5b~~ — superseded by item 15 — 2026-08-16
 
 Filed by the run that folded `docs/spec/stage-5b-remaining-items.md` into canon.
 **Eight owner decisions cleared the gap report's open list** — ammonia's own
