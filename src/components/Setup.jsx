@@ -5,6 +5,7 @@ import { InfoBlock } from './Insights.jsx'
 import { Activity, Calculator, CheckCircle2, ChevronDown, ChevronUp, Download, Plus, RotateCcw, Save, SunMedium, Upload, Waves } from '../icons.jsx'
 import { DOSE_ELEMENTS } from '../lib/analytics/consumption.js'
 import { CORRECTIONS, computeCorrection, fmtDoseMass } from '../lib/analytics/correction.js'
+import { magnesiumGate } from '../lib/analytics/magnesium-gate.js'
 import { kitSigma } from '../lib/analytics/measurement-noise.js'
 import { fmtAmount } from '../lib/analytics/time-in-range.js'
 import { byNewest } from '../lib/analytics/time-of-day.js'
@@ -181,6 +182,15 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
   const correction = useMemo(
     () => computeCorrection(calcParam, calcCurrent, parseFloat(calcAimPoint), settings.volumeL),
     [calcParam, calcCurrent, calcAimPoint, settings.volumeL]);
+  /* §10's magnesium gate. This calculator is the third path to an alkalinity
+     or calcium correction and shares no code with the two engines, so it
+     evaluates the gate itself from the one function that owns the rule. It
+     never blocks the magnesium correction — that is the one the gate is
+     telling the user to do. */
+  const calcGate = useMemo(
+    () => ((calcParam === "alkalinity" || calcParam === "calcium")
+      ? magnesiumGate({ readings, settings, paramDefs }) : null),
+    [calcParam, readings, settings, paramDefs]);
 
   // Lighting log state
   const [lightDate, setLightDate] = useState(todayStr());
@@ -471,7 +481,11 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
               placeholder={calcDef ? `${calcDef.min}–${calcDef.max}` : ""} />
           </Field>
         </div>
-        {calcCurrent == null ? (
+        {calcGate ? (
+          <div className="rounded-xl p-3" style={{ background: "#A2621B12", border: "1px solid #A2621B40" }}>
+            <p className="text-[13px] text-ink font-medium leading-relaxed">{calcGate.why}</p>
+          </div>
+        ) : calcCurrent == null ? (
           <p className="text-[13px] text-ink2 font-medium">No current reading logged for {calcDef ? calcDef.label.toLowerCase() : "this parameter"} — log one first.</p>
         ) : !(settings.volumeL > 0) ? (
           <p className="text-[13px] text-ink2 font-medium">

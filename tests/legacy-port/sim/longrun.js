@@ -31,6 +31,9 @@ function run(seed, opts) {
   }
   const readings = [], doseLog = [], waterChanges = [];
   let plans = {};
+  /* A correction the keeper makes with dry salt rather than the doser.
+     See the note at the keeper loop below for why this exists. */
+  let saltPlans = {};
   const problems = [];
   const note = (m, d) => problems.push(`${m}${d ? ' | ' + d : ''}`);
   const seen = {};
@@ -49,6 +52,15 @@ function run(seed, opts) {
       const available = Math.max(0, level[k]);
       const used = Math.min(cons[k], available + dose[k] * eff[k]);
       level[k] = Math.max(0, level[k] + dose[k] * eff[k] - used);
+    }
+    /* A dry-salt correction in progress, delivered a day at a time at the §3
+       rail — the same shape the app describes when it sends the keeper to a
+       dedicated supplement instead of the maintenance bottle. */
+    for (const k of KEYS) {
+      const sp = saltPlans[k];
+      if (!sp || sp.daysLeft <= 0) continue;
+      level[k] += sp.perDay;
+      sp.daysLeft--;
     }
 
     /* Water changes, which the harness never simulated. A change pulls every
@@ -154,6 +166,43 @@ function run(seed, opts) {
           doseLog.push({ element: k, date: dayDate(day), time: '21:00', ml: offer.dose });
           continue;
         }
+        /* The keeper does what the app tells them, including when the answer
+           is not a doser setting.
+
+           When a level is out of band and the correction is refused because
+           the maintenance solution cannot reach it, §9's wrong-tool rule (as
+           amended 16 Aug) says the answer is a gradual plan at a safe rate and
+           an honest duration — not a different product. That is what this
+           models: the gap closed at §3's rail over as many days as it takes,
+           which is the same arithmetic whether the keeper gets there with a
+           dedicated supplement, dry salt or a stronger mix. This harness
+           previously modelled a keeper who reads that instruction and does
+           nothing, for years. Magnesium is where that bites: its daily dose is
+           never tuned from readings (reef-chemistry.md §10), so once demand
+           outgrows a fixed dose the level falls and the doser is not the route
+           back.
+
+           `proposeCorrection`'s refusal text still names dry salt, which §9 as
+           amended no longer permits. That is message-spec-2's to fix, not this
+           harness's — the shape of the refusal is what is read here, never its
+           wording.
+
+           A refusal that IS the magnesium gate is deliberately excluded. There
+           the app is telling the keeper NOT to correct this element yet, and a
+           keeper who follows advice does not reach for the dry salt anyway —
+           excluding it is what keeps the gate's cost visible in this suite
+           rather than papered over. */
+        const refusal = ['quick', 'steady', 'gentle'].map((n) => os[n])
+          .find((o) => o && o.possible === false && o.up && o.gap > 0 && !o.magnesiumGate);
+        if (refusal && !saltPlans[k]) {
+          const rail = (L.CORRECTIONS[k] || {}).maxPerDay;
+          if (rail > 0) {
+            const dl = Math.max(1, Math.ceil(refusal.gap / rail));
+            saltPlans = { ...saltPlans, [k]: { perDay: refusal.gap / dl, daysLeft: dl } };
+            planLog.push({ day, el: k, ev: 'salt', level: level[k], target: refusal.aimPoint, days: dl });
+          }
+        }
+        if (saltPlans[k] && saltPlans[k].daysLeft <= 0) { const s = { ...saltPlans }; delete s[k]; saltPlans = s; }
         const a = { alkalinity: st.alkAssessment, calcium: st.caAssessment, magnesium: st.mgAssessment }[k];
         if (a && a.recommendedDose != null && /suggest/.test(d.state)
             && Math.abs(a.recommendedDose - dose[k]) > 0.05) {

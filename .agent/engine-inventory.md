@@ -432,6 +432,16 @@ requirement (`src/test/spec/classification/alert-thresholds.test.js:90-108`,
 `ca-alk-coupling.test.js:117+`, `dosing/magnesium-gate.test.js` — read, not
 run).
 
+> **Superseded 16 August, for the gate half only.** Stage 2a built it:
+> `src/lib/analytics/magnesium-gate.js` owns the rule, and it is evaluated at
+> the two dose engines, `computeDoseAdvice` and Setup's correction calculator,
+> with `proposeCorrection` reading the engines' decision off the assessment.
+> All four pinning assertions above are green. Canon §10 was amended the same
+> day to record what "corrections" covers. **The precipitation guard half of
+> this line still stands** — §20's four-hour separation between alkalinity and
+> calcium is implemented nowhere, and `dosing/precipitation-guard.test.js`
+> remains red. The golden sweep cannot see the gate at all: TW-063.
+
 Enforcement: unchanged from §25's own admission — `scripts/verify/
 wordingcheck.mjs` checks one echo in one function; nothing asserts
 single-source anywhere else.

@@ -139,7 +139,11 @@ describe('§5 magnesium gate — computeDoseAdvice must not recommend calcium co
     dkhPerMlPer100L: 0.0533, caPpmPerMlPer100L: 0.36, mgPpmPerMlPer100L: 0.024 };
 
   it('precondition: taken alone, the calcium engine would call for a dose adjustment', () => {
-    const out = computeDoseAdvice(readings, [], PARAM_DEFS, null, settings);
+    /* "Taken alone" means without the magnesium rows. Passing the full fixture
+       made this test and the one below the same call with opposite
+       expectations — see the identical note in alert-thresholds.test.js. */
+    const caOnly = readings.filter((r) => r.param === 'calcium');
+    const out = computeDoseAdvice(caOnly, [], PARAM_DEFS, null, settings);
     expect(out.advice.calcium.status).toBe('adjust');
   });
 

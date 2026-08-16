@@ -90,7 +90,14 @@ describe('§5/§9 magnesium gate — worked example 4', () => {
   it('precondition: taken alone, the alkalinity engine would call for a dose adjustment', () => {
     // If this doesn't hold, the deferral test below proves nothing — the
     // engine might simply not have anything to defer.
-    const out = computeDoseAdvice(readings, [], PARAM_DEFS, null, settings);
+    /* "Taken alone" is the whole point of this precondition, so the magnesium
+       rows are withheld from it — passing the full fixture here made this test
+       and the deferral test below the same call with opposite expectations,
+       which no implementation could satisfy. This matches how the same
+       precondition is written in
+       tests/parity/magnesium-gate-wizard-vs-findings.test.js:50. */
+    const alkOnly = readings.filter((r) => r.param === 'alkalinity');
+    const out = computeDoseAdvice(alkOnly, [], PARAM_DEFS, null, settings);
     expect(out.advice.alkalinity.status).toBe('adjust');
   });
 

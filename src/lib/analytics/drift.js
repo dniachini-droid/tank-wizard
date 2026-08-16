@@ -1,5 +1,6 @@
 import { CA_PER_DKH } from './calcification.js'
 import { DOSE_ELEMENTS } from './consumption.js'
+import { magnesiumGate } from './magnesium-gate.js'
 import { byNewest, regressionSlope, windowRows } from './time-of-day.js'
 import { DEFAULT_SETTINGS } from './water-changes.js'
 import { daysBetween, todayStr } from '../dates.js'
@@ -202,8 +203,25 @@ export function computeDoseAdvice(readings, doseLog, paramDefs, days = null, set
     const offTarget = latestVal == null ? null
       : latestVal < def.min ? "low" : latestVal > def.max ? "high" : null;
 
+    /* §10's magnesium gate. This engine shares no code with the three dose
+       engines — it reaches the same kind of verdict by its own arithmetic — so
+       it evaluates the gate itself, from the one function that owns the rule.
+       Only an adjustment that would RAISE the level is withheld: cutting a
+       dose cannot precipitate anything.
+
+       The drift, the window and the calculated dose all stay on the result.
+       The strength preview (`corrected-strength.js`) reads `calc` to show what
+       changing a solution strength would do to the arithmetic, which is a
+       different question from whether to act today. */
+    const raising = drift.direction === "falling";
+    const gate = (key === "alkalinity" || key === "calcium") && drift.needsAction && raising
+      ? magnesiumGate({ readings, settings, paramDefs })
+      : null;
+
     out[key] = {
-      status: drift.needsAction ? "adjust" : "hold",
+      status: gate ? "magnesium-gated" : drift.needsAction ? "adjust" : "hold",
+      magnesiumGate: gate,
+      magnesiumGateWhy: gate ? gate.why : null,
       key, def, drift, win, extended, viewWin, viewNote, daysSinceChange, lastChange,
       offTarget, latestVal,
       direction: drift.direction,

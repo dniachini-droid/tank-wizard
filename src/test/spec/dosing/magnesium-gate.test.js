@@ -85,17 +85,39 @@ describe('§5/§9 magnesium gate — worked example 4', () => {
       { id: '3', param: 'calcium', date: '2026-07-15', value: 390 },
       { id: '4', param: 'calcium', date: '2026-07-22', value: 370 },
     ];
-    const caSettings = { volumeL: 100, caPpmPerMlPer100L: 0.36, calciumDoseMl: 9 };
-    const out = assessCalcium({
+    /* The magnesium this test's title has always described and its fixture
+       never contained. Below the alert-low of 1150 by the last reading, on
+       magnesium's own 21-day cadence (§4). Without these rows the fixture was
+       a tank whose magnesium had never been measured, which is not a
+       low-magnesium tank and does not close the gate — §10 conditions the
+       rule on magnesium being BELOW alert-low, and unmeasured is not below
+       anything. Fixture corrected on the spec owner's instruction,
+       16 August; the assertions are the ones that always stood here. */
+    const mgReadings = [
+      { id: 'm1', param: 'magnesium', date: '2026-06-10', value: 1180 },
+      { id: 'm2', param: 'magnesium', date: '2026-07-01', value: 1160 },
+      { id: 'm3', param: 'magnesium', date: '2026-07-22', value: 1140 },
+    ];
+    const caSettings = { volumeL: 100, caPpmPerMlPer100L: 0.36, calciumDoseMl: 9,
+      mgPpmPerMlPer100L: 0.024, magDoseMl: 8 };
+    /* Precondition, "on its own terms" — i.e. without the magnesium rows,
+       exactly as the same precondition is written in
+       classification/alert-thresholds.test.js and the parity file. Run
+       against the full fixture it would be the gated call below with the
+       opposite expectation, which no implementation can satisfy. */
+    const alone = assessCalcium({
       readings: caReadings, doseLog: [], waterChanges: [], settings: caSettings,
       def: caDef, now: 20340,
     });
-    /* Precondition: calcium is clearly correctable on its own terms. */
-    expect(out.ok).toBe(true);
-    expect(out.action).toBe('increase');
-    /* Per §5/§9, this should have been deferred if magnesium were gated —
-       but assessCalcium has exactly the same parameter list as
-       assessAlkalinity and cannot even receive magnesium's status. */
+    expect(alone.ok).toBe(true);
+    expect(alone.action).toBe('increase');
+    /* Per §10/§12, deferred now that magnesium is gated — and it names the
+       reason rather than going quiet. */
+    const out = assessCalcium({
+      readings: [...caReadings, ...mgReadings], doseLog: [], waterChanges: [],
+      settings: caSettings, def: caDef, now: 20340,
+    });
+    expect(out.action).not.toBe('increase');
     expect(out.reason || out.explanation).toMatch(/magnesium/i);
   });
 });

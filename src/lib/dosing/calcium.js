@@ -1,7 +1,9 @@
+import { gateAssessment, magnesiumGate } from '../analytics/magnesium-gate.js'
 import { SAFE_DAILY_RISE } from '../analytics/safe-rate.js'
 import { fmtAmount, fmtVal } from '../analytics/time-in-range.js'
 import { minutesOf, nowTime } from '../analytics/time-of-day.js'
 import { dayNum } from '../analytics/water-changes.js'
+import { PARAM_DEFS } from '../constants.js'
 import { todayStr } from '../dates.js'
 import { alkAnomaly, alkFit, alkIntervals, alkStamp, applyDoseConstraints, directionConsistent, noteCurrentAndInterventions, rateLimitDose, trendConfirmed } from './alkalinity.js'
 import { correctionPlanFor, correctionProgress, doseAction, doseDriftedFrom, dosePlausible, gainingHold, mgEffectPerMl, missingDoseInputs, outOfBandWorsening, pendingCorrection } from './helpers.js'
@@ -204,7 +206,8 @@ export function repeatedCorrections(corrections, element, nowStamp, days = 70) {
    This is precisely the cost of three near-identical engines: a line that is
    right in one is wrong in the other two, and nothing compares them. */
 export function assessCalcium({ readings, doseLog = [], waterChanges = [], settings, def,
-                         now = null, plan = null, corrections = [] , correctionPlans = {} }) {
+                         now = null, plan = null, corrections = [] , correctionPlans = {},
+                         paramDefs = PARAM_DEFS }) {
   const nowStamp = now != null ? now : (dayNum(todayStr()) + minutesOf(nowTime()) / 1440);
   const out = {
     ok: false, reason: null, element: "calcium",
@@ -247,6 +250,10 @@ export function assessCalcium({ readings, doseLog = [], waterChanges = [], setti
   /* `out.previous` was set here and nowhere else, and read by nothing —
      assessAlkalinity and assessMagnesium never set it at all. A field one copy
      of three grew and no consumer ever asked for. Removed. */
+  /* §10's magnesium gate, read once and published on the assessment so
+     `proposeCorrection` honours the same decision — see the identical note in
+     alkalinity.js. */
+  out.magnesiumGate = magnesiumGate({ readings, settings, paramDefs });
   out.targetRange = { min: def.min, max: def.max };
 
   const changes = (doseLog || [])
@@ -546,7 +553,10 @@ export function assessCalcium({ readings, doseLog = [], waterChanges = [], setti
         ? `Raising it is a separate one-off correction of roughly ${fmtAmount(out.correction.oneOffMl)} mL spread over a few days — not a permanent increase, which would carry calcium past the range once it arrives. Keep the daily dose where it is.`
         : `Raising it needs a one-off correction rather than a bigger daily dose, but the amount cannot be worked out until the solution strength in Setup is right.`;
     }
-    return out;
+    /* §10 — the one-off correction this branch just sized is exactly what the
+       magnesium gate withholds. Applied after the wording so the reason
+       replaces the offer rather than sitting alongside it. */
+    return gateAssessment(out, def, out.magnesiumGate);
   }
 
   /* Section 43: a small movement waits for a second week, unless calcium is
@@ -650,5 +660,7 @@ export function assessCalcium({ readings, doseLog = [], waterChanges = [], setti
     + (out.staged ? `, which is a large change for calcium. Move part of the way and confirm over a week — feedback here is slow, so a wrong estimate costs a fortnight.` : `.`)
     + (out.narrowedWindow ? ` This reads the last fortnight rather than the full month, because the recent weeks are moving faster than the month as a whole — averaged over everything it would look like ${fmtAmount(Math.abs(out.fullWindowTrend))}${def.unit} a week, which would understate what is happening now.` : "");
   out.nextCheck = `Hold the new dose for a full week, then measure calcium again. Do not adjust again in between.`;
-  return out;
+  /* §10 — the only other place this function recommends raising calcium. See
+     the identical note at the same point in alkalinity.js. */
+  return gateAssessment(out, def, out.magnesiumGate);
 }

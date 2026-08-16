@@ -144,7 +144,10 @@ export function deriveTankState(input) {
   const assess = (key, fn2, plan) => {
     const def = paramDefs.find((d) => d.key === key);
     if (!def) return null;
-    const a = fn2({ readings, doseLog, waterChanges, settings, def, plan, corrections, correctionPlans });
+    /* paramDefs travels with the call because §10's magnesium gate hangs off
+       magnesium's target range, which is the user's to set — the engine is
+       given its own def and would otherwise have to assume the shipped one. */
+    const a = fn2({ readings, doseLog, waterChanges, settings, def, plan, corrections, correctionPlans, paramDefs });
     return a ? { ...a, def } : null;
   };
   const alkAssessment = assess("alkalinity", assessAlkalinity, plans.alk);
