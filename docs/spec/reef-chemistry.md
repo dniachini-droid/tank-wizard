@@ -196,7 +196,23 @@ Shown at first setup, clearly labelled as suggestions.
 |---|---|
 | Alkalinity | 8.2 – 8.8 dKH (0.6 wide, midpoint 8.5) |
 | Calcium | 400 – 450 ppm (50 wide, midpoint 425) |
-| Magnesium | 1275 – 1425 ppm (150 wide, midpoint 1350) |
+| Magnesium | 1250 – 1400 ppm (150 wide, midpoint 1325) |
+
+**Magnesium's suggested range is 1250–1400 — amended 16 Aug (Dan, spec owner),
+Stage 5c.** It read 1275–1425. `PARAM_DEFS` has shipped 1250–1400 since before
+this document existed, and TW-052 filed the disagreement as a code fault on the
+assumption canon was right. **Canon changes; the code is right.** The width was
+never in dispute — 150 ppm either way — and what moves is the centre, from 1350
+to 1325.
+
+This is not only a tidy-up. §10 records an **alert inversion**: magnesium's
+derived alert-low sat below `SAFE_BOUNDS`' 1150 and had to be floored there. At
+1275–1425 the two agreed exactly and the floor looked like dead code; at
+1250–1400 the derived figure is midpoint − 200 = **1125**, so the floor bites on
+the shipped default and is doing exactly the job §10 gives it. **The inversion is
+a consequence of the band, not a fault in the gate** — see §10, where the
+arithmetic is restated, and `src/lib/dosing/magnesium-gate.js:63`, which needs no
+change.
 
 **Decided 13 Aug:** alkalinity's band tightened from 1.0 to 0.6. Published
 guidance puts weekly drift under 0.5 dKH and daily variation under 0.3. A 1.0
@@ -303,6 +319,33 @@ the user's target range sits at 7 or at 11.
 | Alkalinity | 2 days | 14 days |
 | Calcium | 7 days | 28 days |
 | Magnesium | 21 days | 28 days |
+| Salinity | *not set — see below* | **14 days** |
+
+**Salinity gets a 14-day analysis window — added 16 Aug (Dan, spec owner),
+Stage 6a**, answering W-1 of `.agent/stage-6a-gaps.md`. Four parameters had no
+window at all — salinity, potassium, pH and ammonia — so no movement claim and
+no steadiness verdict could be graded for any of them, and `classifyReading`
+refuses with `no-analysis-window` for all four. **Salinity is the one that
+needed fixing**, and the reason is that the app already acts on it: §18 gives it
+an alert tier and §3 gives it a rate rail, and a parameter the app will act on
+ought to be one it can grade. 14 days matches alkalinity's, which is the window
+for a parameter that moves on the timescale of days rather than weeks.
+
+**Potassium, pH and ammonia still have none, and that is now a decision rather
+than a hole.** Ammonia's is a rule of its own — §32.5, each reading judged alone,
+never graded for movement. Potassium and pH are watched rather than acted on:
+§18 gives them no alert tier for the same reason, and a window exists to grade
+movement the app would say something about. **They are not waiting on a figure.**
+Where a caller supplies a window explicitly — which is what §25.2's selectable
+panel does — the refusal lifts for whatever it was given, and that is unchanged.
+
+**Salinity's test cadence is not set here, and it is the one thing this row
+leaves open.** The window is what §11 and §22 need and it is supplied; the
+cadence column feeds §30.2's interval, and §30.2 is the bar for claiming a *dose
+change* is being contradicted — which salinity, having no dose (§2's ordered
+list), can never reach. **Nothing is blocked by the blank.** It is carried at
+`.agent/needs-dan.md` rather than derived, because a figure invented to fill a
+column is exactly what §5's per-kit table was.
 
 **Decided 13 Aug: windows are flat, with no extension.** An earlier design
 stretched the window (alk 7→21, Ca/Mg 14→35) when readings were thin. Rejected:
@@ -337,6 +380,41 @@ table is the only noise floor in the app.**
 
 Movement smaller than this is the kit, not the tank. No trend, verdict or dose
 change may be founded on a difference below the floor.
+
+### The floor governs movement, and only movement — decided 16 Aug, Stage 6a
+
+**Decided 16 Aug (Dan, spec owner)**, answering A-3 of `.agent/stage-6a-gaps.md`.
+
+**A floor is a rule about differences, not about levels.** The sentence above is
+about movement in terms, and it is to be read no wider than it is written: a
+reading is never refused, discounted or held unplaceable because it is smaller
+than its parameter's floor. **A level below the floor is a level. It classifies
+against the band like any other** (`wizard-states.md` §13).
+
+**Phosphate at 0.00 ppm is the case, and it is the reason this needed saying.**
+Read as a rule about levels, §5's phosphate row — *"0.01 ppm is the kit's own
+resolution … anything smaller is beneath measurement"* — makes a logged 0.00 ppm
+unplaceable, and `classifyReading` refused the whole result for it. A lean tank
+reads 0.00 routinely, so this is not an edge case.
+
+- **A phosphate of 0.00 classifies `out-of-band-low`** against any suggested
+  band, exactly as 0.02 does.
+- **§29.4's phosphate-low warning fires**, and 0.00 is the clearest case that
+  warning exists for. The alternative — a warning that goes quiet at the reading
+  that should set it off loudest — is the fault the whole rule was written to
+  avoid, and it would have arrived through Stage 6e reading its input from a
+  refusal.
+
+**What does not change:** no trend, no steadiness verdict and no dose change may
+rest on a phosphate difference under 0.01 ppm. The floor keeps its whole job on
+the movement side; it simply never had one on the level side. **This narrows a
+reading of canon rather than adding a rule** — the option taken is the smallest
+one, the letter of the sentence above.
+
+**Ammonia's rule is not this one and is not weakened by it.** §18 and §32.2 place
+ammonia on detectability — **any reading above zero** — which is a rule about a
+level, written where ammonia's rules live, and §5 carries no ammonia row to read
+across from in either direction.
 
 **All absolute. Percent mode is abolished.** No floor in this app scales with
 the reading it is applied to. Two parameters had a proportional floor and both
@@ -792,7 +870,7 @@ computed from whatever band is in force and must never be hardcoded.
 |---|---|---|---|---|
 | Alkalinity | 0.6 dKH (8.2–8.8) | 0.20 dKH | 0.2 dKH | 0.20 wide — 8.40–8.60 |
 | Calcium | 50 ppm (400–450) | 16.7 ppm | 20 ppm | 20 wide — 415–435 |
-| Magnesium | 150 ppm (1275–1425) | 50 ppm | 60 ppm | 60 wide — 1320–1380 |
+| Magnesium | 150 ppm (1250–1400) | 50 ppm | 60 ppm | 60 wide — 1295–1355 |
 
 Why the floor exists: a literal middle third puts more than half of calcium's
 and magnesium's zone inside the kit's own blind spot — the noise floor is 60% of
@@ -846,9 +924,10 @@ being relied on to argue that a narrower arrival test would be costly.
   the tank uses it. Where the arithmetic wants a negative dose, the app offers
   zero and says how long that will take.
 - **Where the maintenance solution cannot do the job** — more than about 1.5 L
-  — never quote the impossible volume. **Amended 16 Aug: and do not point at
-  another product either.** Say what it takes and offer a gradual plan with an
-  honest duration. See below.
+  **in a single day** — never quote the impossible volume. **Amended 16 Aug: and
+  do not point at another product either.** Say what it takes and offer a gradual
+  plan with an honest duration. **Amended again 16 Aug, Stage 5c: the ceiling is
+  measured against one day's dose, not against the whole correction.** See below.
 - **Plans expire on the calendar.** Past the estimate, `correction-due`; past
   `(expected × 2) + 2` days, `correction-stalled`. A 3-day plan survives to day
   8. Testing a day late does not kill it; a month of silence does.
@@ -884,13 +963,30 @@ The duration is not a warning. It is what it takes, and the rate is the
 constraint whatever product is used — which is why naming a product would not
 shorten it honestly.
 
-**What is still open, and is not settled here: whether the volume ceiling has
-any role left.** A plan spread over enough days may bring the daily volume back
-under ~1.5 L on its own, in which case the rule dissolves; or the ceiling stays
-as a sanity check on a single day's dose. Carried at `wizard-states.md` §25.6
-along with the second question this card raised — that at 6.9 dKH the level is
-also below `SAFE_BOUNDS`, so `wizard-states.md` §24.9's *very low* card claims
-the same situation.
+### The volume ceiling applies per day — decided 16 August, Stage 5c
+
+**Decided 16 Aug (Dan, spec owner)**, closing what the amendment above left open
+and `wizard-states.md` §25.6 item 1.
+
+The amendment above left the ~1.5 L ceiling looking redundant: once the answer to
+a large correction is a plan spread over nine days, the daily volume comes down
+on its own and the ceiling never fires. **It has one job left, and the change is
+what it is measured against.**
+
+> **If one day of a plan needs more than about 1.5 L of the maintenance
+> solution, the plan is too aggressive — however many days it runs.**
+
+**A sanity check on a day's dose, not a trigger to reach for another product.**
+The per-correction reading is withdrawn: a correction that totals 4 L over nine
+days is not a wrong-tool case, it is a correction, and the arithmetic that used
+to call it one was measuring the wrong thing.
+
+**What this does not do is reintroduce the alternative product.** A day's dose
+over the ceiling means the plan needs more days, not a different bottle — §3's
+rails apply however the alkalinity gets there. The ceiling and the rails now
+point the same way, which is why the rule survives at all: it is a second check
+that catches a plan the rate rails alone would let through, expressed in the unit
+a keeper actually pours.
 
 **One thing this amendment does not touch:** `wizard-states.md` §2's branch 18
 and §3's "Wrong tool" tab label. The branch still exists and still fires; what
@@ -1004,11 +1100,29 @@ midpoint − 200 ppm — hung from whatever magnesium target range is in force,
 floored at §2's safe bound of 1150. The floor exists because §2's layers must
 not invert: layer 1 is where sources describe harm and the alert is the
 earlier, act-now signal, so an act-now line sitting *below* the harm point is
-incoherent. It changes nothing when the two agree, which they do on §2 layer
-3's suggested 1275–1425 (midpoint 1350, alert-low exactly 1150); it bites only
-while a magnesium range is centred lower than that. It can never fire on an
-in-band reading, because §12 already refuses a target range whose minimum is
-below the safe bound.
+incoherent. It can never fire on an in-band reading, because §12 already refuses
+a target range whose minimum is below the safe bound.
+
+**The floor bites on the shipped default, and that is the whole of the "alert
+inversion" — restated 16 Aug, Stage 5c.** Until then §2 layer 3 suggested
+1275–1425, whose midpoint of 1350 puts the derived alert-low at exactly 1150, so
+the floor and the derived figure agreed and the floor looked like dead code that
+only a lower-centred range would reach. **§2 layer 3 is now 1250–1400**: midpoint
+1325, derived alert-low **1125**, floored to **1150**. The floor is load-bearing
+on the tank the app ships with.
+
+**Nothing here changes, and nothing in the gate is wrong.** The inversion
+recorded against `src/lib/dosing/magnesium-gate.js:63` — an alert-low below
+`SAFE_BOUNDS` — is **a consequence of where the band sits, not a defect**, and
+the floor is the mechanism this section already provides for it. `magnesium-gate.js`
+needs no change; what changed is that its floor now has something to do. See §2
+layer 3, which carries the band decision.
+
+**A magnesium reading of exactly 1150 classifies `alert-low`**, per
+`wizard-states.md` §13's boundary rules as amended the same day — and it produces
+**one notice, not two**, even for a keeper who has set 1150 as their own range
+minimum and so has one value claimed by two rules. §13 carries that ruling; it is
+noted here because 1150 is this section's figure.
 
 **The cost, measured rather than asserted.** A tank whose magnesium sits under
 alert-low while its demand compounds has its alkalinity dose held where it is,
@@ -1085,22 +1199,70 @@ altogether and is not a rate at all.
   alkalinity, and the engines' existing `CA_TREND` and `MG_TREND` figures at
   their own scales, 5 ppm/week for calcium and 10 ppm/week for magnesium.
   Those two are stated per week and mean the same rate; the conversion is
-  arithmetic, not a second rule; **or**
+  arithmetic, not a second rule; **and salinity's 0.2 ppt/day, added 16 August**
+  — see below; **or**
 - **the direction has held consistently across the window and the total
-  movement over it clears §5's noise floor.**
+  movement over it clears §5's noise floor**, where *total movement* is the
+  **last reading minus the first** — see below.
 
 > *"Anything under 0.10 per day is stable, yes — but if it shows less movement
 > per day and it's consistent over multiple days, it is a swing."*
 
 **This is why a single threshold was never going to work.** 0.02 dKH/day for
 three days is noise. The same rate for ten days is 0.2 dKH and it is real. The
-second test is what the noise floor was always for — slope **times** window, not
-slope alone — and it simply was not being used that way anywhere.
+second limb is what the noise floor was always for — the distance the level
+actually covered, not the rate on its own — and it simply was not being used that
+way anywhere.
+
+**The sentence that stood here is corrected — 16 Aug, Stage 6a.** It read *"slope
+**times** window, not slope alone"*, which is a third quantity and not what the
+limb measures. **Total movement is last minus first**, per §30.1, which sets the
+identical bar and rules out the alternative in terms: *"it is a claim about
+consecutive readings, **not about a fitted line**, which is why it is a count and
+a floor rather than a significance test."* Slope × window and last-minus-first
+agree closely on a monotone series and part company on a noisy one, which is
+exactly the series where the answer matters — so the two rules are made to say
+one thing, and it is §30.1's. **§11's fitted rate is untouched and still drives
+the first limb**; what is withdrawn is the fitted line's part in the second.
+`.agent/stage-6a-gaps.md` T-4 raised it.
+
+### Salinity's rate thresholds — added 16 August, Stage 6a
+
+**Decided 16 Aug (Dan, spec owner)**, answering W-2 of `.agent/stage-6a-gaps.md`.
+
+| | Moving | Moving *fast* (`sliding`) |
+|---|---|---|
+| Salinity | **0.2 ppt / day** | **0.4 ppt / day** |
+
+**0.2 ppt/day is the first limb's threshold for salinity**, joining alkalinity's
+0.10 dKH/day and calcium's and magnesium's weekly figures. **0.4 ppt/day is the
+`sliding` bar**, and it is not a second decision: `wizard-states.md` §22 sets
+`sliding` at **twice the moving threshold** for every parameter that has one, and
+0.4 is that rule applied. It is written out here because a table with one figure
+in it invites a reader to derive the other wrongly.
+
+**Five parameters had no rate threshold — nitrate, phosphate, salinity,
+potassium and pH — and four still have none.** For those four the first limb can
+never fire and movement is decided on the second limb alone, which is fully
+specified for them: three readings, one direction, total clearing §5's floor.
+**That is an honest under-claim, not a refusal** — such a parameter can be found
+moving and can never be found moving *fast*. What it costs is stated rather than
+discovered: a nitrate climbing steeply but non-monotonically — up, up, down a
+little, up — clears neither limb and is reported as not moving, where on the
+three dosed elements and now on salinity the rate limb catches exactly that case.
+
+**Ammonia is not in this table and will not be.** §5 gives it no floor and §32.5
+makes never-graded-for-movement a rule, so neither limb is available to it and
+neither is missing.
 
 **What this retires.** `DRIFT_GUIDE`, `RATE_RULES` and `CONSISTENCY_RULES` have
 no part in grading movement. `CONSISTENCY_RULES` survives only where
 `wizard-states.md` §22's steadiness verdicts need a spread, which is the other
-question — *how steady has this been* — and not this one.
+question — *how steady has this been* — and not this one. **Amended 16 Aug,
+Stage 6a: §22 now carries its own spread figures**, decided rather than inherited,
+so nothing survives for `CONSISTENCY_RULES` to answer and it goes with the other
+three. The five parameters it covers that §22 does not grade get **no verdict at
+all** rather than a fallback to its rows.
 
 **The rule at the top of this section still outranks both limbs.** A level
 outside its band and moving further out is never graded stable, whatever the
@@ -1370,7 +1532,7 @@ not. Phosphate and nitrate already had their answer.**
 | Parameter | Alert low | Alert high |
 |---|---|---|
 | Ammonia | — | **anything detectable** |
-| Salinity | **below 33 ppt** | **above 36 ppt** |
+| Salinity | **below 33 ppt** | **above 36.5 ppt** |
 
 **These two are fixed levels, not offsets from a midpoint**, which is the one
 structural difference from the three above and is deliberate in both cases.
@@ -1386,12 +1548,31 @@ is not to reacquire one. §32 also settles what this table cannot say — that
 ammonia has **two states and not seven bands**, that it is **silent at zero**,
 and that the tier fires on **one reading** with no evidence bar in front of it.
 
-**Salinity — below 33 or above 36 ppt.** Sourced rather than judged. The target
+**Salinity — below 33 or above 36.5 ppt.** Sourced rather than judged. The target
 is 35 ppt / 1.025 SG and most reef tanks run 33–35; below 31 kills coral over
 prolonged exposure, and at 38 and above soft corals melt and hard coral tissue
 peels. `SAFE_BOUNDS`' 32–37 matches consensus, and this tier sits inside it —
 **outside where anyone runs, not yet at harm**, which is what an alert level is
 for.
+
+**The high level moved from 36 to 36.5 — amended 16 Aug (Dan, spec owner),
+Stage 6a**, answering T-3 of `.agent/stage-6a-gaps.md`. **36 was the app's own
+shipped salinity range's upper edge**, so an alert level and a band edge sat on
+one value, and `wizard-states.md` §13's boundary rule — *at or above* alert-high
+is `alert-high` — made a reading of exactly 36.0 both **`alert-high`** and **not
+out of range**, since §27 measures out against the keeper's edges and 36.0 is on
+the edge rather than past it. **A reading that needs attention and is not out of
+range is a state no card in §24 covers**, and it was reachable by typing the most
+ordinary number a keeper with that range could type.
+
+**The fix is the level, not the boundary rule.** §13 calls its boundary rules
+*"fixed, no exceptions"* and they stay that way; exempting §18's two fixed levels
+would have made that sentence false for the sake of one figure. Moving the alert
+to 36.5 puts it clear of the range edge, leaves 36.0 an ordinary in-range reading,
+and keeps the tier comfortably inside `SAFE_BOUNDS`' 37 — the alert still fires
+before harm, which is the only property the figure had to have. **The low side is
+untouched at 33**, where no such collision exists: the shipped range's lower edge
+is 34.
 
 **Potassium and pH get no alert tier.** They are parameters you watch rather
 than act on urgently, and a tier that never justifies an action is a colour
@@ -1401,10 +1582,57 @@ change pretending to be information.
 below 0.03 and above 50 — which serve this purpose under §29's own rules and are
 not restated as alert levels here.
 
+**Ammonia is detectable above zero, and that is confirmed rather than newly
+decided — 16 Aug, Stage 6a.** `.agent/stage-6a-gaps.md` A-1 asked whether *"above
+whatever the kit can resolve"* really means *any recorded value greater than
+zero*, since §5 gives ammonia no floor and canon names no detection limit. **It
+does.** §32.2 already states it; A-1 is closed against this row rather than
+carried. The consequence is accepted with it: **a keeper who records 0.01 reaches
+the same tier as one at 0.5 ppm**, because the tier is about presence and not
+about amount, and there is no second tier for ammonia to escalate into (§32.2).
+
 **The bands and the alert thresholds must never be allowed to overlap or
-invert.** `classifyReading` validates this on every call and returns
-`insufficient-data` with a configuration error if a user has set them
-inconsistently. This answers §13.3 for the band/alert half of that open item.
+invert.**
+
+### A wide target range clamps the alert to its edge — decided 16 Aug, Stage 6a
+
+**Decided 16 Aug (Dan, spec owner)**, answering A-2 of `.agent/stage-6a-gaps.md`.
+
+The rule above used to be enforced by refusal: `classifyReading` returned
+`insufficient-data` with a configuration error where a range and its derived
+alert overlapped. **That makes a legal target range illegal.** The offsets in the
+table above are ±1.0 dKH, ±50 ppm and ±200 ppm from the midpoint, so with the
+defaults **any alkalinity range wider than 2.0 dKH inverts** — its own lower edge
+falls below its alert-low — and §2 permits a range anywhere inside 7–11 dKH. A
+keeper running 7.4–9.6 has set a range §2 allows and §18 then refused to
+classify against. The same holds at 100 ppm for calcium and 400 ppm for
+magnesium.
+
+**The alert clamps to the range edge. It does not refuse.**
+
+- Where a derived alert-low falls **at or above** the range's lower edge, it
+  clamps to that edge; where a derived alert-high falls at or below the upper
+  edge, it clamps to that edge.
+- **This is §10's mechanism, generalised.** Magnesium's alert-low has been
+  floored at `SAFE_BOUNDS`' 1150 since 13 August for the same reason — two layers
+  that must not invert, resolved by clamping the derived one rather than by
+  rejecting the configuration. One rule now, applied wherever the shape occurs.
+- **The consequence, stated:** a keeper with a very wide range gets an alert tier
+  that coincides with their out-of-band edge, so `out-of-band-low` becomes
+  unreachable on that side and the level goes from in-band straight to
+  `alert-low`. That is the honest reading of a range that wide — the keeper has
+  said everything inside it is fine — and it is **quieter than refusing**, which
+  withheld the classification entirely.
+- **`classifyReading` still refuses a genuinely broken configuration**: no target
+  range, a range inverted in itself, a minimum below §2's safe bound (§12). What
+  it no longer refuses is a valid wide range.
+
+**The offsets are not made proportional to the range**, which was the third
+option. §27's third rule argues against exactly that for its own margins — a
+keeper who widens their range has not thereby decided that being far out matters
+less — and the argument reads across intact.
+
+This answers §13.3 for the band/alert half of that open item.
 
 **Universal rule regardless of the chosen target range:** stability at a
 slightly sub-optimal number beats movement toward an optimal one.
@@ -1717,8 +1945,12 @@ collapsing, a wrong Setup strength, a bad reading, or a fast nitrate drop
 (~2.3 dKH per 50 ppm NO3, forum-level sourcing — Decision 3 records the limit
 on it). The legacy behavioural suite already knows this, which is why
 `tests/legacy-port/protocols.js` expects **`hold`** for magnesium §61 — a
-reading of 1360 → 1380 → 1400 over 14 days, comfortably inside its band, whose
-consumption comes out at −1.86 ppm/day.
+reading of 1360 → 1380 → 1400 over 14 days, inside its band throughout, whose
+consumption comes out at −1.86 ppm/day. (*"Comfortably inside" until 16 August,
+when §2 layer 3 moved to 1250–1400: the last of the three now sits exactly on
+the upper edge, which `wizard-states.md` §13's boundary rule makes `in-band`. The
+expectation is unaffected — the case is about a negative consumption figure on a
+level that is not out of range, and it still is one.*)
 
 ### The actual bug — the cut, not the clamp
 
@@ -2034,15 +2266,25 @@ parameter's thresholds, trend logic or evidence bar.**
 | Dosed, and already assessed | alkalinity, calcium, magnesium | §1–§11, §16–§24 — in full |
 | ~~Assessed with borrowed and wrong reasoning~~ **written 16 Aug** | phosphate, nitrate | **§29** |
 | ~~Not assessed at all today~~ **written 16 Aug, Stage 5b** | ammonia | **§32** |
-| Needs its own treatment; not assessed at all today | salinity | **nowhere** — TW-030 |
+| ~~Needs its own treatment; not assessed at all today~~ **graded 16 Aug, Stage 6a — still has no section** | salinity | **§3, §4, §11, §18, §27, and `wizard-states.md` §22** — TW-030, TW-086 |
 | Different data source entirely | ICP panels | **nowhere** — not scheduled |
 
 **Amended 16 August.** This table listed four rows and **ammonia was not one of
 them** — the parameter with the shortest path from a reading to a dead tank was
 missing from the list of what the engine must cover, which `.agent/gap-report.md`
 G-22 found and this row closes. Phosphate and nitrate's *"nowhere"* is closed by
-§29 and ammonia's by §32. **Salinity's is not**, and the sentence below still
-governs it.
+§29 and ammonia's by §32.
+
+**Salinity's "nowhere" is closed and its section is not — amended 16 Aug, Stage
+6a.** It now has every figure it needs to be graded: a rate rail (§3), a 14-day
+analysis window (§4), movement and `sliding` thresholds (§11), an alert tier
+(§18), a clearly-out margin (§27) and steadiness spreads (`wizard-states.md`
+§22). **What it does not have is a section of its own** — nothing in this
+document reasons about salinity the way §29 reasons about the nutrients or §32
+about ammonia, and its figures are sourced individually where they sit rather
+than argued together in one place. **That is the honest state**: the parameter is
+gradeable, and the case for the figures is distributed. TW-030 stays open on that
+basis and its scope narrows to the section rather than the figures.
 
 **Naming a parameter in this table does not authorise inventing its
 thresholds.** Each of the last three needs its own reasoning written into this
@@ -2052,9 +2294,12 @@ it correctly or not at all — a borrowed threshold is what this decision
 removes, not what it extends. This is Phase 8b, item 4 of the five unspecified
 areas.
 
-Salinity has one figure here already — the 0.5 ppt/day rail in §3, carried
+~~Salinity has one figure here already — the 0.5 ppt/day rail in §3, carried
 forward from the previous canon — and nothing else. A rail is not an
-assessment.
+assessment.~~ **Overtaken 16 Aug, Stage 6a: it now has six**, listed above, and
+the rule this paragraph illustrates is untouched — those six were each decided
+and sited, not borrowed from a neighbouring parameter. **A rail is still not an
+assessment**, which is why TW-030 stays open for the section.
 
 ### Not a rebuild
 
@@ -2354,6 +2599,45 @@ the app's out-of-band margins.
    in terms of a trend constant, a kit noise floor (`KIT_PRECISION`,
    `KIT_SIGMA`), or a band width. **Adjusting how fast counts as moving must
    never change how far counts as out**, and the reverse.
+
+### Salinity gets a margin; potassium, pH and ammonia get none — 16 August, Stage 6a
+
+**Decided 16 Aug (Dan, spec owner)**, answering W-4 of `.agent/stage-6a-gaps.md`.
+This section named three margins and §29.3 added two; **four parameters had
+none**, and `classifyReading` returned `clearlyOut: null` with a refusal for them
+whenever a level was actually out.
+
+| Parameter | Clearly out |
+|---|---|
+| Salinity | **0.5 ppt past the edge** |
+| Potassium | **none — by decision** |
+| pH | **none — by decision** |
+| Ammonia | **none — by decision** |
+
+**Salinity's 0.5 ppt** is a fixed distance in the parameter's own unit, declared
+as a bare number derived from nothing, exactly as rule 2 requires of the other
+five. It gets one for the same reason it gets a window (§4) and rate thresholds
+(§11): **the app acts on salinity**, so the wording tier that distinguishes *out*
+from *a long way out* has something to attach to. It is also this section's own
+rails-scale figure — §3's salinity rail is 0.5 ppt/day — and that is a
+coincidence of scale, **not a derivation**; rule 3 forbids defining one from the
+other and nothing here does.
+
+**The other three have none, and the absence is now a decision.** "Clearly out"
+is a **wording tier and nothing else** (the same-day amendment above), so a
+parameter without a margin loses one adjective and nothing else — no
+recommendation is gated, no dose changes, no constraint relaxes, because there
+were none to gate. Potassium and pH are watched rather than acted on, which is
+§18's reason for giving them no alert tier and holds here unchanged. Ammonia has
+no band to be past the edge of at all (§32.1).
+
+**What a surface must do with the absence, stated because `null` invites a
+guess:** a parameter with no margin **never escalates its wording**. It says the
+level is out, in the plain form, however far out it is. It does not fall back to
+another parameter's margin, does not scale one from the band, and does not treat
+the missing figure as a reason to say nothing. **A refusal is not the answer
+here** — the parameter is not ungradeable, it simply draws one fewer distinction
+than the five that have margins.
 
 ### What the rule covers
 
@@ -2952,6 +3236,16 @@ adds nothing to what the 0.03 warning already said. This resolves the collision
 item 10 named between the two figures: they are not two answers to one
 question, they are answers to two questions.
 
+**A phosphate of 0.00 fires this warning — confirmed 16 Aug, Stage 6a.** It is
+the clearest case the warning exists for and it very nearly did not, because §5's
+0.01 ppm resolution figure, read as a rule about levels, made a 0.00 reading
+unplaceable and would have taken this warning down with it once Stage 6e read its
+input from the classification. **§5 is amended: the floor governs movement only**,
+so 0.00 classifies `out-of-band-low` like any other level and this warning fires
+on it in the ordinary way. Nothing about the warning changes — it does not
+escalate at 0.00 any more than it does at 0.01. The rule and its reasoning are in
+§5; recorded here because this is the sentence that would have gone quiet.
+
 **Nitrate above 50 ppm.** A word, not an alarm: **published evidence shows
 nitrate is not acutely toxic**, so nothing here may reach the urgent tier. The
 figure is `SAFE_BOUNDS`' existing nitrate ceiling, whose comment already carries
@@ -3217,6 +3511,14 @@ rather than per section.
 
 **It is a claim about consecutive readings, not about a fitted line**, which is
 why it is a count and a floor rather than a significance test.
+
+**Total movement is the last reading minus the first — ratified 16 Aug, Stage
+6a.** §11's second limb sets the same bar and its explanation said *"slope times
+window"*, a third quantity that agrees with this one on a monotone series and
+disagrees on a noisy one. **This section governs**, being the more specific rule
+and the one that rules out the fitted line in terms; **§11's sentence is
+corrected to match** rather than this one being widened. `.agent/stage-6a-gaps.md`
+T-4 raised it. §11's fitted rate keeps its own job, which is the first limb.
 
 ### 30.2 To claim a dose change is being contradicted
 

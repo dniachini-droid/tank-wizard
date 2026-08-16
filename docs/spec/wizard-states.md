@@ -539,7 +539,7 @@ recorded does not depend on where the number came from.
 | `out-of-band-high` | above no-action band, below alert-high | correct slowly |
 | `alert-low` | at or below alert-low | act, and see the magnesium gate (`reef-chemistry.md` §10) |
 | `alert-high` | at or above alert-high | act |
-| `insufficient-data` | cannot classify (missing target range, missing volume, too few readings) | refuse and name what's missing |
+| `insufficient-data` | cannot classify (no reading, missing target range, an invalid configuration) | refuse and name what's missing |
 
 Thresholds are `reef-chemistry.md` §2 (band, safe bounds) and §18 (alert
 levels). Whether movement counts as `drifting` at all is the kit noise floor
@@ -553,7 +553,10 @@ now only alkalinity, calcium and magnesium had alert thresholds, so `alert-low`
 and `alert-high` were unreachable for the other six however far out they went:
 seven bands on paper, five in practice, and nothing said so. `reef-chemistry.md`
 §18 now adds **ammonia** (anything detectable, high only) and **salinity**
-(below 33, above 36 ppt), and states that **potassium and pH have no alert tier
+(below 33, **above 36.5 ppt — moved from 36 on 16 August, Stage 6a**, because 36
+was the shipped range's own upper edge and a reading of exactly 36.0 came out
+`alert-high` and not out of range at the same time), and states that **potassium
+and pH have no alert tier
 at all**, which is a decision rather than an omission. Phosphate and nitrate
 answer the same need through §29.4's two fixed warnings.
 
@@ -572,6 +575,81 @@ directly above — every parameter keeps all seven and simply never reaches some
 of them — **is stated as covering every parameter and does not cover this one**,
 and it is amended here rather than stretched. Ammonia's two states are the only
 position vocabulary it has, and §32 is the only place they are set.
+
+### The last row, rewritten — decided 16 August, Stage 6a
+
+**Decided 16 Aug (Dan, spec owner)**, answering T-1 and A-4 of
+`.agent/stage-6a-gaps.md`. Two changes, and the row above already carries both.
+
+**1. A single reading states its position. Only movement and steadiness refuse.**
+
+The row used to make *"too few readings"* a cause of `insufficient-data`, which
+read as a rule about the whole classification — three readings before the app
+would say anything at all. **§24.5 is the card written for exactly that state and
+it states the position anyway**: *"Alkalinity is 8.5 dKH, in your range. Two more
+readings will show which way it's going"*, with the note *"It still states the
+position, because the position is known."* `reef-chemistry.md` §26 agrees — the
+position **is** the last reading, and one reading is one reading.
+
+**§24.5 governs, and the row is amended to match it.** The result splits by axis:
+
+- **The band classifies from the last reading**, however thin the series.
+- **The movement and steadiness axes refuse and name what is missing** — *"2 more
+  readings in the 14-day window — §30.1 needs three"* — and, per §23 example 5,
+  when the next test is due.
+
+**`insufficient-data` is now reserved for a band that genuinely cannot be
+found**: no reading at all, no target range, or a configuration §18 rejects.
+**Not a thin series.** The other reading would leave a keeper who has just logged
+their first-ever alkalinity test with no statement of where it sits, which §24.5
+rejects in terms and `reef-chemistry.md` §26 calls the one thing a test is
+definitely qualified to answer.
+
+**A partial refusal is a refusal and is said out loud.** The axes that cannot be
+graded name what they are waiting for; they do not fall through to a graded
+answer, and the band's confidence does not leak across to them. This is §22's
+*"Unknown refuses"* applied one axis at a time rather than to the whole result.
+
+**2. "Missing volume" comes out of the row entirely.**
+
+Net volume (`reef-chemistry.md` §17) is a **dosing** input — it is required before
+the app may compute a millilitre figure, and §12 already refuses a dose without
+it. **Nothing in classifying a reading against a range needs it.** It was in this
+row by inheritance, and a checker written against the row's text would go looking
+for a refusal that must not exist: a keeper who has not set their net volume
+still gets told where their alkalinity is. The removal changes no behaviour —
+`classifyReading` never took a volume — and it stops the row describing one.
+
+### A value claimed by two rules produces one notice — decided 16 August, Stage 6a
+
+**Decided 16 Aug (Dan, spec owner)**, answering T-2 of `.agent/stage-6a-gaps.md`.
+
+Two of the boundary rules below meet on one value whenever a parameter's
+alert-low lands exactly on its range's lower edge. **Magnesium at 1150 is the
+real case**: `reef-chemistry.md` §10 floors magnesium's alert-low at 1150, and a
+keeper may set 1150 as their range minimum, at which point *"a value equal to the
+no-action lower edge is `in-band`"* and *"a value equal to alert-low is
+`alert-low`"* both claim it.
+
+**The alert tier is tested first. 1150 classifies `alert-low`.** §22's tier rule
+says a position must never render calmer than it is, and of two defensible
+answers the more serious is the one that cannot get a tank killed. The cost is
+stated rather than hidden: a keeper whose minimum sits on the safe bound gets
+*needs attention* at a reading that is, by their own range, in range.
+
+**And it is one notice, not two.** A single reading has a single position and
+produces a single verdict, so the two rules do not each get a say — this is not a
+level that is both in range and at the alert tier, it is a level at the alert
+tier, full stop. **§20's one-live-notice-per-parameter is the mechanism**, and the
+ordering in §25.1 never sees a tie because there is only ever one entry. A
+surface rendering both an in-range line and an alert line for one reading is a
+finding.
+
+**This is a general rule, not a magnesium special case.** Any parameter whose
+alert level coincides with a band edge resolves the same way. Salinity used to be
+the other instance and is not any more — `reef-chemistry.md` §18 moved its alert
+to 36.5 so the collision no longer arises there at all, which is the better fix
+where the figure is the app's own rather than the keeper's.
 
 ### `drifting` produces no notice — decided 16 August, Stage 5b
 
@@ -604,11 +682,42 @@ it.** Slot 2 can name a parameter that is **moving**, which is §11's word and
 `drifting` band may not produce a notice.** The two are different claims from
 different rules, and they were never the same one.
 
+### `drifting` needs no proximity test — decided 16 August, Stage 6a
+
+**Decided 16 Aug (Dan, spec owner)**, answering A-5 of `.agent/stage-6a-gaps.md`.
+
+`drifting` is *"inside the band, but trending toward an edge"*, and read
+literally every movement inside a range is toward one edge or the other. So the
+question was whether the level also has to be **near** an edge. **It does not.**
+
+> **In range and moving → `drifting`. In range and not moving → `in-band`.**
+> A level sitting dead centre and creeping is `drifting`.
+
+**The trend is the information; where it sits inside the range is not.** A level
+crossing the middle of its band at a rate §11 calls movement is doing something
+the keeper may want to know, and it is doing it whether the nearest edge is close
+or far — waiting for it to approach one means the app notices later for no reason
+it can name.
+
+**The alternative was rejected on where its figure would have come from.**
+`reef-chemistry.md` §26 carries a 12%-of-band `nearEdge` proximity, untouched by
+any of this, and using it here would mean re-authorising an existing figure for a
+new purpose — which is precisely what §27's third rule exists to stop. **No new
+figure is minted either.** `drifting` is decided entirely by §11's movement rule
+and the band, and it needs nothing else.
+
+**This costs nothing on screen, because `drifting` produces no notice** (above).
+It is a tile state, so what the decision widens is which readings colour the tile
+as moving — not how often the app speaks.
+
 ### Boundary rules — fixed, no exceptions
 
 - Band edges are **inclusive of the band they bound**: a value exactly equal to
   the no-action lower edge is `in-band`, not `out-of-band-low`.
 - A value exactly equal to alert-low is `alert-low`.
+- **The alert tier is tested first — added 16 August, Stage 6a.** Where the two
+  rules above claim one value, `alert-low` / `alert-high` wins, and the reading
+  produces **one** notice. See the ruling above; magnesium at 1150 is the case.
 - Comparisons happen at **stored precision**, never at display precision. A
   reading of 7.849 displayed as 7.8 classifies as 7.849.
 - Classification never rounds. Display rounds.
@@ -1270,6 +1379,124 @@ live, and unreachable since the day it was written — goes with the decision
 rather than surviving as dead configuration. **This is a parameter falling
 outside the vocabulary, not a seventh verdict**; nothing is added here.
 
+### The figures — added 16 August, Stage 6a
+
+**Decided 16 Aug (Dan, spec owner)**, answering S-1, S-2 and S-3 of
+`.agent/stage-6a-gaps.md`. This section registered six words on 14 August and
+said in terms that it *"does not change any threshold, window or grading rule"* —
+so no figure anywhere in canon could grade them, `SPREAD_TOLERANCE` shipped empty,
+and **every parameter refused its verdict**. These are the figures.
+
+**Four parameters are graded. Five are not, and that is a decision.**
+
+| Parameter | Tight — at or under | Wide — at or over |
+|---|---|---|
+| Alkalinity | **0.3 dKH** | **1.0 dKH** |
+| Calcium | **25 ppm** | **80 ppm** |
+| Magnesium | **50 ppm** | **100 ppm** |
+| Salinity | **0.3 ppt** | **1.0 ppt** |
+
+| No verdict, by decision |
+|---|
+| Phosphate, nitrate, potassium, pH, ammonia |
+
+**Phosphate, nitrate, potassium, pH and ammonia get no steadiness verdict at
+all** — not a missing row, not a refusal waiting on a figure. **They are not
+waiting on you.** A surface must not grade them against another parameter's
+spread, must not scale one from their band, and must not fall through to a graded
+verdict: it shows no steadiness word for them, and §13's band is the whole of
+what it says about where they sit. Ammonia's exclusion was already a rule (§32.5,
+and the note above); the other four join it by decision here.
+
+**Why exactly these four are the graded set.** They are the four parameters with
+a §11 rate threshold — the three dosed elements and salinity, which gained one
+the same day. That is not a coincidence dressed as a reason: **`sliding` is
+defined off the rate threshold** (below), so a parameter without one cannot reach
+all six verdicts, and a vocabulary that is six words on four parameters and four
+words on five others is the silent two-band vocabulary of §13 in a new place. One
+set of parameters, all six verdicts, or nothing.
+
+**These eight figures are decided, not derived.** They are **not** multiples of
+§5's noise floor and must never be re-derived as such — that would make changing
+what a kit can see change what counts as steady, which is the fault §27's third
+rule names. Nor are they fractions of the band: a keeper who widens their range
+has not decided that bouncing about matters less. **Each is a spread in the
+parameter's own unit, standing on its own**, and each is correctable here in one
+line.
+
+#### The three rules that make the figures usable
+
+**1. Spread is measured over the full window.** Highest reading minus lowest, over
+every reading in the window being graded — which is §25.2's selected window where
+the panel supplies one, and `reef-chemistry.md` §4's analysis window otherwise.
+Not a standard deviation, not an interquartile range, and not a spread of some
+recent part of the window. The whole point of a spread is that one bad fortnight
+inside a calm month still shows.
+
+**2. The off-range test uses the median of the most recent half of the window.**
+Three of the six turn on whether the *window* sits off the range — `steady-off`
+and `unsettled` are the off-range pair, `dialled` and `controlled` the in-range
+pair — and this section forbids deciding it from a single reading, which rules out
+`reef-chemistry.md` §26's last reading and ruled in nothing.
+
+> **Take the readings in the most recent half of the window, take their median,
+> and ask whether that value is outside the band.**
+
+The median rather than the mean, because one kit misread is the commonest shape
+of outlier and a mean chases it. The recent half rather than the whole window,
+because a tank that spent the first fortnight out and the last fortnight in is
+**in** — the verdict is about where the parameter has settled, and a whole-window
+median lets an old excursion outvote the present. **This is a different question
+from the band on the tile and is allowed to disagree with it**: the tile says
+where the last reading is (§26), this says where the window has been, and the
+tier rule below stops the disagreement ever reading as calmer than the reading.
+
+**3. `sliding` is twice the parameter's §11 moving threshold.** §22 needs a bar
+for *fast* and `reef-chemistry.md` §11 only ever had a bar for *moving* — a level
+on §11's second limb is moving, slowly and persistently, and is plainly not
+sliding.
+
+| | Moving (§11) | `sliding` |
+|---|---|---|
+| Alkalinity | 0.10 dKH/day | **0.20 dKH/day** |
+| Calcium | 5 ppm/week | **10 ppm/week** |
+| Magnesium | 10 ppm/week | **20 ppm/week** |
+| Salinity | 0.2 ppt/day | **0.4 ppt/day** |
+
+**One rule, four consequences — no fifth constant.** Doubling is the decision;
+every cell is arithmetic on a figure §11 already carries, and a parameter that
+gains a rate threshold later gets its `sliding` bar the same way with no decision
+needed. **`sliding` is a rate claim and is graded off the fitted rate**, never off
+the spread figures above: it is the one verdict of the six that is about how fast
+rather than how far.
+
+#### The grading tree — derived, and correctable in one line
+
+**The figures and the three rules above are decided. The order the tests run in
+is derived from the six descriptions** and is written down here so that two
+surfaces cannot derive it differently. It is implementable and correctable the
+way §25.1's fixed-order derivations are, and **it is not a seventh rule to be
+argued with as though it were decided.**
+
+1. **`sliding`** — the fitted rate is at or over twice §11's threshold. Tested
+   first: it is the only rate claim, and a level moving that fast is described by
+   its speed whatever its spread says.
+2. **`loose`** — the spread is at or over *wide* and the direction has not held
+   across the window. *"Swinging widely, no consistent direction"*, and the
+   direction clause is what separates it from 1.
+3. Otherwise the off-range test (rule 2 above) picks the pair, and the spread
+   picks within it:
+
+| | Spread at or under *tight* | Spread over *tight* |
+|---|---|---|
+| Median of recent half **in** band | `dialled` | `controlled` |
+| Median of recent half **out** of band | `steady-off` | `unsettled` |
+
+**Six verdicts, every reachable, and no parameter reaches a seventh.** Where the
+window cannot be graded at all — fewer readings than the movement rule needs, or
+no window for the parameter — *"Unknown refuses"* below still governs and the
+surface names what is missing.
+
 ### The rename — `drifting` became `unsettled`
 
 `drifting` is §13's word and stays §13's word: **inside** the band, trending
@@ -1313,6 +1540,27 @@ cannot — no tolerance rule for the parameter, or a metric that cannot be
 computed — the surface **refuses and names what is missing**, per §13's last
 row (`insufficient-data`). It does not fall through to a graded verdict.
 
+**Refusing and having no verdict are two different states — clarified 16 August,
+Stage 6a.** Now that the figures exist, this rule has a narrower job than it did
+when every parameter reached it:
+
+- **A refusal** is a graded parameter whose window cannot be graded *this time* —
+  too few readings, or a window that cannot be computed. The surface says so and
+  names what is missing, and the verdict appears as soon as the data does.
+- **No verdict** is phosphate, nitrate, potassium, pH and ammonia, which are not
+  graded at all. **The surface shows no steadiness word and says nothing about
+  it** — it does not report a missing figure, because none is missing and none is
+  coming.
+
+Saying *"steadiness cannot be graded for potassium"* on every potassium reading
+forever is the "line the keeper stops reading" that §32.3 refuses for ammonia,
+and it would be worse here: it implies a figure is on its way.
+
+**§13's last row no longer refuses a thin series outright** (amended the same
+day), and this rule is where the thin-series case now lands for steadiness: the
+band still classifies from the last reading, and **this axis** is the one that
+refuses and names what it is waiting for.
+
 Today it falls through. `consistency` initialises to `"unknown"`
 (`reading-meaning.js:141`) and, with no rule for the parameter, still reaches
 `controlled` or `unsettled` through the median test alone, because every branch
@@ -1350,8 +1598,15 @@ and spread words and comply as they stand.
 
 - It does not let a verdict state a band position in its own words. Where the
   reading sits is §13's answer, quoted, not paraphrased.
-- It does not change any threshold, window or grading rule. It registers the
-  words, renames one, adds a tier and closes one fall-through.
+- ~~It does not change any threshold, window or grading rule. It registers the
+  words, renames one, adds a tier and closes one fall-through.~~ **True as
+  written on 14 August and no longer true — amended 16 August, Stage 6a.** This
+  sentence was the reason no figure existed to grade the six by, and it is
+  withdrawn rather than reinterpreted: **this section now carries the thresholds,
+  the measurement rules and the grading tree**, above. What it still does not do
+  is set a *window* — that is `reef-chemistry.md` §4's, or the keeper's selection
+  per §25.2 — or change any figure belonging to another rule. **§11's movement
+  thresholds are §11's**; `sliding` doubles them and does not redefine them.
 - It does not settle the four-way use of "target" — the value the user types,
   the app's computed aim point, the whole band, and a synonym for in-band, all
   in one modal. Parked 14 Aug pending a review of all four uses; the review
@@ -1362,12 +1617,17 @@ and spread words and comply as they stand.
 
 ### Enforced by
 
-Per §10, named rather than asserted: **nothing asserts §22 today.** Three
-checks would: that the verdict set is exactly these six, that no verdict
-renders calmer than its own reading's band, and that an ungradeable parameter
-refuses instead of grading. Filed in `.agent/items/`; until they exist this
-section is an intention, and `scripts/verify/wordingcheck.mjs` covers one field
-of one loop in one function.
+Per §10, named rather than asserted: **nothing asserts §22 today.** Five checks
+would: that the verdict set is exactly these six; that no verdict renders calmer
+than its own reading's band; that an ungradeable parameter refuses instead of
+grading; **that the five parameters with no verdict produce no steadiness word
+and no refusal message either**; and **that the grading tree returns each of the
+six on a series built to reach it, at the figures above and at the boundary
+values** — a spread exactly at *tight* is `dialled`, exactly at *wide* with no
+held direction is `loose`, and a rate exactly at twice §11's threshold is
+`sliding`. Filed in `.agent/items/` as TW-085; until they exist this section is
+an intention, and `scripts/verify/wordingcheck.mjs` covers one field of one loop
+in one function.
 
 ### In plain terms
 
@@ -1386,6 +1646,21 @@ level that needs attention, the steadiness note may no longer show in a calm
 colour and has to tell you the level first — steady is not the same as safe.
 And where the app has no yardstick for what steady even means for a parameter,
 it now says so instead of quietly grading you against nothing.
+
+**And on 16 August the yardsticks arrived, for four parameters.** How much your
+alkalinity, calcium, magnesium or salinity is allowed to wander before the app
+stops calling it tight, and how much before it calls it a wide swing. Two numbers
+each. **The other five get no steadiness word at all** — not a "cannot grade this
+yet", which would be a line you learn to skip that also implies a number is
+coming, but nothing. They still show where they are; the app just does not have
+an opinion about how settled they have been.
+
+Two details worth knowing because they decide what you see. The spread is
+measured across the **whole** period you picked, so a rough fortnight inside a
+calm month still counts. But whether the app says you have been sitting *off*
+your range is judged on the **most recent half** of it — a tank that spent the
+first two weeks out and the last two weeks in is in, and it would be strange to
+say otherwise.
 
 ---
 
@@ -1749,6 +2024,28 @@ behind the word.
 hideable (§20). The app does not know why a level is where it is, which is
 §23.5 stated as a courtesy rather than a prohibition.
 
+**This card renders on the dashboard. §24.23 renders in the wizard — decided
+16 August, Stage 5c**, closing §25.6 item 2. Both cards claim a reading below the
+safe floor and the overlap was real; the answer is placement rather than a
+merge or a deletion. **The dashboard wants a glance**, and this is the short
+form: the level, and that it needs a correction. §24.23's duration and its
+return-plan offer only matter once a keeper is somewhere a plan can be set, which
+is the wizard. Neither card changes a word.
+
+**A third claimant was already gone.** `far-out-<param>` (`findings.js:243-277`)
+carried its own *"dangerously low"* title for the same reading, and *dangerously*
+is banned by §15 — it goes with D-4 of `.agent/gap-report.md`, not with this
+decision.
+
+**This deletes `narrative-engine.js:457-459`**, a hand-written regex over the
+wizard's own English (`/level is not|steady but/i`, guarded by a
+`far-out-<param>` finding) written to stop these two cards colliding on one
+screen. **With a placement rule they cannot collide**, so the thing that
+suppressed one of them by matching prose has nothing left to do — and a surface
+deciding what to show by pattern-matching another surface's sentences is the
+shape of fault §11's single-source rule exists to prevent. Filed with the
+placement.
+
 ### 24.10 A correction running — `correcting-dose`
 
 > **Correction running**
@@ -1913,27 +2210,33 @@ easier to perform.
 **The nine days is not a warning.** It is what it takes, and it is the figure
 the decision is actually made against.
 
-**Two things about this card are open, and neither may be closed by an
-implementer** — both are carried at §25.6:
+**Both things this card left open are decided — 16 August, Stage 5c.** They are
+recorded here in place of the questions they replace, and §25.6 items 1 and 2
+close with them.
 
-- **The volume ceiling's remaining role.** The half of §9's rule that says the
-  app must not quote an impossible volume stands. Whether ~1.5 L survives as a
-  sanity check on a single day's dose, or dissolves because a plan spread over
-  enough days brings the daily volume under it anyway, is undecided.
-- **The overlap with 24.9.** At 6.9 dKH the level is below `SAFE_BOUNDS`, so
-  the *very low* card applies to the same reading. Two cards, one situation.
-  The likely answer is the short one on the dashboard and this fuller one
-  inside the wizard — brevity where you glance, the plan where a plan gets set
-  — but it is not decided.
+- **This card renders in the wizard; §24.9 renders on the dashboard.** The
+  overlap at 6.9 dKH was real — the level is below `SAFE_BOUNDS`, so the *very
+  low* card claims the same reading — and the answer is placement. Brevity where
+  you glance, the plan where a plan gets set. Neither card is reworded and
+  neither is deleted; what goes is the regex that used to keep them apart
+  (`narrative-engine.js:457-459`, see §24.9).
+- **The volume ceiling survives, applied to a single day's dose.**
+  `reef-chemistry.md` §9 carries it: if one day of a plan needs more than about
+  1.5 L of the maintenance solution, **the plan is too aggressive, however many
+  days it runs**. It is a sanity check on a day's dose and not a trigger to reach
+  for another product — which is what this card's amendment settled in the first
+  place.
 
 One further thing to notice rather than resolve: the offer reads *"Plan a
 gradual return"*, which §15 registers as the **return plan** phrase, while
 `reef-chemistry.md` §28.2 offers a return plan only when the level is **stable
 and out of band**. A level this far down is usually neither. Going up, §28.5
 says the instrument is a correction — so this card may be a correction wearing
-the return plan's words, or the plan's condition may need widening. It belongs
-to the same open item as the overlap above and is stated here so the next
-reader does not take the phrase as settling it.
+the return plan's words, or the plan's condition may need widening. **This one
+is still open, and it now stands on its own**: the two questions it used to
+share an item with — the overlap with §24.9 and the volume ceiling — were both
+answered on 16 August, and it was not. Carried at §25.6 and stated here so the
+next reader does not take the phrase as settling it.
 
 ### 24.24 Rising faster than the dose accounts for — `idle`, held
 
@@ -2605,16 +2908,51 @@ counted as in range and holding is G-29, still open. The headline that shipped
 speaks only about what is not quiet, and says nothing at all when nothing is —
 which is a narrower claim and one no open question is blocking.
 
-#### App-level notices do not belong here
+#### App-level notices do not belong here — Tasks is where they go
 
 No backup in three weeks, storage nearly full, a test kit expiring — **these
 are about the app, not the tank**, and the summary is one notice per parameter.
 They leave.
 
-**Tasks is the likely home**, since each is an action. **Not settled**: Tasks
-today handles reminders the user creates, and these are the app noticing
-something, which may not fit the same list. Worked through when Tasks is
-specified. Carried at §25.6.
+**Tasks is their home — decided 16 August (Dan, spec owner), Stage 5c**, closing
+§25.6 item 3 and `.agent/gap-report.md` G-34. They had been evicted from here
+with nowhere to go.
+
+> **The tank summary tells you about your tank. Tasks tells you what to do about
+> the app.**
+
+**Every future notice sorts into one or the other without a decision**, which is
+the point of stating it as a rule rather than as a list — this list will grow,
+and a rule that has to be re-argued per notice is not a rule.
+
+**The six that move**, all named in G-34: no net volume set, solution strength
+missing, strength unverified, testing sparsely, kit replaced, and the kit
+comparison.
+
+**Tasks already holds reminders the keeper creates. It now also holds what the
+app notices**, in the same list — the doubt recorded when this was deferred was
+whether the two kinds fit together, and they do: both are things to do, and a
+keeper does not care which of them thought of it. **The tab carries a count
+badge**, so nothing is hidden behind a screen nobody opens, which is the one way
+this decision could have made things quieter than the summary was.
+
+#### Two of them also render inline, at the point of refusal
+
+**No net volume set** (`reef-chemistry.md` §17) and **solution strength missing**
+(§16) are not merely things to do — **they stop the app working**. §12 refuses a
+dose without either, so a keeper can be looking at a blank dose figure with the
+reason for it one tab away.
+
+**Those two live in Tasks *and* show at the refusal**, in the wizard and on every
+dosing surface that refuses for them (§12's three surfaces). The other four appear
+in Tasks only.
+
+**This is not the summary's one-notice-per-parameter rule being bent**: neither is
+about a parameter, and neither is a verdict. It is the same missing input named in
+the two places a keeper meets it — the list of what to do, and the screen that
+cannot proceed without it. **The wording is the same in both** and is drafted
+against §16's rule that the missing input is *named*, never a silent null or a
+NaN.
 
 ### 25.2 Parameter cards and the history modal
 
@@ -2710,7 +3048,10 @@ band the keeper set themselves.
 **One of them contradicts canon outright:** it tells a keeper that tanks run
 happily up to around 500–550 ppm calcium, where `reef-chemistry.md` §2 caps
 calcium at 500 **because above that it pulls alkalinity down**. Others quote
-magnesium's *"1300–1400 most guides quote"* against §2's 1275–1425, a phosphate
+magnesium's *"1300–1400 most guides quote"* against §2's 1250–1400 (**1275–1425
+when this was written; §2 layer 3 moved on 16 August and the block is deleted
+either way** — a prose figure that happens to land nearer canon after canon
+moves is not thereby sourced), a phosphate
 figure of 0.15 that appears nowhere, and a full set of potassium numbers for a
 parameter canon has no reasoning about at all.
 
@@ -2723,8 +3064,10 @@ more feeding is normally the fix"*, *"dose nitrate back up to around 5 ppm"*.
 how steady it has been; **explaining what that means is the kind of writing that
 goes stale and then contradicts something else**, which is precisely what
 happened here. A keeper who wants to know why 550 is or is not fine is asking a
-question this app has decided not to answer — see §25.5 on Insights, which is
-the same instinct and is deliberately unspecified for the same reason.
+question this app has decided not to answer. (**§25.5 on Insights used to be
+cited here as the same instinct; it is not, and the cross-reference is corrected
+16 August.** Insights survives and is specified after 6f — it was never a screen
+nobody knew the purpose of, which is what this block genuinely is.)
 
 The figures that *were* canon all along — 0.5 dKH/day (`reef-chemistry.md` §3's
 rail) and the 380 ppm calcium floor (§2 layer 1) — are not lost with the block:
@@ -2866,47 +3209,106 @@ headline can name a **moving** parameter under §11's rule. The tile still shows
 `drifting`. What goes is the second opinion, computed from a second window, on a
 surface that is not entitled to one.
 
-### 25.5 Insights — deliberately unspecified
+### 25.5 Insights — it survives, and it is specified after 6f
 
-**Not specified, on purpose.** Dan does not yet know what it is for, and the
-inventory found it never receives `doseStates` at all
-(`.agent/items/TW-027.md`).
+**Amended 16 August (Dan, spec owner), Stage 5c.** This section read *"deliberately
+unspecified … it may not survive"*, on the strength of an inventory that
+**measured the screen's size and not its contents**. The contents were read, and
+they are not what either the inventory or the conversation around it assumed.
 
-> *"We might even find out that we don't need it, to be honest."*
+> The original entry, kept because the reasoning still holds for anything genuinely
+> unspecified: *"Deciding what a screen should say before knowing what it is for is
+> how surfaces end up carrying their own opinions."* What was wrong was the premise
+> that nobody knew what this one was for.
 
-**Deciding what a screen should say before knowing what it is for is how
-surfaces end up carrying their own opinions**, which is the problem being
-removed. Revisit once the other surfaces are rebuilt and it is clear what is
-left over. **It may not survive.**
+**It survives.** Nine analysis blocks, and **four of them exist nowhere else in
+the app**:
+
+- **Coral demand over time** — consumption on a rolling window with an
+  uncertainty band drawn, per element, plus whether demand is growing.
+- **Skeleton laid down** — alkalinity consumed, converted to grams of calcium
+  carbonate a month, with the caveat that it includes coralline and abiotic
+  precipitation.
+- **Nutrient production** — what the tank generates, worked backwards from a
+  logged water change and the level's movement, with the honest note that a
+  steady nitrate level and a productive tank with matching export look identical.
+- **Dose-strength calibration** — solving the solution strength from the keeper's
+  own dose changes rather than the bottle's label, which is a direct attack on
+  the risk `reef-chemistry.md` §16 calls the largest in the app.
+
+**This is the analytical half of the app**, not a second copy of the history
+modal.
+
+**And it already contains the structural fix this project spent a week arriving
+at.** The comment on the demand block:
+
+> *"Deliberately NOT a dosing verdict. That call belongs to 'Should you adjust?',
+> which uses a short window; this is the long view of how much the tank consumes
+> and whether that demand is growing. Both were previously giving verdicts on
+> different windows, which read as a contradiction."*
+
+That is §25.2's split, reached independently and before any of this week's work.
+The dose-strength block does the same thing explicitly — *"If the two ever read
+differently, follow the Wizard — its result is what the dose recommendations are
+built on."* **A screen that already knows it must not form a second opinion is not
+the screen to delete.**
+
+#### Four sections come out now
+
+Each contradicts a decision already made, and each goes on that decision's
+authority rather than on a judgement about Insights:
+
+| **"Water change needed to hold a level"** | `reef-chemistry.md` §29.6 — no suggested levers for nitrate or phosphate. This is a lever with a litre figure attached. |
+| **The nutrient equilibrium projection** | `.agent/gap-report.md` D-6. A projection about an export regime the app cannot see. |
+| **The target-range retarget offer** | §18's clause, withdrawn in favour of §28. The *"Your tank actually runs X–Y · Use this"* row goes with it. |
+| **The N:P ratio block** | Canon has no ratio reasoning, and Randy Holmes-Farley calls the approach a myth: aim nitrogen and phosphorus at their own levels, never at a ratio. |
+
+#### It is specified after 6f, not before
+
+**Scheduled, not deferred indefinitely** — the difference matters, because
+"deferred" is what let it sit unread long enough to be nearly deleted on a
+guess. It is the last unspecified surface, and specifying it while the layer
+beneath it is being replaced would mean writing against something about to
+change. **After the switchover, when every other surface reads the new layer.**
 
 Until then Insights is bound by §19 like everything else: whatever it shows, it
-renders the engine's verdict or stays quiet. Being unspecified is not a licence
-to compute.
+renders the engine's verdict or stays quiet. **Being unspecified is not a licence
+to compute** — and the four blocks above are removed now rather than at
+specification time, because each is already decided against.
 
 ### 25.6 The carried open items
 
 **None may be answered by an agent**, and they are listed together so they are
 not lost when parts 2 and 3 become decision records. **Six were carried into
-16 August and three closed that day in Stage 5b** — items 4, 5 and 6, struck
-through below with what replaced them. **Three remain**, and they are items 1, 2
-and 3, unchanged since Stage 3.
+16 August and all six are now closed** — items 4, 5 and 6 in Stage 5b, items 1,
+2 and 3 in Stage 5c, each struck through below with what replaced it. **The live
+list is items 7 to 10**, added by the Stage 5c and 6a folds.
 
-**1. `reef-chemistry.md` §9's "wrong tool" rule.** Pointing at dry salt or a
-water change when a correction exceeds ~1.5 L contradicts the rate rules — a
-different product does not make a fast change safe. **That half is decided and
-§9 is amended**: the answer is a gradual plan and an honest duration (§24.23).
-**What is open is whether the volume ceiling has any remaining role** — a
-sanity check on a single day's dose, or dissolved because a long enough plan
-brings the daily volume under it anyway.
+**~~1. `reef-chemistry.md` §9's "wrong tool" rule.~~ — closed 16 August, Stage
+5c.** The first half was already decided: pointing at dry salt or a water change
+contradicts the rate rules, and §9 was amended to a gradual plan with an honest
+duration (§24.23). **The remaining question was whether the ~1.5 L volume ceiling
+had any role left, and it does: it applies to a single day's dose.** If one day of
+a plan needs more than about 1.5 L of the maintenance solution the plan is too
+aggressive, however many days it runs. A sanity check on a day's dose, not a
+trigger to reach for another product. `reef-chemistry.md` §9 carries it.
 
-**2. The 6.9 dKH card overlap.** §24.9 and §24.23 both claim that situation.
-Probably the short one on the dashboard and the fuller plan card in the wizard,
-**but not decided** — and see §24.23 on whether that card's offer is a return
-plan or a correction wearing its words.
+**~~2. The 6.9 dKH card overlap.~~ — closed 16 August, Stage 5c.** **§24.9 renders
+on the dashboard, §24.23 in the wizard.** Brevity where you glance, the plan where
+a plan gets set. Neither card is reworded; what goes is
+`narrative-engine.js:457-459`, the regex over the wizard's own English that
+existed only to stop the two colliding. A third claimant, `far-out-<param>`, was
+already deleted by D-4 for saying *"dangerously"*. **The return-plan-versus-
+correction question that shared this item is *not* closed by it** and is now item
+7 below.
 
-**3. App-level notices.** Out of the tank summary (§25.1). **Tasks is the
-likely home; the fit is unproven**, because Tasks today holds reminders the
-user created and these are the app noticing something.
+**~~3. App-level notices.~~ — closed 16 August, Stage 5c.** **Tasks is their
+home**, with a count badge on the tab. The rule is *the tank summary tells you
+about your tank; Tasks tells you what to do about the app*, so every future notice
+sorts itself. The fit that was called unproven is proven by the thing they have in
+common — both kinds are things to do. **Two of the six also render inline at the
+point of refusal**, no net volume set and solution strength missing, because those
+two stop the app working rather than merely wanting doing. §25.1 carries it.
 
 **~~4. Where relationship notices sit~~ — closed 16 August, Stage 5b.** §25.1's
 ordering decision makes them **the third of four tiers**: after every alert and
@@ -2947,6 +3349,61 @@ the rule means. **A single order across both rules is also the stronger
 answer** — the headline and the list beneath it can no longer name two equally
 out-of-range parameters in opposite orders.
 
+**Four more, added 16 August by the Stage 5c and 6a folds.** These are the live
+list. **None blocks Stage 6**, and each names what it would change if answered
+the other way.
+
+**7. Is §24.23's offer a return plan or a correction wearing its words?** The card
+reads *"Plan a gradual return"*, which §15 registers as the **return plan**
+phrase, while `reef-chemistry.md` §28.2 offers a return plan only for a level that
+is **stable and out of band** — and a level at 6.9 dKH is usually neither. Going
+up, §28.5 says the instrument is a correction. **Either this card is a correction
+using the wrong registered phrase, or §28's condition needs widening.** It shared
+item 2 with the card overlap, which closed without it. Stage 6c renders this card
+and will have to pick a phrase.
+
+**8. What a task looks like.** Tasks is now the home for six app-level notices
+(item 3), and **nobody has decided how a notice becomes a task** — whether the app
+writes one into the list, whether it can be completed or only resolved by fixing
+the thing, and how the app's own entries sit beside the keeper's reminders in one
+list. The count badge implies the two are counted together. **This is the whole
+specification of a surface, and it is not written**; Tasks is decided as the
+*home* and not as the *design*.
+
+**9. Whether `classifyReading` is given the correction-adjusted series.**
+`reef-chemistry.md` §26 fits trend, direction and consumption over the
+**correction-adjusted** window of §6 — the series with logged corrections
+subtracted. A function handed readings has no corrections to subtract and no dose
+to subtract them with, so today it fits what it is given and documents that a
+caller holding a correction log should pass the adjusted series. **This is an
+interface question, not a chemistry one, and it needs an owner before 6f**: a
+switchover that wires the classifier to raw readings makes its movement claim
+disagree with the engines' trend on any tank with a logged correction, which is
+exactly the class of disagreement §26 was written to end.
+(`.agent/stage-6a-gaps.md` T-5.)
+
+**10. Salinity's test cadence.** §4 now gives salinity a 14-day analysis window
+and leaves the cadence column blank. Nothing is blocked — the cadence feeds
+`reef-chemistry.md` §30.2, which is a bar about dose changes and salinity has no
+dose — but §4's table has two columns and one of salinity's is empty. A figure
+invented to fill it would be exactly what §5's per-kit table was, so it is asked
+rather than derived.
+
+**Two things `.agent/stage-6a-gaps.md` records as noted rather than decided**, and
+they are listed here so they are not mistaken for settled: whether §22's and §19's
+data requirements — three readings spanning six days, and no rate from readings
+less than two days apart — **apply to a movement claim** as well as to a
+consumption rate (Q-1; canon's own worked example in `reef-chemistry.md` §11 sits
+inside both, which is the reason to ask), and **whether the reading at a recorded
+kit change belongs to the old series or the new** (Q-3; treated as the fresh
+baseline, which is §23 example 6 in the shape of a refusal). **Both are
+implementable as they stand**; neither is waiting on you before Stage 6 can
+proceed.
+
+**Insights is scheduled, not open.** §25.5 specifies it **after 6f**. It appears
+in no list here because it is not a question — it is work with a place in the
+order.
+
 ### Enforced by
 
 Per §10, named rather than asserted: **nothing asserts §25 today**, and the
@@ -2968,6 +3425,9 @@ Five checks would close it, and all five are extensions of work already filed:
 | 25.1's off switch | a parameter switched off produces no notice of any kind, alerts and safe-bounds excursions included, and no other parameter is affected | TW-082 |
 | 25.4's deleted `heading-out-*` | no surface computes a second direction claim over a second window; the id is absent | TW-080 |
 | §32's ammonia rules | a zero reading produces nothing anywhere; any positive reading produces one alert-tier notice; no trend, verdict or dose is reachable | TW-084 |
+| 25.1's app-level notices | the six render in Tasks with a count badge and nowhere in the tank summary; no net volume and no solution strength also render at the refusal, in the same words | TW-088 |
+| 25.5's four removals | no water-change lever, no equilibrium projection, no retarget offer and no N:P block survives anywhere on Insights | TW-089 |
+| 24.9 against 24.23 | the short card renders on the dashboard and the plan card in the wizard, never both on one surface, with no regex over either one's prose | TW-087 |
 
 **§25.1's hidden-versus-off distinction needs a test of its own**, and it is
 the one behaviour in this section that can fail silently in a way the user pays

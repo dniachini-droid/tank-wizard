@@ -8,6 +8,29 @@ needs.
 
 ---
 
+## Folded into canon 16 August 2026 — and what this file now is
+
+**This file is the decision record, not the reference.** All five decisions are
+in canon: the card placement is `wizard-states.md` **§24.9** and **§24.23**; the
+app-level notices' home is **§25.1** with **§25.6** item 3; the volume ceiling is
+`reef-chemistry.md` **§9**; magnesium's band is **§2** layer 3, with the alert
+inversion restated at **§10**; and Insights is **§25.5**. **Where this file and
+canon differ, canon wins.**
+
+Folded alongside `docs/spec/stage-6a-decisions.md` in one pass, since the two
+overlap on magnesium: 5c moves the suggested band to 1250–1400 and 6a rules on
+what a reading of exactly 1150 classifies as, and folding them separately would
+have meant writing §10's arithmetic twice.
+
+**§25.6's carried list is now empty of everything it came in with** — items 1, 2
+and 3 close here, items 4, 5 and 6 closed in Stage 5b. Four new items are opened
+by these two folds and are §25.6 items 7 to 10.
+
+The implementation is filed as **TW-086** to **TW-090**, all untagged, plus an
+amendment to **TW-052**, which this decision resolves in the code's favour.
+
+---
+
 # 1. The 6.9 dKH overlap — short card on the dashboard, full card in the wizard
 
 Gap report §25.6 item 2, and the report found a third claimant the item did not

@@ -294,19 +294,30 @@ headline tie-break, and the logged-correction case.
 
 **Still open, and none of it blocks Stage 6:**
 
-- **The 6.9 dKH card overlap** (§25.6 item 2) — three cards claim that
+**All but one of these closed on 16 August in the Stage 5c and 6a folds**, and
+each is struck with what answered it. **TW-063 is the survivor.**
+
+- ~~**The 6.9 dKH card overlap**~~ (§25.6 item 2) — three cards claimed that
   situation, and the third was found by the gap report after the item was
-  written.
-- **App-level notices going to Tasks** (§25.6 item 3) — six finding ids, no
-  home, and the fit is unproven.
-- **§9's volume ceiling** (§25.6 item 1) — whether the ~1.5 L limit has any
-  remaining role once a plan spreads a correction over days.
-- **Magnesium's default band** ships 1250–1400 against §2 layer 3's 1275–1425
-  (TW-052).
+  written. **Closed: §24.9 on the dashboard, §24.23 in the wizard**, and the
+  third was already deleted by D-4. `narrative-engine.js:457-459` goes with it.
+- ~~**App-level notices going to Tasks**~~ (§25.6 item 3) — six finding ids, no
+  home, and the fit was unproven. **Closed: Tasks is the home, with a count
+  badge**, and the two blocking ones also render at the refusal.
+- ~~**§9's volume ceiling**~~ (§25.6 item 1). **Closed: it applies per day** — if
+  one day of a plan needs more than ~1.5 L the plan is too aggressive, however
+  many days it runs.
+- ~~**Magnesium's default band**~~ shipped 1250–1400 against §2 layer 3's
+  1275–1425 (TW-052). **Closed: canon changes and the code is right**, which also
+  resolves §10's alert inversion — the floor at 1150 now bites on the shipped
+  default rather than looking like dead code.
 - **TW-063** — the golden sweep feeds each engine only its own element's
   readings, so it is structurally blind to cross-parameter rules and could let
-  Stage 6 break the magnesium gate without the fingerprint moving.
-- **Insights** (§25.5) — deliberately unspecified, may not survive.
+  Stage 6 break the magnesium gate without the fingerprint moving. **Still open,
+  on its own terms, and untouched by either fold.**
+- ~~**Insights**~~ (§25.5) — deliberately unspecified, may not survive.
+  **Closed: it survives.** Four sections come out now and the rest is specified
+  after 6f. The earlier read measured the surface's size and not its contents.
 
 ## Reconciled after the merge — 16 August
 

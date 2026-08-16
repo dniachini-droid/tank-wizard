@@ -170,7 +170,9 @@ one; §13's seven bands do not fit a parameter whose target is zero.
 
 ## Salinity
 
-**Below 33 ppt or above 36 ppt.**
+**Below 33 ppt or above 36 ppt.** (**The high level moved to 36.5 on 16 August,
+Stage 6a** — 36 collided with the shipped range's upper edge. `reef-chemistry.md`
+§18 is the reference; this file is the record of what was decided here.)
 
 Sourced. Target is 35 ppt / 1.025 SG, and most reef tanks run 33–35. Below 31
 kills coral over prolonged exposure; at 38 and above soft corals melt and hard

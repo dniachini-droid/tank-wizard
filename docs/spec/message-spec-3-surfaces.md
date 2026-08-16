@@ -276,6 +276,15 @@ left over.
 
 It may not survive.
 
+**It survives — 16 August 2026, Stage 5c**, and `wizard-states.md` §25.5 is the
+reference. Four of its nine analysis blocks exist nowhere else in the app, and
+the screen already carries §25.2's structural fix in its own comments. **Four
+sections come out now** — the water-change lever, the equilibrium projection, the
+retarget offer and the N:P ratio block — **and the rest is specified after 6f**,
+scheduled rather than deferred. The paragraph above is kept because its reasoning
+still holds for anything genuinely unspecified; what was wrong was the premise
+that nobody knew what this screen was for.
+
 ---
 
 # THE RULES, ALL SEVEN
