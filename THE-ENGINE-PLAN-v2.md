@@ -135,24 +135,24 @@ route 12. §25.1 gained the collapsed headline rule in the same session. That is
 G-1 to G-4 and G-27 of `.agent/gap-report.md`, filed as **TW-075 to TW-078**.
 
 **Six questions were carried open — `wizard-states.md` §25.6 — and Stage 5b
-closed two of them on 16 August.** Item 5 is answered: **§24.24 does not word
-the logged-correction case, because the card does not fire when a correction is
-logged.** Item 4 is answered by the notice ordering: **relationship notices are
-the third of four tiers.** **Four remain**, none blocking anything — §9's volume
-ceiling and the 6.9 dKH overlap are chemistry decisions in Stage 5's list,
-app-level notices in Tasks is a placement question for Stage 6, and what breaks
-an exact tie in §25.1's headline ordering now has a candidate (the fixed
-parameter order) that is deliberately not adopted for it.
+closed three of them on 16 August.** Item 5: **§24.24 does not word the
+logged-correction case, because the card does not fire when a correction is
+logged.** Item 4: **relationship notices are the third of the ordering's four
+tiers.** Item 6: **the fixed parameter order breaks the headline's tie too** —
+one order, one reason. **Three remain**, none blocking anything — §9's volume
+ceiling and the 6.9 dKH overlap are chemistry decisions in Stage 5's list, and
+app-level notices in Tasks is a placement question for Stage 6.
 
 **Stage 5b closed the rest of Stage 4's open list — 16 August**, eight owner
 decisions folded from `docs/spec/stage-5b-remaining-items.md`: ammonia's own
 section (`reef-chemistry.md` §32, G-22), the notice ordering (G-28), the off
 switch's scope (G-31), `drifting` producing no notice and the deletion of
 "heading out of range" (G-21), the kit-accuracy split (D-1), and the
-negative-consumption suppression. Filed as **TW-079 to TW-083**. **Six items
-remain of the gap report's open list and all six are Dan's** —
-`.agent/needs-dan.md` item 14. Stage 3's own three surviving questions
-(`wizard-states.md` §25.6 items 1–3) are separate and unchanged.
+negative-consumption suppression, plus the headline tie-break the ordering turned
+out to answer as well. Filed as **TW-079 to TW-083**. **Five items remain of the
+gap report's open list and all five are Dan's** — `.agent/needs-dan.md` item 14.
+Stage 3's own three surviving questions (`wizard-states.md` §25.6 items 1–3) are
+separate and unchanged.
 
 **Insights was deliberately not specified** and may not survive; see §25.5.
 

@@ -6,16 +6,17 @@ Decisions no agent may make. Newest at top. Dan clears this file.
 
 ## Open
 
-### 14. The six that survive Stage 5b — 2026-08-16
+### 14. The five that survive Stage 5b — 2026-08-16
 
 Filed by the run that folded `docs/spec/stage-5b-remaining-items.md` into canon.
 **Eight owner decisions cleared the gap report's open list** — ammonia's own
 section, the notice ordering, the off switch's scope, `drifting`, the
 "heading out of range" deletion, the kit-accuracy split in two parts, and the
-negative-consumption suppression. **Six things are still yours**, and this entry
+negative-consumption suppression, **and the headline tie-break the ordering
+turned out to answer as well**. **Five things are still yours**, and this entry
 replaces items 12 and 13 as the live list rather than adding to them.
 
-**Scope, stated so the count is not read wider than it is.** These six are what
+**Scope, stated so the count is not read wider than it is.** These five are what
 is left of the gap report's open list — items 12 and 13's lineage. **Item 11 is
 still open on its own terms** and is not counted here: its questions 1, 2 and 3
 (§9's volume ceiling, the 6.9 dKH card overlap, where app-level notices go) are
@@ -54,34 +55,38 @@ answer.
 judgements, and names notification thresholds as a judgement. **The two read
 against each other and the app has half of each.**
 
-**6. What breaks an exact tie in §25.1's headline ordering.** Carried from item
-13, and it now has a candidate it did not have. **Stage 5b's notice ordering
-settles the same-shaped question one level down with a fixed parameter order** —
-alkalinity, calcium, magnesium, salinity, nitrate, phosphate, potassium, ammonia
-— which is a total order and would break this tie cleanly. **It is deliberately
-not adopted**: the decision was made about the notice list, the headline's sort is
-a different rule with a different subject, and extending one to the other is
-yours. Recorded at `wizard-states.md` §25.6 item 6.
+**~~6. What breaks an exact tie in §25.1's headline ordering~~ — closed
+2026-08-16, same day.** Carried from item 13, put back to you with the fold, and
+answered: **the fixed parameter order breaks it too** — alkalinity, calcium,
+magnesium, salinity, nitrate, phosphate, potassium, ammonia. *"It was decided
+about the notice list but it applies to both — one order, one reason."* The
+tiles' own order remains not chosen. `wizard-states.md` §25.1 and §25.6 item 6,
+and TW-076 and TW-081 are amended to share one definition of the order rather
+than carry two.
 
 **Two things the fold derived rather than decided**, both written into §25.1 the
 way §20's mapping of *serious* is — implementable, correctable in one line, and
 not to be mistaken for a decision. **pH is not in the fixed parameter order**: it
 names eight parameters and the app has nine, and pH produces notices (§31's *pH
-high* and *CO2 signature*) despite having no alert tier, so it sorts last. And
-**relationship notices order among themselves by the earliest parameter they
-name**, because tier 3 needs an internal order for the same determinism reason as
-the rest. **Correct either if it is wrong; neither is waiting on you.**
+high* and *CO2 signature*) despite having no alert tier, so it sorts last — **put
+to you on 16 August, confirmed right, and deliberately left derived** so it keeps
+its one-line correctability. And **relationship notices order among themselves by
+the earliest parameter they name**, because tier 3 needs an internal order for the
+same determinism reason as the rest. **Correct either if it is wrong; neither is
+waiting on you.**
 
-**In plain terms.** Six things left, and none of them is holding anything up.
+**In plain terms.** Five things left, and none of them is holding anything up.
 Two are about what a screen says when nothing is wrong — the little chip on each
 tile, and the line at the top when your whole tank is fine. One is a trap you
 already know about: the four status colours mean "too low / too high" on some
-screens and "out of range / needs attention" on others. Two are fine print in the
-evidence rules you set on Sunday. And the last is what happens when two
-parameters are exactly, identically out of range and the summary line has to name
-one of them first — for which there is now an obvious answer sitting on the
-table, which is the parameter order the notice list got today. Say the word and
-it applies there too.
+screens and "out of range / needs attention" on others. And two are fine print in
+the evidence rules you set on Sunday.
+
+The sixth was the tie — two parameters exactly, identically out of range, and
+which one the summary line names first. **You answered it the same day**: the
+same parameter order the notice list got. That one answer covers both screens,
+which means the headline and the list underneath it can never disagree about
+which of two problems comes first.
 
 ### ~~13. What the four late cards and the summary headline left open~~ — 2026-08-16, one closed same day, one carried to item 14
 
@@ -99,7 +104,10 @@ the arithmetic is explained and there is nothing to report. Part 3 is spent
 entirely — no water change in either direction, no missing correction, no logged
 one. `reef-chemistry.md` §24, `wizard-states.md` §24.24 and §25.6 item 5.
 
-**2 is carried to item 14 as its item 6**, unchanged and still yours.
+**~~2. What breaks an exact tie in §25.1's headline ordering.~~ — closed
+2026-08-16, Stage 5b.** Carried to item 14 and answered there the same day: **the
+fixed parameter order breaks it**, the same one the notice list got. One order,
+one reason.
 
 The original text of both, for the record:
 

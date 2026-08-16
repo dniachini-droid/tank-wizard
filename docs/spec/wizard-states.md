@@ -2372,11 +2372,12 @@ moving; the tile says which way.
 
 **What this rule does not settle**, recorded rather than guessed:
 
-- **An exact tie on both keys.** Two parameters equally far out, in the same
-  tier, on the same fraction. The order must be deterministic — a headline that
-  reorders between renders is a headline nobody can check against the tiles —
-  and canon does not say what breaks it. The tiles' own order is the obvious
-  candidate and is not chosen here.
+- ~~**An exact tie on both keys.**~~ **Closed 16 August, Stage 5b: the fixed
+  parameter order breaks it** — alkalinity, calcium, magnesium, salinity,
+  nitrate, phosphate, potassium, ammonia, set two subsections below and applying
+  here as well. **One order, one reason.** The tiles' own order was the obvious
+  candidate and is still not chosen: a display arrangement that may change for
+  display reasons cannot be what makes a headline checkable.
 - **Whether an "N of M in range" claim may appear at all** when every slot is
   empty. That is G-29, still open, and the candidate recorded with the health
   score's deletion — *"3 of 6 in range, 2 need attention"* — belongs to it. **This
@@ -2449,17 +2450,35 @@ correctability, as §20's mapping of *serious* and the slot table above:
   has nine; pH has no alert tier (`reef-chemistry.md` §18) but does produce
   notices — §31's *pH high* and *CO2 signature* are both ratified. **pH sorts
   last**, after ammonia, as the only placement that adds nothing to what the
-  decision states. Correcting this is a one-line change to this bullet.
+  decision states. Correcting this is a one-line change to this bullet. **Put to
+  the owner on 16 August and left standing as derived** — confirmed right, and
+  deliberately not promoted to a decision, so it keeps its one-line
+  correctability. **The confirmation is not a ninth entry in the fixed order**;
+  the order still names eight and this bullet still places the ninth.
 - **Relationship notices order among themselves by the earliest parameter they
   name** in the fixed order. Tier 3 needs an internal order for the same
   determinism reason as the others, and the decision does not give one.
 
+**The fixed order breaks the headline's tie as well — confirmed 16 August,
+Stage 5b.** It was decided about this list, and it applies to both:
+
+> **One order, one reason.**
+
+§25.1's collapsed headline sorts on the same two keys as tiers 1 and 2 here, and
+until today it had no answer for an exact tie on both. **It has this one.** A
+single fixed order across the two rules is also the only arrangement in which
+the headline and the list beneath it cannot name two out-of-range parameters in
+opposite orders — which is the property the headline rule is built on, since
+every clause of it is meant to be checkable against the tiles below. **Two
+orderings would have been a second wording of the same fact**, in the shape
+§25.1's first rule exists to prevent. **§25.6 item 6 closes.**
+
 **What this does not touch.** §20's one-notice-per-parameter rule and its
 supersession are unchanged — this orders the set, it does not change its
-membership. The hidden section below the list is unchanged. And **the headline's
-ordering is a separate rule**: it sorts clauses about a whole tank, this sorts
-notices, and §25.6 item 6 remains open for the headline whether or not this
-answers the same-shaped question one level down.
+membership. The hidden section below the list is unchanged. And the headline
+remains its **own rule with its own subject**: it sorts clauses about a whole
+tank and this sorts notices. They now share a tie-break; they do not become one
+rule, and a change to either is not automatically a change to the other.
 
 #### Hidden and off are different things
 
@@ -2868,9 +2887,9 @@ to compute.
 
 **None may be answered by an agent**, and they are listed together so they are
 not lost when parts 2 and 3 become decision records. **Six were carried into
-16 August and two closed that day in Stage 5b** — items 4 and 5, struck through
-below with what replaced them. **Four remain**, and items 1, 2 and 3 are
-unchanged since Stage 3.
+16 August and three closed that day in Stage 5b** — items 4, 5 and 6, struck
+through below with what replaced them. **Three remain**, and they are items 1, 2
+and 3, unchanged since Stage 3.
 
 **1. `reef-chemistry.md` §9's "wrong tool" rule.** Pointing at dry salt or a
 water change when a correction exceeds ~1.5 L contradicts the rate rules — a
@@ -2911,22 +2930,22 @@ there is nothing to report. Part 3 is spent entirely. §24.24 keeps one wording
 and one escalation, both the nothing-logged case, which is the only case part 4's
 count ever counted.
 
-**6. What breaks an exact tie in §25.1's headline ordering.** Two parameters in
-the same tier, the same fraction of their own bands out. **A deterministic answer
-is required** — an ordering that varies between renders cannot be checked against
-the tiles, which is the whole basis of the rule — and canon does not supply one.
-The tiles' own order is the obvious candidate and is deliberately not chosen
-here.
+**~~6. What breaks an exact tie in §25.1's headline ordering?~~ — closed
+16 August, Stage 5b.** **The fixed parameter order breaks it** — alkalinity,
+calcium, magnesium, salinity, nitrate, phosphate, potassium, ammonia. It was
+decided for the notice list and **applies to both: one order, one reason.**
 
-**Still open after Stage 5b, and now with a candidate it did not have.** The
-notice ordering decided the same day settles the same-shaped question one level
-down and settles it with a **fixed parameter order** — alkalinity, calcium,
-magnesium, salinity, nitrate, phosphate, potassium, ammonia — which is a total
-order over parameters and would break this tie as cleanly as it breaks that one.
-**It is not adopted here.** The decision was made about the notice list, the
-headline's sort is a different rule with a different subject, and extending one
-to the other is the owner's to do and nobody else's. It is recorded so the
-answer is on the table when the question is next picked up.
+The question was two parameters in the same tier, the same fraction of their own
+bands out, and the requirement was determinism — an ordering that varies between
+renders cannot be checked against the tiles, which is the whole basis of the
+rule. A fixed order over parameters is a total order and supplies it.
+
+**The tiles' own order is still not chosen**, and the reason it was resisted
+holds: it is a display arrangement that may change for display reasons, and a
+headline whose tie-break moves when a layout does is not checkable in the sense
+the rule means. **A single order across both rules is also the stronger
+answer** — the headline and the list beneath it can no longer name two equally
+out-of-range parameters in opposite orders.
 
 ### Enforced by
 

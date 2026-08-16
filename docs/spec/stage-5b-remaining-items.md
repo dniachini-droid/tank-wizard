@@ -17,7 +17,7 @@ negative-consumption suppression is `reef-chemistry.md` **§24** with
 
 The implementation is filed as **TW-079** to **TW-083**, all untagged, plus
 amendments to **TW-075** and **TW-076** where this decision overtook them. The
-six items still open at the end of this file are `.agent/needs-dan.md` item 14.
+five items still open at the end of this file are `.agent/needs-dan.md` item 14.
 
 ---
 
@@ -82,6 +82,17 @@ and 30 ppm are not two sizes of the same thing. **A ranking key, not a margin** 
 
 The fixed order is a total order, so the list is deterministic. A list that
 reshuffles without the tank changing is a list nobody can learn.
+
+**And it breaks the collapsed headline's tie as well** — the question
+`wizard-states.md` §25.6 item 6 had been carrying since the four-cards fold.
+
+> **It was decided about the notice list but it applies to both — one order, one
+> reason.**
+
+Which also means the headline and the list beneath it can never name two equally
+out-of-range parameters in opposite orders. The tiles' own order stays not
+chosen: a display arrangement that may change for display reasons cannot be what
+makes a headline checkable.
 
 ---
 
@@ -199,11 +210,11 @@ TW-076 are corrected where this decision overtook them.
 
 # What remains open after this
 
-**Six of the gap report's open list, and every one is Dan's.**
+**Five of the gap report's open list, and every one is Dan's.**
 `.agent/needs-dan.md` item 14. Stage 3's own three surviving questions —
 `wizard-states.md` §25.6 items 1 to 3, the volume ceiling, the 6.9 dKH card
 overlap and where app-level notices go — are a separate list and are unchanged
-by this fold; §25.6 item 4 closed with decision 2.
+by this fold; §25.6 items 4 and 6 closed with decision 2.
 
 **1. What the parameter tile's chip shows** (G-9). Deferred at Stage 5 rather
 than decided.
@@ -224,11 +235,14 @@ under §11.
 **5. `settings.mgAlertLow`** (N-2) — a live per-user override with no Setup field
 and no canon entry.
 
-**6. What breaks an exact tie in §25.1's headline ordering.** Decision 2's fixed
-parameter order would break it cleanly and **is deliberately not adopted for
-it** — that decision was made about the notice list, and the headline's sort is a
-different rule with a different subject. It is recorded as the candidate on the
-table.
+---
+
+# The sixth, answered the same day
+
+**What breaks an exact tie in §25.1's headline ordering.** Carried since the
+four-cards fold, put back with this one, and closed: **decision 2's fixed
+parameter order breaks it too.** One order, one reason. TW-076 and TW-081 share
+a single definition of it rather than carrying two.
 
 ---
 
@@ -241,7 +255,9 @@ line, and not mistaken for a decision.**
 **pH is not in the fixed parameter order.** The order names eight parameters and
 the app has nine. pH has no alert tier but does produce notices — §31's *pH high*
 and *CO2 signature* are both ratified. **It sorts last**, after ammonia, as the
-only placement that adds nothing to what was decided.
+only placement that adds nothing to what was decided. **Put to the owner and
+confirmed right, and left derived rather than promoted** — so it keeps its
+one-line correctability, and so the fixed order still names eight.
 
 **Relationship notices order among themselves by the earliest parameter they
 name** in the fixed order. Tier 3 needs an internal order for the same
