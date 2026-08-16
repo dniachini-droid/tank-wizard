@@ -30,15 +30,24 @@ export function fmtVal(def, v) {
    reading is sensibly shown to the nearest 10 ppm, but a dose of
    0.031 ppm/day rounded that way reads as zero. Scale the decimals to the
    size of the number instead. */
+/* Split out from fmtAmount so that anything needing to COMPARE two amounts at
+   the precision they are shown to reads the same table the display does. They
+   were one function, and the dosing engines compared raw values instead \u2014
+   which is how a dose of 10.799999999999999 came to be an "increase" on 10.8
+   (TW-050). */
+export function amountDecimals(v) {
+  const a = Math.abs(v);
+  if (a >= 100) return 0;
+  if (a >= 10) return 1;
+  if (a >= 1) return 2;
+  if (a >= 0.01) return 3;
+  return 4;
+}
+
 export function fmtAmount(v) {
   if (v == null || isNaN(v)) return "\u2014";
-  const a = Math.abs(v);
-  if (a === 0) return "0";
-  if (a >= 100) return v.toFixed(0);
-  if (a >= 10) return v.toFixed(1);
-  if (a >= 1) return v.toFixed(2);
-  if (a >= 0.01) return v.toFixed(3);
-  return v.toFixed(4);
+  if (v === 0) return "0";
+  return v.toFixed(amountDecimals(v));
 }
 
 export function roundTo(v, step) {

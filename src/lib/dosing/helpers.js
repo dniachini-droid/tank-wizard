@@ -1,5 +1,5 @@
 import { CORRECTION_MAX_RATE, SAFE_DAILY_RISE } from '../analytics/safe-rate.js'
-import { fmtAmount, fmtVal } from '../analytics/time-in-range.js'
+import { amountDecimals, fmtAmount, fmtVal } from '../analytics/time-in-range.js'
 import { byNewest, byOldest, minutesOf, nowTime } from '../analytics/time-of-day.js'
 import { dayNum } from '../analytics/water-changes.js'
 import { daysBetween, todayStr } from '../dates.js'
@@ -57,6 +57,36 @@ export function capDoseStep(wanted, currentDose, level, def, rate) {
   const pct = headingWrong ? 1.0 : unsafe ? 0.5 : DOSE_STEP_CAP;
   const cap = currentDose * pct;
   return Math.max(currentDose - cap, Math.min(currentDose + cap, wanted));
+}
+
+/* ---- Is the recommendation actually a change? -------------------------------
+ *
+ * One implementation for all three engines, because it was one line copied
+ * three times and wrong in all three (TW-050):
+ *
+ *   out.action = next > out.currentDose ? "increase" : ...
+ *
+ * `next` has been rounded to the doser's increment by the dose constraints;
+ * `currentDose` comes out of the dose log and has not. A logged 10.8 stored as
+ * 9 x 1.2 is 10.799999999999999, so the comparison found an "increase" of
+ * 1.8e-15 and the app told the keeper to raise a dose to the figure they were
+ * already pouring.
+ *
+ * So compare at the precision the dose is DISPLAYED to — `fmtAmount`, which is
+ * what every surface renders these through — rather than raw. Two doses that
+ * render as the same text are the same dose as far as the user can act on it,
+ * and a direction the user cannot see is not a direction worth naming.
+ *
+ * The COARSER of the two precisions governs, because fmtAmount scales decimals
+ * to magnitude: 9.999 renders "10.00" and 10.001 renders "10.0", and judging
+ * that pair at 2dp would report a change of 0.002 mL that no display shows.
+ */
+export function doseAction(next, currentDose) {
+  const dp = Math.min(amountDecimals(next), amountDecimals(currentDose));
+  const f = 10 ** dp;
+  const a = Math.round(next * f) / f;
+  const b = Math.round(currentDose * f) / f;
+  return a > b ? "increase" : a < b ? "decrease" : "hold";
 }
 
 /* How far back a dose observation stays usable for bracketing.
@@ -1149,7 +1179,7 @@ export function assessMagnesium({ readings, doseLog = [], waterChanges = [], set
 
   out.ok = true;
   out.recommendedDose = next;
-  out.action = next > out.currentDose ? "increase" : next < out.currentDose ? "decrease" : "hold";
+  out.action = doseAction(next, out.currentDose);
   out.staged = mag > 3;
 
   if (out.staged) {
