@@ -15,8 +15,15 @@ export function computeConsumption(readings, settings) {
   const driftPerDay = regressionSlope(rows);
   if (driftPerDay == null) return null;
 
+  /* No strength, no delivered figure — and therefore no consumption rate and
+     no recommended dose. Previously this multiplied by a shipped default;
+     with the default gone it would multiply by undefined and hand every
+     caller NaN, which is the one thing worse than refusing. §16, §12. */
+  const alkStrength = Number(s.dkhPerMlPer100L);
+  const haveStrength = isFinite(alkStrength) && alkStrength > 0;
+
   // What the current daily dose actually delivers, in dKH, for this volume.
-  const dosePerDayDkh = s.dailyDoseMl > 0
+  const dosePerDayDkh = haveStrength && s.dailyDoseMl > 0
     ? s.dailyDoseMl * s.dkhPerMlPer100L * (100 / s.volumeL)
     : null;
 
@@ -24,7 +31,7 @@ export function computeConsumption(readings, settings) {
   // dosing, the tank is eating more than the dose delivers.
   const consumption = dosePerDayDkh != null ? dosePerDayDkh - driftPerDay : null;
 
-  const dkhPerMl = s.dkhPerMlPer100L * (100 / s.volumeL);
+  const dkhPerMl = haveStrength ? s.dkhPerMlPer100L * (100 / s.volumeL) : 0;
   const recommendedMl = consumption != null && dkhPerMl > 0 ? consumption / dkhPerMl : null;
   const adjustMl = recommendedMl != null ? recommendedMl - s.dailyDoseMl : null;
 
@@ -85,17 +92,24 @@ export function computeConsumption(readings, settings) {
  * is reported as unreliable rather than dressed up as a number.
  */
 /* Which settings fields belong to which element, so the setup panel and the
-   dose log can be driven by a single dropdown rather than stacking all three. */
+   dose log can be driven by a single dropdown rather than stacking all three.
+
+   No `defaultStrength`. There is nothing sensible to put there: only the user
+   knows what their bottle delivers, and a figure they have not checked against
+   it is the failure this removed, not a head start (reef-chemistry.md §16).
+   The hints say where to find the number and how to work it out. They must not
+   supply one — "Aquaforest 1:1 is about 0.36" is exactly the number nobody
+   verified. */
 export const DOSE_ELEMENTS = [
   { key: "alkalinity", label: "Alkalinity", doseField: "dailyDoseMl", strengthField: "dkhPerMlPer100L",
-    unit: "dKH", strengthLabel: "dKH/mL/100L", strengthStep: 0.005, defaultStrength: 0.0533,
-    hint: "Aquaforest Balling at 2x standard (101 g soda ash per litre) works out at 0.0533 dKH per mL per 100L. Their standard strength is half that." },
+    unit: "dKH", strengthLabel: "dKH/mL/100L", strengthStep: 0.005,
+    hint: "How much alkalinity one mL of your solution adds to 100 L. Commercial products print it on the bottle; if you mix your own, work it out from the soda ash per litre and remember a double-strength mix is twice a standard one." },
   { key: "calcium", label: "Calcium", doseField: "calciumDoseMl", strengthField: "caPpmPerMlPer100L",
-    unit: "ppm", strengthLabel: "ppm/mL/100L", strengthStep: 0.01, defaultStrength: 0.3611,
-    hint: "Aquaforest Balling at 2x standard (100 g AF Calcium per litre) works out at 0.3611 ppm per mL per 100L. Paired with the alkalinity part that gives 6.8 ppm calcium per dKH — the ratio corals actually consume." },
+    unit: "ppm", strengthLabel: "ppm/mL/100L", strengthStep: 0.01,
+    hint: "How much calcium one mL of your solution adds to 100 L. Check the bottle, or work it out from the grams of calcium salt per litre and its calcium fraction. Do not copy a figure from another tank's recipe — mixes vary, and everything the app calculates for calcium is scaled by this." },
   { key: "magnesium", label: "Magnesium", doseField: "magDoseMl", strengthField: "mgPpmPerMlPer100L",
-    unit: "ppm", strengthLabel: "ppm/mL/100L", strengthStep: 0.1, defaultStrength: 0.024,
-    hint: "Magnesium products vary a lot in concentration — check your bottle. Leave the dose at 0 if water changes alone replenish it." },
+    unit: "ppm", strengthLabel: "ppm/mL/100L", strengthStep: 0.1,
+    hint: "How much magnesium one mL of your solution adds to 100 L. Magnesium products vary a lot in concentration, so this one especially has to come from your own bottle. Leave the dose at 0 if water changes alone replenish it." },
 ];
 
 export const CONSUMPTION_RULES = {
@@ -112,6 +126,23 @@ export function computeElementConsumption(key, readings, waterChanges, settings)
   const def = PARAM_DEFS.find((d) => d.key === key);
   if (!rule || !def) return null;
   const s = { ...DEFAULT_SETTINGS, ...settings };
+
+  /* Refused and named, the same shape as a missing net volume — but only when
+     the strength is actually load-bearing. `rule.dose` multiplies the daily
+     dose by it, so with a dose running and no strength every figure below
+     would be NaN presented as a measurement, and the caller could not tell
+     "we don't know what your product delivers" from "the tank isn't
+     consuming" (§16, §12).
+     A tank dosing nothing needs no strength: the dose term is zero either way
+     and consumption is just the fall in the tank. Refusing there would
+     withhold a figure the app can honestly compute. */
+  const cfg = DOSE_ELEMENTS.find((e) => e.key === key);
+  const doseMl = cfg ? Number(s[cfg.doseField]) : 0;
+  const strength = cfg ? Number(s[cfg.strengthField]) : NaN;
+  if (doseMl > 0 && !(isFinite(strength) && strength > 0)) {
+    return { status: "nostrength", missing: `${def.label.toLowerCase()} solution strength`,
+             rule, def };
+  }
 
   /* Widen until there are enough readings AND they actually span the minimum
      period. Checking only the count let a cluster of four tests inside 16 days
@@ -146,7 +177,11 @@ export function computeElementConsumption(key, readings, waterChanges, settings)
   const vals = rows.map((r) => r.value).sort((a, b) => a - b);
   const typical = vals[Math.floor(vals.length / 2)];
 
-  const dosePerDay = rule.dose(s);
+  /* Guarded, not just called: `rule.dose` multiplies dose by strength, and
+     with no dose running the strength is absent, so the product is 0 *
+     undefined = NaN rather than the zero it means. A tank dosing nothing
+     contributes nothing, and that is a number the app knows. */
+  const dosePerDay = doseMl > 0 ? rule.dose(s) : 0;
   const dosed = dosePerDay * spanDays;
 
   // The balance itself.

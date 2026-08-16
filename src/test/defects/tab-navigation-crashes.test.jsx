@@ -37,7 +37,13 @@ describe('App.jsx:1275 — onOpenDosing no longer calls a nonexistent goTo', () 
     // correction plan is active — without a tank volume (reef-chemistry.md
     // §17/§21/§12: deliberately no default). Setup already has one in the
     // real app; seed it the same way here.
-    localStorage.setItem('danstank:tank-settings', JSON.stringify({ volumeL: 77 }))
+    // The solution strength is the same case as of 16 August (§16): also
+    // deliberately not shipped, also refused and named when absent. Without
+    // it the popup offers no dosing button at all and this test would pass
+    // vacuously, never reaching the navigation it exists to check.
+    localStorage.setItem('danstank:tank-settings', JSON.stringify({
+      volumeL: 77, dkhPerMlPer100L: 0.0533,
+    }))
 
     render(<ReefConsoleInner />)
     await waitFor(() => expect(screen.queryByText(/loading reef console/i)).not.toBeInTheDocument())

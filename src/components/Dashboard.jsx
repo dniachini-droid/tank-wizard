@@ -640,7 +640,12 @@ export function ParamHistoryModal({ def, readings, onClose, onSaveRange, onReset
 
                   {elementUse.status !== "ok" ? (
                     <p className="text-[12px] text-ink font-medium leading-relaxed">
-                      {elementUse.status === "tooshort"
+                      {/* "nostrength" is a refusal, not a shortage of readings.
+                          Saying "log a few more tests" would send the user off
+                          to do something that cannot fix it. */}
+                      {elementUse.status === "nostrength"
+                        ? `Enter your ${elementUse.missing} in Insights under Tank & dosing setup — it's how much ${def.label.toLowerCase()} one mL of your solution adds, and it's on your bottle. Every figure here is scaled by it, so the app won't guess: no consumption rate and no dose advice until it's set.`
+                        : elementUse.status === "tooshort"
                         ? `${def.label} moves slowly, so this needs at least ${elementUse.minDays} days of readings before a consumption figure means anything. You've got ${elementUse.spanDays} days so far.`
                         : `Log a few more ${def.label.toLowerCase()} tests and this will work out what the tank is actually using.`}
                     </p>

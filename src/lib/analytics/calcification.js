@@ -16,6 +16,24 @@
 export const CACO3_MOLAR_MASS = 100.087;   // g/mol
 export const ARAGONITE_DENSITY = 2.93;     // g/cm3
 
+/* The Ca:alk consumption ratio — reef-chemistry.md §16, one value for every
+ * user, and §20's calcification coupling rests on it. Changing it without an
+ * [approved][chem] item is an S1 defect.
+ *
+ * Stoichiometric, and written out so it can be checked rather than trusted:
+ * calcification deposits CaCO3, so each mole of carbonate laid down takes one
+ * mole of calcium with it. 1 meq/L of alkalinity is 0.5 mmol/L of carbonate
+ * (two charges), which pairs with 0.5 mmol/L of calcium = 20.04 ppm. At
+ * 1 meq/L = 2.8 dKH that is 20.04 / 2.8 = 7.157, i.e. 7.15 ppm Ca per dKH.
+ *
+ * It lives here, exported, because it had five values in the codebase and none
+ * of them was this one (.agent/inventory.md:354). Every surface that needs the
+ * ratio — the shipped product strengths, the balanced-consumption band, the
+ * implied-alkalinity prose — derives from this constant so they cannot drift
+ * apart again. Owner decision, 16 August.
+ */
+export const CA_PER_DKH = 7.15;
+
 export function computeSkeletonMass(alkConsumedPerDay, volumeL) {
   /* spec: reef-chemistry.md §17, §12 — net volume is the input every dose
      and derived-mass figure here scales by, so its absence is refused and

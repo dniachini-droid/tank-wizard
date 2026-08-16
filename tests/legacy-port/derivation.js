@@ -14,6 +14,16 @@
 const path = require('path');
 const L = require(path.join(__dirname, '..', '..', 'build', 'engines-new.cjs'));
 
+/* The app ships no solution strengths — only the user's own bottle can say
+   what a product delivers (docs/spec/reef-chemistry.md §16), and an unset
+   strength is refused and named. These simulated tanks stand in for CONFIGURED
+   tanks, so they state the strengths explicitly. The figures are the ones this
+   harness used to inherit from DEFAULT_SETTINGS, so every expectation is
+   unchanged. Cases that deliberately probe a missing or null strength set
+   their own and are untouched. */
+const TANK_STRENGTHS = { dkhPerMlPer100L: 0.0533, caPpmPerMlPer100L: 0.36, mgPpmPerMlPer100L: 0.024 };
+
+
 const T = L.todayStr();
 const defs = L.PARAM_DEFS;
 let rnd = 20260812;
@@ -36,7 +46,7 @@ for (let i = 0; i < RUNS; i++) {
         value: Math.round((base + (rand() - 0.5) * w * 0.4) * 100000) / 100000 });
     }
   }
-  const settings = { ...L.DEFAULT_SETTINGS, volumeL: pick([77, 200, 800]) };
+  const settings = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: pick([77, 200, 800]) };
 
   /* The old path, called exactly as the app used to call it. */
   const latest = {};
@@ -124,7 +134,7 @@ if (bad) process.exit(1);
     const d = defs4.find((x) => x.key === k);
     for (let j = 10; j > 0; j--) base.push({ param: k, date: L.addDays(T4, -j * 2), time: '20:00', value: (d.min + d.max) / 2 });
   }
-  const settings4 = { ...L.DEFAULT_SETTINGS, volumeL: 77 };
+  const settings4 = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77 };
   const BAD = [
     ['string value', { param: 'alkalinity', date: T4, time: '20:00', value: '8.9' }],
     ['string with units', { param: 'alkalinity', date: T4, time: '20:00', value: '8.9 dKH' }],

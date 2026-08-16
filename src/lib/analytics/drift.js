@@ -1,3 +1,4 @@
+import { CA_PER_DKH } from './calcification.js'
 import { DOSE_ELEMENTS } from './consumption.js'
 import { byNewest, regressionSlope, windowRows } from './time-of-day.js'
 import { DEFAULT_SETTINGS } from './water-changes.js'
@@ -270,9 +271,19 @@ export function computeDoseCalc(key, driftPerWeek, settings) {
   };
 }
 
-/* The calculation written out, so the number can be checked rather than trusted. */
-export const CA_PER_DKH_LO = 6.4;
-export const CA_PER_DKH_HI = 7.6;
+/* The tolerance either side of §16's ratio within which consumption reads as
+   balanced. Derived from the constant rather than written out beside it: the
+   band was 6.4-7.6, whose midpoint is 7.0, and the midpoint is not decoration
+   — `impliedAlk` below divides by it to state an implied alkalinity draw in
+   prose the user reads, so 7.0 WAS the Ca:alk ratio anywhere that sentence
+   appeared.
+
+   The +/-0.6 width is preserved exactly as it was. It has no derivation in
+   canon either, and unlike the centre it was not in scope for the 16 August
+   decision — flagged, not changed. */
+export const CA_PER_DKH_TOLERANCE = 0.6;
+export const CA_PER_DKH_LO = CA_PER_DKH - CA_PER_DKH_TOLERANCE;
+export const CA_PER_DKH_HI = CA_PER_DKH + CA_PER_DKH_TOLERANCE;
 
 export function computeIonicBalance(readings, settings = DEFAULT_SETTINGS) {
   const s = { ...DEFAULT_SETTINGS, ...settings };
@@ -326,7 +337,9 @@ export function computeIonicBalance(readings, settings = DEFAULT_SETTINGS) {
   const ratio = caConsumed / alkConsumed;
   const expectedLo = alkConsumed * CA_PER_DKH_LO;
   const expectedHi = alkConsumed * CA_PER_DKH_HI;
-  const impliedAlk = caConsumed / ((CA_PER_DKH_LO + CA_PER_DKH_HI) / 2);
+  /* The ratio itself, not the band's midpoint. They are now the same number,
+     and stating which one is meant is what keeps them so. */
+  const impliedAlk = caConsumed / CA_PER_DKH;
 
   let verdict, note;
   if (ratio >= CA_PER_DKH_LO && ratio <= CA_PER_DKH_HI) {

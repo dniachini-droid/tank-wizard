@@ -582,32 +582,32 @@ export function ReefConsoleInner() {
         await saveKey("light-seeded", true);
       }
 
-      /* Product strengths are measured facts about the bottles, so fill them in
-         where the user hasn't set their own. Doses are deliberately left alone. */
-      let finalSettings = { ...DEFAULT_SETTINGS, ...(st || {}) };
-      const seedFields = ["dkhPerMlPer100L", "caPpmPerMlPer100L", "mgPpmPerMlPer100L",
-                          "dailyDoseMl", "calciumDoseMl", "magDoseMl"];
-      const needsSeed = !st || seedFields.some((f) => st[f] == null);
+      /* Doses are seeded; product strengths are NOT, and must never be again.
+         A strength is a fact about the user's own bottle, so there is nothing
+         to seed it with — see DEFAULT_SETTINGS, which no longer carries one.
+         An unset strength is refused and named, the same as an unset net
+         volume (reef-chemistry.md §16, §12, §17).
+
+         Two blocks were removed here on 16 August, both of which wrote a
+         default into storage and so would defeat the change entirely:
+         - the seed loop, which filled a missing strength with the shipped
+           figure, and
+         - a one-off `strengths-fixed-v1` overwrite that replaced ANY stored
+           strength with the shipped figure once per install. It existed to
+           repair an early double-doubling (0.72 instead of 0.3611). Anyone
+           whose install already ran it keeps the repaired value — the flag is
+           left in storage untouched, and nothing re-reads it. Anyone who has
+           not run it keeps whatever they have, per the 16 August decision that
+           stored values are left alone for now; confirming the ones that were
+           never typed by hand is TW-061. */
+      const finalSettings = { ...DEFAULT_SETTINGS, ...(st || {}) };
+      const doseSeedFields = ["dailyDoseMl", "calciumDoseMl", "magDoseMl"];
+      const needsSeed = !st || doseSeedFields.some((f) => st[f] == null);
       if (needsSeed) {
-        for (const f of seedFields) {
+        for (const f of doseSeedFields) {
           if (!st || st[f] == null) finalSettings[f] = DEFAULT_SETTINGS[f];
         }
         await saveKey("tank-settings", finalSettings);
-      }
-
-      /* One-off correction. The product strengths were originally entered from
-         a label rather than derived from the mix, and the calcium figure had
-         the 2x doubling applied twice — 0.72 instead of 0.3611. Since those
-         values are already saved in browser storage, "fill in only if missing"
-         would never reach them. This overwrites once, then never again. */
-      if (!strengthsFixed) {
-        finalSettings = {
-          ...finalSettings,
-          dkhPerMlPer100L: DEFAULT_SETTINGS.dkhPerMlPer100L,
-          caPpmPerMlPer100L: DEFAULT_SETTINGS.caPpmPerMlPer100L,
-        };
-        await saveKey("tank-settings", finalSettings);
-        await saveKey("strengths-fixed-v1", true);
       }
 
       /* Test reminders exist from the start rather than needing to be created —

@@ -18,6 +18,16 @@
 const path = require('path');
 const L = require(path.join(__dirname, '..', '..', 'build', 'engines-new.cjs'));
 
+/* The app ships no solution strengths — only the user's own bottle can say
+   what a product delivers (docs/spec/reef-chemistry.md §16), and an unset
+   strength is refused and named. These simulated tanks stand in for CONFIGURED
+   tanks, so they state the strengths explicitly. The figures are the ones this
+   harness used to inherit from DEFAULT_SETTINGS, so every expectation is
+   unchanged. Cases that deliberately probe a missing or null strength set
+   their own and are untouched. */
+const TANK_STRENGTHS = { dkhPerMlPer100L: 0.0533, caPpmPerMlPer100L: 0.36, mgPpmPerMlPer100L: 0.024 };
+
+
 const T = L.todayStr();
 const defs = L.PARAM_DEFS;
 let rnd = 987654;
@@ -48,7 +58,7 @@ for (let i = 0; i < RUNS; i++) {
     const r = readings.filter((x) => x.param === d.key).sort((a, b) => (a.date < b.date ? 1 : -1));
     latest[d.key] = r[0] || null;
   }
-  const settings = { ...L.DEFAULT_SETTINGS, volumeL: pick([20, 77, 200, 800]) };
+  const settings = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: pick([20, 77, 200, 800]) };
 
   let findings = [], states = [];
   try {
@@ -161,7 +171,7 @@ if (keys.length) process.exit(1);
       latest[d.key] = r[0] || null;
     }
     const all = L.buildFindings({ readings, icps: [], paramDefs: defs2,
-      settings: L.DEFAULT_SETTINGS, doseLog: [], waterChanges: [], latestByParam: latest }).findings;
+      settings: { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS }, doseLog: [], waterChanges: [], latestByParam: latest }).findings;
 
     for (const f of all) {
       const claim = L.buildBriefing(readings, latest, defs2, all, [], {})
@@ -213,7 +223,7 @@ if (keys.length) process.exit(1);
           value: Math.round((base + (rand2() - 0.5) * w * 0.3) * 100000) / 100000 });
       }
     }
-    const settings = { ...L.DEFAULT_SETTINGS, volumeL: 77 };
+    const settings = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77 };
     const hid = {};
     let state;
     try { state = L.deriveTankState({ readings, icps: [], paramDefs: defs2, settings }); }
@@ -288,7 +298,7 @@ if (keys.length) process.exit(1);
       readings.push({ param: k, date: L.addDays(T2, -j * 2), time: '20:00', value: (d.min + d.max) / 2 });
     }
   }
-  const settings = { ...L.DEFAULT_SETTINGS, volumeL: 77 };
+  const settings = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77 };
   let dismissed = {};
   let bad = 0, shown = 0;
 

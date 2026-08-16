@@ -6,6 +6,16 @@
 const path = require('path');
 const L = require(path.join(__dirname, '..', '..', 'build', 'engines-new.cjs'));
 
+/* The app ships no solution strengths — only the user's own bottle can say
+   what a product delivers (docs/spec/reef-chemistry.md §16), and an unset
+   strength is refused and named. These simulated tanks stand in for CONFIGURED
+   tanks, so they state the strengths explicitly. The figures are the ones this
+   harness used to inherit from DEFAULT_SETTINGS, so every expectation is
+   unchanged. Cases that deliberately probe a missing or null strength set
+   their own and are untouched. */
+const TANK_STRENGTHS = { dkhPerMlPer100L: 0.0533, caPpmPerMlPer100L: 0.36, mgPpmPerMlPer100L: 0.024 };
+
+
 const T = L.todayStr();
 let fail = 0, checked = 0;
 
@@ -59,7 +69,7 @@ if (fail) process.exit(1);
       latest[d.key] = r[0] || null;
     }
     const f = L.buildFindings({ readings, icps: [], paramDefs: L.PARAM_DEFS,
-      settings: L.DEFAULT_SETTINGS, doseLog: [], waterChanges: [], latestByParam: latest });
+      settings: { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS }, doseLog: [], waterChanges: [], latestByParam: latest });
     const ov = L.buildOverview(readings, latest, L.PARAM_DEFS, f.findings, []);
     const ex = L.explainScore(readings, latest, L.PARAM_DEFS, ov.score);
     if (!ex) continue;
@@ -188,7 +198,7 @@ if (fail) process.exit(1);
       }
       const last = rows[rows.length - 1];
       const f = L.buildFindings({ readings: rows, icps: [], paramDefs: L.PARAM_DEFS,
-        settings: L.DEFAULT_SETTINGS, doseLog: [], waterChanges: [], latestByParam: { [key]: last } });
+        settings: { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS }, doseLog: [], waterChanges: [], latestByParam: { [key]: last } });
       return { flagged: f.findings.some((x) => x.id === 'heading-out-' + key) };
     };
     const tiny = mk(noise * 0.2);
@@ -212,7 +222,7 @@ if (fail) process.exit(1);
 {
   const defs5 = L.PARAM_DEFS;
   const T6 = L.todayStr();
-  const S6 = { ...L.DEFAULT_SETTINGS, volumeL: 77 };
+  const S6 = { ...L.DEFAULT_SETTINGS, ...TANK_STRENGTHS, volumeL: 77 };
   const scoreWith = (key, val) => {
     const r = [];
     for (const d of defs5) {

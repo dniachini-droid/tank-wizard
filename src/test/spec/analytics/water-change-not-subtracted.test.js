@@ -92,7 +92,12 @@ describe('§22 — the figure is the engines\' figure: dosed minus what stayed',
   it('with a dose, consumption is the dose plus the fall — supplied minus trend, the engines\' identity', () => {
     /* 8 mL/day at 0.0533 dKH/mL/100L into 100 L is 0.4264 dKH/day supplied.
        The tank still fell 0.0875 dKH/day, so it consumed 0.5139 dKH/day. */
-    const dosing = { ...S, dailyDoseMl: 8 }
+    /* The strength is explicit because the app no longer ships one (§16), and
+       this is the only case in the file that actually doses — the rest run at
+       0 mL/day, where the strength is not load-bearing. 0.0533 is the figure
+       this suite previously inherited from DEFAULT_SETTINGS, so the expected
+       0.4264 dKH/day below is unchanged. */
+    const dosing = { ...S, dailyDoseMl: 8, dkhPerMlPer100L: 0.0533 }
     const result = computeElementConsumption('alkalinity', readings, [], dosing)
     expect(result.dosePerDay).toBeCloseTo(0.4264, 6)
     expect(result.perDay).toBeCloseTo(0.5139, 6)

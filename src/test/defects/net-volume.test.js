@@ -52,7 +52,11 @@ describe('dosing with no net volume entered', () => {
   it('refuses and names net volume, rather than dosing a 77 L tank', () => {
     /* Precondition: with a volume, this fixture does produce a dose. Without
        it the refusal below would prove nothing. */
-    const known = assess({ ...DEFAULT_SETTINGS, volumeL: 68 })
+    /* A strength too: the app no longer ships one (reef-chemistry.md §16),
+       and without it this would refuse for that reason instead, proving
+       nothing about volume. The figure is the one DEFAULT_SETTINGS used to
+       carry, so the precondition is unchanged. */
+    const known = assess({ ...DEFAULT_SETTINGS, volumeL: 68, dkhPerMlPer100L: 0.0533 })
     expect(known.maintenanceDose).toBeGreaterThan(0)
 
     /* A user who has never opened Setup. This is exactly what App.jsx:511

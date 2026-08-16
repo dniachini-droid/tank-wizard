@@ -959,6 +959,68 @@ The three margins are distances, never rates, and never a fraction of the band
 width. They answer only "is this clearly out"; "is this out" carries no margin
 at all. See §27.
 
+### The ratio is not a product strength — 16 August
+
+These are two different kinds of fact and must never be reconciled with each
+other.
+
+**The Ca:alk ratio is chemistry.** 7.15 ppm Ca per 1.0 dKH is stoichiometric:
+calcification deposits CaCO3, so a mole of carbonate takes a mole of calcium
+with it. It is the same for every tank, every product and every user, it is
+fixed above, and it governs **coupling** — the balanced-consumption band, an
+implied calcium draw from measured alkalinity consumption, an implied
+alkalinity draw from measured calcium consumption.
+
+**A solution strength is a property of a bottle.** How much a product delivers
+per mL depends on what is in it and how the user diluted it. It is not derived
+from anything in this document, and no reef fact constrains it.
+
+The two touched once and it was a mistake worth recording. The shipped
+strengths implied 6.77 ppm/dKH, and the tempting reading was that they
+contradicted the 7.15 above and should be moved to agree with it. They did not
+contradict it. 0.3611 ppm/mL/100L was what the Aquaforest 1:1 recipe genuinely
+delivers, and **that recipe really is slightly calcium-light against a true
+7.15** — a fact about the product, not an error in the table. Moving the
+strength to make the ratio come out right would have made the app claim a
+bottle delivers something it does not, and under-dosed calcium by the
+difference on every tank running that default.
+
+So: a mismatch between a user's strengths and 7.15 is a finding about their
+recipe, which the app may surface. It is never a reason to change either
+number. Nothing in the app derives a strength from the ratio.
+
+### Solution strengths are not shipped at all — 16 August
+
+There is no default strength for alkalinity, calcium or magnesium. The app
+must not ship a plausible number for something only the user can know.
+
+Every dose, consumption figure and correction is scaled by this number, and
+nothing in the app can check it — canon has called that the single largest
+correctness risk since day one. A default makes it worse rather than better,
+because it hides the fact that the figure was never set: a blank field is
+visibly unanswered, while 0.0533 looks like something somebody decided.
+
+An unset strength behaves exactly as an unset net volume does (§17, §12):
+
+- no dose recommendation, and no correction;
+- the level, its movement, and whether it is in range, all unaffected — those
+  come from the readings and need no strength;
+- the missing input **named**, never a silent null or a NaN.
+
+**The empty field stays empty.** No suggestion, no placeholder, no "Aquaforest
+1:1 is about 0.36". A figure the user has not checked against their own bottle
+is the failure this removed; offering one in the blank would reintroduce it
+with an extra step. Guidance may say where to find the number and how to work
+it out from a mix. It may not supply one.
+
+Stored values are left alone for the moment: anyone already running on a
+figure keeps it, and only a setup with nothing stored meets the refusal.
+Distinguishing a strength the user typed from one an old default wrote for
+them, and asking them to confirm the latter, is filed as TW-061. A product
+picker — choose your product, the app fills the strengths, and the figure is
+attached to a name you can check against a bottle — is filed as TW-062 and is
+the better long-term answer.
+
 Scope, unchanged: **three-part dosing** — alkalinity, calcium and magnesium as
 separate additives. Not two-part, not kalkwasser, not calcium reactor.
 
