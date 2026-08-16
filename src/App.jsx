@@ -1413,7 +1413,7 @@ export function ReefConsoleInner() {
           )}
           </TabErrorBoundary>
 
-          <DoseChangePopup result={doseResult} onClose={() => setDoseResult(null)} />
+          <DoseChangePopup key={doseResult ? doseResult.at : "none"} result={doseResult} onClose={() => setDoseResult(null)} />
           <LogResultPopup key={logResult ? logResult.at : "none"} result={logResult}
             onClose={() => setLogResult(null)} readings={readings}
             onOpenDosing={() => setTab("dosing")} />

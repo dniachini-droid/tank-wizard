@@ -17,7 +17,13 @@ export const CACO3_MOLAR_MASS = 100.087;   // g/mol
 export const ARAGONITE_DENSITY = 2.93;     // g/cm3
 
 export function computeSkeletonMass(alkConsumedPerDay, volumeL) {
-  if (!alkConsumedPerDay || alkConsumedPerDay <= 0 || !volumeL) return null;
+  /* spec: reef-chemistry.md §17, §12 — net volume is the input every dose
+     and derived-mass figure here scales by, so its absence is refused and
+     named rather than folded into the same bare null the zero/negative-
+     consumption branch below returns. A caller cannot otherwise tell "the
+     tank isn't calcifying" from "we don't know how big the tank is". */
+  if (!(volumeL > 0)) return { status: "novolume", missing: "net volume" };
+  if (!alkConsumedPerDay || alkConsumedPerDay <= 0) return null;
   const meqPerDay = alkConsumedPerDay * (1 / 2.8) * volumeL;
   const mmolPerDay = meqPerDay / 2;
   const gPerDay = (mmolPerDay * CACO3_MOLAR_MASS) / 1000;
