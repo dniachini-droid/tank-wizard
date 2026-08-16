@@ -1,7 +1,9 @@
+import { gateAssessment, magnesiumGate } from '../analytics/magnesium-gate.js'
 import { SAFE_DAILY_RISE, safeDoseBand } from '../analytics/safe-rate.js'
 import { fmtAmount, fmtVal } from '../analytics/time-in-range.js'
 import { minutesOf, nowTime } from '../analytics/time-of-day.js'
 import { dayNum } from '../analytics/water-changes.js'
+import { PARAM_DEFS } from '../constants.js'
 import { todayStr } from '../dates.js'
 import { repeatedCorrections } from './calcium.js'
 import { bracketDose, capDoseStep, correctionPlanFor, correctionProgress, doseAction, doseDriftedFrom, doseObservations, dosePlausible, gainingHold, missingDoseInputs, outOfBandWorsening, pendingCorrection } from './helpers.js'
@@ -448,7 +450,8 @@ export function noteCurrentAndInterventions(out, all, def, doseLog, correctionPl
 }
 
 export function assessAlkalinity({ readings, doseLog = [], waterChanges = [], settings, def,
-                            now = null, plan = null, corrections = [] , correctionPlans = {} }) {
+                            now = null, plan = null, corrections = [] , correctionPlans = {},
+                            paramDefs = PARAM_DEFS }) {
   const nowStamp = now != null ? now : (dayNum(todayStr()) + minutesOf(nowTime()) / 1440);
   const out = {
     ok: false, reason: null,
@@ -505,6 +508,11 @@ export function assessAlkalinity({ readings, doseLog = [], waterChanges = [], se
      placement sat inside a branch calcium and magnesium never took, so
      neither could report a correction in progress at all. */
   out.correctionInProgress = pendingCorrection(corrections, def, out.current, todayStr(), settings, readings);
+  /* §10's magnesium gate. Read once, here, and published on the assessment so
+     the correction offers (`proposeCorrection`) honour the same decision
+     rather than working the threshold out a second time. Only the two places
+     below that would recommend raising alkalinity consult it. */
+  out.magnesiumGate = magnesiumGate({ readings, settings, paramDefs });
   out.targetRange = { min: def.min, max: def.max };
 
   /* Step 2 — has the dose changed? Everything before the most recent change
@@ -809,7 +817,10 @@ export function assessAlkalinity({ readings, doseLog = [], waterChanges = [], se
         ? `Raising it back is a separate one-off correction of roughly ${fmtAmount(out.correction.oneOffMl)} mL spread over two or three days — not a permanent increase, which would then push it past the range. Keep the daily dose where it is.`
         : `Raising it back needs a one-off correction rather than a bigger daily dose, but the amount cannot be worked out until the solution strength in Setup is right.`;
     }
-    return out;
+    /* §10 — the one-off correction this branch just sized is exactly what the
+       magnesium gate withholds. Applied after the wording so the reason
+       replaces the offer rather than sitting alongside it. */
+    return gateAssessment(out, def, out.magnesiumGate);
   }
   /* Step 8 — a trend whose intervals contradict each other is weaker evidence
      than its size suggests. Previously only mild trends were damped this way,
@@ -963,5 +974,9 @@ export function assessAlkalinity({ readings, doseLog = [], waterChanges = [], se
       ? ` Your readings scatter enough that this figure is only good to about ±${fmtAmount(out.doseUncertaintyMl)} mL, so treat it as a direction rather than a precise number.`
       : ``);
   out.nextCheck = `Hold the new dose for 48 hours, then test again. Two readings at a similar time of day will show whether it has settled.`;
-  return out;
+  /* §10 — the only other place this function recommends raising alkalinity.
+     Everything above stays: the trend, the consumption figure and the dose the
+     tank would need are all still true and still worth reading. What the gate
+     withholds is the instruction to act on them today. */
+  return gateAssessment(out, def, out.magnesiumGate);
 }

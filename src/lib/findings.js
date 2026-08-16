@@ -173,7 +173,7 @@ export function buildFindings({ readings, icps, paramDefs, settings, doseLog, wa
         : key === "calcium" ? assessCalcium
         : key === "magnesium" ? assessMagnesium : null;
       if (def && fn) {
-        const a = fn({ readings, doseLog, waterChanges, corrections, settings, def });
+        const a = fn({ readings, doseLog, waterChanges, corrections, settings, def, paramDefs });
         /* An unconfigured element returns "hold" with a reason asking for the
            strength — that is not a verdict, and treating it as one silenced
            the trend warning on a tank that had never been set up. Only a

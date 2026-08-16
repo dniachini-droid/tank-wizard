@@ -287,8 +287,15 @@ export function buildHeadline(ctx) {
     : `${staleCount} readings are getting old`;
   else if (drifting === 1) qualifier = "one parameter to keep an eye on";
   else if (drifting > 1) qualifier = `${drifting} parameters to keep an eye on`;
-  else if (offSteady === 1) qualifier = "one sitting out of range but going nowhere";
-  else if (offSteady > 1) qualifier = `${offSteady} sitting out of range but going nowhere`;
+  /* Only when the state clause has not already said it. "Rock steady, but a
+     lot of it is out of range — 4 sitting out of range but going nowhere"
+     says the same thing twice and runs to 20 words, over the 18-word budget
+     the deep sweep enforces. The combination was always reachable; nothing
+     happened to reach it until the magnesium gate started turning "one dose
+     could change" into a hold, which is the qualifier that had been winning
+     this branch on those tanks. */
+  else if (offSteady === 1 && !/out of range/.test(state)) qualifier = "one sitting out of range but going nowhere";
+  else if (offSteady > 1 && !/out of range/.test(state)) qualifier = `${offSteady} sitting out of range but going nowhere`;
   else if (allIn && allSteady && !watching) qualifier = "nothing needs doing";
 
   if (!qualifier) return state;

@@ -51,9 +51,11 @@ describe('precondition — re-confirms alert-thresholds.test.js: computeDoseAdvi
     expect(adviceNoMg.advice.alkalinity.status).toBe('adjust');
   });
 
-  it('with the below-alert-low magnesium rows included in the same history, computeDoseAdvice still says "adjust" — the gate does not fire here either', () => {
+  it('with the below-alert-low magnesium rows included in the same history, computeDoseAdvice withholds the adjustment and names magnesium', () => {
     const advice = computeDoseAdvice(allReadings, [], PARAM_DEFS, null, settings);
-    expect(advice.advice.alkalinity.status).toBe('adjust');
+    expect(advice.advice.alkalinity.status).not.toBe('adjust');
+    expect(advice.advice.alkalinity.magnesiumGate).toBeTruthy();
+    expect(advice.advice.alkalinity.magnesiumGateWhy.toLowerCase()).toMatch(/magnesium/);
   });
 });
 
@@ -65,7 +67,7 @@ describe('SPEC VIOLATION (§5 magnesium gate, S1): assessAlkalinity — the func
     expect(out.action).not.toBe('increase');
   });
 
-  it('confirms what the Dosing Wizard does instead: recommends increasing the alkalinity dose while magnesium sits below alert-low, without mentioning magnesium', () => {
+  it('confirms what the Dosing Wizard shows instead: the dose is left where it is, and the explanation names magnesium as the reason', () => {
     // App.jsx wires assessAlkalinity with `readings` — the whole log,
     // magnesium included (src/App.jsx:145: `fn2({ readings, doseLog,
     // waterChanges, settings, def, plan, corrections, correctionPlans })`)
@@ -74,21 +76,28 @@ describe('SPEC VIOLATION (§5 magnesium gate, S1): assessAlkalinity — the func
     // branch reads `a.action`/`a.recommendedDose` straight off this object).
     // This is the actual number a user would act on.
     const out = assessAlkalinity({ readings: allReadings, doseLog: [], waterChanges: [], settings, def: alkDef, now: null });
-    expect(out.action).toBe('increase');
-    expect(out.recommendedDose).toBeGreaterThan(out.currentDose);
-    expect(out.explanation.toLowerCase()).not.toMatch(/magnesium/); // never names the reason §5 requires
+    expect(out.action).toBe('hold');
+    expect(out.recommendedDose).toBe(out.currentDose);
+    expect(out.explanation.toLowerCase()).toMatch(/magnesium/); // names the reason §10 requires
+    /* The figure it would otherwise have recommended is kept, so the deferral
+       can be explained rather than merely asserted. */
+    expect(out.deferred.recommendedDose).toBeGreaterThan(out.currentDose);
   });
 
-  it('the magnesium rows in the readings array make literally no difference to assessAlkalinity\'s output — the function does not read them', () => {
+  it('the magnesium rows in the readings array are what make the difference — the function now reads them', () => {
     const withMg = assessAlkalinity({ readings: allReadings, doseLog: [], waterChanges: [], settings, def: alkDef, now: null });
     const withoutMg = assessAlkalinity({ readings: alkReadings, doseLog: [], waterChanges: [], settings, def: alkDef, now: null });
-    expect(withMg.action).toBe(withoutMg.action);
-    expect(withMg.recommendedDose).toBe(withoutMg.recommendedDose);
+    expect(withoutMg.action).toBe('increase');
+    expect(withMg.action).toBe('hold');
+    /* Same arithmetic underneath — the gate withholds the recommendation, it
+       does not change the dose the tank would need. */
+    expect(withMg.deferred.recommendedDose).toBe(withoutMg.recommendedDose);
+    expect(withMg.maintenanceDose).toBe(withoutMg.maintenanceDose);
   });
 });
 
-describe('the same gap in assessCalcium, for completeness (§5 names both alk and calcium)', () => {
-  it('assessCalcium is likewise unaffected by a below-alert-low magnesium reading in the same history', () => {
+describe('the same gate in assessCalcium, for completeness (§10 names both alk and calcium)', () => {
+  it('assessCalcium likewise defers once a below-alert-low magnesium reading is in the same history', () => {
     const caDef = PARAM_DEFS.find((d) => d.key === 'calcium');
     const caReadings = [
       { id: 'c1', param: 'calcium', date: '2026-07-01', value: 430 },
@@ -98,7 +107,9 @@ describe('the same gap in assessCalcium, for completeness (§5 names both alk an
     ];
     const withMg = assessCalcium({ readings: [...caReadings, ...mgGateFixture.mgReadings], doseLog: [], waterChanges: [], settings, def: caDef, now: null });
     const withoutMg = assessCalcium({ readings: caReadings, doseLog: [], waterChanges: [], settings, def: caDef, now: null });
-    expect(withMg.action).toBe(withoutMg.action);
-    expect(withMg.recommendedDose).toBe(withoutMg.recommendedDose);
+    expect(withoutMg.action).toBe('increase');
+    expect(withMg.action).toBe('hold');
+    expect(withMg.explanation.toLowerCase()).toMatch(/magnesium/);
+    expect(withMg.deferred.recommendedDose).toBe(withoutMg.recommendedDose);
   });
 });

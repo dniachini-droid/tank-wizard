@@ -450,6 +450,16 @@ export function proposeCorrection(a, def, settings, pace) {
   const inBand = level >= def.min && level <= def.max;
   if (inBand) return null;
 
+  /* §10's magnesium gate. This is the second of the two paths that reach a
+     user with an alkalinity or calcium correction, and it does not re-derive
+     the rule: the engines evaluate it once and publish it on the assessment,
+     which is the object this function is handed. The refusal is stated rather
+     than returned bare, the same way a missing net volume is above. */
+  if (a.magnesiumGate && a.magnesiumGate.blocked
+      && (def.key === "alkalinity" || def.key === "calcium")) {
+    return { possible: false, magnesiumGate: a.magnesiumGate, why: a.magnesiumGate.why };
+  }
+
   /* Nothing new to go on since the last correction. A correction takes days to
      show up in a reading, and on a weekly-tested element the reading that
      prompted it is often still the newest one when the correction finishes —
