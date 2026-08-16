@@ -563,6 +563,47 @@ parameter with no target range set classifies `insufficient-data`. **No surface
 may invent a third position vocabulary for those parameters**, which is what a
 silent two-band set had become.
 
+**Ammonia is the one parameter this table does not classify — 16 August,
+Stage 5b.** `reef-chemistry.md` §32 gives it two states, **undetectable** and
+**detectable**, and they are not two of these seven. Its target is zero, so
+there is no band to be inside, no width, no lower half and no edge to drift
+toward; `in-band` would have to mean *exactly zero*, which is a value. The rule
+directly above — every parameter keeps all seven and simply never reaches some
+of them — **is stated as covering every parameter and does not cover this one**,
+and it is amended here rather than stretched. Ammonia's two states are the only
+position vocabulary it has, and §32 is the only place they are set.
+
+### `drifting` produces no notice — decided 16 August, Stage 5b
+
+**Decided 16 Aug (Dan, spec owner)**, closing G-21 of `.agent/gap-report.md`.
+
+**`drifting` is a tile state and nothing else.** It colours the tile and it says
+where the reading sits. **It produces no notice**, generates no summary line, and
+has no card in §24 — which is why §24's twenty-seven do not contain one and why
+that is not a twenty-eighth gap.
+
+**A band is a position, not an event.** The other six bands earn a notice by
+being somewhere a keeper may need to act — out of range, at the alert tier, or
+unclassifiable. `drifting` says the reading is **inside the band**, which is
+where it is meant to be. What it adds is a direction, and **direction is the
+wizard's** (§25.2): if a level moving inside its band warrants saying something,
+the wizard says it from §11's movement rule over §4's window, in the card the
+keeper opens. **A second surface saying it from a second window is the fault
+§25.2 exists to prevent**, and it is precisely what was shipped — see §25.4,
+where the finding that did it is deleted.
+
+**This does not weaken the tile.** `drifting` still classifies, still colours,
+still differs from `in-band` on screen. The keeper who looks sees it. **What the
+app will not do is come and tell them**, and the distinction between those two
+is the whole of this decision.
+
+**§25.1's collapsed headline is untouched by this and is not to be read against
+it.** Slot 2 can name a parameter that is **moving**, which is §11's word and
+§11's rule over the wizard's own window — §25.1 says in terms that it is *"not
+`drifting` or `unsettled`"*. **A moving parameter may reach the headline; a
+`drifting` band may not produce a notice.** The two are different claims from
+different rules, and they were never the same one.
+
 ### Boundary rules — fixed, no exceptions
 
 - Band edges are **inclusive of the band they bound**: a value exactly equal to
@@ -1220,6 +1261,14 @@ the fitted rate of the readings in it — never from a single reading.
 
 Six verdicts and seven bands, and nothing else. A surface inventing a seventh
 verdict is a finding, exactly as §13 says of the bands.
+
+**Ammonia is graded by none of the six — 16 August, Stage 5b.**
+`reef-chemistry.md` §32.5 states it as a rule: a parameter whose only acceptable
+value is a single point has no spread worth grading, and *"a tank at zero all
+month is not `dialled`; it is normal"*. The `CONSISTENCY_RULES` ammonia entry —
+live, and unreachable since the day it was written — goes with the decision
+rather than surviving as dead configuration. **This is a parameter falling
+outside the vocabulary, not a seventh verdict**; nothing is added here.
 
 ### The rename — `drifting` became `unsettled`
 
@@ -1931,12 +1980,26 @@ must not read as though it were not.
 
 **No missing one-off correction is mentioned either.** Naming one as absent is
 naming a cause — part 2's own prohibition, applied to part 3's own example.
-Part 3's other half is not touched by this card: where a correction **has** been
-logged, naming it is a statement of fact rather than a guess, and
-`reef-chemistry.md` §24 part 3 still requires it. **Whether this card gains a
-sentence for that case is not settled** — the wording above is the
-nothing-logged case, which is the one the escalation counts — and it is carried
-at §25.6.
+
+**And where a correction *has* been logged, this card does not appear at all —
+decided 16 August, Stage 5b.** The question left open here the day before was
+whether the card gained a second wording for that case. **It does not, and it
+gains no sentence of any kind: it is suppressed.** `reef-chemistry.md` §24
+carries the decision and the reasoning; the consequence for this card is that
+**§24.24 has one wording and one escalation, both of them the nothing-logged
+case**, which is the case part 4's count was already the only case it counted.
+Part 3 of §24 is now spent entirely — no water change in either direction, no
+missing correction, no logged one.
+
+**The suppression is on the card, not on the arithmetic.** The consumption
+figure is still negative, part 1 still holds the dose, and nothing is staged.
+**What changes is only that the app says nothing** — which is what it has to
+say, because the keeper poured the extra themselves and told the app so.
+
+**"Logged" is `reef-chemistry.md` §24's existing definition and gains nothing
+here:** a one-off correction for **this element**, dated inside the window the
+trend was fitted over. A correction for another element does not suppress this
+card; neither does one that predates the window; and a water change never does.
 
 **What survives of part 3 in the wording:** *"Test again in two days."* The
 escalation drops it. Three retests two days apart have already happened by the
@@ -2319,8 +2382,84 @@ moving; the tile says which way.
   score's deletion — *"3 of 6 in range, 2 need attention"* — belongs to it. **This
   rule does not adopt it**: an all-quiet tank drops all three slots, and what a
   quiet tank's headline says is the remaining half of the question.
-- **Ordering inside the expanded list.** G-28, untouched. This rule orders the
-  **headline's** clauses; the notices below it are still unordered by canon.
+- ~~**Ordering inside the expanded list.** G-28, untouched.~~ **Closed
+  16 August, Stage 5b — the next subsection.** This rule orders the
+  **headline's** clauses; the ordering of the notices below it is now set
+  separately, and the two are deliberately not the same rule.
+
+#### The order of the expanded list — decided 16 August, Stage 5b
+
+**Decided 16 Aug (Dan, spec owner)**, closing G-28. §20 gives one notice per
+parameter and §25.1 gives the expanded list; **in what order** was the one thing
+neither said, and the app has been answering it with a `rank` 0–8
+(`narrative-engine.js:388-540`) that interleaves findings and dose states and has
+no entry anywhere in canon.
+
+**Four tiers, in this order:**
+
+1. **Alerts.** Any parameter at `alert-low` or `alert-high` (§13;
+   `reef-chemistry.md` §18 for which parameters can reach them, and §32 for
+   ammonia, whose detectable state is an alert and whose undetectable state
+   produces no notice to place).
+2. **Out of range.** `out-of-band-low` and `out-of-band-high`.
+3. **Relationship notices.** §25.4 kind 3 — the small set belonging to no single
+   parameter.
+4. **Everything else, in a fixed parameter order.**
+
+**The fixed parameter order:**
+
+> **alkalinity, calcium, magnesium, salinity, nitrate, phosphate, potassium,
+> ammonia**
+
+**Within tiers 1 and 2, notices are ranked by proportional distance** — the
+distance past the nearer edge of the user's target range, divided by that
+range's width, furthest first. **The fixed order breaks ties.**
+
+That is the same key the collapsed headline sorts on, and it is the same key for
+the same reason: 0.3 dKH and 30 ppm are not two sizes of the same thing, and a
+raw distance would order the list by which parameter happens to be measured in
+the larger unit. **It is a ranking key and not a margin here too** —
+`reef-chemistry.md` §27 rule 3 is untouched, and every sentence of §25.1's
+headline rule about that distinction applies unchanged to this one.
+
+**The fixed order is a total order, so the list is always deterministic.** That
+is the property being bought: two parameters equally far out, in the same tier,
+do not reorder between renders. A list whose order changes without the tank
+changing is a list a keeper cannot learn.
+
+**Why a fixed order rather than the tiles' order or the order they were tested
+in.** Test order is a fact about the keeper's morning, not about the tank, and it
+would reorder the summary every time they tested in a different sequence. The
+tiles' order is a display arrangement that may change for display reasons. **The
+fixed order is a property of the parameters**, and it runs roughly from the ones
+the app doses and reasons about most fully to the ones it watches.
+
+**Ammonia is last in the fixed order and is never disadvantaged by it**, which
+is worth stating because it looks wrong at a glance. Ammonia only ever produces
+a notice when it is detectable, and a detectable reading is an alert
+(`reef-chemistry.md` §18, §32) — so it enters at tier 1, where tier outranks the
+fixed order absolutely. **The fixed order decides its position only against
+other alerts, and only on an exact tie.**
+
+**Two things are derived rather than stated by the decision, and written here so
+the rule is implementable** — the same standing, and the same one-line
+correctability, as §20's mapping of *serious* and the slot table above:
+
+- **pH is not in the fixed order.** The order names eight parameters and the app
+  has nine; pH has no alert tier (`reef-chemistry.md` §18) but does produce
+  notices — §31's *pH high* and *CO2 signature* are both ratified. **pH sorts
+  last**, after ammonia, as the only placement that adds nothing to what the
+  decision states. Correcting this is a one-line change to this bullet.
+- **Relationship notices order among themselves by the earliest parameter they
+  name** in the fixed order. Tier 3 needs an internal order for the same
+  determinism reason as the others, and the decision does not give one.
+
+**What this does not touch.** §20's one-notice-per-parameter rule and its
+supersession are unchanged — this orders the set, it does not change its
+membership. The hidden section below the list is unchanged. And **the headline's
+ordering is a separate rule**: it sorts clauses about a whole tank, this sorts
+notices, and §25.6 item 6 remains open for the headline whether or not this
+answers the same-shaped question one level down.
 
 #### Hidden and off are different things
 
@@ -2346,6 +2485,64 @@ running phosphate at 0.02 would see the below-0.03 warning
 (`reef-chemistry.md` §29.4) constantly. They turn that type off. **The app
 never asks "are you running ULNS?"** — which is the §21 question that would
 have to exist otherwise, and exactly the kind of judgement §21 refuses.
+
+#### A notice type is a parameter — decided 16 August, Stage 5b
+
+**Decided 16 Aug (Dan, spec owner)**, closing G-31. The paragraphs above have
+said *"off is per notice type"* since Stage 3 without saying what a type is, and
+`.agent/gap-report.md` listed four candidates — the finding `id`, the id family,
+the parameter, or the §25.4 kind. **It is the parameter.**
+
+**One switch per parameter, and it turns off everything that parameter would
+say.** Not the id, so a keeper does not have to find and silence
+`far-out-phosphate` and then `ratio-po4-limited` and then whatever the next one
+is called. Not the kind, which would silence the same class of notice across
+every parameter at once. **The parameter is the unit the keeper thinks in**, and
+it is the only one of the four that a Setup screen can present without teaching
+the keeper the app's internal taxonomy.
+
+**Turning phosphate off turns off phosphate and nothing else.** The nitrate
+warning is unaffected — which is the question G-31 asked in exactly those terms
+— and so is every other parameter.
+
+**Off includes alerts and safe-bounds excursions.** There is no notice a
+parameter can produce that survives its switch being off: not `alert-low`, not
+`alert-high`, not a reading beyond §2's safe bounds, not §29.4's fixed
+warnings, and not ammonia's detectable notice (`reef-chemistry.md` §32.6, which
+records this as the sharpest case and accepts it by name).
+
+**This matches hide exactly, and that is the point.** §20 already settled the
+same question for hiding — *"Every notice can be hidden. No exceptions,
+including safe-bounds excursions"* — on the reasoning that *"there might be a
+reason the app doesn't know about."* **A control with an exception list is a
+control the keeper cannot trust**, and two controls with different exception
+lists is worse: the keeper who hides an alert successfully and then finds the
+off switch refuses the same notice has learned that the app's rules are
+arbitrary.
+
+**The reasoning, recorded, because this is the half that is not obvious.**
+
+> **The keeper ran the test and typed the number in.** The app is choosing
+> whether to **comment** on a figure that is already in front of them — it is
+> not informing them of something they do not have.
+
+That sentence is the whole argument and it is worth keeping intact. Every
+instinct against letting a user silence an alert comes from systems that hold
+information the user does not: a smoke alarm, a warning light, a monitor on a
+sensor nobody is watching. **This app holds none.** The reading is the keeper's,
+it came from their own kit and their own hands, it is on the tile, it is on the
+chart, and it is in the log. Turning the notice off removes the app's *remark*
+about it and removes nothing else.
+
+**What off does not do**, so that this is not read wider than it is: it does not
+stop the reading being recorded, charted, or shown on its tile with its band
+colour; it does not stop the parameter being assessed by the engine (§19); and
+it does not remove it from anything the keeper opens deliberately. **It removes
+the parameter from the notices**, which are the app speaking first.
+
+**And it is reversible in one place.** Off lives in Setup and is changed there,
+which is also where the keeper who wonders why they have heard nothing about
+phosphate for two months will find the answer.
 
 #### Serious notices confirm before hiding
 
@@ -2588,12 +2785,67 @@ parameter (`reef-chemistry.md` §10):
 > holds properly below about 1250.
 
 **These need their own slot in the summary**, since the summary is otherwise
-one notice per parameter. **How they are placed is not settled** — carried at
-§25.6.
+one notice per parameter. **Placed 16 August, Stage 5b:** the ordering decision
+at §25.1 makes them **the third of its four tiers** — after every alert and every
+out-of-range parameter, before everything else, ordered among themselves by the
+earliest parameter they name. That is the slot, and §25.6 item 4 closes with it.
+**Hideability is unchanged and untouched** — a relationship notice is a notice,
+§20 applies, and whether hiding one hides it for both parameters it names is a
+question about hiding rather than about placement.
 
 **A fourth kind is a finding, not a feature.** Anything that is none of these
 three is either a parameter verdict the engine should be producing, or a
 surface forming an opinion (§19, an S1 defect).
+
+#### Ammonia's notice is kind 1, and it is the only parameter with no quiet form
+
+`reef-chemistry.md` §32 gives ammonia two states. **Detectable produces one
+kind-1 notice** — the parameter's verdict, rendered, at alert tier, on a single
+reading. **Undetectable produces nothing**, which no other parameter does: every
+other parameter has a quiet verdict in the shape of §24.1, and ammonia has none
+and is not to be given one. §32.3 carries the reasoning. **The two live findings,
+`ammonia-high` and `ammonia-detected`, become one** — a second tier would be a
+band, and §32 has none.
+
+#### The "heading out of range" finding is deleted — 16 August, Stage 5b
+
+**Decided 16 Aug (Dan, spec owner)**, with `drifting`'s answer at §13:
+**`heading-out-<param>` (`findings.js:466-557`) is deleted outright.** Not
+rewritten, not narrowed, not given a threshold. **Recorded here as a deletion
+with its reason**, alongside the other deletions this document carries, so it is
+not re-derived by someone reading the gap in the card set as an invitation.
+
+What it says today, on the same screen as the wizard's verdict:
+
+> *"Alkalinity is 8.5 dKH and moving down at about 0.35 dKH a week. At that pace
+> it reaches the bottom of your range in roughly 12 days. The dosing protocol
+> looks only as far back as your last dose change and sees nothing to act on
+> there, so no dose change is suggested yet — **but the longer view is
+> drifting.** Worth another test or two to see which holds."*
+
+**The reason is that it is a surface reconciling two time windows in prose, and
+§25.2 replaced that with a structural fix.** The sentence is doing, in words,
+exactly what the 16 August contradiction did by accident: it holds the wizard's
+window and a longer window side by side, notices they disagree, and writes a
+paragraph explaining the disagreement to the keeper. **§25.2's answer was not to
+word it better.** It was to decide what each surface is for — the wizard owns
+direction over its own window, the panel owns spread over the window the keeper
+picked — **so that the two never make the same kind of claim and never need
+reconciling.** This finding is the reconciliation the fix removed the need for,
+still running.
+
+**It is also the fault in its own most literal form.** *"The dosing protocol
+looks only as far back as your last dose change and sees nothing to act on
+there"* is a surface explaining the engine's reasoning to excuse its own
+disagreement with it — the same instinct as the two regexes over the engine's
+English (`.agent/gap-report.md` D-9), one step further along.
+
+**Nothing replaces it, and the parameter is not left silent.** If a level moving
+inside its band warrants saying something, **the wizard says it**, from §11's
+movement rule over §4's window, in the card the keeper opens — and §25.1's
+headline can name a **moving** parameter under §11's rule. The tile still shows
+`drifting`. What goes is the second opinion, computed from a second window, on a
+surface that is not entitled to one.
 
 ### 25.5 Insights — deliberately unspecified
 
@@ -2612,10 +2864,13 @@ Until then Insights is bound by §19 like everything else: whatever it shows, it
 renders the engine's verdict or stays quiet. Being unspecified is not a licence
 to compute.
 
-### 25.6 The four carried open items
+### 25.6 The carried open items
 
-**None is settled, none may be answered by an agent**, and they are listed
-together so they are not lost when parts 2 and 3 become decision records.
+**None may be answered by an agent**, and they are listed together so they are
+not lost when parts 2 and 3 become decision records. **Six were carried into
+16 August and two closed that day in Stage 5b** — items 4 and 5, struck through
+below with what replaced them. **Four remain**, and items 1, 2 and 3 are
+unchanged since Stage 3.
 
 **1. `reef-chemistry.md` §9's "wrong tool" rule.** Pointing at dry salt or a
 water change when a correction exceeds ~1.5 L contradicts the rate rules — a
@@ -2634,20 +2889,27 @@ plan or a correction wearing its words.
 likely home; the fit is unproven**, because Tasks today holds reminders the
 user created and these are the app noticing something.
 
-**4. Where relationship notices sit** in a summary that is otherwise one notice
-per parameter (§25.4).
+**~~4. Where relationship notices sit~~ — closed 16 August, Stage 5b.** §25.1's
+ordering decision makes them **the third of four tiers**: after every alert and
+every out-of-range parameter, before everything else, ordered among themselves
+by the earliest parameter they name. Recorded at §25.4. **G-26's second
+question is not this one and is not closed by it** — whether a relationship
+notice is hideable, and whether hiding it hides it for both parameters, is a
+question about hiding rather than placement, and §20's *"every notice can be
+hidden, no exceptions"* answers the first half of it on its face.
 
 **Two more, added 16 August with §24.24–24.27 and §25.1's headline rule.** The
 list is five and six because the four above are unchanged, not because these are
 smaller.
 
-**5. Whether §24.24 gains a wording for a *logged* correction.**
-`reef-chemistry.md` §24 part 3's surviving half requires a logged water change or
-correction to be named where one exists, and the card written is the
-nothing-logged case — the one the escalation counts. The water-change half is
-gone under §22 and is not this question. What is open is whether the hold card
-takes a second wording naming a logged correction, or whether part 3's first
-branch is withdrawn with the rest of it.
+**~~5. Whether §24.24 gains a wording for a *logged* correction~~ — closed
+16 August, Stage 5b.** **It does not: the card does not fire at all when a
+one-off correction is logged.** `reef-chemistry.md` §24 carries the decision and
+the reasoning — a logged correction is the first of the six ordinary causes that
+section lists, so where one is in the record the arithmetic is explained and
+there is nothing to report. Part 3 is spent entirely. §24.24 keeps one wording
+and one escalation, both the nothing-logged case, which is the only case part 4's
+count ever counted.
 
 **6. What breaks an exact tie in §25.1's headline ordering.** Two parameters in
 the same tier, the same fraction of their own bands out. **A deterministic answer
@@ -2655,6 +2917,16 @@ is required** — an ordering that varies between renders cannot be checked agai
 the tiles, which is the whole basis of the rule — and canon does not supply one.
 The tiles' own order is the obvious candidate and is deliberately not chosen
 here.
+
+**Still open after Stage 5b, and now with a candidate it did not have.** The
+notice ordering decided the same day settles the same-shaped question one level
+down and settles it with a **fixed parameter order** — alkalinity, calcium,
+magnesium, salinity, nitrate, phosphate, potassium, ammonia — which is a total
+order over parameters and would break this tie as cleanly as it breaks that one.
+**It is not adopted here.** The decision was made about the notice list, the
+headline's sort is a different rule with a different subject, and extending one
+to the other is the owner's to do and nobody else's. It is recorded so the
+answer is on the table when the question is next picked up.
 
 ### Enforced by
 
@@ -2673,6 +2945,10 @@ Five checks would close it, and all five are extensions of work already filed:
 | 25.2's no-direction rule | no direction word appears in any steadiness-panel string | TW-028 |
 | 25.3's deferral | the confirmation renders the card and adds no verdict of its own | TW-028 |
 | 25.4's three kinds | every notice resolves to a parameter verdict, a suspect reading, or a registered relationship notice | TW-027 |
+| 25.1's notice ordering | the expanded list is the four tiers in order, proportional distance within the first two, the fixed parameter order breaking ties — asserted on a tank where tier and distance disagree | TW-081 |
+| 25.1's off switch | a parameter switched off produces no notice of any kind, alerts and safe-bounds excursions included, and no other parameter is affected | TW-082 |
+| 25.4's deleted `heading-out-*` | no surface computes a second direction claim over a second window; the id is absent | TW-080 |
+| §32's ammonia rules | a zero reading produces nothing anywhere; any positive reading produces one alert-tier notice; no trend, verdict or dose is reachable | TW-079 |
 
 **§25.1's hidden-versus-off distinction needs a test of its own**, and it is
 the one behaviour in this section that can fail silently in a way the user pays
@@ -2695,6 +2971,15 @@ same verdicts as the tiles underneath it, so you can always check it by looking
 down — which is exactly what you could never do with the score out of 100 it
 replaces.
 
+Those lines come in a fixed order, so the list looks the same every time you open
+it. Anything at the top tier comes first, then anything simply out of range —
+each of those sorted by how far out it is as a share of your own range, so a
+0.3 dKH problem and a 30 ppm problem are compared fairly. Then the handful of
+notices about two parameters at once. Then everything else, in the same
+parameter order every time: alkalinity, calcium, magnesium, salinity, nitrate,
+phosphate, potassium, ammonia. When two things tie, that order settles it, so
+the list never shuffles itself between one look and the next.
+
 Anything you do not want to see, you hide. Hiding lasts until the situation
 changes, and then it comes back, because the alternative is an app that goes
 quiet about a tank that is getting worse. If it keeps coming back and you never
@@ -2702,6 +2987,23 @@ want it, there is a switch in Setup that turns that kind of notice off for
 good. That is the whole answer for someone deliberately running their phosphate
 at 0.02 — you turn that one off, and the app never has to ask you what kind of
 reefkeeper you are.
+
+**The switch is per parameter, and it covers everything.** Turn phosphate off
+and phosphate goes quiet — every phosphate notice, including the serious ones
+and the ones about being outside the safe bounds. Nitrate is untouched, and so
+is everything else. That is the same rule hiding already follows, and it follows
+it for the same reason: **you ran the test and you typed the number in.** The app
+is deciding whether to say something about a figure that is already on your
+screen, not keeping one from you. Your readings still get recorded, still get
+charted, still sit on their tile in their colour. What stops is the app speaking
+first.
+
+And one thing you will stop seeing entirely: the paragraph that used to appear
+under the wizard explaining that the wizard was looking at a short window and the
+chart was looking at a longer one and that the longer one was drifting. That was
+the app arguing with itself in front of you. A level moving inside its range
+colours its tile and the wizard tells you about it if it matters — nothing writes
+you an essay reconciling two time frames any more.
 
 The steadiness panel stops arguing with the advice above it. The advice says
 which way your alkalinity is going right now; the panel says how consistent it
