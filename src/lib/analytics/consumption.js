@@ -31,10 +31,6 @@ export function computeConsumption(readings, settings) {
   // dosing, the tank is eating more than the dose delivers.
   const consumption = dosePerDayDkh != null ? dosePerDayDkh - driftPerDay : null;
 
-  const dkhPerMl = haveStrength ? s.dkhPerMlPer100L * (100 / s.volumeL) : 0;
-  const recommendedMl = consumption != null && dkhPerMl > 0 ? consumption / dkhPerMl : null;
-  const adjustMl = recommendedMl != null ? recommendedMl - s.dailyDoseMl : null;
-
   // Demand trend: consumption inferred window by window. With a constant dose,
   // a steepening decline means the tank is eating more, i.e. growing.
   const windows = [];
@@ -70,7 +66,7 @@ export function computeConsumption(readings, settings) {
     };
   }
 
-  return { driftPerDay, dosePerDayDkh, consumption, recommendedMl, adjustMl, windows, demandTrend, settings: s, readingCount: rows.length };
+  return { driftPerDay, dosePerDayDkh, consumption, windows, demandTrend, settings: s, readingCount: rows.length };
 }
 
 /* --- Generalised consumption ---

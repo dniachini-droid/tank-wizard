@@ -5,8 +5,7 @@ import { QuickLog } from './LogReadingSheet.jsx'
 import { OverviewCard, RemindersPanel, SnoozeSheet, TodayPanel } from './TodayPanel.jsx'
 import { ZoomableLineChart } from './ZoomableChart.jsx'
 import { AlertTriangle, ChevronDown, ChevronUp, RotateCcw, Save, Settings2, X } from '../icons.jsx'
-import { CONSUMPTION_RULES, computeConsumption, computeElementConsumption } from '../lib/analytics/consumption.js'
-import { DOSE_ADVICE_RULES, computeDoseAdvice } from '../lib/analytics/drift.js'
+import { CONSUMPTION_RULES, computeElementConsumption } from '../lib/analytics/consumption.js'
 import { computeRates, rateNarrative } from '../lib/analytics/rate-analysis.js'
 import { computeControl } from '../lib/analytics/reading-meaning.js'
 import { fmtAmount, fmtVal } from '../lib/analytics/time-in-range.js'
@@ -16,7 +15,7 @@ import { CalendarModal, ReminderSheet, useEscape } from '../lib/backup.jsx'
 import { addDaysFromToday, fmtShort, paramStatus, todayStr } from '../lib/dates.js'
 import { findingsFor } from '../lib/dosing/corrected-strength.js'
 import { reminderState } from '../lib/reminders.js'
-import { STABILITY_RULES, computeStability } from '../lib/stability-engine.js'
+import { STABILITY_RULES } from '../lib/stability-engine.js'
 
 /* ---------------------------------- Dashboard ---------------------------------- */
 
@@ -107,13 +106,6 @@ export function Dashboard({ latestByParam, dueList, alerts, readings, paramDefs,
     return out;
   }, [readings, paramDefs]);
 
-  /* Superseded by tank.stabilityByParam; kept only for the card's recent-range
-     view, which needs the same shape. */
-  const stabilityByParam = useMemo(() => {
-    const map = {};
-    for (const def of paramDefs) map[def.key] = computeStability(def, readings);
-    return map;
-  }, [readings, paramDefs]);
   /* The same reschedule sheet the Tasks tab uses, so a task seen on the
      dashboard calendar can be moved without navigating away. */
   const [sheetId, setSheetId] = useState(null);
@@ -159,7 +151,7 @@ export function Dashboard({ latestByParam, dueList, alerts, readings, paramDefs,
           return (
             <ParamCard key={def.key} def={def} reading={reading}
               recent={recentRangeByParam[def.key]}
-              stab={stabilityByParam[def.key]}
+              stab={tank.stabilityByParam[def.key]}
               findings={findingsFor(findings, def.key)}
               rows={sparkRowsByParam[def.key]}
               dose={(doseStates || []).find((d) => d.key === def.key) || null}
@@ -285,22 +277,11 @@ export function ParamHistoryModal({ def, readings, onClose, onSaveRange, onReset
     () => computeRates(def, readings, activeWin >= 99999 ? 100000 : activeWin),
     [def, readings, activeWin]);
 
-  const consumption = useMemo(
-    () => (def.key === "alkalinity" ? computeConsumption(readings, settings) : null),
-    [def.key, readings, settings]);
-
   const elementUse = useMemo(
     () => (CONSUMPTION_RULES[def.key]
       ? computeElementConsumption(def.key, readings, waterChanges, settings)
       : null),
     [def.key, readings, waterChanges, settings]);
-
-  const doseAdvice = useMemo(
-    () => (DOSE_ADVICE_RULES[def.key]
-      ? computeDoseAdvice(readings, doseLog, paramDefs.length ? paramDefs : [def],
-          activeWin >= 99999 ? 100000 : activeWin, settings)
-      : null),
-    [def, readings, doseLog, paramDefs, settings, activeWin]);
 
   /* Dose markers are tagged with their element, so a calcium doser change
      doesn't clutter the alkalinity chart. Untagged events (water changes,
