@@ -155,10 +155,20 @@ if (fail) process.exit(1);
   if (bad) process.exit(1);
 }
 
-/* A trend must be big enough for the kit to see, not merely statistically
- * significant. Phosphate was projected to leave its range in 34 days on a
- * trend of 0.006 ppm a week, against a kit resolving 0.02 ppm and readings
- * swinging six times that between tests. */
+/* Phosphate and nitrate get no generic trend claim at all — TW-029,
+ * reef-chemistry.md §25, routines/20-phosphate-nitrate.md.
+ *
+ * This block used to assert the opposite: that a measurable in-range drift
+ * on these two MUST produce heading-out-<key> ("missed a measurable drift").
+ * That assertion pinned borrowed reasoning — a 30-day regression, which at
+ * their 7-day cadence is a line through four or five bounces of a parameter
+ * that oscillates — and §25 records the notices it produced as a defect, not
+ * a display problem. The kit-resolution guard the old comment described
+ * ("projected to leave its range in 34 days on a trend of 0.006 ppm a week")
+ * was a patch on that borrowed rule; the rule itself is now removed for
+ * these two, so the expectation inverts: no drift of any size may fire. The
+ * per-parameter reasoning that replaces it is Dan's to write into canon
+ * first (.agent/needs-dan.md). */
 {
   /* Alkalinity, calcium and magnesium are governed by their dosing protocols,
      which own the "is it moving, should I act" question for those elements —
@@ -179,20 +189,17 @@ if (fail) process.exit(1);
       const last = rows[rows.length - 1];
       const f = L.buildFindings({ readings: rows, icps: [], paramDefs: L.PARAM_DEFS,
         settings: L.DEFAULT_SETTINGS, doseLog: [], waterChanges: [], latestByParam: { [key]: last } });
-      return { flagged: f.findings.some((x) => x.id === 'heading-out-' + key), inRange: L.paramStatus(def, last.value) === 'ok' };
+      return { flagged: f.findings.some((x) => x.id === 'heading-out-' + key) };
     };
     const tiny = mk(noise * 0.2);
     if (tiny.flagged) { console.log(`  FAIL ${key}: projected a trend below kit resolution`); bad++; }
-    /* A drift big enough to matter has to be sized against the band as well as
-       the kit: the finding only fires when the projection reaches an edge in a
-       sensible time, so on a wide band a drift that clears kit noise can still
-       be decades from leaving range. Nitrate's band widened from 9-15 to the
-       sourced 5-15 and a noise-scaled drift stopped qualifying. */
+    /* The drift size that the old rule was required to flag — big enough for
+       the kit and for the band. Scenario coordinates, not thresholds. */
     const band = def.max - def.min;
     const real = mk(Math.max(noise * 0.6, band / 10));
-    if (real.inRange && !real.flagged) { console.log(`  FAIL ${key}: missed a measurable drift`); bad++; }
+    if (real.flagged) { console.log(`  FAIL ${key}: generic trend claim on a parameter with no written rules (TW-029)`); bad++; }
   }
-  console.log(`  trend resolution: ${Object.keys(NOISE).length} parameters, ${bad} failures`);
+  console.log(`  no generic trend claims on nutrients: ${Object.keys(NOISE).length} parameters, ${bad} failures`);
   if (bad) process.exit(1);
 }
 

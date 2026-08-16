@@ -80,7 +80,18 @@ expect('nutrients at zero are flagged', { nitrate: 0.1, phosphate: 0.005 },
   (r) => saysAnything(r, /nutrient|nitrate|phosphate/i));
 expect('nitrate 8 / phosphate 0.06 is healthy', {}, (r) => !r.claims.some((x) => x.tone === 'act'));
 expect('nitrate 25 is high but not acute', { nitrate: 25 }, (r) => !urgentAbout(r, /nitrate/i));
+/* SUSPENDED, not deleted — TW-029, reef-chemistry.md §25, per AGENTS.md #4.
+   The only path that ever said something urgent at 80 ppm was the generic
+   far-out loop: a trigger scaled to the user's band width (alkalinity's
+   logic), escalated by SAFE_BOUNDS. §25 removes borrowed judgements from
+   phosphate and nitrate and forbids minting replacements, and canon has no
+   nitrate upper-warning figure — §2's safe-bounds table covers the three
+   dosed elements only. So the app currently cannot honour this expectation
+   without inventing a threshold. Whether nitrate gets an upper warning, and
+   at what figure, is with Dan (.agent/needs-dan.md, journey 5 open
+   question 3). Re-enable when the canon entry exists.
 expect('nitrate 80 is excessive', { nitrate: 80 }, (r) => urgentAbout(r, /nitrate/i));
+*/
 
 /* The cross-parameter rule that no per-parameter check can see */
 expect('high alk on lean nutrients warns of burnt tips', { alkalinity: 9.4, nitrate: 0.5, phosphate: 0.01 },

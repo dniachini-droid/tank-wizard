@@ -32,6 +32,30 @@ import { STABILITY_RULES } from './stability-engine.js'
  */
 export const DOSED_ELEMENTS = new Set(["alkalinity", "calcium", "magnesium"]);
 
+/* Phosphate and nitrate are managed by export and feeding, not by a daily
+   dose, and no reasoning of their own is written in canon yet —
+   reef-chemistry.md §25's coverage table lists them as "assessed with
+   borrowed and wrong reasoning ... nowhere — TW-029". The generic level and
+   trend loops below apply alkalinity-shaped rules to every parameter: an
+   alarm scaled to the width of the user's own band, and a 30-day regression
+   over what is a 4-5 reading window at their 7-day cadence. §12 forbids
+   exactly that: the app does not judge one parameter by another parameter's
+   thresholds, trend logic or evidence bar.
+
+   The band-width threshold was not merely noisy here — it was unreachable on
+   the side that matters. At the default bands the far-out-low trigger sat at
+   −0.040 ppm phosphate and −5 ppm nitrate, values no kit can return, so a
+   phosphate of 0.00 ppm — outside SAFE_BOUNDS' own 0.01 minimum — produced
+   nothing at all, while ordinary nutrient bounce produced confident notices.
+
+   So both loops skip these two until their own rules are written into canon
+   (§25: covering a parameter means covering it correctly or not at all).
+   Their band-position chips, stability grades and the nutrient-specific
+   findings below all still speak; only the borrowed judgements are removed.
+   Salinity stays in the loops deliberately — its treatment is TW-030's own
+   decision, not a side effect of this one. */
+export const NUTRIENTS_AWAITING_OWN_RULES = new Set(["phosphate", "nitrate"]);
+
 /* What the hobby regards as safe, as distinct from whatever band you have set
    as your target.
    
@@ -217,6 +241,7 @@ export function buildFindings({ readings, icps, paramDefs, settings, doseLog, wa
      is the threshold, which scales with whatever range you have set. */
   for (const def of paramDefs) {
     if (def.key === "ammonia") continue;          // handled above, on its own terms
+    if (NUTRIENTS_AWAITING_OWN_RULES.has(def.key)) continue;
     const last = latestByParam && latestByParam[def.key];
     if (!last) continue;
     const half = (def.max - def.min) / 2;
@@ -423,6 +448,7 @@ export function buildFindings({ readings, icps, paramDefs, settings, doseLog, wa
      the edge was previously invisible until it crossed. */
   for (const def of paramDefs) {
     if (def.key === "ammonia") continue;
+    if (NUTRIENTS_AWAITING_OWN_RULES.has(def.key)) continue;
     const last = latestByParam && latestByParam[def.key];
     if (!last) continue;
     const st = paramStatus(def, last.value);

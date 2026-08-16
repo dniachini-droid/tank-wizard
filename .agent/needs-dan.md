@@ -6,6 +6,118 @@ Decisions no agent may make. Newest at top. Dan clears this file.
 
 ## Open
 
+### 10. Phosphate and nitrate now say less instead of saying wrong things — the rules that replace the silence are yours to write
+
+Filed 2026-08-15 by `routines/20-phosphate-nitrate.md`, the buildable half of
+`.agent/items/TW-029.md` (executed on your 15 August instruction; branch
+`claude/phosphate-nitrate-routine-7lovsr`). §25 settles **where** the reasoning
+lives — the one engine — and deliberately settles **nothing** about its content.
+What is missing is a canon section for each parameter sourced the way §2, §3 and
+§5 are: a figure, and where it came from. `journey-5-phosphate-nitrate.md` is
+quoted below as design input — your words, not published guidance.
+
+**What was removed, so you know the starting state.** The two generic findings
+loops no longer touch phosphate or nitrate (`src/lib/findings.js`,
+`NUTRIENTS_AWAITING_OWN_RULES`): `far-out-<key>` (alarm scaled to the width of
+the user's own band — at the defaults the low trigger sat at −0.040 ppm
+phosphate / −5 ppm nitrate, unreachable by any kit, so 0.00 ppm phosphate said
+nothing) and `heading-out-<key>` (a 30-day regression, 4–5 readings at their
+cadence — the notices you dismissed on 10 and 11 August,
+`fixtures/real-tank/dans-tank-backup-2026-08-12.json:2893,2902`). Still
+speaking: band-position chips, stability grades (percent-mode, already
+per-parameter), and the nutrient-specific findings (starved, ratio,
+equilibrium, alk-vs-nutrients).
+
+**One real cost, stated plainly rather than buried.** The best-practice suite
+expected an urgent word at 80 ppm nitrate. The only path that ever produced one
+was the removed loop, and canon has no nitrate upper-warning figure — §2's
+safe-bounds table covers the three dosed elements only. That expectation is
+suspended (`tests/legacy-port/husbandry.js`, comment in place) until you rule.
+Until then, **nitrate at 80 ppm produces no urgent notice.** Decision 6 below
+is where that gets fixed properly.
+
+The decisions, each answerable separately:
+
+1. **Phosphate's band and its legitimate range.** Published guidance 0.03–0.10
+   ppm; journey 5: *"Some people run phosphate up to 0.20, even 0.30, 0.40."*
+   Freely editable, wider range of legitimate settings than the dosed
+   parameters — needs a §2-style entry saying so.
+2. **The 0.03 ppm floor** — the one place you asked for firmness: *"That
+   should come up as a warning. Not an emergency. But it definitely should
+   flag."* Note the collision to resolve rather than average: `SAFE_BOUNDS`
+   (code, sourced comments) puts phosphate's floor at 0.01 ppm; journey 5 says
+   0.03. Which figure, which severity, what wording register.
+3. **The count mechanism.** *"Over the last three or four readings, three out
+   of four were above band."* How many readings is N, how many out of band is
+   K, and is three-of-four the rule or an illustration? Nothing in the app
+   counts this today — everything else fits a line.
+4. **Direction language on phosphate — including the stability layer's.** The
+   removed loops were the regression's voice, but the summary's `drift:` claims
+   (`src/lib/narrative-engine.js:565-591`, sitting on the stability layer's own
+   fold-mode rules, not on the borrowed loops — left in place) can still say
+   *"Phosphate is climbing, not settling."* If count language replaces slope
+   language, it replaces it there too. Your call whether that claim survives.
+5. **Nitrate is not phosphate.** *"Nitrate can be notoriously stable, or it can
+   continue to rise."* Phosphate binds to rock and sand and is strongly
+   buffered; nitrate has no buffering mechanism at all (Randy Holmes-Farley's
+   illustration: add 1 ppm phosphate and 100 ppm nitrate — nitrate rises the
+   full 100, phosphate under 0.1). Does nitrate get trend language phosphate
+   does not, and its own model?
+6. **Upper warnings and nitrate's floor.** Is there an upper warning to match
+   the 0.03 floor, for either parameter — the 80 ppm nitrate case above is
+   this decision. And does nitrate have a floor of its own (published guidance
+   says zero nitrate is equally bad; `SAFE_BOUNDS` carries 0.5 ppm, unsourced
+   in canon)?
+7. **The levers, in your words.** Above band the app should *"say these are
+   your options. Just really briefly … and not dose anything."* Which levers —
+   the ones you would actually pull, not a list from a website. No millilitre
+   figure exists for either parameter today (neither is dosed, no strength, no
+   dose path); worth a canon line saying that is by design so it stays true.
+8. **The noise-floor unit question — decide before either parameter gets an
+   engine.** `STABILITY_RULES` carries phosphate `noiseFloor: 0.02` and nitrate
+   `1.0` in **percent** mode (a proportion); `correctionProgress`
+   (`src/lib/dosing/helpers.js`) reads that field as an **absolute** value in
+   the element's own unit. Latent today — neither parameter reaches the
+   function; a warning comment now sits at the read site. Three options, each
+   a different chemistry decision:
+   - **(a) Read percent-mode floors as a proportion of the band** in
+     `correctionProgress`. Keeps one table; wrong if the arrival-zone concept
+     itself never applies to undosed parameters, in which case the code grows
+     a branch nothing should ever take.
+   - **(b) Give `correctionProgress` its own per-parameter floor table.**
+     Cleanest separation of "stability noise" from "arrival tolerance"; wrong
+     if the two really are the same idea, in which case two tables drift the
+     way the three engines did.
+   - **(c) Give phosphate an absolute ppm floor in `STABILITY_RULES`.**
+     Simplest; wrong if percent mode is the honest model for a proportional
+     parameter (journey 5: *"If it is bouncing around, it should be more
+     lax"*) — an absolute floor at 0.20 ppm behaves very differently than at
+     0.05.
+   Getting this wrong hurts quietly: a misread floor sets phosphate's arrival
+   zone to 57% of the band where §9 asks for a middle third — corrections
+   would declare arrival far too early.
+9. **Windows and cadence, ratified.** The stability layer already treats
+   phosphate as 14-day/percent and nitrate as 28-day/percent
+   (`stability-engine.js:51-52`) — the right shape, per journey 5, but
+   unsourced in canon. A §4-style row each would make them canon rather than
+   habit.
+
+**In plain terms.** The app was judging your two nutrient levels with the
+alkalinity ruler, and that produced the silly warnings you noticed — including
+one absurdity: the "dangerously low" alarm for phosphate was set below zero, a
+reading no test kit can produce, so phosphate at absolute zero (genuinely bad
+for corals) said nothing at all. That ruler has now been taken away from those
+two. The app still shows where each reading sits against your band, still
+grades steadiness, and still warns when both nutrients are near zero together —
+but it no longer claims either is "heading out of range" or "a long way out".
+The gap is that until you write the real rules, it says less than it should:
+most importantly, very high nitrate no longer gets an urgent word, and very low
+phosphate still gets none. The nine questions above are the rules to write —
+where the firm floor sits, how many high readings in a row matter, whether
+nitrate may be called "rising" when phosphate never should, and what options
+the app should name when a level runs high. Each can be answered in a line or
+two, and none is answered for you.
+
 ### ~~9. `PARAM_DEFS.alkalinity.color` is byte-identical to `STATUS_COLOR.ok` — the mirror of the phosphate fault~~ — closed 2026-08-15, see Decisions
 
 Resolved as **option (a) — leave it.** Alkalinity's brand colour does **not** change.
