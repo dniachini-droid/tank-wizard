@@ -6,7 +6,34 @@ Decisions no agent may make. Newest at top. Dan clears this file.
 
 ## Open
 
-### 10. Phosphate and nitrate now say less instead of saying wrong things — the rules that replace the silence are yours to write
+### ~~10. Phosphate and nitrate now say less instead of saying wrong things — the rules that replace the silence are yours to write~~ — closed 2026-08-16, see Decisions
+
+**All nine decisions answered.** Recorded as `docs/spec/reef-chemistry.md`
+**§29**, under Dan's explicit authorisation for the spec edit. The
+implementation is filed untagged as **TW-054** to **TW-060** and may not be
+built without `[approved]`.
+
+The nine, in the order this item asked them: bands and their wide legitimate
+range (§29.2); the 0.03 floor, which wins over `SAFE_BOUNDS`' 0.01 because the
+two answer different questions (§29.4); the count mechanism, three of the last
+four (§29.5); phosphate loses direction language everywhere including the
+stability layer's (§29.5); nitrate gets its own model with count *and* trend
+(§29.5); the upper warning at nitrate 50, which restores the suspended
+husbandry expectation at a corrected severity (§29.4); no levers — the reversal
+of journey 5's "name the options" and the one place canon overrides the journey
+(§29.6); the `correctionProgress` noise-floor unit question closed as
+unreachable by design rather than resolved (§29.8); windows ratified at 14 and
+28 days (§29.7).
+
+**Two residues, both named in §29.5 and neither invented away.** The reading
+count in nitrate's trend bar — "three readings" against the dosed elements' bar
+of four — and whether the phosphate count of three-of-four requires the same
+side of the band. Each is a line from Dan and blocks only the two items that
+need the number.
+
+The workup below is left in place, per the file's habit: it is the statement of
+the problem the decision answers, and its account of what TW-029 removed is the
+starting state §29 was written against.
 
 Filed 2026-08-15 by `routines/20-phosphate-nitrate.md`, the buildable half of
 `.agent/items/TW-029.md` (executed on your 15 August instruction; branch
@@ -502,7 +529,113 @@ column — where naming the banned term is the point.
 
 ## Decisions
 
-### 2026-08-15 (latest) — Dan, spec owner: out and clearly out are two questions and get two numbers
+### 2026-08-16 (latest) — Dan, spec owner: phosphate and nitrate get their own rules — nine decisions in one pass
+
+Closes open item 10 entirely, and authorises the spec edit that records it.
+Recorded as `docs/spec/reef-chemistry.md` **§29**. **Spec only — the
+implementation is filed untagged as TW-054 to TW-060 and is not authorised.**
+The single exception Dan named himself is a comment at the `correctionProgress`
+read site, which carries no behaviour.
+
+**1. The bands, and how much latitude they carry.** Phosphate **0.03–0.10**,
+nitrate **5–15**, both freely editable — and the range of legitimate settings
+is **wider than for the dosed elements**. A keeper running phosphate at 0.40 or
+nitrate at 40 is keeping a tank, not making a mistake, and the app may not
+nudge them toward the suggestion. Wider than alkalinity's licence on purpose:
+7–11 dKH is bounded by described harm, and phosphate between 0.03 and 0.40 is a
+preference the app has no standing to have an opinion about.
+
+**2. Out, and clearly out.** §27 unchanged: **out the moment the level is past
+the edge by any amount**. **Clearly out at 0.10 ppm past the edge for phosphate
+and 10 ppm for nitrate**, as named constants of their own. Per §27's amendment
+it is a wording tier — and here that costs nothing, because there is no
+recommendation for it to gate.
+
+**3. Two fixed warnings, both independent of the band.** **Phosphate below
+0.03** says it is getting quite low, and **says the same thing at 0.01** rather
+than escalating. **Nitrate above 50** gets a word — *worth attention, not
+urgent*, because published evidence shows nitrate is not acutely toxic.
+`SAFE_BOUNDS`' phosphate minimum of 0.01 is settled as **a floor on what may be
+set as a target**, adding nothing when a reading lands there; the collision item
+10 named is resolved by the two figures answering different questions rather
+than by averaging them. **This restores the suspended husbandry expectation** —
+and not verbatim: the suspended check asserts urgency, this decision forbids it,
+so the check comes back with its severity corrected. Nitrate gets no floor
+warning of its own: two warnings is the whole list, and near-zero nitrate
+already reaches the keeper through the nutrient findings that were never
+removed.
+
+**4. Count for phosphate, count and trend for nitrate.** Phosphate: **three of
+the last four readings outside the band**, and **no direction language
+anywhere** — including the stability layer's `drift:` claims, which survived
+TW-029 because they sit on the fold-mode rules rather than the removed loops.
+Nitrate: **both**, its trend held to **the same evidence bar as the dosed
+elements** — one direction, clearing the noise floor. The asymmetry is
+chemistry, not taste: phosphate binds to rock and sand and is strongly
+buffered; nitrate has no buffering mechanism at all.
+
+**5. No dose, no correction, no levers, for either.** The app names the level
+and stops. **This reverses journey 5's "say these are your options, just really
+briefly"**, and it is the one place canon overrides that journey. Dan's reason:
+the app **cannot see whether someone runs GFO, a refugium or carbon dosing, and
+suggesting levers they are not using is noise.** Naming a lever a keeper
+already runs flat out is worse than silence, and the app cannot tell the two
+cases apart.
+
+**6. Windows ratified as they stand** — phosphate 14 days, nitrate 28. Right
+already, but habit rather than canon; now canon.
+
+**7. The `correctionProgress` unit mismatch is closed, not resolved.** None of
+the three options is taken. **Neither parameter has a correction path and
+neither will**, so the branch is unreachable **by design** rather than by an
+accident of today's call sites. A comment at the read site records that, so the
+next reader finds the reason instead of re-deriving the options.
+
+**Two things left open, and named rather than smoothed over.** Nitrate's trend
+bar is described two ways in one sentence — *"three readings"* against the
+dosed elements' bar of **four** readings and three steps — and an implementer
+needs one number. And *"three of the last four readings outside the band"*
+reads literally as either side of the band, while its stated purpose (*this is
+where you have been living*) reads as one side; two above and one below is the
+case that separates them. Both are a line from Dan and each blocks only the
+item that needs it.
+
+**Verification.** Spec and filing only; no chemistry constant, no threshold and
+no behaviour was touched, so no behavioural claim is made. The one code edit is
+a comment.
+
+**In plain terms.** Your phosphate and nitrate stop being judged by
+alkalinity's yardstick and get their own, which is what the silly notices were
+about.
+
+Ranges start at 0.03–0.10 and 5–15 and are yours to move. Running phosphate at
+0.40 is an ordinary way to keep a tank and the app will not argue. Past the
+edge of your range by any amount you are out; well past it, it says so more
+plainly, and that is a change of wording only because these two never get a
+dose.
+
+Two warnings ignore your range completely. Phosphate under 0.03 tells you it is
+getting quite low and keeps saying exactly that at 0.01 — low nutrients are the
+ones that hurt corals, and shouting louder as it falls would not help. Nitrate
+over 50 gets a mention rather than an alarm, which also switches back on the
+check that had been turned off, at the right volume this time.
+
+For phosphate the app counts rather than draws lines — three of your last four
+tests outside the range — and it will no longer tell you phosphate is climbing,
+because phosphate bounces and that sentence was never measurable. Nitrate is
+genuinely a different animal, with nothing in the tank holding it steady, so it
+keeps both the count and a real "this is rising", proved to the same standard as
+your alkalinity.
+
+And when a level runs high the app tells you and stops. No GFO, no refugium, no
+carbon dosing suggestions — it does not know which of those you already run, and
+telling you to start something you are already doing is worse than saying
+nothing.
+
+Two small things still need a line from you, both about how many readings count.
+Neither stops the rest.
+
+### 2026-08-15 (previously latest) — Dan, spec owner: out and clearly out are two questions and get two numbers
 
 Closes open item 5, and authorises the spec edit that records it. Recorded as
 `reef-chemistry.md` **§27**, and — unlike the 14 August night — this one is

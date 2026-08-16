@@ -2073,3 +2073,304 @@ None of that is built. This section says what it is and what it must respect —
 your rails, your range, a return to normal dosing, and an expiry so a plan you
 forget about does not run all month — so that when it is built, it is built
 once and correctly.
+
+---
+
+## 29. Phosphate and nitrate
+
+**Decided 16 Aug (Dan, spec owner): all nine decisions of `.agent/needs-dan.md`
+item 10, in one pass, with the spec edit authorised.** This is the canon entry
+§25's coverage table said was written **nowhere**. It is written here.
+
+§25 settled **where** the reasoning lives — one engine — and deliberately
+settled nothing about its content. TW-029 removed the borrowed reasoning on
+15 August, which left these two saying less than they should rather than saying
+wrong things. This section is what replaces the silence.
+
+`docs/journeys/journey-5-phosphate-nitrate.md` is design input, not guidance:
+where it and this section differ, this section wins, and §29.6 is the one place
+they differ.
+
+### 29.1 The shape, before any figure
+
+Alkalinity, calcium and magnesium are consumed and replaced: the tank takes,
+you pour, the app tunes the daily dose. **Phosphate and nitrate are managed by
+export and by feeding, not by a dose that replaces consumption.** So
+`maintenanceDose`, the dose gap (§7), the rails (§3) and the settle window have
+nothing to attach to — which is why borrowed reasoning produced nonsense here.
+It was never the thresholds. It was the whole shape.
+
+Everything below follows from that. These two get a level, a band, a count and
+at most two fixed warnings. They never get a millilitre figure.
+
+### 29.2 Bands — the same three layers, with a much wider layer 1
+
+§2's structure applies unchanged. The figures do not.
+
+| | Safe bounds (layer 1) | Suggested band (layer 3) | Test cadence |
+|---|---|---|---|
+| Phosphate | 0.01 – 0.5 ppm | **0.03 – 0.10 ppm** | 7 days |
+| Nitrate | 0.5 – 50 ppm | **5 – 15 ppm** | 7 days |
+
+The layer 3 figures are published guidance: 0.03–0.10 ppm phosphate, and a
+nitrate band centred where the hobby runs it. The layer 1 figures are the ones
+`SAFE_BOUNDS` already carries with their sourcing beside them — nitrate *"zero
+starves corals; high is ugly, not acute"*, phosphate's 0.01 floor likewise.
+Neither figure is newly minted here; both are promoted from code comment to
+canon, which is where a figure the app acts on belongs.
+
+**The band is freely editable, and the range of legitimate settings is wider
+than for the dosed elements.** Dan: *"Some people run phosphate up to 0.20,
+even 0.30, 0.40. People have very different ideas of what phosphate level
+should be in their tank."* A user targeting **0.40 ppm phosphate or 40 ppm
+nitrate is not making a mistake**, and the app may not treat them as one, nudge
+them toward the suggestion, or grade them against it. Layer 3 is a starting
+point for someone with no opinion; it is not the right answer.
+
+This is a wider licence than alkalinity gets, deliberately. Alkalinity's
+legitimate range is 7–11 dKH because outside it there is described harm.
+Phosphate between 0.03 and 0.40 is a husbandry preference, and the app has no
+standing to have an opinion about it.
+
+### 29.3 Out, and clearly out
+
+§27 applies as written, with these two figures added to its family:
+
+1. **Out has no margin.** A level is out the moment it is past the band edge by
+   any amount, measured on the last reading (§26).
+2. **Clearly out is a fixed distance past the edge: phosphate 0.10 ppm,
+   nitrate 10 ppm.** Named constants of their own, declared beside their
+   engine's other constants as bare numbers, derived from nothing — not from a
+   trend constant, not from a kit noise floor, not from the band width (§27's
+   third rule).
+3. **Clearly out is a wording tier and nothing else** (§27's same-day
+   amendment). Here that constraint costs nothing at all: per §29.6 there is no
+   recommendation for it to gate, no dose for it to change and no constraint
+   for it to relax. It changes one adjective in one sentence.
+
+**One consequence, stated so it is not re-filed as the bug that started all
+this.** At the suggested bands, "clearly out low" is arithmetically
+unreachable: phosphate 0.03 − 0.10 = −0.07 ppm, nitrate 5 − 10 = −5 ppm. That
+is the same shape as the negative `far-out-low` thresholds TW-029 removed, and
+it is **not** the same fault, for three reasons.
+
+- The removed threshold gated the only thing the app ever said about a low
+  level. This one gates an adjective, on a sentence that fires anyway.
+- Phosphate's low side has its own voice that does not depend on the band at
+  all — the fixed warning at 0.03 in §29.4.
+- Nitrate near zero already speaks through the nutrient findings that were
+  never removed (both nutrients near zero together, and high alkalinity on lean
+  nutrients).
+
+On a wider user band it becomes reachable — a keeper running 0.20–0.40 ppm is
+clearly out low at 0.10. The unreachability is a property of a narrow band, not
+of the rule.
+
+### 29.4 Two fixed warnings, and only two
+
+**Both fire regardless of the user's band.** That is the point of them: a band
+is the user's judgement, and these two figures are not.
+
+| Warning | Fires at | Register |
+|---|---|---|
+| Phosphate low | **below 0.03 ppm** | it is getting quite low — a warning, not an emergency |
+| Nitrate high | **above 50 ppm** | worth attention, not urgent |
+
+**Phosphate below 0.03 ppm.** Dan: *"I was stuffing around trying to get it
+really low and it went below 0.03 — it was like 0.01, which is not good for the
+corals at all. That should come up as a warning. Not an emergency. But it
+definitely should flag."* The published position runs opposite to intuition —
+zero starves corals and invites dinoflagellates, and nutrients too low is worse
+than nutrients too high. The figure is the published band's own floor, which is
+why it is 0.03 and not 0.01.
+
+**It does not escalate.** At 0.01 ppm the app says the same thing it says at
+0.029. `SAFE_BOUNDS`' phosphate minimum of **0.01 is a floor on what may be set
+as a target** — it governs Setup, not readings — and a reading landing there
+adds nothing to what the 0.03 warning already said. This resolves the collision
+item 10 named between the two figures: they are not two answers to one
+question, they are answers to two questions.
+
+**Nitrate above 50 ppm.** A word, not an alarm: **published evidence shows
+nitrate is not acutely toxic**, so nothing here may reach the urgent tier. The
+figure is `SAFE_BOUNDS`' existing nitrate ceiling, whose comment already carries
+the reasoning: *high is ugly, not acute*.
+
+**This restores the suspended husbandry expectation — but not verbatim.**
+`tests/legacy-port/husbandry.js` carries `'nitrate 80 is excessive'` commented
+out, asserting `urgentAbout(r, /nitrate/i)`. Nitrate at 80 ppm must now say
+something, so the check comes back; it must not say something urgent, so the
+predicate is wrong and changes with it. Restoring it unaltered would assert the
+opposite of this section. The adjacent live expectation, `'nitrate 25 is high
+but not acute'`, is unaffected and still holds.
+
+**Nitrate has no low warning of its own.** Two warnings is the whole list, and
+`SAFE_BOUNDS`' nitrate minimum of 0.5 ppm is a target floor by exactly the rule
+stated for phosphate's 0.01 above. Near-zero nitrate is not silent — it reaches
+the keeper through the nutrient findings named in §29.3, which judge the two
+nutrients together rather than by a borrowed band rule.
+
+**A fixed warning may fire on an in-band reading, and that is not a
+contradiction.** A keeper who sets a phosphate band of 0.01–0.05 gets "in band"
+on the chip and the low warning in the same view, because the chip answers
+*where is this against the range you chose* and the warning answers *this figure
+is low whatever range you chose*. The same already happens for the dosed
+elements against §2's safe bounds. What the app may never do is say both things
+in one sentence as though they were one judgement.
+
+### 29.5 Count, not slope — and nitrate is not phosphate
+
+**Phosphate gets a count and no trend.** Dan: *"Mine oscillates. Mine goes up
+to 0.20, then down to 0.15, then up to 0.19, then down. It doesn't work like
+that."* Direction language on a parameter that bounces this hard is a confident
+statement about a movement nobody measured.
+
+> **The phosphate count: three of the last four readings outside the band.**
+
+Two things it says that a slope cannot — *this is where you have been living*,
+and *this is not one odd test*. Nothing in the app counts this today;
+everything else fits a line. It is a new mechanism, not a retuned one.
+
+**No direction language for phosphate anywhere**, including the stability
+layer's. The `drift:` claims sit on the stability layer's own fold-mode rules
+rather than on the removed findings loops, so they survived TW-029 and can
+still say *"Phosphate is climbing, not settling."* Under this section they may
+not. Count language replaces slope language on every surface, or it has not
+replaced it.
+
+**Nitrate gets both count and trend.** Dan: *"Nitrate can be notoriously
+stable, or it can continue to rise."* The chemistry behind the asymmetry is
+real and is the reason the two may not share a model: phosphate binds to rock
+and sand and is strongly buffered, while nitrate has no buffering mechanism at
+all. Randy Holmes-Farley's illustration — add 1 ppm phosphate and 100 ppm
+nitrate to a tank and nitrate rises the full 100 while phosphate rises under
+0.1.
+
+**Nitrate's trend sits at the same evidence bar as the dosed elements** — one
+direction, clearing §5's noise floor. It earns no easier test for being a
+nutrient and no harder one either.
+
+**Two things this leaves for a further decision, named rather than assumed:**
+
+- **The reading count in nitrate's trend bar.** Dan's words are *"three
+  readings, one direction, clearing the noise floor"*, and *"the same evidence
+  bar as the dosed elements"*. The dosed elements' bar is four readings — three
+  steps, two thirds of them agreeing. Three readings is two steps. The two
+  halves of the sentence give different numbers and an implementer needs one.
+- **Whether the phosphate count requires the same side.** *"Three of the last
+  four readings outside the band"* reads literally as either side, but its
+  stated purpose — *this is where you have been living* — reads as one side.
+  Two above and one below in the last four is the case that separates them.
+
+Neither is invented here. Until one is settled, nitrate's trend takes the
+dosed-element bar unchanged and the count is not built.
+
+### 29.6 No dose, no correction, no levers
+
+**The app names the level and stops.**
+
+- **No dose.** Neither parameter produces a millilitre figure. There is no
+  strength, no dose path and nothing to compute one from.
+- **No correction (§9), and no drift back (§28).** Both instruments move a
+  level by changing what is poured in. Neither parameter has anything poured
+  in.
+- **No suggested levers.** This is the one place this section overrides journey
+  5, which asked the app to *"say these are your options. Just really
+  briefly."* Dan's reasoning for the reversal: the app **cannot see whether
+  someone runs GFO, a refugium or carbon dosing, and suggesting levers they are
+  not using is noise.** Naming a lever a keeper already runs at full tilt is
+  worse than saying nothing, and the app has no way to tell the two apart.
+
+The keeper is told where the level is, how often it has been there, and — for
+the two figures in §29.4 — that it is worth a look. What to do about it is
+theirs.
+
+### 29.7 Windows and cadence, ratified
+
+| | Test cadence | Analysis window | Mode |
+|---|---|---|---|
+| Phosphate | 7 days | **14 days** | proportional |
+| Nitrate | 7 days | **28 days** | proportional |
+
+**Ratified as they stand.** The stability layer already used these figures
+(`src/lib/stability-engine.js`) and they were right, but they were habit rather
+than canon; this makes them canon. §4's rule that windows are flat and never
+stretched applies here too: refuse rather than reach.
+
+The proportional mode is deliberate and matches Dan's *"if it is bouncing
+around, it should be more lax"* — a fixed ppm tolerance behaves very differently
+on a tank at 0.05 than on one at 0.30, and these are parameters people run
+across that whole spread.
+
+### 29.8 The noise-floor unit question is closed as unreachable by design
+
+Item 10's decision 8 offered three ways to reconcile `STABILITY_RULES`'
+proportional noise floors with `correctionProgress`, which reads that field as
+an absolute value in the parameter's own unit. **None of the three is taken.
+The question is closed, because the branch cannot be reached.**
+
+`correctionProgress` computes a correction's arrival zone. **Neither parameter
+has a correction path, and per §29.6 neither will ever have one.** So the
+mismatch is not latent-and-waiting; it is unreachable **by design** rather than
+by an accident of today's call sites. No table changes, no branch is added, no
+per-parameter floor table is minted, and phosphate does not get an absolute
+floor it has no use for.
+
+A comment at the read site records this, so that the next reader who notices
+the mismatch finds the reason it is not a bug rather than re-deriving the three
+options.
+
+**What would reopen it:** only a decision to give either parameter a correction
+path — which is precisely what §29.6 forbids. Anyone reaching for that
+reopens this subsection first.
+
+### Enforced by
+
+**Nothing yet, and that is stated rather than implied**, per §14. No code
+implements any of the above and no test asserts it. The implementation is filed
+under `.agent/items/` as **TW-054** through **TW-060**, all untagged: the
+decision settles the reasoning, not that it may be built without approval.
+
+Three cross-references elsewhere in canon now point at "nowhere" and are stale
+against this section — §25's coverage table row for these two, §4's cadence and
+window table, and §16's clearly-out margin list. They are left as they are:
+this decision authorised a new section, and repointing them is TW-060.
+
+### In plain terms
+
+Your phosphate and nitrate now have rules of their own instead of borrowing
+alkalinity's, which is what was producing the silly notices.
+
+The starting ranges are 0.03 to 0.10 for phosphate and 5 to 15 for nitrate, and
+they are yours to change to whatever you like. Running phosphate at 0.40 or
+nitrate at 40 is a perfectly ordinary way to keep a tank and the app will not
+argue with you about it — much more latitude than it gives you on alkalinity,
+because on these two there is no published harm to point at.
+
+Past the edge of your range by any amount, you are out of range and the app
+says so. Once you are 0.10 phosphate or 10 nitrate past it, it says so more
+plainly. That is a change of wording only — nothing about it changes a dose,
+because these two never get a dose.
+
+There are exactly two warnings that ignore your range entirely. Phosphate under
+0.03 tells you it is getting quite low, and keeps telling you the same thing at
+0.01 rather than escalating — low nutrients are the ones that actually hurt
+corals. Nitrate over 50 gets a mention, not an alarm, because the published
+evidence is that high nitrate is untidy rather than poisonous. That second one
+brings back the check that had been switched off, at the right volume this time.
+
+For phosphate the app counts instead of drawing lines: three of your last four
+tests outside your range is the thing worth saying, because phosphate bounces
+and a line through bouncing numbers invents movement that was never there. It
+will no longer tell you phosphate is climbing. Nitrate is genuinely different —
+it has nothing in the tank holding it steady the way rock and sand hold
+phosphate — so nitrate keeps both the count and a real "this is rising", held
+to the same standard of evidence as your alkalinity.
+
+And when a level runs high the app names it and stops. It does not tell you to
+run GFO or a refugium or dose carbon, because it has no idea which of those you
+are already running, and telling you to do something you are doing is worse than
+saying nothing.
+
+None of this is built yet. This section is the rules; the work to make the app
+follow them is filed and waiting on your approval.
