@@ -660,16 +660,15 @@ export function ParamHistoryModal({ def, readings, onClose, onSaveRange, onReset
                     </>
                   ) : (
                     <>
-                      <div className="grid grid-cols-3 gap-2 mb-2">
+                      {/* Two tiles, not three. The third read "Water changes
+                          +0.08 dKH" and was a term in the balance; §22 removed
+                          that term, and a tile the arithmetic no longer uses is
+                          an invitation to work out a different answer from the
+                          one shown. */}
+                      <div className="grid grid-cols-2 gap-2 mb-2">
                         <div className="text-center min-w-0">
                           <div className="text-[9px] text-ink2 uppercase tracking-wide font-extrabold">Dosing</div>
                           <div className="text-sm font-black text-ink mt-0.5 truncate">{fmtAmount(elementUse.dosePerDay)}{def.unit}/day</div>
-                        </div>
-                        <div className="text-center min-w-0">
-                          <div className="text-[9px] text-ink2 uppercase tracking-wide font-extrabold">Water changes</div>
-                          <div className="text-sm font-black text-ink mt-0.5 truncate">
-                            {elementUse.wcContribution >= 0 ? "+" : ""}{fmtAmount(elementUse.wcContribution)}{def.unit}
-                          </div>
                         </div>
                         <div className="text-center min-w-0">
                           <div className="text-[9px] text-ink2 uppercase tracking-wide font-extrabold">Consuming</div>
@@ -682,7 +681,7 @@ export function ParamHistoryModal({ def, readings, onClose, onSaveRange, onReset
                       <p className="text-[12px] text-ink font-medium leading-relaxed">
                         Across {elementUse.spanDays} days you dosed about {fmtAmount(elementUse.dosed)}{def.unit} in total
                         {elementUse.wcCount > 0
-                          ? `, and ${elementUse.wcCount} water ${elementUse.wcCount === 1 ? "change" : "changes"} ${elementUse.wcContribution >= 0 ? "added roughly" : "removed roughly"} another ${fmtAmount(Math.abs(elementUse.wcContribution))}${def.unit}`
+                          ? `, across ${elementUse.wcCount} water ${elementUse.wcCount === 1 ? "change" : "changes"}`
                           : ``}
                         , while the tank itself {Math.abs(elementUse.netChange) < 0.005 ? "held level" : elementUse.netChange > 0 ? `rose ${fmtAmount(elementUse.netChange)}${def.unit}` : `fell ${fmtAmount(Math.abs(elementUse.netChange))}${def.unit}`}.
                         {" "}

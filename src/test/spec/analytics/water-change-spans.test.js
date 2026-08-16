@@ -1,30 +1,35 @@
-/* Spec conformance — §8 a water change between readings must be accounted
- * for, or the span discarded
+/* Spec conformance — water changes inside a consumption span
  *
- * docs/spec/reef-chemistry.md §8 (line 197):
- *   "A water change between readings must be accounted for or the span
- *    discarded."
+ * SUPERSEDED AND REWRITTEN, 16 August, by owner decision closing §22's
+ * divergence. What this file used to assert, and why it no longer holds:
  *
- * src/lib/analytics/consumption.js `computeElementConsumption` implements a
- * mass-balance correction for water changes inside the window:
- *   consumed = dosed + addedByWaterChanges - netChangeInTank
- * where `addedByWaterChanges` (wcContribution) is `f * (saltVal - levelAtTheTime)`
- * for each recorded change, `f` being the fraction of the tank replaced.
+ *   It tested the older §8 sentence, "a water change between readings must be
+ *   accounted for or the span discarded", against
+ *   `computeElementConsumption`'s mass-balance correction
+ *   (consumed = dosed + addedByWaterChanges - netChangeInTank). Two cases:
+ *   the accounted-for branch reproduced the formula exactly (20 L into 100 L
+ *   crediting 0.08 dKH, total 0.78), and the "or discarded" branch was a
+ *   standing SPEC VIOLATION — a water change with no litres recorded was
+ *   silently treated as contributing nothing rather than being accounted for
+ *   or the span discarded.
  *
- * This file checks both halves of the spec sentence: the "accounted for"
- * branch reproduces the documented formula exactly (regression test, positive
- * case). The "or discarded" branch checks what happens when a water change is
- * recorded but cannot actually be accounted for — here, because its litres
- * were never entered — and finds the code does neither: it silently treats
- * the un-accountable change as if it contributed nothing, which is not the
- * same as discarding the span.
+ *   Both are moot. §6's 14 August decision settled the three dosing engines
+ *   the other way — water changes stay in the trend fit — and §22 recorded
+ *   that the two layers therefore answered the same question differently and
+ *   that the divergence needed one answer. It now has one: the engines'. The
+ *   mass-balance term is gone from the analytics layer, so there is no
+ *   accounting to get right and nothing for a missing litres field to break.
+ *
+ * The formula's own regression tests live in water-change-not-subtracted.test.js.
+ * What is left here is the case the old SPEC VIOLATION was really about: a
+ * water change the app cannot size must not quietly change what the app says.
+ * Under the new rule it cannot, and this file holds that line — including for
+ * the malformed records the old code path had to defend against.
  */
 import { describe, expect, it } from 'vitest'
 import { computeElementConsumption } from '../../../lib/analytics/consumption.js'
 import { DEFAULT_SETTINGS } from '../../../lib/analytics/water-changes.js'
 
-/* volumeL = 100 and dailyDoseMl = 0 keep the arithmetic checkable by hand:
-   dosed is always 0, so consumedTotal is just wcContribution - netChange. */
 const S = { ...DEFAULT_SETTINGS, volumeL: 100, dailyDoseMl: 0 }
 const readings = [
   { id: '1', param: 'alkalinity', date: '2026-08-05', value: 8.0 },
@@ -32,43 +37,49 @@ const readings = [
   { id: '3', param: 'alkalinity', date: '2026-08-13', value: 7.3 },
 ]
 
-describe('a water change accounted for correctly', () => {
-  it('matches the documented mass-balance formula exactly', () => {
-    /* 20 L into 100 L is f = 0.2. SALT_MIX alkalinity value is 8.0. The
-       nearest reading to the change date (2026-08-09) is 7.6, so the change
-       contributes 0.2 * (8.0 - 7.6) = 0.08 dKH.
-       Regression slope over (0,8.0) (4,7.6) (8,7.3) is -0.0875 dKH/day, so
-       netChange over the 8-day span is -0.7 dKH.
-       consumedTotal = dosed(0) + wcContribution(0.08) - netChange(-0.7) = 0.78 */
-    const wc = [{ date: '2026-08-09', litres: 20 }]
-    const result = computeElementConsumption('alkalinity', readings, wc, S)
-    expect(result.status).toBe('ok')
-    expect(result.wcContribution).toBeCloseTo(0.08, 6)
-    expect(result.netChange).toBeCloseTo(-0.7, 6)
-    expect(result.consumedTotal).toBeCloseTo(0.78, 6)
+describe('a water change that cannot be sized (litres never entered)', () => {
+  it('no longer needs accounting for, and reports the same figure as any other span', () => {
+    /* This was the SPEC VIOLATION. The old code could not tell an
+       un-sizeable change from no change, and under a rule that required
+       accounting, that silence was the bug. Under §22's rule the two are
+       genuinely the same case, so the equality below is the correct
+       behaviour rather than the symptom. */
+    const withUnsizeable = computeElementConsumption('alkalinity', readings, [{ date: '2026-08-09' }], S)
+    const withoutAnyChange = computeElementConsumption('alkalinity', readings, [], S)
+
+    expect(withUnsizeable.status).toBe('ok')
+    expect(withUnsizeable.consumedTotal).toBeCloseTo(withoutAnyChange.consumedTotal, 12)
+  })
+
+  it('is still counted, so the reader is told it happened', () => {
+    /* The size is unknown; the fact is not. Dropping it from the count would
+       be the app hiding something it was told. */
+    const result = computeElementConsumption('alkalinity', readings, [{ date: '2026-08-09' }], S)
+    expect(result.wcCount).toBe(1)
   })
 })
 
-describe('a water change that cannot be accounted for (litres never entered)', () => {
-  it('SPEC VIOLATION: is silently treated as zero contribution rather than accounted for or the span discarded', () => {
-    const wcNoLitres = [{ date: '2026-08-09' }] // litres unset — the change is real but its size is unknown
-    const withUnaccountable = computeElementConsumption('alkalinity', readings, wcNoLitres, S)
-    const withoutAnyChange = computeElementConsumption('alkalinity', readings, [], S)
+describe('malformed water-change records', () => {
+  it('a change with zero, negative or absent litres cannot throw or skew the figure', () => {
+    const junk = [
+      { date: '2026-08-06', litres: 0 },
+      { date: '2026-08-07', litres: -5 },
+      { date: '2026-08-08' },
+      { date: '2026-08-10', litres: 10 },
+    ]
+    const withJunk = computeElementConsumption('alkalinity', readings, junk, S)
+    const clean = computeElementConsumption('alkalinity', readings, [], S)
 
-    /* Precondition: a genuine water change with known litres, on the exact
-       same readings, produces a materially different (accounted-for) result
-       — proved above. So the question here is specifically what happens when
-       the litres are missing, not whether accounting works at all. */
-    expect(withUnaccountable.wcCount).toBe(1)
+    expect(withJunk.status).toBe('ok')
+    expect(withJunk.consumedTotal).toBeCloseTo(clean.consumedTotal, 12)
+    expect(withJunk.wcCount).toBe(4)
+  })
 
-    /* §8: this span must either be corrected for the water change, or
-       discarded outright. What actually happens is neither — an
-       un-accountable water change (wcCount: 1) produces byte-for-byte the
-       same consumedTotal as no water change at all (wcCount: 0), which means
-       the recorded water change was silently ignored rather than accounted
-       for or the span discarded. */
-    expect(withUnaccountable.consumedTotal).not.toBeCloseTo(withoutAnyChange.consumedTotal, 6)
-    /* Discarded means NOT "ok" with a number attached. */
-    expect(withUnaccountable.status).not.toBe('ok')
+  it('changes outside the fitted span are not counted', () => {
+    /* The span is 5 to 13 August. A change in July belongs to a window this
+       figure does not describe. */
+    const outside = [{ date: '2026-07-01', litres: 20 }, { date: '2026-08-09', litres: 20 }]
+    const result = computeElementConsumption('alkalinity', readings, outside, S)
+    expect(result.wcCount).toBe(1)
   })
 })
