@@ -123,16 +123,23 @@ and `-3-surfaces.md`, all three now folded into canon and reduced to decision
 records.
 
 **The specification is `wizard-states.md` §23, §24 and §25** — seven wording
-rules, twenty-three reference cards, and what each surface renders. Its
+rules, twenty-seven reference cards, and what each surface renders. Its
 arithmetic half is `reef-chemistry.md` §28, rewritten, and §9, amended. Stage
 6c builds the message layer from §24 and §25; **where a card and a current app
 string differ, the card wins and the string is a finding.**
 
-**Four questions are carried open and are Dan's** — `wizard-states.md` §25.6.
+**Four of the twenty-seven cards were added after Stage 4 reported them
+missing** — §24.24 to §24.27, the negative-consumption hold and its escalation,
+the staged plan due a reading, the tested-but-inconclusive case, and `worked`
+route 12. §25.1 gained the collapsed headline rule in the same session. That is
+G-1 to G-4 and G-27 of `.agent/gap-report.md`, filed as **TW-075 to TW-078**.
+
+**Six questions are carried open and are Dan's** — `wizard-states.md` §25.6.
 None blocks Stage 4; two of them (§9's volume ceiling, the 6.9 dKH overlap)
-are chemistry decisions that belong in Stage 5's list, and two (app-level
+are chemistry decisions that belong in Stage 5's list, two (app-level
 notices in Tasks, where relationship notices sit) are placement questions for
-Stage 6.
+Stage 6, and two came with the four late cards (whether §24.24 words the
+logged-correction case, what breaks a tie in §25.1's headline ordering).
 
 **Insights was deliberately not specified** and may not survive; see §25.5.
 
@@ -169,7 +176,16 @@ and which surfaces show it. That document is what the new layer is built from.
 
 ---
 
-## STAGE 4 — The gap report *(read-only, one session)*
+## STAGE 4 — The gap report *(read-only, one session)* ✅ done
+
+**Done 16 August 2026**, and `.agent/gap-report.md` is the output. Its Part 1 —
+the numbers — was answered by Stage 5 below. **Five of its Part 2 gaps have since
+been answered by the owner**: G-1 to G-4, the four states with no card, and G-27,
+the collapsed tank summary headline, which was Stage 5's most pressing carried
+item because deleting the health score left no tank-level view at all. Those
+answers are `wizard-states.md` §24.24–§24.27 and §25.1, and they are filed as
+**TW-075 to TW-078**. The report itself is unchanged — it resolves nothing by
+design, and it is not annotated with resolutions.
 
 Before writing any code: take the message specification and canon, and report
 every place they cannot answer a question the current app answers.
@@ -203,8 +219,10 @@ steadiness panel follows the keeper's selected window.
 
 **Stage 6a takes its thresholds from these sections.** The implementation is
 **TW-064 to TW-074**, all untagged. **Twelve questions are carried open and are
-Dan's** — `.agent/needs-dan.md` Open item 12; the pressing one is G-27, the
-summary headline that replaces the deleted score.
+Dan's** — `.agent/needs-dan.md` Open item 12; ~~the pressing one is G-27, the
+summary headline that replaces the deleted score~~ **G-27 was answered the same
+day** (`wizard-states.md` §25.1), which also closes item 12's entries 1 and 4;
+what remains of that list is Open item 13's opening paragraph.
 
 The rest of this section is what the stage was scoped to do, kept as the record
 of what it was asked for.

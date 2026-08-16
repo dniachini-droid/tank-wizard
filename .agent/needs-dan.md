@@ -6,20 +6,56 @@ Decisions no agent may make. Newest at top. Dan clears this file.
 
 ## Open
 
+### 13. What the four late cards and the summary headline left open — 2026-08-16
+
+Filed by the run that folded five more owner decisions into canon —
+`wizard-states.md` §24.24–§24.27 and §25.1's collapsed headline, answering
+`.agent/gap-report.md` G-1 to G-4 and G-27. **Two items, both small, neither
+blocking Stage 6c**, and both are also carried in canon at `wizard-states.md`
+§25.6 items 5 and 6.
+
+**1. Whether §24.24 gains a wording for a *logged* correction.**
+`reef-chemistry.md` §24 part 3 required the app to name a logged water change or
+one-off correction where one exists. The water-change half is withdrawn outright
+(§22 stopped subtracting them from consumption, so the app has nothing to say
+about them). The correction half survives — naming something you told the app is
+a fact, not a guess — **but the card written is the nothing-logged case**, which
+is the one the three-consecutive escalation counts. Either the hold card takes a
+second wording for the logged case, or part 3's first branch goes with the rest
+of it. **Not decided, and an implementer may not pick.**
+
+**2. What breaks an exact tie in §25.1's headline ordering.** Two parameters in
+the same tier, the same fraction of their own target range out. The order has to
+be deterministic — a headline that reorders between renders cannot be checked
+against the tiles below it, which is the entire basis of the rule — and canon
+does not say what breaks it. The tiles' own order is the obvious candidate and
+was deliberately not chosen.
+
+**In plain terms.** Two loose ends, and neither costs anything to leave for now.
+When your tank gains alkalinity faster than your dose explains and you *had*
+logged a one-off correction that morning, should the card mention it? And when
+two parameters are exactly equally far out of range, which one does the summary
+line name first? Nobody will notice the second until it happens; the first is a
+sentence you may or may not want.
+
 ### 12. What Stage 5 left open when the numbers went into canon — 2026-08-16
 
 Filed by the run that folded `docs/spec/stage-5-the-numbers.md` into canon.
 **Eleven decisions answered Part 1 of the gap report; these did not get
 answered, and three more were surfaced by the fold itself.** None blocks Stage
-6a, and every one of them is Dan's.
+6a, and every one of them is Dan's. **Two of the twelve are since closed** —
+entries 1 and 4, the summary headline and the four cards with no state — by the
+decisions recorded at the top of the Decisions section; both are struck through
+below with what replaced them.
 
 **The nine the decision itself carried forward:**
 
-**1. The collapsed tank summary headline (G-27)** — now the most pressing of
-these, because deleting the health score (`wizard-states.md` §25.1) leaves no
-tank-level view at all. The candidate recorded with the deletion is something of
-the shape *"3 of 6 in range, 2 need attention"* — checkable against the tiles
-below it, which is the property the score never had.
+**~~1. The collapsed tank summary headline (G-27)~~ — closed 2026-08-16, see
+Decisions.** Three slots — the worst thing now, anything else notable, anything
+in flight — each dropped when empty, generated from the same verdicts the tiles
+render. `wizard-states.md` §25.1. The candidate recorded with the score's
+deletion (*"3 of 6 in range, 2 need attention"*) was **not** adopted; what it
+depends on is item 8 below, which stays open.
 
 **2. What the parameter tile's chip shows (G-9)** — deferred rather than
 decided. The tile turned out to be better than the code suggested, and its two
@@ -31,9 +67,12 @@ level — anything detectable — and §5 records why it has no noise floor. Wha
 does not have is a section: `reef-chemistry.md` §13's seven bands do not fit a
 parameter whose target is zero.
 
-**4. The four cards with no state (G-1 to G-4)** — `due`, `worked` route 12, the
-negative-consumption hold and its three-consecutive escalation, and the
-tested-but-inconclusive case.
+**~~4. The four cards with no state (G-1 to G-4)~~ — closed 2026-08-16, see
+Decisions.** `due`, `worked` route 12, the negative-consumption hold and its
+three-consecutive escalation, and the tested-but-inconclusive case are
+`wizard-states.md` §24.24–§24.27. Two things moved with them: route 12 carries
+§24.3's return-plan offer, closing `reef-chemistry.md` §28.6's second bullet, and
+§24's parts 3 and 4 are narrowed so no card names a cause.
 
 **5. Whether `drifting` produces a notice (G-21)**, and the "heading out of
 range" warning that currently reconciles two windows in prose.
@@ -76,10 +115,11 @@ Setup asks facts, not judgements, and names notification thresholds as a
 judgement. **The two read against each other and the app has half of each.**
 
 **In plain terms.** Eleven questions about numbers are answered and written
-down. Twelve things are still waiting on you, and only one of them is urgent:
-the score out of 100 on your front screen is being deleted, and the line that
-replaces it — how many parameters are in range, how many need attention — is
-yours to write, because nothing else on that screen speaks for the whole tank.
+down. Twelve things were still waiting on you, and the urgent one — the line
+replacing the deleted score out of 100 — **you answered the same day**, so ten
+remain. What it says is the worst thing first, then anything else worth
+mentioning, then anything already under way, and it drops whichever of those
+three is empty.
 
 Two are traps rather than gaps. The app's four status colours currently mean
 "too low" and "too high" on some screens, and the new rule needs them to mean
@@ -89,8 +129,9 @@ was written to prevent. And your magnesium alert level can be overridden by a
 setting that has no field to set it in.
 
 The rest are the ordinary queue: ammonia still has no chemistry section of its
-own, four situations still have no card, and the notice list still needs its
-ordering and its off switch settled.
+own, and the notice list still needs its ordering and its off switch settled.
+The four situations with no card have theirs — that was the other one you
+closed.
 
 ### 11. The four questions Stage 3 left open when the message specification went into canon — 2026-08-16
 
@@ -670,7 +711,121 @@ column — where naming the banned term is the point.
 
 ## Decisions
 
-### 2026-08-16 (latest) — Dan, spec owner: Stage 5, the numbers — eleven decisions, and canon stops contradicting itself
+### 2026-08-16 (latest) — Dan, spec owner: the four states with no wording get it, and the tank gets one line that speaks for it
+
+Five owner decisions folded into canon on the owner's authority, the same way
+the three message specifications and Stage 5's numbers were earlier the same
+day. **Docs only.** They answer `.agent/gap-report.md` **G-1 to G-4 and G-27**,
+which were Open item 12's entries 4 and 1. What they leave open is Open item 13
+above. The implementation is **TW-075 to TW-078**, all untagged.
+
+**§24 becomes twenty-seven cards**, and the claim that twenty-three covered the
+wizard is withdrawn rather than restated — Stage 4 checked it branch by branch
+and it was wrong by four.
+
+**The negative-consumption hold, at last** (§24.24). `reef-chemistry.md` §24 has
+required a marked idle card echoing the wizard since 14 August, and required an
+escalation at three consecutive; neither existed in canon or in code. *"Alkalinity
+is rising faster than your dose accounts for / 9.1 dKH, up from 8.6 two days ago.
+The dose is unchanged. Test again in two days."* One card, two wordings, because
+it is one state at two evidence levels — the `state` stays `idle`, the hold is
+marked, and §2's branch list does not move for it.
+
+**And it names no cause, at either level.** §24 part 4 had said the escalation
+should name the likely cause — a wrong Setup strength or collapsed demand.
+**Naming the Setup strength was considered and rejected**, and that half of
+part 4 is withdrawn: §23.5 holds without exception. Three readings running prove
+the gain is real and persistent, which is a fact about the arithmetic; they do
+not choose between the six causes §24 itself lists as equally consistent with it.
+The strongest candidate is also the most expensive to be wrong about — a keeper
+told their bottle strength is probably wrong will edit a figure that may well be
+right, and every dose the app computes afterwards is wrong with it.
+
+**No water change either, and that one is §22 catching up with itself.** Part 3
+asked *"has a water change or a one-off correction been logged?"* — written on
+14 August, when a water change was something the arithmetic owed an adjustment
+to. §22 settled the other way on 16 August: water changes stay in the trend fit
+and are not subtracted at any layer. Asking now invites a keeper to explain away
+a figure the app has deliberately decided not to correct, which makes a stated
+deferral look like an oversight they can fix. **Naming a *missing* one-off
+correction goes too** — that is naming a cause. Naming a **logged** one stays,
+because a logged correction is a fact in the record rather than an inference from
+a number, and whether the card gains a wording for that case is Open item 13.
+
+**A staged plan that was never tested now asks** (§24.25). *"Time to test / You
+changed the alkalinity dose four days ago. A reading today will show whether it
+worked."* Branch 10 shares §24.15's headline and gets its own support sentence,
+because §1's distinction runs through even this: a correction asks *where did it
+get to*, a dose change asks *did it work*.
+
+**"Still too close to call"** (§24.26) — two or more readings since a change and
+they settle nothing. It is the card for a reading set that clears **none** of
+`reef-chemistry.md` §30's three evidence bars while a change is in play, and it
+is the third of three refusals that are not interchangeable: 24.5 is missing
+readings, 24.21 is missing a second reading, this is missing agreement between
+the two it has.
+
+**A dose change can work and still leave you out of range** (§24.27). *"The
+change worked, but alkalinity is settled below your range / 8.0 dKH, holding
+steady since the change. Your dose is now matching what the tank uses."* **Plus
+§24.3's return-plan offer**, which closes `reef-chemistry.md` §28.6's second
+bullet: route 12 is §28.2's stable-and-out-of-band state, so §24.3 stops being
+the only card that offers a return plan. Two cards carry it, they are exactly the
+two states that satisfy §28.2, and a fourth card acquiring it would be a finding
+— a fourth, because §24.23 already renders the phrase on a far-out level that
+satisfies neither half of §28.2, and whether that card is a correction wearing
+the return plan's words is untouched and stays open at §25.6 item 2.
+
+**The tank gets one line that speaks for it** (`wizard-states.md` §25.1) — G-27,
+and what actually replaces the deleted health score. **Three slots, each dropped
+when empty: the worst thing now, anything else notable, anything in flight.**
+*"Alkalinity is out of range, and several others are moving — a dose change is
+still settling."* Up to three out-of-range parameters are named individually; at
+four or more the worst two are named and the rest become "several others". Worst
+is a two-key sort — **alert tier first, then furthest out as a fraction of its
+own band** — because 0.3 dKH and 30 ppm are not two sizes of the same thing, and
+a raw distance would put magnesium at the front of every headline it appeared in.
+**Generated from the same verdicts the tiles render, never hand-composed**, which
+is §25.1's own rule one level up and the property the score never had: every
+clause can be checked by looking down the screen.
+
+**The candidate recorded with the score's deletion was not adopted.** *"3 of 6 in
+range, 2 need attention"* counts the quiet as well as the loud, and what may be
+counted as in range and holding is G-29, still open. This headline speaks only
+about what is not quiet and says nothing when nothing is, which is a narrower
+claim and one no open question blocks.
+
+**One thing worth stating so it is not mistaken for a breach.** §27 rule 3
+forbids defining a **margin** in terms of a band width. The headline's
+fraction-of-band is a **ranking key**, not a margin: it gates no recommendation,
+suppresses none, relaxes no constraint and changes no figure. §27's second
+decision said the margin governs wording and nothing else; this is that read the
+other way round — an ordering governs wording and must never become a margin.
+
+**Verification.** Docs only — canon amended, four items filed untagged, the plan
+and the open list updated. `.agent/gap-report.md` is deliberately untouched: it
+resolves nothing by design and is not annotated with resolutions. No code
+touched.
+
+**In plain terms.** Four situations your app could get into had no words for
+them, and now they do. When your tank gains alkalinity faster than your dose
+explains, it tells you exactly that and asks you to retest in two days — and if
+it happens three times running it says so, and still refuses to guess why,
+because the likeliest guess is that your bottle strength is wrong and you would
+go and change a number that is probably right. When you change a dose and never
+test it, it asks. When you test twice and the readings disagree, it says it is
+still too close to call instead of picking one. And when a dose change works
+perfectly but parks your alkalinity just under your range, it stops congratulating
+you and offers to walk you home.
+
+Then there is the line at the top of your dashboard, where the score out of 100
+used to be. It says the worst thing first, then anything else worth mentioning,
+then anything you have already started that is still running, and it drops the
+parts that have nothing to say rather than padding. Every piece of it is built
+from the same verdicts as the tiles underneath, so you can always check it by
+looking down — which is the one thing the score could never do.
+
+### 2026-08-16 (previously latest) — Dan, spec owner: Stage 5, the numbers — eleven decisions, and canon stops contradicting itself
 
 `docs/spec/stage-5-the-numbers.md` folded into canon on the owner's authority,
 the same way the three message specifications were earlier the same day. **Docs
@@ -776,7 +931,7 @@ the one thing on the open list worth your attention soon.
 And when a level sits outside your range but holds steady, the app stops offering
 to change your range to fit it.
 
-### 2026-08-16 (previously latest) — Dan, spec owner: the message specification finishes, and Stage 3 with it
+### 2026-08-16 (third of five that day) — Dan, spec owner: the message specification finishes, and Stage 3 with it
 
 Parts 2 and 3 of the message specification folded into canon on the owner's
 authority, the same way part 1 was earlier the same day. **Docs only.** The
@@ -849,7 +1004,7 @@ there is a switch in Setup. And the steadiness panel stops arguing with the
 advice above it — it says which weeks it is talking about, and it never says
 rising or falling again.
 
-### 2026-08-16 (earlier the same day) — Dan, spec owner: the count is same-side, and nitrate's trend is patience rather than statistics
+### 2026-08-16 (fourth of five that day) — Dan, spec owner: the count is same-side, and nitrate's trend is patience rather than statistics
 
 Closes the two questions §29.5 left open on the first pass, the same day and
 before anything shipped. Recorded in `reef-chemistry.md` §29.5, with §29's
@@ -907,7 +1062,7 @@ high, one low, one high is phosphate doing what phosphate does, and the app
 stays quiet — which is the whole reason the count exists instead of a trend
 line.
 
-### 2026-08-16 (earliest of the three) — Dan, spec owner: phosphate and nitrate get their own rules — nine decisions in one pass
+### 2026-08-16 (earliest of the five) — Dan, spec owner: phosphate and nitrate get their own rules — nine decisions in one pass
 
 Closes open item 10 entirely, and authorises the spec edit that records it.
 Recorded as `docs/spec/reef-chemistry.md` **§29**. **Spec only — the
