@@ -2,9 +2,9 @@
 
 /* --- Operating band & control quality ---
    Time in range alone conflates two different things: a tank that swings
-   wildly, and a tank that sits rock-steady somewhere the target does not
+   wildly, and a tank that sits rock-steady somewhere the target range does not
    cover. Consistency is measured against the tank's own distribution, so it
-   is independent of where the target happens to sit. */
+   is independent of where the target range happens to sit. */
 
 export function percentile(sortedVals, p) {
   if (!sortedVals.length) return null;

@@ -40,7 +40,7 @@ export function Dashboard({ latestByParam, dueList, alerts, readings, paramDefs,
   /* How many of the claims this tank would produce are currently put away.
      Recomputed from the live data rather than counted from storage, so a note
      whose numbers have moved on is not reported as still hidden. */
-  /* Three snoozes of the same dose suggestion says the target is wrong rather
+  /* Three snoozes of the same dose suggestion says the target range is wrong rather
      than the advice. Counted from the stored keys, which carry the parameter. */
   const snoozeHint = useMemo(() => {
     return Object.entries(dismissedNotes || {}).some(([k, e]) =>
@@ -179,7 +179,7 @@ export function Dashboard({ latestByParam, dueList, alerts, readings, paramDefs,
           count={snoozing.count}
           onCancel={() => setSnoozing(null)}
           onConfirm={() => { onDismissNote(snoozing.claim); setSnoozing(null); }}
-          onOpenTargets={snoozing.el ? () => { setSnoozing(null); onOpenParam(snoozing.el); } : null} />
+          onOpenTargetRange={snoozing.el ? () => { setSnoozing(null); onOpenParam(snoozing.el); } : null} />
       )}
 
       {sheetRem && (
@@ -353,7 +353,7 @@ export function ParamHistoryModal({ def, readings, onClose, onSaveRange, onReset
               <div className="text-[11px] uppercase tracking-[0.14em] text-teal-brand font-extrabold mb-1">History</div>
               <h2 className="text-2xl font-display text-ink">{def.label}</h2>
               <div className="text-[11px] text-ink2 font-bold mt-0.5">
-                target {def.min}–{def.max}{def.unit} · {rows.length} of {allRows.length} readings
+                target range {def.min}–{def.max}{def.unit} · {rows.length} of {allRows.length} readings
                 {isCustom && <span className="ml-1 text-teal-brand">· custom</span>}
               </div>
               <button onClick={() => setEditing((v) => !v)} className="mt-1.5 text-[11px] font-extrabold text-teal-brand flex items-center gap-1">
@@ -408,7 +408,7 @@ export function ParamHistoryModal({ def, readings, onClose, onSaveRange, onReset
                       {c ? c.metricLabel : "no data"}
                     </div>
                     <div className="text-[10px] font-semibold text-ink2">
-                      {c ? `${c.pct}% in target` : "\u2014"}
+                      {c ? `${c.pct}% in range` : "\u2014"}
                     </div>
                   </button>
                 );
@@ -495,7 +495,7 @@ export function ParamHistoryModal({ def, readings, onClose, onSaveRange, onReset
                   )}
 
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-extrabold uppercase text-ink2 w-20 shrink-0">In target</span>
+                    <span className="text-[10px] font-extrabold uppercase text-ink2 w-20 shrink-0">In range</span>
                     <div className="h-2 rounded-full bg-white overflow-hidden flex-1">
                       <div className="h-full rounded-full transition-all"
                         style={{ width: `${control.pct}%`, background: control.pct >= 85 ? "#0B7C86" : control.consistency === "tight" ? "#1D6FA5" : "#A2621B" }} />
@@ -503,7 +503,7 @@ export function ParamHistoryModal({ def, readings, onClose, onSaveRange, onReset
                     <span className="text-[10px] font-bold text-ink2 w-16 text-right shrink-0">{control.pct}%</span>
                   </div>
                   <div className="text-[10px] text-ink2 font-semibold mt-1 ml-[88px]">
-                    {control.inRange} of {control.rows} in target{control.below > 0 && ` · ${control.below} below`}{control.above > 0 && ` · ${control.above} above`}
+                    {control.inRange} of {control.rows} in range{control.below > 0 && ` · ${control.below} below`}{control.above > 0 && ` · ${control.above} above`}
                   </div>
 
 
@@ -538,7 +538,7 @@ export function ParamHistoryModal({ def, readings, onClose, onSaveRange, onReset
                         const outside = control.below + control.above;
                         const side = control.above > control.below ? "above" : "below";
                         if (!control.medianInside) {
-                          return `As for where it sits, the typical reading is ${fmtVal(def, control.gap)}${def.unit} ${control.bias === "high" ? "above" : "below"} your ${band} target — so it's being held steadily, just not at the level you asked for.`;
+                          return `As for where it sits, the typical reading is ${fmtVal(def, control.gap)}${def.unit} ${control.bias === "high" ? "above" : "below"} your ${band} target range — so it's being held steadily, just not at the level you asked for.`;
                         }
                         if (control.pct >= 90) {
                           return `As for where it sits, that's right where you want it — ${control.inRange} of ${control.rows} readings landed inside ${band}.`;
@@ -568,7 +568,7 @@ export function ParamHistoryModal({ def, readings, onClose, onSaveRange, onReset
                   {control.suggestWorth && onSaveRange && (
                     <div className="mt-2 flex items-center justify-between gap-2">
                       <span className="text-[12px] font-bold text-ink min-w-0">
-                        Retarget to {fmtVal(def, control.suggested.min)}–{fmtVal(def, control.suggested.max)}{def.unit}?
+                        Change the target range to {fmtVal(def, control.suggested.min)}–{fmtVal(def, control.suggested.max)}{def.unit}?
                       </span>
                       <button onClick={() => onSaveRange(def.key, control.suggested.min, control.suggested.max)}
                         className="text-[11px] font-extrabold px-2.5 py-1.5 rounded-lg border-2 shrink-0 bg-white"
@@ -590,7 +590,7 @@ export function ParamHistoryModal({ def, readings, onClose, onSaveRange, onReset
               {/* Chart first: the stability summary above sets up what the
                   line shows, and the callouts below interpret it. Reading a
                   verdict before seeing the data it came from was backwards. */}
-              <ZoomableLineChart data={chartData} color={def.color} targetMin={def.min} targetMax={def.max} height={280} events={relevantEvents} />
+              <ZoomableLineChart data={chartData} color={def.color} targetRangeMin={def.min} targetRangeMax={def.max} height={280} events={relevantEvents} />
 
               {(() => {
                 const fs = findingsFor(findings, def.key);

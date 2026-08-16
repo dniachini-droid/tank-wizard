@@ -219,26 +219,26 @@ export function AlkAssessmentBlock({ a, def, onApplyDose = null, onClearPlan = n
         {/* The correction the protocol asks for, logged rather than left to
             memory — and split across days, since a large single addition moves
             alkalinity faster than is safe. */}
-        {a.targetCorrection && onLogCorrection && (
+        {a.correction && onLogCorrection && (
           <div className="mt-3 pt-3 border-t" style={{ borderColor: tone + "33" }}>
             <div className="text-[10px] font-extrabold uppercase tracking-wide mb-1" style={{ color: tone }}>
               One-off correction
             </div>
             <p className="text-[12px] text-ink font-medium leading-relaxed mb-2">
-              Raise {def.label.toLowerCase()} by about {a.targetCorrection.ppmToRaise}{def.unit} in total,
-              spread over at least {a.targetCorrection.days} days — around {fmtAmount(a.targetCorrection.ppmPerDay)}{def.unit} a
+              Raise {def.label.toLowerCase()} by about {a.correction.ppmToRaise}{def.unit} in total,
+              spread over at least {a.correction.days} days — around {fmtAmount(a.correction.ppmPerDay)}{def.unit} a
               day. At that pace it moves no faster than {fmtAmount(SAFE_DAILY_RISE[def.key])}{def.unit} a day, which is what
               corals tolerate; the whole amount at once would be far quicker than that.
-              {a.targetCorrection.viaMaintenance
-                ? ` With your maintenance solution that is about ${fmtAmount(a.targetCorrection.oneOffMl)} mL in total.`
-                : ` That would take about ${fmtAmount(a.targetCorrection.oneOffMl)} mL of your maintenance solution, which is more liquid than makes sense — a stronger mix or the dry salt is the usual route, and the daily dose stays as it is.`}
+              {a.correction.viaMaintenance
+                ? ` With your maintenance solution that is about ${fmtAmount(a.correction.oneOffMl)} mL in total.`
+                : ` That would take about ${fmtAmount(a.correction.oneOffMl)} mL of your maintenance solution, which is more liquid than makes sense — a stronger mix or the dry salt is the usual route, and the daily dose stays as it is.`}
               {" "}Log it once added and the rise is treated as your doing rather than as the tank needing less.
             </p>
             <Btn variant="ghost" className="w-full"
-              onClick={() => onLogCorrection(Math.round(a.targetCorrection.oneOffMl * 10) / 10,
-                                             a.targetCorrection.direction)}>
+              onClick={() => onLogCorrection(Math.round(a.correction.oneOffMl * 10) / 10,
+                                             a.correction.direction)}>
               <span className="flex items-center justify-center gap-1.5">
-                <Plus size={13} /> Log a {fmtAmount(a.targetCorrection.oneOffMl)} mL correction
+                <Plus size={13} /> Log a {fmtAmount(a.correction.oneOffMl)} mL correction
               </span>
             </Btn>
           </div>
@@ -277,7 +277,7 @@ export function AlkAssessmentBlock({ a, def, onApplyDose = null, onClearPlan = n
 
       <div className="rounded-xl p-3" style={{ background: "#F7FAFA" }}>
         <Row k={`Current ${def.label.toLowerCase()}`} v={`${fmtVal(def, a.current.value)}${def.unit}`} strong />
-        <Row k="Target range" v={`${fmtVal(def, a.target.min)}–${fmtVal(def, a.target.max)}${def.unit}`} />
+        <Row k="Target range" v={`${fmtVal(def, a.targetRange.min)}–${fmtVal(def, a.targetRange.max)}${def.unit}`} />
         <Row k="Current dose" v={`${fmtAmount(a.currentDose)} mL/day`} />
         <Row k="Time on this dose"
           v={a.hoursOnDose == null ? "unchanged throughout"

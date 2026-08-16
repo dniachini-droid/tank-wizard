@@ -452,7 +452,7 @@ export function assessAlkalinity({ readings, doseLog = [], waterChanges = [], se
   const nowStamp = now != null ? now : (dayNum(todayStr()) + minutesOf(nowTime()) / 1440);
   const out = {
     ok: false, reason: null,
-    current: null, target: null, currentDose: null, hoursOnDose: null,
+    current: null, targetRange: null, currentDose: null, hoursOnDose: null,
     used: [], trendPerDay: null, band: null, consistent: null,
     supplied: null, consumption: null, maintenanceDose: null,
     recommendedDose: null, action: "hold", explanation: "", nextCheck: "",
@@ -505,7 +505,7 @@ export function assessAlkalinity({ readings, doseLog = [], waterChanges = [], se
      placement sat inside a branch calcium and magnesium never took, so
      neither could report a correction in progress at all. */
   out.correctionInProgress = pendingCorrection(corrections, def, out.current, todayStr(), settings, readings);
-  out.target = { min: def.min, max: def.max };
+  out.targetRange = { min: def.min, max: def.max };
 
   /* Step 2 — has the dose changed? Everything before the most recent change
      describes the tank under a dose it is no longer receiving. */
@@ -784,7 +784,7 @@ export function assessAlkalinity({ readings, doseLog = [], waterChanges = [], se
       /* Additive only: nothing you can dose brings alkalinity down. */
       const oneOff = Math.round((toMid / effect) * 10) / 10;
 
-      out.targetCorrection = !above
+      out.correction = !above
         ? {
             direction: "up", toMid,
             days: Math.max(2, Math.ceil(toMid / SAFE_DAILY_RISE[def.key])),
@@ -799,14 +799,14 @@ export function assessAlkalinity({ readings, doseLog = [], waterChanges = [], se
         : null;
       out.explanation += ` But it is holding at ${fmtVal(def, out.current.value)}${def.unit}, which is ${fmtAmount(gap)}${def.unit} ${above ? "above" : "below"} your range — a steady dose will keep it there indefinitely rather than bring it back.`;
       const repeats = repeatedCorrections(corrections, "alkalinity", nowStamp);
-      if (repeats >= 2 && out.targetCorrection) {
+      if (repeats >= 2 && out.correction) {
         out.caution = (out.caution ? out.caution + " " : "")
-          + `You have corrected alkalinity ${repeats} times in the last couple of months and it keeps sagging back. Something is pulling it down continuously — usually a salt mix below your target arriving with each water change — and the daily dose is what should answer that. Around ${fmtAmount(out.targetCorrection.perDayMl)} mL more a day would carry it instead of correcting again.`;
+          + `You have corrected alkalinity ${repeats} times in the last couple of months and it keeps sagging back. Something is pulling it down continuously — usually a salt mix below your target range arriving with each water change — and the daily dose is what should answer that. Around ${fmtAmount(out.correction.perDayMl)} mL more a day would carry it instead of correcting again.`;
       }
       out.nextCheck = above
         ? `Bringing it down is a matter of letting it drift: reduce the dose temporarily, or leave it and let consumption pull it back, then restore this dose once it reaches the range.`
-        : out.targetCorrection
-        ? `Raising it back is a separate one-off correction of roughly ${fmtAmount(out.targetCorrection.oneOffMl)} mL spread over two or three days — not a permanent increase, which would then push it past the range. Keep the daily dose where it is.`
+        : out.correction
+        ? `Raising it back is a separate one-off correction of roughly ${fmtAmount(out.correction.oneOffMl)} mL spread over two or three days — not a permanent increase, which would then push it past the range. Keep the daily dose where it is.`
         : `Raising it back needs a one-off correction rather than a bigger daily dose, but the amount cannot be worked out until the solution strength in Setup is right.`;
     }
     return out;
@@ -855,7 +855,7 @@ export function assessAlkalinity({ readings, doseLog = [], waterChanges = [], se
     return out;
   }
 
-  /* Steps 18–21 — trend control is not the same as target correction. */
+  /* Steps 18–21 — trend control is not the same as a correction. */
   const movingToTarget = (above && trend < 0) || (below && trend > 0);
   if (movingToTarget && Math.abs(trend) <= ALK_TREND.meaningful) {
     out.ok = true;
@@ -881,7 +881,7 @@ export function assessAlkalinity({ readings, doseLog = [], waterChanges = [], se
 
   /* Step 17 — size the correction. If a plan is already running and its
      destination still agrees with what the readings now say, keep walking it
-     rather than inventing a new target every time. */
+     rather than inventing a new aim point every time. */
   const planLive = out.activePlan
     && Math.abs(out.activePlan.appliedDose - out.currentDose) < 0.05
     && Math.abs(out.activePlan.target - out.maintenanceDose) <= Math.max(1.5, out.activePlan.target * 0.2);

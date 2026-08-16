@@ -265,7 +265,7 @@ export function Insights({ readings, icps, paramDefs, settings, latestByParam,
         </div>
 
         <p className="text-[12px] text-ink2 font-medium leading-relaxed mb-3">
-          Two separate questions: how tightly does each parameter hold its own band, and does that band line up with your target? A tank can be perfectly steady and still show a low in-range score if the target is set somewhere it never goes.
+          Two separate questions: how tightly does each parameter hold its own band, and does that band line up with your target range? A tank can be perfectly steady and still show a low in-range score if the range is set somewhere it never goes.
         </p>
 
         {!control.length ? (
@@ -297,9 +297,9 @@ export function Insights({ readings, icps, paramDefs, settings, latestByParam,
                   <span className="text-[10px] font-bold w-24 text-right shrink-0" style={{ color: c.consistencyColor }}>{c.metricLabel || c.consistency}</span>
                 </div>
 
-                {/* Alignment: how much of that band sits inside the target */}
+                {/* Alignment: how much of that band sits inside the target range */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-extrabold uppercase text-ink2 w-20 shrink-0">In target</span>
+                  <span className="text-[10px] font-extrabold uppercase text-ink2 w-20 shrink-0">In range</span>
                   <div className="h-2 rounded-full bg-app overflow-hidden flex-1">
                     <div className="h-full rounded-full transition-all"
                       style={{ width: `${c.pct}%`, background: c.pct >= 85 ? "#0B7C86" : c.consistency === "tight" ? "#1D6FA5" : "#A2621B" }} />
@@ -307,7 +307,7 @@ export function Insights({ readings, icps, paramDefs, settings, latestByParam,
                   <span className="text-[10px] font-bold text-ink2 w-16 text-right shrink-0">{c.pct}%</span>
                 </div>
                 <div className="text-[10px] text-ink2 font-semibold mt-1 ml-[88px]">
-                  {c.inRange} of {c.rows} in target{c.below > 0 && ` · ${c.below} below`}{c.above > 0 && ` · ${c.above} above`}
+                  {c.inRange} of {c.rows} in range{c.below > 0 && ` · ${c.below} below`}{c.above > 0 && ` · ${c.above} above`}
                 </div>
 
                 <p className="text-[12px] text-ink font-medium leading-relaxed mt-1.5">{c.note}</p>
@@ -319,7 +319,7 @@ export function Insights({ readings, icps, paramDefs, settings, latestByParam,
                   <div className="mt-2 flex items-center justify-between gap-2 p-2 rounded-lg" style={{ background: "#1D6FA512" }}>
                     <div className="text-[12px] font-bold text-ink min-w-0">
                       Your tank actually runs {fmtVal(def, c.suggested.min)}–{fmtVal(def, c.suggested.max)}{def.unit}
-                      <span className="text-ink2 font-semibold"> (target is {def.min}–{def.max}{def.unit})</span>
+                      <span className="text-ink2 font-semibold"> (target range is {def.min}–{def.max}{def.unit})</span>
                     </div>
                     <button onClick={() => onSaveRange(def.key, c.suggested.min, c.suggested.max)}
                       className="text-[11px] font-extrabold px-2.5 py-1.5 rounded-lg border-2 shrink-0"
@@ -334,7 +334,7 @@ export function Insights({ readings, icps, paramDefs, settings, latestByParam,
         )}
 
         <p className="text-[12px] text-ink2 font-medium leading-relaxed mt-3">
-          A low in-target score with tight consistency is not a husbandry problem — it means the target needs moving. Only a loose spread genuinely indicates instability, because that is the swing corals actually feel.
+          A low in-range score with tight consistency is not a husbandry problem — it means the target range needs moving. Only a loose spread genuinely indicates instability, because that is the swing corals actually feel.
         </p>
       </InfoBlock>
 
@@ -542,7 +542,7 @@ export function Insights({ readings, icps, paramDefs, settings, latestByParam,
                     </p>
 
                     {/* What size change would hold a chosen level — the actionable bit. */}
-                    {(n.holdAtTarget || n.holdAtMid) && (
+                    {(n.holdAtMax || n.holdAtMid) && (
                       <div className="mt-2 pt-2 border-t border-app">
                         <div className="text-[11px] font-extrabold uppercase tracking-wide text-ink2 mb-1.5">
                           Water change needed to hold a level
@@ -556,12 +556,12 @@ export function Insights({ readings, icps, paramDefs, settings, latestByParam,
                               <span className="text-[12px] font-black text-ink">{n.holdAtMid.toFixed(0)}L a week</span>
                             </div>
                           )}
-                          {n.holdAtTarget && (
+                          {n.holdAtMax && (
                             <div className="flex items-center justify-between gap-2">
                               <span className="text-[12px] font-bold text-ink2">
                                 top of your band, {fmtVal(n.def, n.def.max)}{n.def.unit}
                               </span>
-                              <span className="text-[12px] font-black text-ink">{n.holdAtTarget.toFixed(0)}L a week</span>
+                              <span className="text-[12px] font-black text-ink">{n.holdAtMax.toFixed(0)}L a week</span>
                             </div>
                           )}
                           <div className="flex items-center justify-between gap-2">
@@ -917,7 +917,7 @@ export function Insights({ readings, icps, paramDefs, settings, latestByParam,
               </div>
             )}
             <p className="text-[12px] text-ink2 font-medium leading-relaxed mt-3">
-              A consistent offset above about 5% is worth knowing — it means your target should be adjusted to match your kit, rather than chasing a number your kit cannot actually read. Small differences are normal and reflect reagent age and endpoint judgement.
+              A consistent offset above about 5% is worth knowing — it means your target range should be adjusted to match your kit, rather than chasing a number your kit cannot actually read. Small differences are normal and reflect reagent age and endpoint judgement.
             </p>
             {(() => {
               /* An offset here changes how much every other section's conclusions
@@ -931,7 +931,7 @@ export function Insights({ readings, icps, paramDefs, settings, latestByParam,
                   </div>
                   <p className="text-[12px] text-ink font-medium leading-relaxed">
                     {joinList(off.map((f) => f.params[0]))} {off.length === 1 ? "carries" : "carry"} this
-                    offset into every figure derived from {off.length === 1 ? "it" : "them"} — target
+                    offset into every figure derived from {off.length === 1 ? "it" : "them"} — target-range
                     comparisons, trend verdicts, consumption and dose advice. Those sections now flag
                     it, but nothing is silently corrected: your recorded readings stay exactly as you
                     entered them.

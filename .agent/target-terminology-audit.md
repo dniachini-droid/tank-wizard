@@ -1,5 +1,13 @@
 # "Target" — full audit of every use
 
+**Signed off 2026-08-16 by the owner — the recommended option (§10), as
+written.** The §12 prior question was settled first: no target point exists or
+will — the user sets two edges (`reef-chemistry.md` §2, corrected the same
+day). TW-035 ships separately with its parity test as the gate; the
+`off-target` state id stays, per §11, except `state.js`'s rendered "Steady,
+off target", which is renamed with the copy. Closure recorded at
+`.agent/needs-dan.md` item 6; registry rows at `wizard-states.md` §15.
+
 **Report only. No code, spec, copy or test was changed by this run.**
 
 Raised by: `.agent/needs-dan.md` item 6, third bullet — *"'Target' rename

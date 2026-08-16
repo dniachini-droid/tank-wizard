@@ -720,7 +720,7 @@ export function ReefConsoleInner() {
       waterChanges, corrections, kitChanges, dismissed, correctionPlans });
     const level = st.latestByParam[key];
     const plan = {
-      target: offer.target,
+      target: offer.aimPoint,
       returnDose: offer.returnDose,
       startedAt: `${todayStr()} ${nowTime()}`,
       startValue: level ? level.value : null,
@@ -732,8 +732,8 @@ export function ReefConsoleInner() {
     setCorrectionPlans(next);
     await saveKey("correction-plans", next);
     await addDoseChange({ date: todayStr(), ml: offer.dose, element: key,
-      note: `correction toward ${offer.target}` });
-    notify(`${key} dose set to ${fmtAmount(offer.dose)} mL/day — correcting toward ${offer.target}`);
+      note: `correction toward ${offer.aimPoint}` });
+    notify(`${key} dose set to ${fmtAmount(offer.dose)} mL/day — correcting toward ${offer.aimPoint}`);
   };
 
   /* Cancel: the dose goes back, the plan is deleted, and everything derived
@@ -1264,7 +1264,7 @@ export function ReefConsoleInner() {
             })}
           </nav>
           <div className="mt-auto px-3 py-3 rounded-lg bg-app border border-app">
-            <div className="text-[10px] text-teal-brand uppercase tracking-wide font-extrabold mb-1">Target profile</div>
+            <div className="text-[10px] text-teal-brand uppercase tracking-wide font-extrabold mb-1">Target ranges</div>
             <div className="text-xs text-ink font-bold leading-relaxed">34–36 ppt · 8.5–9.5 dKH<br/>Ca 450–500 · Mg 1450–1500</div>
           </div>
         </aside>

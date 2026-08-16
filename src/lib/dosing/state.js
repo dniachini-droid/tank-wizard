@@ -229,7 +229,7 @@ export function doseStatus(a, def, todayIso, settings, latestByParam, doseLog, w
         correctionPlan: cp, returnDose: cp.returnDose };
     }
     if (cp.arrived || cp.passed) {
-      return { ...doseFacts, state: "correction-done", tone: "#0B7C86", short: "Target reached",
+      return { ...doseFacts, state: "correction-done", tone: "#0B7C86", short: "Aim point reached",
         headline: `${def.label} has reached ${fmtVal(def, cp.level)}${def.unit}`,
         detail: cp.arrived
           ? `Two readings back near the middle of your range confirm it — one alone can be a bad endpoint. Set the dose back to ${fmtAmount(cp.returnDose)} mL/day to hold it there; ${fmtAmount(a.currentDose)} mL was only ever to get it here.`
@@ -256,7 +256,7 @@ export function doseStatus(a, def, todayIso, settings, latestByParam, doseLog, w
      opinion about the daily dose, because it is the thing actively moving the
      level. */
   /* A correction the keeper has started is reported whether or not the engine
-     also wants a one-off. It had been nested inside the targetCorrection
+     also wants a one-off. It had been nested inside the correction
      branch, which is only reached when the dose is holding — so the moment the
      dose also needed raising, the running correction stopped being mentioned
      anywhere. Two separate facts that were sharing one condition. */
@@ -266,12 +266,12 @@ export function doseStatus(a, def, todayIso, settings, latestByParam, doseLog, w
     const daysLeft = Math.max(1, Math.ceil(running.remaining / rate));
     const turning = (running.direction === "up" && (a.trendPerDay || 0) > 0)
       || (running.direction === "down" && (a.trendPerDay || 0) < 0);
-    const target = running.startedAt != null
+    const aimPoint = running.startedAt != null
       ? (running.direction === "up" ? running.startedAt + running.total : running.startedAt - running.total)
       : (a.current ? a.current.value + running.remaining : null);
     return { ...doseFacts, state: "correcting", tone: "#1D6FA5", short: "Correction running",
-      headline: `${def.label} is on its way to ${fmtVal(def, target)}${def.unit}`,
-      detail: `Now ${fmtVal(def, a.current.value)}${def.unit}, ${fmtVal(def, running.remaining)}${def.unit} short of ${fmtVal(def, target)}${def.unit} — about ${daysLeft} more day${daysLeft === 1 ? "" : "s"} at the ${fmtVal(def, rate)}${def.unit} a day corals tolerate. ${turning ? `It has moved ${fmtVal(def, running.done)}${def.unit} since you started, which is the pace to expect.` : `It has not started moving yet — if there is nothing by the next test, check the solution strength and whether something else is pulling ${label} the other way.`} Keep the daily dose as it is underneath; that is replacing what the tank uses, not doing the correcting.`,
+      headline: `${def.label} is on its way to ${fmtVal(def, aimPoint)}${def.unit}`,
+      detail: `Now ${fmtVal(def, a.current.value)}${def.unit}, ${fmtVal(def, running.remaining)}${def.unit} short of ${fmtVal(def, aimPoint)}${def.unit} — about ${daysLeft} more day${daysLeft === 1 ? "" : "s"} at the ${fmtVal(def, rate)}${def.unit} a day corals tolerate. ${turning ? `It has moved ${fmtVal(def, running.done)}${def.unit} since you started, which is the pace to expect.` : `It has not started moving yet — if there is nothing by the next test, check the solution strength and whether something else is pulling ${label} the other way.`} Keep the daily dose as it is underneath; that is replacing what the tank uses, not doing the correcting.`,
       correction: running };
   }
 
@@ -315,7 +315,7 @@ export function doseStatus(a, def, todayIso, settings, latestByParam, doseLog, w
         stage: plan.stage, stages: plan.stages, target: plan.target };
     }
     if (steady && !inBand) {
-      return { ...doseFacts, state: "worked", tone: "#45605F", short: "Steady, off target",
+      return { ...doseFacts, state: "worked", tone: "#45605F", short: "Steady, out of range",
         headline: `${def.label} is steady but not where you want it`,
         detail: `The new dose stopped the drift, which is what it was for. Holding at ${fmtVal(def, a.current.value)}${def.unit} means the level itself needs a separate correction — a bigger daily dose would only carry it past the range later.`,
         stage: plan.stage, stages: plan.stages };
@@ -360,7 +360,7 @@ export function doseStatus(a, def, todayIso, settings, latestByParam, doseLog, w
       detail: `${label} is ${a.trendPerDay < 0 ? "falling" : "rising"} and the dose no longer matches what the tank uses. ${a.staged ? `Moving to ${fmtAmount(a.recommendedDose)} mL/day is the first step toward ${fmtAmount(a.maintenanceDose)}.` : `${fmtAmount(a.recommendedDose)} mL/day would match it.`}`,
       recommended: a.recommendedDose, staged: a.staged, target: a.maintenanceDose };
   }
-  if (a.targetCorrection) {
+  if (a.correction) {
     /* A correction already under way changes what this should say. Without it
        the app reported "the level is not right" every day of a correction that
        was working — each engine telling the truth, and together reading as
@@ -377,13 +377,13 @@ export function doseStatus(a, def, todayIso, settings, latestByParam, doseLog, w
          going. BRS frames a staged correction as splitting the adjustment
          across days and testing in between to watch the response; that is the
          shape of the thing, so that is what this describes. */
-      const target = running.direction === "up"
+      const aimPoint = running.direction === "up"
         ? (running.startedAt != null ? running.startedAt + running.total : (a.current.value + running.remaining))
         : (running.startedAt != null ? running.startedAt - running.total : (a.current.value - running.remaining));
       const onTrack = turning || running.done <= 0;
       return { ...doseFacts, state: "correcting", tone: "#1D6FA5", short: "Correction running",
-        headline: `${def.label} is on its way to ${fmtVal(def, target)}${def.unit}`,
-        detail: `Now ${fmtVal(def, a.current.value)}${def.unit}, ${fmtVal(def, running.remaining)}${def.unit} short of ${fmtVal(def, target)}${def.unit} — about ${daysLeft} more day${daysLeft === 1 ? "" : "s"} at the ${fmtVal(def, SAFE_DAILY_RISE[def.key] || 0.5)}${def.unit} a day that corals tolerate. ${turning ? `It has moved ${fmtVal(def, running.done)}${def.unit} since you started, which is the pace to expect.` : `It has not started moving yet — if there is nothing by the next test, check the solution strength and whether something else is pulling ${label} the other way.`} Keep the daily dose as it is underneath; that is replacing what the tank uses, not doing the correcting.`,
+        headline: `${def.label} is on its way to ${fmtVal(def, aimPoint)}${def.unit}`,
+        detail: `Now ${fmtVal(def, a.current.value)}${def.unit}, ${fmtVal(def, running.remaining)}${def.unit} short of ${fmtVal(def, aimPoint)}${def.unit} — about ${daysLeft} more day${daysLeft === 1 ? "" : "s"} at the ${fmtVal(def, SAFE_DAILY_RISE[def.key] || 0.5)}${def.unit} a day that corals tolerate. ${turning ? `It has moved ${fmtVal(def, running.done)}${def.unit} since you started, which is the pace to expect.` : `It has not started moving yet — if there is nothing by the next test, check the solution strength and whether something else is pulling ${label} the other way.`} Keep the daily dose as it is underneath; that is replacing what the tank uses, not doing the correcting.`,
         correction: running };
     }
     /* The one-off figure has to be pourable. Magnesium at 1330 was being told
@@ -391,7 +391,7 @@ export function doseStatus(a, def, todayIso, settings, latestByParam, doseLog, w
        is right and the advice is useless. The correction planner already knows
        when the maintenance solution is the wrong tool; this older path did
        not. */
-    const oneOff = a.targetCorrection.oneOffMl;
+    const oneOff = a.correction.oneOffMl;
     const normal = a.maintenanceDose != null ? a.maintenanceDose : a.currentDose;
     if (normal > 0 && oneOff > normal * 25) {
       return { ...doseFacts, state: "suggested", tone: "#45605F", short: "Wrong tool",
@@ -410,7 +410,7 @@ export function doseStatus(a, def, todayIso, settings, latestByParam, doseLog, w
     }
     return { ...doseFacts, state: "suggested", tone: "#45605F", short: "Correction needed",
       headline: `${def.label} dose is right, the level is not`,
-      detail: `The daily dose is matching what the tank uses, so ${label} is holding — but it is holding outside your range. That needs a one-off correction of about ${fmtAmount(oneOff)} mL spread over ${a.targetCorrection.days} days, not a bigger daily dose.` };
+      detail: `The daily dose is matching what the tank uses, so ${label} is holding — but it is holding outside your range. That needs a one-off correction of about ${fmtAmount(oneOff)} mL spread over ${a.correction.days} days, not a bigger daily dose.` };
   }
   /* The engine cannot form a verdict yet — most often because the dose changed
      within the last couple of days and it is still settling. Returning null
@@ -504,7 +504,7 @@ export function doseStatus(a, def, todayIso, settings, latestByParam, doseLog, w
 
   /* The "dose right, level off" card that stood here is gone with §26, and it
      is worth saying why rather than leaving a gap. It said the same thing as
-     the "steady, off target" branch above and existed only because the two
+     the "steady, out of range" branch above and existed only because the two
      branches measured position differently: that one classified on the fitted
      value, this one on the last reading, so a level the fit called in-band and
      the kit called out-of-band fell through to here. With both reading the last

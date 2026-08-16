@@ -1,13 +1,13 @@
 /* TW-033, the half a user actually meets — the Setup restore panel.
  *
  * The engine-level guarantee lives in restore-rewrites-and-drops.test.js:
- * `restoreBackup` refuses to run when the file's target bands disagree with
+ * `restoreBackup` refuses to run when the file's target ranges disagree with
  * the device's and no choice was passed. This file asserts the other half of
  * the owner decision (2026-08-15) — that the screen SHOWS both values and
  * makes the user pick, rather than defaulting quietly and reporting nothing.
  *
  * In plain terms: if the backup you are restoring was made when your
- * alkalinity target was 7.0–8.0 and today it is 8.0–9.0, the app has to say so
+ * alkalinity target range was 7.0–8.0 and today it is 8.0–9.0, the app has to say so
  * and ask which you meant, because whichever wins re-colours every test you
  * have ever logged.
  */
@@ -59,12 +59,12 @@ beforeEach(async () => {
   await saveKey('custom-ranges', DEVICE_RANGES)
 })
 
-describe('the restore panel shows both targets and will not choose for you', () => {
+describe('the restore panel shows both target ranges and will not choose for you', () => {
   it('names the parameter and quotes both bands', async () => {
     renderSetup()
     await offerBackup()
 
-    await screen.findByText(/targets are not the ones set here/i)
+    await screen.findByText(/target ranges are not the ones set here/i)
     const row = await screen.findByText(/Alkalinity/i, { selector: 'span.font-black' })
     expect(row.parentElement.textContent).toMatch(/here\s*8-9dKH|here\s*8–9dKH/)
     expect(row.parentElement.textContent).toMatch(/this file\s*7-8dKH|this file\s*7–8dKH/)
@@ -88,7 +88,7 @@ describe('the restore panel shows both targets and will not choose for you', () 
     fireEvent.click(await screen.findByRole('button', { name: /keep the ones set here/i }))
     fireEvent.click(screen.getByRole('button', { name: /^restore$/i }))
 
-    await screen.findByText(/targets set on this device were kept/i)
+    await screen.findByText(/target ranges set on this device were kept/i)
     expect(await loadKey('custom-ranges', null)).toEqual(DEVICE_RANGES)
   })
 
@@ -99,7 +99,7 @@ describe('the restore panel shows both targets and will not choose for you', () 
     fireEvent.click(await screen.findByRole('button', { name: /use the file's/i }))
     fireEvent.click(screen.getByRole('button', { name: /^restore$/i }))
 
-    await screen.findByText(/targets now come from this file/i)
+    await screen.findByText(/target ranges now come from this file/i)
     await waitFor(async () => expect(await loadKey('custom-ranges', null)).toEqual(FILE_RANGES))
   })
 
@@ -110,7 +110,7 @@ describe('the restore panel shows both targets and will not choose for you', () 
     fireEvent.click(await screen.findByRole('button', { name: /use the file's/i }))
     fireEvent.click(screen.getByRole('button', { name: /^restore$/i }))
 
-    await screen.findByText(/targets now come from this file/i)
+    await screen.findByText(/target ranges now come from this file/i)
     expect(screen.queryByText(/nothing was overwritten/i)).not.toBeInTheDocument()
   })
 })

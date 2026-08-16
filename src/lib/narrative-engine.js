@@ -228,8 +228,8 @@ export function buildHeadline(ctx) {
   else if (allIn && allSteady) state = "All in range today, with something worth watching";
   else if (allIn && mostSteady) state = "All in range, and mostly holding steady";
   else if (allIn) state = "All in range, but not all of it settled";
-  else if (allSteady && halfOut) state = "Rock steady, but a lot of it is off-target";
-  else if (allSteady) state = "Steady throughout, with a few sitting off-target";
+  else if (allSteady && halfOut) state = "Rock steady, but a lot of it is out of range";
+  else if (allSteady) state = "Steady throughout, with a few sitting out of range";
   /* "Mostly in range" is true at 75% and reads as reassurance. With six
      parameters that means one can sit a full point outside its band and the
      headline still opens with "in range" — and a swept sample found no surface
@@ -237,7 +237,7 @@ export function buildHeadline(ctx) {
      impression was not.
      
      A flat reading out of band was already caught, because allSteady goes
-     false and the sentence falls through to "a few sitting off-target". A
+     false and the sentence falls through to "a few sitting out of range". A
      MOVING one was not: the trend grades amber or red, mostSteady stays true,
      and it lands here. Out of band and heading further out is exactly when
      silence is worst. */
@@ -250,9 +250,9 @@ export function buildHeadline(ctx) {
     ? `${outNames} is out of range, with some movement elsewhere`
     : "Mostly in range, with some movement";
   else if (mostSteady && halfOut) state = "Held steady, but held in the wrong place";
-  else if (mostSteady) state = "Fairly steady, with several off-target";
-  else if (halfOut && drifting >= 2) state = "Unsettled — several are off-target and moving";
-  else if (halfOut) state = "A good part of the tank is off-target";
+  else if (mostSteady) state = "Fairly steady, with several out of range";
+  else if (halfOut && drifting >= 2) state = "Unsettled — several are out of range and moving";
+  else if (halfOut) state = "A good part of the tank is out of range";
   else state = "Mixed picture across the tank";
 
   /* ---- The qualifier: what that means for you today -------------------- */
@@ -262,9 +262,9 @@ export function buildHeadline(ctx) {
   if (urgent) {
     qualifier = allIn && allSteady ? "everything else is in range and holding"
       : mostIn && mostSteady ? "the rest is mostly stable"
-      : halfOut ? "and a good part of the rest is off-target"
+      : halfOut ? "and a good part of the rest is out of range"
       : drifting >= 2 ? "and several others are moving"
-      : offSteady >= 1 ? "the rest is steady, some off-target"
+      : offSteady >= 1 ? "the rest is steady, some out of range"
       : "the rest looks alright";
   }
   else if (missed) qualifier = missed === 1
@@ -287,8 +287,8 @@ export function buildHeadline(ctx) {
     : `${staleCount} readings are getting old`;
   else if (drifting === 1) qualifier = "one parameter to keep an eye on";
   else if (drifting > 1) qualifier = `${drifting} parameters to keep an eye on`;
-  else if (offSteady === 1) qualifier = "one sitting off-target but going nowhere";
-  else if (offSteady > 1) qualifier = `${offSteady} sitting off-target but going nowhere`;
+  else if (offSteady === 1) qualifier = "one sitting out of range but going nowhere";
+  else if (offSteady > 1) qualifier = `${offSteady} sitting out of range but going nowhere`;
   else if (allIn && allSteady && !watching) qualifier = "nothing needs doing";
 
   if (!qualifier) return state;
@@ -415,7 +415,7 @@ export function buildBriefing(readings, latestByParam, defs, findings, doseState
 
      This is deliberately not a permanent "never tell me". Someone who is
      content running calcium at 430 does not want a suppressed warning, they
-     want a different target — and the app already lets them set one. */
+     want a different target range — and the app already lets them set one. */
   /* The dose snooze is the one that genuinely should lift on the next test, so
      the reading's timestamp belongs in the signature — but the key stays
      stable so the count and the storage entry survive it. */
@@ -444,7 +444,7 @@ export function buildBriefing(readings, latestByParam, defs, findings, doseState
     /* When a finding already says this element is a long way out of range,
        a dose claim saying "the dose is right, the level is not" is the same
        news twice — and the finding is the better of the two, carrying the
-       reading and the target. Only claims about the level are dropped; a real
+       reading and the target range. Only claims about the level are dropped; a real
        dose change, a settling one, or one awaiting a test still has something
        of its own to say. */
     if ((findings || []).some((f) => f.id === "far-out-" + d.key)
@@ -631,7 +631,7 @@ export function buildBriefing(readings, latestByParam, defs, findings, doseState
     add({
       id: "moving-out:" + x.def.key, tone: "warn", rank: 4,
       claim: `${x.def.label} is outside your range and still ${up ? "rising" : "falling"}`,
-      support: `${fmtVal(x.def, moved)}${x.def.unit} over ${span} days, and it has not turned. Now ${fmtVal(x.def, x.reading.value)}${x.def.unit} against a target of ${fmtVal(x.def, x.def.min)}–${fmtVal(x.def, x.def.max)}${x.def.unit}.`,
+      support: `${fmtVal(x.def, moved)}${x.def.unit} over ${span} days, and it has not turned. Now ${fmtVal(x.def, x.reading.value)}${x.def.unit} against a target range of ${fmtVal(x.def, x.def.min)}–${fmtVal(x.def, x.def.max)}${x.def.unit}.`,
       goto: { tab: "param", key: x.def.key },
       dismissible: true, dismissKey: `moving-out|${x.def.key}`,
       dismissSignature: `${up ? "up" : "down"}|${Math.round(x.reading.value * 100) / 100}`,
@@ -642,8 +642,8 @@ export function buildBriefing(readings, latestByParam, defs, findings, doseState
     add({
       id: "parked", tone: "watch", rank: 5,
       claim: parked.length === 1
-        ? `${parked[0].def.label} is parked off-target`
-        : `${joinList(parked.map((x) => x.def.label))} are parked off-target`,
+        ? `${parked[0].def.label} is parked out of range`
+        : `${joinList(parked.map((x) => x.def.label))} are parked out of range`,
       support: parked.length === 1
         ? `Steady rather than drifting, so there is nothing to chase — water changes will bring it round.`
         : `Steady rather than drifting, so there is nothing to chase — water changes will bring them round.`,

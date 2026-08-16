@@ -66,7 +66,7 @@ export function niceAxis(min, max, padFrac = 0.18) {
   return { domain: [clean(lo), clean(hi)], ticks, format, formatValue, step, decimals };
 }
 
-export function ZoomableLineChart({ data, color, targetMin, targetMax, height = 280, events = [] }) {
+export function ZoomableLineChart({ data, color, targetRangeMin, targetRangeMax, height = 280, events = [] }) {
   const containerRef = useRef(null);
   const [range, setRange] = useState({ start: 0, end: 1 });
   const gestureRef = useRef(null);
@@ -164,10 +164,10 @@ export function ZoomableLineChart({ data, color, targetMin, targetMax, height = 
   const isZoomed = range.start > 0.001 || range.end < 0.999;
 
   const values = visible.map((d) => d.value);
-  /* Include the target band in the scale so the shaded area is never clipped. */
+  /* Include the target range in the scale so the shaded area is never clipped. */
   const scaleVals = values.slice();
-  if (targetMin != null) scaleVals.push(targetMin);
-  if (targetMax != null) scaleVals.push(targetMax);
+  if (targetRangeMin != null) scaleVals.push(targetRangeMin);
+  if (targetRangeMax != null) scaleVals.push(targetRangeMax);
   const axis = niceAxis(
     scaleVals.length ? Math.min(...scaleVals) : 0,
     scaleVals.length ? Math.max(...scaleVals) : 1);
@@ -200,7 +200,7 @@ export function ZoomableLineChart({ data, color, targetMin, targetMax, height = 
             <CartesianGrid stroke="#E3ECEA" strokeDasharray="3 3" />
             <XAxis dataKey="label" stroke="#5C7876" fontSize={11} fontWeight={600} minTickGap={24} />
             <YAxis stroke="#5C7876" fontSize={11} fontWeight={600} domain={axis.domain} ticks={axis.ticks} tickFormatter={axis.format} width={46} />
-            {targetMin != null && <ReferenceArea y1={targetMin} y2={targetMax} fill={color} fillOpacity={0.10} />}
+            {targetRangeMin != null && <ReferenceArea y1={targetRangeMin} y2={targetRangeMax} fill={color} fillOpacity={0.10} />}
             {visibleEvents.map((ev, i) => (
               <ReferenceLine key={i} x={ev.label} stroke={ev.color} strokeDasharray="4 3" strokeWidth={1.5}
                 label={{ value: ev.icon, position: "top", fontSize: 11, fill: ev.color }} />
@@ -222,7 +222,7 @@ export function ZoomableLineChart({ data, color, targetMin, targetMax, height = 
           seen.add(ev.kind);
           kinds.push({ kind: ev.kind, color: ev.color, icon: ev.icon });
         }
-        const hasBand = targetMin != null && targetMax != null;
+        const hasBand = targetRangeMin != null && targetRangeMax != null;
         if (!kinds.length && !hasBand) return null;
         return (
           <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-2">

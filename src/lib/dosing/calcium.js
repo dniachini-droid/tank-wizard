@@ -208,13 +208,13 @@ export function assessCalcium({ readings, doseLog = [], waterChanges = [], setti
   const nowStamp = now != null ? now : (dayNum(todayStr()) + minutesOf(nowTime()) / 1440);
   const out = {
     ok: false, reason: null, element: "calcium",
-    current: null, previous: null, target: null, currentDose: null, daysOnDose: null,
+    current: null, previous: null, targetRange: null, currentDose: null, daysOnDose: null,
     used: [], trendPerDay: null, trendPerWeek: null, band: null, consistent: null,
     supplied: null, consumption: null, maintenanceDose: null,
     recommendedDose: null, action: "hold", explanation: "", nextCheck: "",
     anomaly: null, effectPerMl: null, effectSolved: null,
     activePlan: null, stage: null, stages: null, planTarget: null, nextTestDue: null,
-    targetCorrection: null,
+    correction: null,
   };
 
   const effect = caEffectPerMl(settings);
@@ -247,7 +247,7 @@ export function assessCalcium({ readings, doseLog = [], waterChanges = [], setti
   /* `out.previous` was set here and nowhere else, and read by nothing —
      assessAlkalinity and assessMagnesium never set it at all. A field one copy
      of three grew and no consumer ever asked for. Removed. */
-  out.target = { min: def.min, max: def.max };
+  out.targetRange = { min: def.min, max: def.max };
 
   const changes = (doseLog || [])
     .filter((d) => d.element === "calcium" && isFinite(d.ml))
@@ -520,7 +520,7 @@ export function assessCalcium({ readings, doseLog = [], waterChanges = [], setti
          exist. Also withheld when the strength figure makes the amount absurd,
          because printing the number invites someone to dose it. */
 
-      out.targetCorrection = !above
+      out.correction = !above
         ? {
             direction: "up", toMid,
             days: Math.max(2, Math.ceil(toMid / SAFE_DAILY_RISE[def.key])),
@@ -536,14 +536,14 @@ export function assessCalcium({ readings, doseLog = [], waterChanges = [], setti
 
       out.explanation += ` But it is holding at ${fmtVal(def, out.current.value)}${def.unit}, ${above ? "above" : "below"} your range — a matched dose will keep it there indefinitely.`;
       const repeats = repeatedCorrections(corrections, "calcium", nowStamp);
-      if (repeats >= 2 && out.targetCorrection) {
+      if (repeats >= 2 && out.correction) {
         out.caution = (out.caution ? out.caution + " " : "")
-          + `You have corrected calcium ${repeats} times in the last couple of months and it keeps sagging back. That points to the daily dose being short rather than the level needing another lift — a salt mix below your target, fed in by weekly water changes, is the usual cause. Raising the daily dose by around ${fmtAmount(out.targetCorrection.perDayMl)} mL would carry it instead.`;
+          + `You have corrected calcium ${repeats} times in the last couple of months and it keeps sagging back. That points to the daily dose being short rather than the level needing another lift — a salt mix below your target range, fed in by weekly water changes, is the usual cause. Raising the daily dose by around ${fmtAmount(out.correction.perDayMl)} mL would carry it instead.`;
       }
       out.nextCheck = above
         ? `Let it fall: hold this dose, or ease it down slightly, and allow consumption to bring calcium back toward the range. Do not chase it with a bigger reduction.`
-        : out.targetCorrection
-        ? `Raising it is a separate one-off correction of roughly ${fmtAmount(out.targetCorrection.oneOffMl)} mL spread over a few days — not a permanent increase, which would carry calcium past the range once it arrives. Keep the daily dose where it is.`
+        : out.correction
+        ? `Raising it is a separate one-off correction of roughly ${fmtAmount(out.correction.oneOffMl)} mL spread over a few days — not a permanent increase, which would carry calcium past the range once it arrives. Keep the daily dose where it is.`
         : `Raising it needs a one-off correction rather than a bigger daily dose, but the amount cannot be worked out until the solution strength in Setup is right.`;
     }
     return out;
@@ -580,7 +580,7 @@ export function assessCalcium({ readings, doseLog = [], waterChanges = [], setti
     return out;
   }
 
-  /* Sections 23 to 26: direction relative to target matters more than the
+  /* Sections 23 to 26: direction relative to the aim point matters more than the
      trend alone. */
   const movingToTarget = (above && out.trendPerDay < 0) || (below && out.trendPerDay > 0);
   if (movingToTarget) {

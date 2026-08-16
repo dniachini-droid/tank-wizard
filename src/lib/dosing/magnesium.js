@@ -8,7 +8,7 @@
  * Everything learned building the alkalinity and calcium engines is carried
  * over, including the two faults that only appeared under simulation: the
  * anomaly threshold must be expressed in the parameter's own units, and the
- * tank's position relative to target must come from the fitted level rather
+ * tank's position relative to the target range must come from the fitted level rather
  * than the last reading, or one noisy result reads as a tank out of range.
  */
 

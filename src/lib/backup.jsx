@@ -125,17 +125,17 @@ const sameRange = (a, b) => (a == null && b == null)
 /* Which parameters the file and this device disagree about, with both values,
    so a restore can show them rather than pick one.
 
-   A target present on one side and absent on the other is a disagreement too:
+   A target range present on one side and absent on the other is a disagreement too:
    absent means "use the app's default band", which is a different band from
    whatever the other side names, and history reads the same either way. */
 export function rangeConflicts(fileRanges, deviceRanges) {
-  /* A file that says nothing about targets is not disagreeing with anything —
+  /* A file that says nothing about target ranges is not disagreeing with anything —
      the same reading the correction plans below get. Absence has three shapes
      and none of them may be read as "go back to the defaults": a file written
      before this key was collected has no member at all, a device that has
      never customised a band writes an explicit null, and `{}` is what
      `loadKey("custom-ranges", {})` hands back for the same device. Asking the
-     user to choose between their targets and no targets on every restore of
+     user to choose between their target ranges and no target ranges on every restore of
      an ordinary file would be noise, and the answer that matters — keep what
      is on this device — is the one absence already implies. */
   if (!isRange(fileRanges) || Object.keys(fileRanges).length === 0) return [];
@@ -180,15 +180,15 @@ export function inspectBackup(parsed, current, deviceRanges = null) {
 /* Merge rather than replace. Restoring the same file twice changes nothing the
    second time, and restoring an old backup never removes newer entries.
 
-   `options.ranges` says what to do about the target bands, and there is no
+   `options.ranges` says what to do about the target ranges, and there is no
    default that can be applied quietly. Every band a reading is classified
    against is computed live from `custom-ranges` — the log's colours, the
    chart's shading, every tooltip — so writing the file's copy over the
    device's re-labels the entire history, including readings logged after the
-   file was written, and keeping the device's copy silently discards a target
+   file was written, and keeping the device's copy silently discards a target range
    the user may be restoring on purpose. Both directions change what the app
    says about the past, so when the two disagree the caller must have asked:
-   "keep" leaves this device's targets alone, "file" takes the backup's.
+   "keep" leaves this device's target ranges alone, "file" takes the backup's.
    Anything else is refused before a single row is written. */
 export async function restoreBackup(parsed, current, applySettings, options = {}) {
   const b = parsed.data;
@@ -201,7 +201,7 @@ export async function restoreBackup(parsed, current, applySettings, options = {}
   if (conflicts.length && choice !== "keep" && choice !== "file") {
     /* Refused up front, so a caller that has not been taught to ask fails
        loudly and completely instead of writing half a restore and rewriting
-       the targets on its way past. */
+       the target ranges on its way past. */
     throw new Error(
       `This backup's target ranges differ from this device's for ${conflicts.map((c) => c.param).join(", ")}. `
       + `Restoring must say which to keep — pass options.ranges as "keep" or "file".`);
@@ -246,7 +246,7 @@ export async function restoreBackup(parsed, current, applySettings, options = {}
     await saveKey("kit-changes", b["kit-changes"]);
     result["kit-changes"] = b["kit-changes"];
   }
-  /* Only on an explicit "use the backup's targets". Every parameter the two
+  /* Only on an explicit "use the backup's target ranges". Every parameter the two
      agree on already holds the same band, so the file's copy IS the answer for
      the whole set — there is nothing to merge, only a side to take. */
   if (choice === "file" && conflicts.length) {
@@ -376,7 +376,7 @@ export function ParamGauge({ def, value, recent, compact = false }) {
         {/* Full scale */}
         <div className="absolute rounded-full" style={{ left: 0, right: 0, top: compact ? 6 : 9, height: compact ? 4 : 5, background: "#E9EFEE" }} />
 
-        {/* Target band — the only region that should read as "good" */}
+        {/* Target range — the only region that should read as "good" */}
         <div className="absolute rounded-full"
           style={{ left: `${bandL}%`, width: `${Math.max(2, bandR - bandL)}%`,
                    top: compact ? 6 : 9, height: compact ? 4 : 5,
