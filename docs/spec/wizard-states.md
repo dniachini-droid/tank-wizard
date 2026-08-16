@@ -1617,17 +1617,30 @@ and spread words and comply as they stand.
 
 ### Enforced by
 
-Per §10, named rather than asserted: **nothing asserts §22 today.** Five checks
-would: that the verdict set is exactly these six; that no verdict renders calmer
-than its own reading's band; that an ungradeable parameter refuses instead of
-grading; **that the five parameters with no verdict produce no steadiness word
-and no refusal message either**; and **that the grading tree returns each of the
-six on a series built to reach it, at the figures above and at the boundary
-values** — a spread exactly at *tight* is `dialled`, exactly at *wide* with no
-held direction is `loose`, and a rate exactly at twice §11's threshold is
-`sliding`. Filed in `.agent/items/` as TW-085; until they exist this section is
-an intention, and `scripts/verify/wordingcheck.mjs` covers one field of one loop
-in one function.
+**Three of §22's checks exist and run — corrected 16 August.** This section read
+*"nothing asserts §22 today"*, which was true when written on 14 August and was
+overtaken by **TW-037 and TW-045** the same week.
+`scripts/verify/consistencycheck.mjs` is blocking in `npm run verify` and asserts
+the three checks this section named: **the verdict set is exactly these six** (a
+seventh fails the build, statically, exactly as an invented band does under §13);
+**no verdict renders calmer than its own reading's §13 band**, behaviourally over
+eight fixtures; and **an ungradeable parameter refuses and names what is
+missing**. The stale sentence is corrected rather than left standing — under §10
+a rule with no checker is an intention, and claiming to have no checker when one
+exists is the same error pointed the other way.
+
+**Two more are needed by the figures added above, and neither exists yet:**
+
+- **that the five parameters with no verdict produce no steadiness word and no
+  refusal message either** — the distinction this section draws under "Unknown
+  refuses", and the one a fall-through would erase;
+- **that the grading tree returns each of the six on a series built to reach it,
+  at the figures above and at the boundary values** — a spread exactly at *tight*
+  is `dialled`, exactly at *wide* with no held direction is `loose`, and a rate
+  exactly at twice §11's threshold is `sliding`.
+
+Filed as **TW-085**, which extends `consistencycheck.mjs` rather than adding a
+second checker for one section.
 
 ### In plain terms
 
