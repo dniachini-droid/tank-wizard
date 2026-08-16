@@ -299,11 +299,24 @@ folded. The follow-on work is TW-085, TW-086 and TW-090; nothing calls the
 function until 6f. **One of its questions wants an owner before 6f** — whether it
 is handed the correction-adjusted series (T-5).
 
-**6b — The notice model.** One live notice per parameter; a new verdict
-supersedes rather than joins; supersession clears hidden; hiding is global;
-everything hideable with a confirmation on the serious ones. Journey 4's model.
-`findingKey`, `findingSignature` and `findingHidden` already implement most of
-the identity half — reuse them.
+**6b — The notice model.** ✅ **built 16 August**, TW-092. One live notice per
+parameter; a new verdict supersedes rather than joins; supersession clears
+hidden; hiding is global; everything hideable with a confirmation on the serious
+ones; off is per parameter, permanent, and includes alerts. Journey 4's model,
+plus §25.1's four tiers and the fixed parameter order.
+`src/lib/notices/notice-model.js`, 30 tests, nothing calls it.
+
+**`findingKey`, `findingSignature` and `findingHidden` were reused as
+instructed** — the mechanism, not the key's content: `findingKey` is one notice
+per finding **id** and §20 needs one per **parameter**, which is journey 4 fault
+4 if imported as-is. `findingHidden`'s body is reproduced unchanged, bare-date
+guard included. **6f collapses the two back into one.**
+
+It reported **seven gaps** (`.agent/stage-6b-gaps.md`) against Stage 6a's twenty,
+because §20 and §25.1 answer most of journey 4 outright. **Two are returned in
+the result rather than decided** — whether a parameter's off switch reaches a
+relationship notice naming it, and which of a verdict and a suspect reading is
+the one live notice when both apply.
 
 **6c — The message layer.** Stage 3's specification, rendered. One place that
 turns a verdict into a sentence.
