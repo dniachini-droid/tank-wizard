@@ -13,7 +13,11 @@ Engine decision, folded in from `docs/spec/DECISION-reef-chemistry-engine.md`
 **§22 added, and §15 and §20 amended, 14 August 2026** on the spec owner's
 authority — the consistency verdicts registered as a second vocabulary, one
 word for a notice, and the colour registry. Its companion decision is
-`reef-chemistry.md` §3, the rails.
+`reef-chemistry.md` §3, the rails. **§23 and §24 added, and §14 and §15
+amended, 16 August 2026** on the spec owner's authority — the five wording
+rules and the twelve reference cards, folded in from
+`docs/spec/message-spec-1-wizard.md` (Stage 3 of `THE-ENGINE-PLAN-v2.md`). Its
+arithmetic half is `reef-chemistry.md` §28, rewritten the same day.
 
 > Agents never edit this file. Disagreements → `.agent/spec-challenges.md`.
 
@@ -22,9 +26,10 @@ number the app produces; this one to know why a particular card is showing,
 what words may go on it, and what the app must be true of as a program.
 
 Part I (§0–§10) is the wizard's state machine. Part II (§11–§18) is the surfaces
-and messaging canon plus the platform floor. Part III (§19–§22) is the Reef
-Chemistry Engine's surfaces, the notice model, what Setup may ask for, and the
-consistency verdicts.
+and messaging canon plus the platform floor. Part III (§19–§24) is the Reef
+Chemistry Engine's surfaces, the notice model, what Setup may ask for, the
+consistency verdicts, the five wording rules, and the twelve reference cards
+the rebuilt message layer is built from.
 
 ---
 
@@ -558,6 +563,16 @@ uses the same ones:
 - No message tells a user their test kit is wrong.
 - No message expresses urgency the band does not justify.
 
+**§23 governs how these four parts are worded**, and §24 is the reference
+wording itself. This section says what a message must contain; that one says
+how it may say it. A message can satisfy every rule above and still fail §23.
+
+**One hard rule is added by `reef-chemistry.md` §28.2 and belongs here:** a
+dose-change suggestion and a return-plan offer may never appear in the same
+message, on the same card, or on the same surface at the same time. The two
+conditions are mutually exclusive — one needs the level to be moving, the other
+needs it not to be — so both together is a fault, not a hard case.
+
 ---
 
 ## 15. Terminology registry
@@ -579,6 +594,7 @@ One word per concept, everywhere. Any synonym is a finding.
 | a thing the app shows about a parameter | **notice** | notification, note, hidden note, "worth knowing about" |
 | off the band and moving about | **unsettled** | drifting, wandering |
 | how steady a parameter has been over the window | **consistency verdict** | control grade, stability score, steadiness rating |
+| a plan the user opts into that walks a level back into the band | **return plan** — offered as *"Plan a gradual return"* | drift back, bring it up, walk it down, taper, wean |
 
 The app never uses "safe" or "unsafe" about any reading. It reports position
 relative to the user's own target ranges and nothing more. This is a rule about
@@ -621,6 +637,14 @@ target" tab label, is renamed with the copy), and the `doseStatus.target`
 TW-035, shipped separately. Underneath the rename sits `reef-chemistry.md`
 §2's 16 August structural decision: there is no user-set target point at all —
 one range, two edges, midpoint derived.
+
+**return plan** is registered 16 August alongside §23 and §24. **"Drift back"
+is an engine word, not app copy** — `reef-chemistry.md` §1 and §28 keep it for
+the downward instrument, and the app never says it, because it names a
+mechanism rather than what the user is being offered. One offer, one phrase,
+both directions: the card says *"Plan a gradual return to 8.5 dKH"* going up
+and going down alike. The same category as the `off-target` state id above —
+canon's own word, never rendered.
 
 **unsettled** and **drifting** are the pair this registry exists for: near
 opposites that shared one word until 14 August. `drifting` is §13's band word —
@@ -1146,3 +1170,284 @@ level that needs attention, the steadiness note may no longer show in a calm
 colour and has to tell you the level first — steady is not the same as safe.
 And where the app has no yardstick for what steady even means for a parameter,
 it now says so instead of quietly grading you against nothing.
+
+---
+
+## 23. The five wording rules
+
+**Decided 16 Aug (Dan, spec owner).** Folded in from
+`docs/spec/message-spec-1-wizard.md`, Stage 3 of `THE-ENGINE-PLAN-v2.md`, the
+same way §19 and §20 were folded in from `DECISION-reef-chemistry-engine.md`.
+Its arithmetic half is `reef-chemistry.md` §28.
+
+§14 says which parts a message has. **This section says how they are worded**,
+and it governs every card in §24 and every sentence the rebuilt message layer
+writes after them. The wizard owns the verdict (§0.3), so the wizard's wording
+is settled first and every other surface defers to it.
+
+### 23.1 State it, then show the basis
+
+**One line saying what is happening, then the numbers it rests on.**
+
+Not because it reads better, but because **a claim you cannot check is a claim
+you have to trust.** "Alkalinity is below your range" has to be believed;
+"alkalinity is 8.0 dKH, below your range of 8.2–8.8, falling about 0.1 a day"
+can be looked at and disagreed with.
+
+That is not a hypothetical. It is how the rising-versus-falling contradiction
+was found on 16 August — a card saying *"alkalinity is rising"* above a panel
+showing −0.50 dKH/wk, caught by seeing the working. The contradiction existed
+for weeks; the visible basis is what surfaced it.
+
+This is §14's parts 1 and 3 given an order, and it is the app's own principle
+made visible: **it never asserts what it cannot support.**
+
+### 23.2 Never speak in the first person
+
+**No "I", no "I'll know", no "I think."** The app states what is true and what
+a reading would show. It has no voice of its own.
+
+> ✗ One more reading and I'll know whether it worked.
+> ✓ One more reading will show whether it's working.
+
+"You" is used for the user's own actions — *"you raised the dose"* — which is a
+statement of fact, not a conversation.
+
+### 23.3 Mention the dose only when it is relevant
+
+The daily dose appears in exactly three cases:
+
+1. when it has just changed,
+2. when it is being recommended,
+3. when it explains why no change is being recommended.
+
+It does **not** appear when nothing is happening. A card that says a level is
+holding does not need to recite the dose that is holding it.
+
+**The third case is the one that is easy to drop and must not be.**
+`off-target` has to say the dose is already correct, because otherwise the card
+reads as the app failing to notice an out-of-range level. It is also the card
+`reef-chemistry.md` §28 hangs the return-plan offer on, and the offer makes no
+sense without the sentence that precedes it.
+
+### 23.4 Units always, in the parameter's own unit
+
+**dKH for alkalinity, ppm for everything else. Every figure, every card.**
+
+No exceptions for a second figure in the same sentence, and no exceptions for a
+figure in a tab label or a chip.
+
+### 23.5 Never speculate about causes
+
+**The app reports what it observes. It does not guess at why.**
+
+> ✗ Alkalinity hasn't moved in four days. Something is holding it down.
+> ✓ Alkalinity is 7.6 dKH, the same as when the correction started four days ago.
+
+Same principle as `reef-chemistry.md` §29's no-levers rule: the app cannot see
+the tank, only the numbers, and **a plausible wrong cause is worse than no
+cause** — it is the one kind of error a user will act on.
+
+### How these sit against §14 and §15
+
+Three layers, and they do not overlap:
+
+- **§14** — which parts a message must contain.
+- **§15** — which word each concept gets.
+- **§23** — how the parts are said, and what may not be said at all.
+
+A message can satisfy §14 and §15 completely and still break §23 — "I think
+alkalinity is fine" contains all four parts and no banned synonym.
+
+### Enforced by
+
+Per §10, named rather than asserted: **nothing asserts §23 today.**
+`scripts/verify/wordingcheck.mjs` covers one field of one loop in one function,
+and asserts `claim:` without `support:` — which is exactly §23.1's failure mode
+going unchecked.
+
+Five checks would close it, one per rule, and all five are static:
+
+| Rule | The check |
+|---|---|
+| 23.1 | every `claim:` has a `support:`, and the support names a figure |
+| 23.2 | no first-person pronoun in any user-facing string |
+| 23.3 | a dose figure appears only on the three permitted card kinds |
+| 23.4 | every numeric figure in a message carries its parameter's unit |
+| 23.5 | a fixed banned-construction list — "something is", "may be caused by" |
+
+**23.2 is checkable against the app as it stands, before the rebuild.**
+`src/lib/narrative-engine.js` and `src/lib/findings.js` are
+where first-person copy would live. If the app says "I" anywhere today, that is
+a finding for the rebuild to clear rather than a patch to apply now — the layer
+is being replaced, and fixing copy in code that is about to be deleted spends
+the effort twice.
+
+---
+
+## 24. The twelve cards — the reference the rebuild works from
+
+**Decided 16 Aug (Dan, spec owner).** These are not illustrations. **They are
+the reference wording**, and Stage 6c builds the message layer to produce them.
+Where a card here and a current app string differ, the card wins and the string
+is a finding.
+
+Alkalinity is used throughout; **the same shapes apply to calcium and magnesium
+in their own units** (§23.4). Twelve cards, in the order they were decided.
+
+### 24.1 Nothing to do — `idle`
+
+> **Alkalinity is holding at 8.5 dKH**
+> In your range of 8.2–8.8.
+
+No dose figure — §23.3. Nothing is happening and nothing needs explaining.
+
+### 24.2 The dose no longer matches — `suggested`
+
+> **Alkalinity is in range but falling**
+> 8.5 dKH now, down about 0.1 a day over the last three readings. Your dose of
+> 9.0 mL/day is below what the tank is using — 9.7 mL/day would match it.
+> **Open the dosing wizard →**
+
+The common one. **The recommended figure is stated as *what would match*, not
+as an instruction** — which is `reef-chemistry.md` §28.1 in one sentence: the
+figure is the tank's consumption, and it is not carrying an intention.
+
+### 24.3 Steady, but in the wrong place — `off-target`
+
+> **Alkalinity is steady at 8.0 dKH, below your range**
+> Your dose is matching what the tank uses, so it will stay here.
+> **Plan a gradual return to 8.5 dKH →**
+
+The dose is mentioned under §23.3's third case — without it, the card looks
+like the app has failed to notice.
+
+**"Plan a gradual return"** rather than "bring it up": it names the
+destination, and *gradual* says plainly that nothing is going to be forced. The
+destination is the band midpoint, per `reef-chemistry.md` §9.
+
+**This is the only card that offers a return plan**, because it is the only one
+of the twelve where the level is both stable and out of band —
+`reef-chemistry.md` §28.2. **Whether route 12 (`worked`, tested steady and not
+in band) also qualifies is open** and is filed as such in §28.6; it is a Stage 4
+gap-report question, not an implementer's judgement call.
+
+Note what is *not* on this card: a dose figure to change to. §28.2's exclusion
+is visible here — the suggestion and the offer never share a card.
+
+### 24.4 Too soon to judge a change — `settling`
+
+> **Too soon to tell**
+> You raised the alkalinity dose to 9.7 mL/day yesterday. One more reading will
+> show whether it's working.
+
+"You raised" — §23.2's permitted second person, a statement of fact about the
+user's own action.
+
+### 24.5 Not enough data — `settling`
+
+> **Not enough readings yet**
+> Alkalinity is 8.5 dKH, in your range. Two more readings will show which way
+> it's going.
+
+The refusal names what is missing, per §14. It still states the position,
+because the position is known.
+
+### 24.6 The change worked — `worked`
+
+> **Your dose change is working**
+> Alkalinity is up to 8.6 dKH from 8.3, in your range. Keep testing every couple
+> of days until it settles.
+
+### 24.7 Still falling despite the change — contradiction state, does not exist
+
+> **Alkalinity is still falling despite your dose change**
+> 8.3 dKH now, down from 8.5 two days ago. You raised the dose to 9.7 mL/day on
+> the 14th and the fall hasn't slowed. It may need to go higher.
+> **Open the dosing wizard →**
+
+One of the four contradiction states from
+`docs/journeys/journey-4b-notification-matrix.md`. **Not in §2's ordered list
+and not in §3's table** — it is new, and Stage 6d adds it.
+
+### 24.8 No response at all — contradiction state, does not exist
+
+> **Alkalinity hasn't moved since your dose change**
+> 8.5 dKH on the 14th, 8.5 now. You raised the dose to 9.7 mL/day two days ago
+> and nothing has responded. It may need to go higher.
+> **Open the dosing wizard →**
+
+From journey 1: *"that's two days of an increased dose and it hasn't actually
+moved — at that point I'd increase the dose further."* **An expected response
+that does not arrive is itself evidence**, and the app currently has no state
+that says so.
+
+### 24.9 Very low — `emergency`
+
+> **Alkalinity is very low at 6.8 dKH**
+> This needs a correction unless you are deliberately holding it there.
+> **Open the dosing wizard →**
+
+**No mention of the safe floor.** It is a number the user did not set and
+cannot change, so quoting it invites a question the card cannot answer. This is
+§15's rule that the app never says "safe" out loud, applied to the figure
+behind the word.
+
+**The escape clause is deliberate** — same principle as every notice being
+hideable (§20). The app does not know why a level is where it is, which is
+§23.5 stated as a courtesy rather than a prohibition.
+
+### 24.10 A correction running — `correcting-dose`
+
+> **Correction running**
+> Alkalinity is 8.1 dKH, up from 7.6 when the correction started. Heading for
+> 8.5. Test again in two days.
+
+"Heading for 8.5" is the **aim point** (§15), stated as a level.
+
+### 24.11 A correction that is not working — `correction-stalled`
+
+> **The correction isn't working**
+> Alkalinity is 7.6 dKH, the same as when the correction started four days ago.
+
+**No speculation about why**, per §23.5. The temptation here is strongest and
+the card resists it: it states the two numbers and the elapsed time, and stops.
+
+### 24.12 Figures cannot be trusted — `blocked`
+
+> **Alkalinity figures can't be trusted**
+> The numbers imply a solution strength far from what's in Setup. Check the
+> strength before using any dose figure here.
+> **Open Setup →**
+
+Names the missing input specifically (§14), and refuses rather than guessing.
+
+### What these twelve do not cover
+
+Stated so the gap is not mistaken for completeness. **Seven states follow the
+shapes above and need drafting rather than deciding:** `correction-done`,
+`correction-due`, `recovering`, `worsening`, `overshot`, `fell-short`, and the
+"wrong tool" variant where a maintenance solution cannot deliver a correction.
+
+**Two of the four contradiction states are still missing:** dose lowered and
+still rising, and movement not established.
+
+**And the other surfaces are not written at all** — tank summary, parameter
+cards and the history modal, reading confirmation, Insights, findings. Each
+renders these verdicts rather than forming its own (§0.3, §11), so each is a
+rendering decision rather than a wording one, but none of them is decided yet.
+
+### In plain terms
+
+Twelve cards, written out word for word, because the app is about to be rebuilt
+from them and "something like this" is how the app got into contradicting
+itself in the first place.
+
+Two of them describe situations the app cannot currently recognise at all — a
+dose that was raised and did nothing, and a level still falling after a change.
+Both are things a keeper notices immediately and the app has been silent about.
+
+And one of them, the steady-but-in-the-wrong-place card, is the one that has
+been quietly useless: it told you your dose was right and left you sitting
+outside your range with nowhere to go. It now ends with an offer to walk you
+back.
