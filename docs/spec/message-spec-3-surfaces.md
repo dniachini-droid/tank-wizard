@@ -3,6 +3,13 @@
 Dan, 16 August 2026. Owner decisions. Completes Stage 3 of
 `THE-ENGINE-PLAN-v2.md`.
 
+**Folded into canon 16 August 2026, and this file is now the decision record
+rather than the reference.** Rule 7 is `wizard-states.md` §23.7; the missing
+card is §24.22; the surfaces are the new §25, and the four carried open items
+are §25.6. §15 gains **hide** and **off**; §22 gains the two rules the
+steadiness panel now obeys; §7 and §14 gain pointers to §25. **Where this file
+and canon differ, canon wins.**
+
 Parts 1 and 2 settled the wizard. This settles everything that renders it.
 
 **The wizard owns the verdict. No surface here forms its own.** Where a surface
@@ -291,7 +298,9 @@ Carried from parts 1 and 2, plus rule 7:
 
 # CARRIED OPEN ITEMS
 
-Four, and none is settled:
+Four, and none is settled. **All four are carried in canon at
+`wizard-states.md` §25.6**, in this order, and are listed in
+`.agent/needs-dan.md` under Open:
 
 **§9's "wrong tool" rule.** Pointing at dry salt or a water change when a
 correction exceeds ~1.5 litres contradicts the rate rules — a different product

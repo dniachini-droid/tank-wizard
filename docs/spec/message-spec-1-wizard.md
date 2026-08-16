@@ -9,6 +9,12 @@ twelve cards are §24; the dose-advice rule and the ordering rule are
 **Where this file and canon differ, canon wins.** What is still open —
 "Still to write", below — is unchanged and lives here until it is decided.
 
+**"Still to write" was written the same day**, in parts 2 and 3 of this
+specification and folded into canon alongside them: the seven remaining states
+are `wizard-states.md` §24.13–24.21 and §24.23, the last two contradiction
+states are §24.21 and §24.22, and the other surfaces are the new §25. Two more
+wording rules joined the five at §23.6 and §23.7. **Stage 3 is complete.**
+
 The wizard owns the verdict; every other surface renders it. So its wording is
 settled first and everything else defers to it.
 

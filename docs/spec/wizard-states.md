@@ -17,7 +17,14 @@ word for a notice, and the colour registry. Its companion decision is
 amended, 16 August 2026** on the spec owner's authority — the five wording
 rules and the twelve reference cards, folded in from
 `docs/spec/message-spec-1-wizard.md` (Stage 3 of `THE-ENGINE-PLAN-v2.md`). Its
-arithmetic half is `reef-chemistry.md` §28, rewritten the same day.
+arithmetic half is `reef-chemistry.md` §28, rewritten the same day. **§25
+added, §23 and §24 extended, and §7, §14, §15 and §22 amended, 16 August
+2026** on the spec owner's authority — two more wording rules, the eleven
+remaining wizard cards, and the surfaces that render them, folded in from
+`docs/spec/message-spec-2-wizard-remaining.md` and
+`docs/spec/message-spec-3-surfaces.md` the same way part 1 was. **That
+completes Stage 3 of `THE-ENGINE-PLAN-v2.md`.** The four questions it leaves
+open are carried at §25.6; `reef-chemistry.md` §9 is amended alongside it.
 
 > Agents never edit this file. Disagreements → `.agent/spec-challenges.md`.
 
@@ -26,10 +33,10 @@ number the app produces; this one to know why a particular card is showing,
 what words may go on it, and what the app must be true of as a program.
 
 Part I (§0–§10) is the wizard's state machine. Part II (§11–§18) is the surfaces
-and messaging canon plus the platform floor. Part III (§19–§24) is the Reef
+and messaging canon plus the platform floor. Part III (§19–§25) is the Reef
 Chemistry Engine's surfaces, the notice model, what Setup may ask for, the
-consistency verdicts, the five wording rules, and the twelve reference cards
-the rebuilt message layer is built from.
+consistency verdicts, the seven wording rules, the twenty-three reference cards
+the rebuilt message layer is built from, and what each surface does with them.
 
 ---
 
@@ -292,6 +299,13 @@ below stand unchanged.
   not give an instruction that conflicts. "Dead centre" is fine. "Nothing to
   do" is not, when the wizard is asking for a change.
 - A running correction always outranks a dose-change message.
+
+**Extended 16 Aug — see §25**, which says what each surface does with the
+verdict rather than only what it may not do to it. The two bullets above are
+where §25.1's generated short form and §25.3's receipt-then-card come from;
+neither is a new rule, and §25 states as much. §25 adds the sentence these
+bullets imply: **where a surface appears to need a claim the wizard cannot
+supply, that is a gap in the wizard, not licence to compute one locally.**
 
 ### Why this matters more than it looks
 
@@ -566,6 +580,10 @@ uses the same ones:
 **§23 governs how these four parts are worded**, and §24 is the reference
 wording itself. This section says what a message must contain; that one says
 how it may say it. A message can satisfy every rule above and still fail §23.
+**§25 says which surface shows which of the four parts** — the tank summary
+shows the headline and the first sentence and nothing else, the reading
+confirmation shows a receipt and then the whole card — and it does so by
+rendering the same strings rather than by writing its own.
 
 **One hard rule is added by `reef-chemistry.md` §28.2 and belongs here:** a
 dose-change suggestion and a return-plan offer may never appear in the same
@@ -595,6 +613,8 @@ One word per concept, everywhere. Any synonym is a finding.
 | off the band and moving about | **unsettled** | drifting, wandering |
 | how steady a parameter has been over the window | **consistency verdict** | control grade, stability score, steadiness rating |
 | a plan the user opts into that walks a level back into the band | **return plan** — offered as *"Plan a gradual return"* | drift back, bring it up, walk it down, taper, wean |
+| dismissing one notice until the situation changes | **hide** | mute, snooze, silence, ignore, clear |
+| silencing a whole notice type permanently, in Setup | **off** | mute, disable, suppress, opt out |
 
 The app never uses "safe" or "unsafe" about any reading. It reports position
 relative to the user's own target ranges and nothing more. This is a rule about
@@ -645,6 +665,16 @@ mechanism rather than what the user is being offered. One offer, one phrase,
 both directions: the card says *"Plan a gradual return to 8.5 dKH"* going up
 and going down alike. The same category as the `off-target` state id above —
 canon's own word, never rendered.
+
+**hide** and **off** are registered 16 August with §25, and the reason they are
+two entries rather than one is the whole of §25.1's escalation: **hide is per
+notice and temporary — a superseding verdict brings it back automatically —
+and off is per notice type and permanent.** A word that covers both, "mute"
+most of all, would let a surface offer one and deliver the other, which on the
+temporary side means an app that has gone quiet about a tank getting worse.
+Neither word may be used for the other. "Got it — hide this"
+(`DoseExpectation.jsx:175`) already uses the right verb, and §20 records that
+it needs no rename.
 
 **unsettled** and **drifting** are the pair this registry exists for: near
 opposites that shared one word until 14 August. `drifting` is §13's band word —
@@ -899,6 +929,15 @@ and `findingHidden` (`src/components/DoseExpectation.jsx:148`) already
 implements exactly this for findings: an entry stays hidden only while the
 stored signature still equals the current one.
 
+**Extended 16 Aug — see §25.1**, which puts this rule on a surface and adds the
+thing it implies: **hiding is not the only control, and it is not permanent.**
+Hide is per notice and lasts until a superseding verdict returns it to the live
+list automatically; **off** is per notice type, permanent, and set in Setup.
+§15 registers both words. Nothing above changes — §25.1 is where the hidden
+list lives, where it is unhidden one at a time or all at once, and why the
+escalation from hide to off exists instead of a Setup question asking the user
+what kind of notice they want.
+
 ### The word — settled 14 August
 
 **Notice is the single term.** §15 now carries the entry, and the three
@@ -1130,6 +1169,30 @@ Today it falls through. `consistency` initialises to `"unknown"`
 that tests `consistency` fails open. That is a graded verdict resting on no
 grading, which is the one thing §13's last row exists to prevent.
 
+### The panel these verdicts render on — added 16 August
+
+**§25.2 settles what the steadiness panel is for, and two of its rules land on
+the six verdicts directly.** The verdict set, the thresholds, the grading and
+the tier above are all unchanged; what changes is the panel around them.
+
+- **The panel leads with its window, as a heading** — and the window it names
+  is the one the verdict was actually graded over, `reef-chemistry.md` §4's
+  analysis window for that parameter. A verdict graded over 14 days under a
+  heading saying 30 is the contradiction of 16 August in a new place.
+- **The panel never uses direction words.** Direction is the wizard's, worked
+  from the last few readings; consistency is the panel's, worked over the
+  window. The two never compete because they never make the same kind of
+  claim.
+
+**One registered headline breaks the second rule: `sliding` renders as "Moving
+up/down fast".** The verdict word is untouched — this is a rule about the
+panel's language, not about the six — but that headline is direction, on the
+panel. **It is recorded rather than reworded here**, because minting
+replacement copy is §24's kind of work and the owner has not drafted it. Until
+it is drafted, the panel carries one string that contradicts its own rule, and
+that is stated rather than left to be discovered. The other five are position
+and spread words and comply as they stand.
+
 ### What this section does not do
 
 - It does not let a verdict state a band position in its own words. Where the
@@ -1173,12 +1236,14 @@ it now says so instead of quietly grading you against nothing.
 
 ---
 
-## 23. The five wording rules
+## 23. The seven wording rules
 
 **Decided 16 Aug (Dan, spec owner).** Folded in from
 `docs/spec/message-spec-1-wizard.md`, Stage 3 of `THE-ENGINE-PLAN-v2.md`, the
 same way §19 and §20 were folded in from `DECISION-reef-chemistry-engine.md`.
-Its arithmetic half is `reef-chemistry.md` §28.
+Its arithmetic half is `reef-chemistry.md` §28. **Rules 6 and 7 were added the
+same day** from parts 2 and 3 of the same specification; rules 1–5 are
+unchanged by them.
 
 §14 says which parts a message has. **This section says how they are worded**,
 and it governs every card in §24 and every sentence the rebuilt message layer
@@ -1248,6 +1313,68 @@ Same principle as `reef-chemistry.md` §29's no-levers rule: the app cannot see
 the tank, only the numbers, and **a plausible wrong cause is worse than no
 cause** — it is the one kind of error a user will act on.
 
+### 23.6 A recent dose change takes precedence in the wording
+
+**When a dose has recently changed, the card describes the change and its
+result, not the bare position.**
+
+Once a change is in play the useful question is no longer *where is it* but
+*did that work*. Answering the first when the second is available wastes the
+card.
+
+The consequence is a rule about two states specifically: **`recovering` and
+`worsening` only appear when nothing has been done lately.** The same reading
+gets a different card depending on what preceded it —
+
+| The reading | No recent change | After a dose change |
+|---|---|---|
+| below range, still falling | §24.18 `worsening` | §24.7 *still falling despite your dose change* |
+| below range, climbing | §24.17 `recovering` | §24.6 *your dose change is working* |
+
+This is a wording rule with a precondition the engine has to be able to answer:
+**what counts as a recent change, and whether the engine knows about one at
+all.** Both are open in code rather than here. `fell-short` and `overshot`
+(§2, branches 13–14) sit behind `plan && plan.appliedAt`, which only a dose
+change made *through the wizard* writes, so a change made anywhere else falls
+through to branch 21 and gets exactly the bare-position card this rule
+forbids. That gap is `.agent/items/TW-026.md`, and how long "recent" lasts is
+journey 4b's open question 2 — Dan's, unanswered, and **not settled by this
+rule.** The rule says which card wins when the engine knows; it does not
+define the window.
+
+### 23.7 Headlines do not name the parameter — the badge carries it
+
+**Every notice carries a parameter badge, so the headline does not repeat what
+the badge already says.**
+
+A headline that is a **fragment** drops it:
+
+*Too soon to tell · Not enough readings yet · Correction running · The
+correction isn't working · Correction finished · Time to test · The correction
+has run longer than expected · The change helped but hasn't gone far enough ·
+The change went further than needed · You have logged one reading since your
+dose change*
+
+A headline that is a **complete sentence** keeps it, because removing it reads
+oddly:
+
+*Alkalinity is holding at 8.5 dKH · Alkalinity is in range but falling ·
+Alkalinity is very low at 6.8 dKH*
+
+**The test is whether the sentence stands on its own, not whether the parameter
+appears.** The fragment-versus-sentence split is how it usually falls out, not
+the rule itself: §24.6's *"Your dose change is working"* and §24.21's *"You
+have logged one reading since your dose change"* are both complete sentences
+that stand perfectly well without naming the parameter, and neither names it.
+Where the sentence would not stand — *"is holding at 8.5 dKH"* — the parameter
+goes back in.
+
+**This rule assumes the badge.** A surface that renders a headline with no
+parameter badge beside it either supplies one or is showing the wrong thing;
+it does not re-add the parameter to the wording, because then two surfaces
+would carry two headlines for one verdict, which is what §7 and §25 exist to
+prevent.
+
 ### How these sit against §14 and §15
 
 Three layers, and they do not overlap:
@@ -1259,6 +1386,13 @@ Three layers, and they do not overlap:
 A message can satisfy §14 and §15 completely and still break §23 — "I think
 alkalinity is fine" contains all four parts and no banned synonym.
 
+**23.6 is the one rule of the seven that is not purely about words.** It picks
+which card fires, which is why it reads as a wording rule and lands as an
+engine requirement. It is stated here rather than in §2 because the reason is a
+reason about the message — a card that answers the less useful question — and
+because the branch order that would implement it is not settled (§24's note on
+24.17 and 24.18).
+
 ### Enforced by
 
 Per §10, named rather than asserted: **nothing asserts §23 today.**
@@ -1266,7 +1400,8 @@ Per §10, named rather than asserted: **nothing asserts §23 today.**
 and asserts `claim:` without `support:` — which is exactly §23.1's failure mode
 going unchecked.
 
-Five checks would close it, one per rule, and all five are static:
+Seven checks would close it, one per rule. Five are static; the last two need
+the engine's own output:
 
 | Rule | The check |
 |---|---|
@@ -1275,6 +1410,8 @@ Five checks would close it, one per rule, and all five are static:
 | 23.3 | a dose figure appears only on the three permitted card kinds |
 | 23.4 | every numeric figure in a message carries its parameter's unit |
 | 23.5 | a fixed banned-construction list — "something is", "may be caused by" |
+| 23.6 | no `recovering` or `worsening` card is emitted while a dose change is inside its recency window |
+| 23.7 | no headline names a parameter unless the headline is one of §24's registered complete-sentence forms |
 
 **23.2 is checkable against the app as it stands, before the rebuild.**
 `src/lib/narrative-engine.js` and `src/lib/findings.js` are
@@ -1283,9 +1420,14 @@ a finding for the rebuild to clear rather than a patch to apply now — the laye
 is being replaced, and fixing copy in code that is about to be deleted spends
 the effort twice.
 
+**23.7 is checkable today as well, and would be noisy for the same reason.**
+Every headline in the app was written before the badge rule existed, so a sweep
+now returns findings Stage 6c is going to rewrite anyway. Count them in Stage
+4's gap report; fix them when the layer is rebuilt.
+
 ---
 
-## 24. The twelve cards — the reference the rebuild works from
+## 24. The twenty-three cards — the reference the rebuild works from
 
 **Decided 16 Aug (Dan, spec owner).** These are not illustrations. **They are
 the reference wording**, and Stage 6c builds the message layer to produce them.
@@ -1293,7 +1435,15 @@ Where a card here and a current app string differ, the card wins and the string
 is a finding.
 
 Alkalinity is used throughout; **the same shapes apply to calcium and magnesium
-in their own units** (§23.4). Twelve cards, in the order they were decided.
+in their own units** (§23.4). Twenty-three cards, in the order they were
+decided: **24.1–24.12 on the first pass**, **24.13–24.23 the same day** from
+parts 2 and 3 of the specification. Nothing in the first twelve changed when
+the rest arrived.
+
+**With 24.23 the wizard is covered.** Every state in §2's ordered list has
+wording, and so do all four contradiction states from
+`docs/journeys/journey-4b-notification-matrix.md`, two of which the app cannot
+express at all.
 
 ### 24.1 Nothing to do — `idle`
 
@@ -1422,32 +1572,566 @@ the card resists it: it states the two numbers and the elapsed time, and stops.
 
 Names the missing input specifically (§14), and refuses rather than guessing.
 
-### What these twelve do not cover
+### 24.13 A correction has arrived — first reading inside
 
-Stated so the gap is not mistaken for completeness. **Seven states follow the
-shapes above and need drafting rather than deciding:** `correction-done`,
-`correction-due`, `recovering`, `worsening`, `overshot`, `fell-short`, and the
-"wrong tool" variant where a maintenance solution cannot deliver a correction.
+> **Alkalinity has reached 8.5 dKH**
+> Back in your range. One more reading will confirm it's holding — it may still
+> be rising.
 
-**Two of the four contradiction states are still missing:** dose lowered and
-still rising, and movement not established.
+**Direction-aware.** A correction that pushed upward risks continuing upward,
+so it says *rising*; a downward correction says *falling*.
 
-**And the other surfaces are not written at all** — tank summary, parameter
-cards and the history modal, reading confirmation, Insights, findings. Each
-renders these verdicts rather than forming its own (§0.3, §11), so each is a
-rendering decision rather than a wording one, but none of them is decided yet.
+**The clause is the reason `reef-chemistry.md` §9 waits for two readings rather
+than one**, so dropping it would lose the point of the two-reading test — the
+card would claim an arrival the app has not established.
+
+This is `correction-done` reached by **`passed`** — one reading at or beyond
+the aim point — which §4 computes independently of `arrived` and which fires
+the same branch. 24.14 is the same state reached by `arrived`. **The two flags
+select between these two wordings and must never be conflated** (§4). A reading
+that lands inside the band but short of the aim point sets neither and is still
+24.10.
+
+### 24.14 A correction has finished — second reading confirms
+
+> **Correction finished**
+> Alkalinity is holding at 8.5 dKH, in your range. Your dose is back to
+> 9.0 mL/day.
+
+The dose appears under §23.3's first case — it has just changed back. This is
+the wording §4 calls the confident one, and the wording that becomes rare for
+calcium and magnesium under the arrival zone's noise floor.
+
+### 24.15 A correction is due a reading — `correction-due`
+
+> **Time to test**
+> The alkalinity correction has run its expected three days. A reading today
+> will show where it got to.
+
+### 24.16 A correction has overrun — `correction-stalled`
+
+> **The correction has run longer than expected**
+> Nine days have passed with no readings on what should have been a three-day
+> plan. A reading today will show where it got to.
+
+Branch 3, and the figures are §4's: `overrun` is `days > (expected × 2) + 2`,
+measured on the **calendar**, so a three-day plan survives to day 8 and the
+card above is day 9. It states the elapsed time and the expectation and asks
+for a reading — it does not say the correction failed, because with no reading
+since it started nothing is known about where the level got to.
+
+### 24.17 Out of range and coming back — `recovering`
+
+> **Alkalinity is below your range but coming back**
+> 8.1 dKH, up from 7.9 over the last three readings.
+
+**Only when no dose change is in play** — §23.6. With a recent change this
+situation is 24.6 instead.
+
+### 24.18 Out of range and still going — `worsening`
+
+> **Alkalinity is below your range and still falling**
+> 8.0 dKH, down from 8.3 over the last three readings.
+
+**Only when no dose change is in play** — §23.6. With a recent change this
+situation is 24.7 instead.
+
+These two are branch 21a and 21b, which §2 records as live in code and absent
+from every previous specification. **§23.6 narrows when they may fire**;
+nothing about their trigger conditions or tones moves, and §10's warning
+stands — nothing asserts that they exist at all, so a refactor can still delete
+them silently.
+
+### 24.19 The change helped, but not enough — `fell-short`
+
+> **The change helped but hasn't gone far enough**
+> Alkalinity is 8.4 dKH, up from 8.1, still below your range. 10.2 mL/day would
+> match what the tank is using.
+> **Open the dosing wizard →**
+
+The recommended figure is stated as *what would match*, exactly as in 24.2 —
+`reef-chemistry.md` §28.1. The card reports a change that worked partly; it
+does not carry an intention to finish the job.
+
+### 24.20 The change went too far — `overshot`
+
+> **The change went further than needed**
+> Alkalinity is 9.0 dKH, up from 8.1, now above your range. 9.3 mL/day would
+> match what the tank is using.
+> **Open the dosing wizard →**
+
+Same shape, opposite direction. **Note what is not offered:** the level is now
+above the range, and the card still recommends only the consumption-matching
+figure. Walking it back down is a return plan, it is a separate offer, and it
+is not available here because the level is not steady yet —
+`reef-chemistry.md` §28.2.
+
+### 24.21 One reading in — not enough to say — contradiction state, does not exist
+
+> **You have logged one reading since your dose change**
+> Alkalinity is 8.4 dKH. One more will show whether the change is working.
+
+**Movement not established** — the third of journey 4b's four contradiction
+states, and the one that is a refusal rather than a verdict. It states the
+position, because the position is known, and declines the direction, because
+one reading is not a direction. Same shape as 24.5 and the same reason.
+
+### 24.22 Still rising despite the change — contradiction state, does not exist
+
+> **Alkalinity is still rising despite your dose change**
+> 9.1 dKH now, up from 8.9 two days ago. You lowered the dose to 8.4 mL/day on
+> the 14th and the rise hasn't slowed. It may need to come down further.
+> **Open the dosing wizard →**
+
+The mirror of 24.7, and **with it all four of journey 4b's contradiction states
+have wording**: raised and still falling (24.7), changed and nothing moved
+(24.8), one reading in (24.21), lowered and still rising (24.22).
+
+**Two of the four exist in neither §2's list nor §3's table.** 24.7 and 24.22
+are close to what `fell-short` and `overshot` express and may turn out to be
+those two with their preconditions widened rather than new branches; 24.8 and
+24.21 have no candidate anywhere in the code. Settling which is which is
+`.agent/items/TW-026.md`'s first job and Stage 6d's work — **not an
+implementer's judgement call**, because getting it wrong builds a further
+engine on top of two that nearly work.
+
+### 24.23 Far out, beyond what the daily dose can reach
+
+> **Alkalinity is very low at 6.9 dKH**
+> Bringing it to 8.5 would take about nine days at a safe rate.
+> **Plan a gradual return to 8.5 dKH →**
+
+**No alternative product is named**, and that is a correction to canon rather
+than a drafting choice: `reef-chemistry.md` §9's rule to *"point at dry salt or
+water changes"* is amended the same day, because the constraint is the rate and
+not the product. §3's rails apply however the alkalinity gets there, so naming
+a faster product does not make a fast change safe — it makes an unsafe one
+easier to perform.
+
+**The nine days is not a warning.** It is what it takes, and it is the figure
+the decision is actually made against.
+
+**Two things about this card are open, and neither may be closed by an
+implementer** — both are carried at §25.6:
+
+- **The volume ceiling's remaining role.** The half of §9's rule that says the
+  app must not quote an impossible volume stands. Whether ~1.5 L survives as a
+  sanity check on a single day's dose, or dissolves because a plan spread over
+  enough days brings the daily volume under it anyway, is undecided.
+- **The overlap with 24.9.** At 6.9 dKH the level is below `SAFE_BOUNDS`, so
+  the *very low* card applies to the same reading. Two cards, one situation.
+  The likely answer is the short one on the dashboard and this fuller one
+  inside the wizard — brevity where you glance, the plan where a plan gets set
+  — but it is not decided.
+
+One further thing to notice rather than resolve: the offer reads *"Plan a
+gradual return"*, which §15 registers as the **return plan** phrase, while
+`reef-chemistry.md` §28.2 offers a return plan only when the level is **stable
+and out of band**. A level this far down is usually neither. Going up, §28.5
+says the instrument is a correction — so this card may be a correction wearing
+the return plan's words, or the plan's condition may need widening. It belongs
+to the same open item as the overlap above and is stated here so the next
+reader does not take the phrase as settling it.
+
+### What these twenty-three do not cover
+
+Stated so the gap is not mistaken for completeness. **The seven states the
+first pass left to draft are drafted** — `correction-done` (24.13, 24.14),
+`correction-due` (24.15), `recovering` (24.17), `worsening` (24.18),
+`fell-short` (24.19), `overshot` (24.20), and the "wrong tool" variant (24.23).
+**All four contradiction states have wording** (24.7, 24.8, 24.21, 24.22), and
+two of them still have no state in the engine.
+
+What these cards do **not** settle:
+
+- **Which branch produces which card**, where a card and a branch are not one
+  to one. 24.13 and 24.14 are one state with two flags; 24.7 and 24.22 may be
+  `fell-short` and `overshot` widened; 24.17 and 24.18 need §23.6's recency
+  precondition, which the engine cannot currently answer for a dose changed
+  outside the wizard. Stage 4 reports these; Stage 6d decides them.
+- **Two figures the cards imply and canon does not name** — what counts as a
+  *recent* dose change (§23.6), and whether §9's volume ceiling survives
+  (24.23). Both are Dan's, both are carried at §25.6.
+- **The other parameters' wording.** Alkalinity throughout, calcium and
+  magnesium by the same shapes in their own units (§23.4). Phosphate, nitrate
+  and salinity are not dosed and their content is `reef-chemistry.md` §29 —
+  which forbids most of the vocabulary above for phosphate specifically. **No
+  card here may be lifted onto a nutrient** without reading that section first.
+
+**The surfaces that render these cards are §25**, written the same day. The
+gap the first pass named here is closed there.
 
 ### In plain terms
 
-Twelve cards, written out word for word, because the app is about to be rebuilt
-from them and "something like this" is how the app got into contradicting
-itself in the first place.
+Twenty-three cards, written out word for word, because the app is about to be
+rebuilt from them and "something like this" is how the app got into
+contradicting itself in the first place.
 
-Two of them describe situations the app cannot currently recognise at all — a
-dose that was raised and did nothing, and a level still falling after a change.
-Both are things a keeper notices immediately and the app has been silent about.
+Four of them describe situations the app cannot currently recognise at all — a
+dose raised that did nothing, a level still falling after a raise, a level
+still rising after a cut, and the honest "one reading in, too early to say".
+All four are things a keeper notices immediately and the app has been silent
+about.
 
-And one of them, the steady-but-in-the-wrong-place card, is the one that has
-been quietly useless: it told you your dose was right and left you sitting
-outside your range with nowhere to go. It now ends with an offer to walk you
-back.
+One of them, the steady-but-in-the-wrong-place card, is the one that has been
+quietly useless: it told you your dose was right and left you sitting outside
+your range with nowhere to go. It now ends with an offer to walk you back.
+
+And the last one is where the app stops recommending a different product. If
+your alkalinity is at 6.9 and nine days of gradual dosing is what it takes,
+that is what it says — nine days — instead of suggesting a dry buffer or a
+water change that gets there faster by doing to your corals exactly what every
+other rule in the app exists to prevent.
+
+---
+
+## 25. The surfaces — what each one renders
+
+**Decided 16 Aug (Dan, spec owner).** Folded in from
+`docs/spec/message-spec-3-surfaces.md`, the same way §23 and §24 were folded in
+from part 1. §23 and §24 settled what the wizard says; **this section settles
+what everything that renders it does with it**, and it is the last of Stage 3.
+
+**The wizard owns the verdict. No surface here forms its own.** That is §0.3,
+§7 and §19 already, and this section adds the sentence those three imply
+without ever quite saying: **where a surface appears to need a claim the wizard
+cannot supply, that is a gap in the wizard, not licence to compute one
+locally.** Every contradiction in journey 4 and every one found on 16 August
+started as a surface answering a question the engine had not been asked.
+
+### 25.1 The tank summary
+
+**What it shows: one notice per parameter, and nothing else.** §20 already says
+one live notice per parameter, superseded not stacked; this says the summary
+shows exactly that set and adds nothing to it.
+
+#### The short form is generated, never written
+
+**The summary shows the headline plus the first sentence of the wizard's card.
+It is not a separate wording.**
+
+This is not a new rule — it is §7's existing requirement, restated because it
+is the load-bearing one: **it is the only arrangement in which two wordings
+cannot drift apart, because there is only one wording.** A summary line written
+by hand to say the same thing as a card is two strings that agree today.
+
+Worked through eleven of the twelve first-pass cards, as the check that the
+rule generates sensible lines rather than as a second source:
+
+| Card | Headline | First sentence |
+|---|---|---|
+| 24.1 | Alkalinity is holding at 8.5 dKH | In your range of 8.2–8.8. |
+| 24.2 | Alkalinity is in range but falling | 8.5 dKH now, down about 0.1 a day over the last three readings. |
+| 24.3 | Alkalinity is steady at 8.0 dKH, below your range | Your dose is matching what the tank uses, so it will stay here. |
+| 24.4 | Too soon to tell | You raised the alkalinity dose to 9.7 mL/day yesterday. |
+| 24.5 | Not enough readings yet | Alkalinity is 8.5 dKH, in your range. |
+| 24.6 | Your dose change is working | Alkalinity is up to 8.6 dKH from 8.3, in your range. |
+| 24.7 | Alkalinity is still falling despite your dose change | 8.3 dKH now, down from 8.5 two days ago. |
+| 24.8 | Alkalinity hasn't moved since your dose change | 8.5 dKH on the 14th, 8.5 now. |
+| 24.9 | Alkalinity is very low at 6.8 dKH | This needs a correction unless you are deliberately holding it there. |
+| 24.10 | Correction running | Alkalinity is 8.1 dKH, up from 7.6 when the correction started. |
+| 24.11 | The correction isn't working | Alkalinity is 7.6 dKH, the same as when the correction started four days ago. |
+
+24.12 and 24.13–24.23 take the same treatment and are not tabulated: the rule
+is generative, and a table that has to be extended per card is the hand-written
+second wording this rule exists to prevent.
+
+**Tapping a notice opens the full card.** The summary is a way in, not a
+summary of the reasoning.
+
+**One live violation this makes explicit**, already recorded in
+`.agent/items/TW-027.md`: `correction-done` writes its own support sentence in
+`src/lib/narrative-engine.js`, and `scripts/verify/wordingcheck.mjs` checks
+`claim:` but not `support:`, so it passes a blocking check.
+
+#### The three layers
+
+**Collapsed** — the summary headline only.
+
+**Expanded** — the live notices, one per parameter.
+
+**Below those, a hidden section** — collapsed, listing what is hidden. Each
+entry can be unhidden individually, which returns it to the live list, plus an
+unhide-all.
+
+#### Hidden and off are different things
+
+**Hidden is per notice and temporary.** Hiding dismisses *that* notice. When
+the situation changes and a new verdict supersedes it, **the notice reappears
+in the live list automatically.** This is load-bearing: **hiding must never
+silence a situation permanently.** It is §20's resurfacing rule, which
+`findingHidden` already implements — an entry stays hidden only while its
+stored signature still equals the current one — and it is why the hidden list
+does not grow without bound.
+
+**Off is per notice type and permanent**, set in Setup, until changed again.
+
+**The escalation is deliberate.** Hide it once; if it keeps coming back and you
+never want it, turn the type off. **The app does not ask up front whether you
+want a class of notice** — that is a judgement, and §21 says Setup asks for
+facts. Off is set in Setup, but it is not a Setup *question*: it is a switch
+the user reaches for after the app has shown them the thing they want to stop
+seeing.
+
+**This is the answer to the ultra-low-nutrient case.** Someone deliberately
+running phosphate at 0.02 would see the below-0.03 warning
+(`reef-chemistry.md` §29.4) constantly. They turn that type off. **The app
+never asks "are you running ULNS?"** — which is the §21 question that would
+have to exist otherwise, and exactly the kind of judgement §21 refuses.
+
+#### Serious notices confirm before hiding
+
+Unchanged from §20 and restated here because this is the surface it happens
+on: hiding a notice flagged serious asks *"This is flagged as a serious notice.
+Are you sure you wish to hide it?"*, with a line noting hidden notices can be
+brought back from the tank summary. §20's mapping of **serious** — severity
+`act`, or a wizard state whose §3 tone is red — is unchanged, and so is the
+point that the confirmation is a speed bump rather than a class of notice that
+cannot be hidden.
+
+#### App-level notices do not belong here
+
+No backup in three weeks, storage nearly full, a test kit expiring — **these
+are about the app, not the tank**, and the summary is one notice per parameter.
+They leave.
+
+**Tasks is the likely home**, since each is an action. **Not settled**: Tasks
+today handles reminders the user creates, and these are the app noticing
+something, which may not fit the same list. Worked through when Tasks is
+specified. Carried at §25.6.
+
+### 25.2 Parameter cards and the history modal
+
+#### The contradiction that has to stop
+
+On 16 August, using the app, Dan found a card saying **"alkalinity is rising"**
+directly above a panel reading **WEEKLY DRIFT −0.50 dKH/wk**, with a chart
+showing both. **Both were true over different windows. Neither stated its
+window. Nothing reconciled them.**
+
+**The fix is not wording. It is deciding what the steadiness panel is for.**
+
+#### The split
+
+**The wizard answers: which way is it going, and what should happen.** It works
+from the last few readings and **it owns direction**.
+
+**The steadiness panel answers: how consistent has this been.** A longer
+window, and a genuinely different question — which is §22's whole basis for
+registering a second vocabulary at all.
+
+**They never compete because they never make the same kind of claim.**
+
+#### Two rules that enforce it
+
+**1. The panel leads with its window**, as a heading rather than a label beside
+a number:
+
+> **Over the last 30 days**
+> Wide swing — 1.1 dKH between highest and lowest. 18% of readings in range.
+
+**The heading states the window the verdict was actually graded over.** That is
+`reef-chemistry.md` §4's analysis window for the parameter — 14 days for
+alkalinity, 28 for calcium and magnesium — so "Over the last 30 days" above is
+the shape of the heading, not a new window. A panel heading that names a window
+the grading did not use is the same defect this rule was written to fix.
+
+**2. The panel never uses direction words.** No rising, no falling, no
+climbing, no drifting up or down. **Direction belongs to the wizard.** The
+panel talks about spread, consistency, and how much of the time a level sat in
+range.
+
+That is the whole fix. **Two headings, two time frames, no shared vocabulary.**
+
+**One registered string breaks rule 2 and is not silently reworded here.**
+§22's six verdicts are position words and spread words except one: `sliding`
+renders as **"Moving up/down fast"**. The verdict *word* is unaffected — this
+is a rule about the panel's language, not about the six — but its headline is
+direction, on the panel, which is what rule 2 forbids. Re-drafting it is the
+kind of work §24 did, constrained by this rule; it is recorded here and in §22
+rather than guessed at, and until it is done the panel has one string that
+contradicts its own rule.
+
+#### What was considered and not done
+
+An explanatory line — *"this is a longer view than the advice above"*.
+**Rejected: if the panel needs a caption saying it is different, it is not
+different enough**, and the caption reads as clutter within months.
+
+**Revisit only if the built screen still feels contradictory. Fix the panel
+before captioning it.**
+
+### 25.3 The reading confirmation
+
+**A two-line receipt, then the wizard's full card.**
+
+> **8.5 dKH logged**
+> In your range. Down 0.2 from two days ago.
+>
+> **Alkalinity is in range but falling** — down about 0.1 a day over the last
+> three readings. Your dose of 9.0 mL/day is below what the tank is using;
+> 9.7 mL/day would match it.
+> **Open the dosing wizard →**
+
+**Two lines above the fold are the receipt**: the value, where it sits, how it
+moved since last time. Below that, the wizard's card verbatim.
+
+**The alternative was a pointer** — *"alkalinity is falling, see the dosing
+wizard"* — **and it was rejected**, because the app's whole shape is that
+things surface where you are rather than making you go looking.
+
+**It does not become overload, because the card's length already scales with
+how much there is to say.** When nothing is wrong it is two short lines
+(§24.1). The confirmation only gets long when something is actually happening,
+which is exactly when it is wanted. **Start here and tighten if it proves too
+much** — easier to trim than to discover it was needed.
+
+**What it must never do: form its own opinion.** §7 already forbids this, and
+it is where journey 4's worst example came from — a confirmation saying
+*"nothing to do"* while the wizard asked for a dose change. **The receipt line
+may use its own voice about the value. The verdict is the wizard's, rendered.**
+
+### 25.4 Findings — three kinds and no fourth
+
+**Findings largely stop being a separate thing.** `buildFindings` is 709 lines
+today with its own classifiers and thresholds, and it is what produced the
+phosphate noise journey 5 records. **Once the engine produces one verdict per
+parameter, a notice is that verdict rendered** — there is nothing left for a
+separate findings engine to decide.
+
+**Three kinds survive.**
+
+**1. The parameter's verdict.** The engine's output, rendered. Covers every
+dosed and non-dosed parameter (§19).
+
+**2. A suspect reading — belongs to its parameter.**
+
+> **This alkalinity reading looks unusual**
+> 7.2 dKH, 1.3 below your last reading two days ago. That is a larger jump than
+> the tank has shown before. Worth retesting before acting on it.
+
+It reports the size of the jump against the tank's own history and asks for a
+retest. It does not say the kit is wrong (§14) and does not guess at a cause
+(§23.5).
+
+**3. Relationship notices — their own slot.** The small set that genuinely
+belong to no single parameter.
+
+> **Alkalinity and calcium are both falling faster than usual**
+> Alkalinity down 0.15 a day, calcium down 12 ppm a week, both steeper than the
+> last month. Consumption may have risen.
+
+*"Consumption may have risen"* is not §23.5 speculation, and the line between
+them is worth stating once: consumption is a figure the engine computes from
+the readings and the dose (`reef-chemistry.md` §6), so this reports the
+arithmetic. *"Something is using it up"* would be the same sentence about the
+tank, which the app cannot see, and is forbidden.
+
+And the magnesium gate, which is about a relationship even though it names one
+parameter (`reef-chemistry.md` §10):
+
+> **Magnesium is low at 1180 ppm**
+> Alkalinity and calcium corrections are held until magnesium comes up — neither
+> holds properly below about 1250.
+
+**These need their own slot in the summary**, since the summary is otherwise
+one notice per parameter. **How they are placed is not settled** — carried at
+§25.6.
+
+**A fourth kind is a finding, not a feature.** Anything that is none of these
+three is either a parameter verdict the engine should be producing, or a
+surface forming an opinion (§19, an S1 defect).
+
+### 25.5 Insights — deliberately unspecified
+
+**Not specified, on purpose.** Dan does not yet know what it is for, and the
+inventory found it never receives `doseStates` at all
+(`.agent/items/TW-027.md`).
+
+> *"We might even find out that we don't need it, to be honest."*
+
+**Deciding what a screen should say before knowing what it is for is how
+surfaces end up carrying their own opinions**, which is the problem being
+removed. Revisit once the other surfaces are rebuilt and it is clear what is
+left over. **It may not survive.**
+
+Until then Insights is bound by §19 like everything else: whatever it shows, it
+renders the engine's verdict or stays quiet. Being unspecified is not a licence
+to compute.
+
+### 25.6 The four carried open items
+
+**None is settled, none may be answered by an agent**, and they are listed
+together so they are not lost when parts 2 and 3 become decision records.
+
+**1. `reef-chemistry.md` §9's "wrong tool" rule.** Pointing at dry salt or a
+water change when a correction exceeds ~1.5 L contradicts the rate rules — a
+different product does not make a fast change safe. **That half is decided and
+§9 is amended**: the answer is a gradual plan and an honest duration (§24.23).
+**What is open is whether the volume ceiling has any remaining role** — a
+sanity check on a single day's dose, or dissolved because a long enough plan
+brings the daily volume under it anyway.
+
+**2. The 6.9 dKH card overlap.** §24.9 and §24.23 both claim that situation.
+Probably the short one on the dashboard and the fuller plan card in the wizard,
+**but not decided** — and see §24.23 on whether that card's offer is a return
+plan or a correction wearing its words.
+
+**3. App-level notices.** Out of the tank summary (§25.1). **Tasks is the
+likely home; the fit is unproven**, because Tasks today holds reminders the
+user created and these are the app noticing something.
+
+**4. Where relationship notices sit** in a summary that is otherwise one notice
+per parameter (§25.4).
+
+### Enforced by
+
+Per §10, named rather than asserted: **nothing asserts §25 today**, and the
+checker that comes closest passes on a live violation of it —
+`wordingcheck.mjs` asserts `claim:` against `d.headline` and does not look at
+`support:`, which is how `correction-done`'s hand-written support sentence
+survives (`.agent/items/TW-028.md`).
+
+Four checks would close it, and all four are extensions of work already filed:
+
+| The rule | The check | Filed as |
+|---|---|---|
+| 25.1's generated short form | every summary line's headline and first sentence are the engine's own strings, not literals | TW-028 |
+| 25.2's no-direction rule | no direction word appears in any steadiness-panel string | TW-028 |
+| 25.3's deferral | the confirmation renders the card and adds no verdict of its own | TW-028 |
+| 25.4's three kinds | every notice resolves to a parameter verdict, a suspect reading, or a registered relationship notice | TW-027 |
+
+**§25.1's hidden-versus-off distinction needs a test of its own**, and it is
+the one behaviour in this section that can fail silently in a way the user pays
+for: a hidden notice that does not come back when a worse verdict supersedes it
+is the app going quiet about a tank that is getting worse. `findingHidden`
+already implements the resurfacing half; nothing asserts it.
+
+### In plain terms
+
+The tank summary shows one line per parameter and those lines are not written
+anywhere — they are the first sentence of the card you get when you tap them,
+so the two can never disagree.
+
+Anything you do not want to see, you hide. Hiding lasts until the situation
+changes, and then it comes back, because the alternative is an app that goes
+quiet about a tank that is getting worse. If it keeps coming back and you never
+want it, there is a switch in Setup that turns that kind of notice off for
+good. That is the whole answer for someone deliberately running their phosphate
+at 0.02 — you turn that one off, and the app never has to ask you what kind of
+reefkeeper you are.
+
+The steadiness panel stops arguing with the advice above it. The advice says
+which way your alkalinity is going right now; the panel says how consistent it
+has been over the last few weeks, says which weeks at the top, and never uses
+the words rising or falling again. That is the fix for the screen that said
+alkalinity was rising directly above a panel saying it had fallen half a point
+a week.
+
+Log a reading and you get two lines confirming what you logged, then the same
+card the wizard would show you. Not a link to it. The same words.
+
+And the notices list stops being its own little engine with its own opinions.
+There are three kinds left: what the app thinks of a parameter, a reading that
+looks odd enough to retest, and the handful of notices about two parameters at
+once.

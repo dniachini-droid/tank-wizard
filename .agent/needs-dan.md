@@ -6,6 +6,49 @@ Decisions no agent may make. Newest at top. Dan clears this file.
 
 ## Open
 
+### 11. The four questions Stage 3 left open when the message specification went into canon — 2026-08-16
+
+Filed by the run that folded `message-spec-2-wizard-remaining.md` and
+`message-spec-3-surfaces.md` into canon. **All four are Dan's, none blocks
+Stage 4, and all four are carried in canon at `wizard-states.md` §25.6** — this
+entry exists so they are also in the file whose job is to hold them.
+
+**1. Does the volume ceiling have any role left?** `reef-chemistry.md` §9 is
+amended: where a correction exceeds the maintenance solution's reach the app no
+longer points at dry salt or a water change, because the constraint is the rate
+and a different product does not make a fast change safe. What survives is the
+half that says never quote an impossible volume. **Open:** whether ~1.5 L stays
+as a sanity check on a single day's dose, or dissolves because a plan spread
+over enough days brings the daily volume under it anyway.
+
+**2. Which card owns 6.9 dKH?** It is below `SAFE_BOUNDS`, so §24.9's *very
+low* card applies; it is also beyond the daily dose's reach, so §24.23's plan
+card applies. Two cards, one situation. The likely answer is the short one on
+the dashboard and the fuller plan card in the wizard — brevity where you
+glance, the plan where a plan gets set — **but it is not decided.** A second
+question sits inside it: §24.23's offer uses the **return plan** phrase, while
+`reef-chemistry.md` §28.2 offers a return plan only when the level is stable
+and out of band, and §28.5 says the upward instrument is a correction. So that
+card is either a correction wearing the plan's words, or §28.2's condition
+needs widening.
+
+**3. Where do app-level notices go?** No backup in three weeks, storage nearly
+full, a test kit expiring. **Decided: they leave the tank summary**, which is
+one notice per parameter and nothing else. **Open: Tasks is the likely home and
+the fit is unproven** — Tasks today holds reminders the user created, and these
+are the app noticing something. Work through when Tasks is specified.
+
+**4. Where do relationship notices sit?** The small set that belong to no
+single parameter — two parameters falling together, the magnesium gate — need
+their own slot in a summary that is otherwise one notice per parameter.
+`wizard-states.md` §25.4 has the wording; the placement is open.
+
+**One thing that is not on this list and is worth a line.** §22's `sliding`
+verdict renders as "Moving up/down fast", and §25.2 now says the steadiness
+panel never uses direction words. That is a drafting job constrained by a
+decided rule rather than a decision — recorded at §22 and §25.2, not folded
+into the four above.
+
 ### ~~10. Phosphate and nitrate now say less instead of saying wrong things — the rules that replace the silence are yours to write~~ — closed 2026-08-16, see Decisions
 
 **All nine decisions answered.** Recorded as `docs/spec/reef-chemistry.md`
@@ -541,7 +584,80 @@ column — where naming the banned term is the point.
 
 ## Decisions
 
-### 2026-08-16 (latest) — Dan, spec owner: the count is same-side, and nitrate's trend is patience rather than statistics
+### 2026-08-16 (latest) — Dan, spec owner: the message specification finishes, and Stage 3 with it
+
+Parts 2 and 3 of the message specification folded into canon on the owner's
+authority, the same way part 1 was earlier the same day. **Docs only.** The
+four questions it leaves open are Open item 11 above and `wizard-states.md`
+§25.6.
+
+**Two more wording rules join §23's five.** **Rule 6 — a recent dose change
+takes precedence in the wording.** The card describes the change and its
+result, not the bare position, because once a change is in play the useful
+question is no longer *where is it* but *did that work*. Its consequence is
+that `recovering` and `worsening` appear only when nothing has been done
+lately. **Rule 7 — headlines do not name the parameter, because the badge
+carries it** — except where the headline is a complete sentence that would not
+stand without it. The test is whether the sentence stands on its own, not
+whether the parameter appears.
+
+**The remaining wizard cards join §24, which is now twenty-three.** Correction
+arrived and correction finished (one state, two flags, never conflated),
+correction due, correction overrun, `recovering`, `worsening`, `fell-short`,
+`overshot`, the far-out plan card, one-reading-since-a-change, and still rising
+despite your dose change — **which completes all four contradiction states from
+journey 4b.** Two of the four still have no state in the engine; that is
+TW-026 and Stage 6d.
+
+**§9's wrong-tool rule is corrected.** Pointing at dry salt or a water change
+contradicted every rate rule in the document — a different product does not
+make a fast change safe, it makes an unsafe one easier to perform. The app
+says what it takes and offers a gradual plan: *nine days at a safe rate*. The
+half about never quoting an impossible volume stands.
+
+**The surfaces get a section of their own, `wizard-states.md` §25.** The tank
+summary shows one notice per parameter and nothing else, and its short form is
+**generated, never written** — the headline plus the first sentence of the
+wizard's card, which is §7's existing requirement and the only arrangement in
+which two wordings cannot drift apart. Three layers: collapsed to a headline,
+expanded to the live notices, and a hidden section below that unhides one at a
+time or all at once. **Hidden and off are two different things**, and the
+distinction is load-bearing: hide is per notice and temporary, and a
+superseding verdict returns it to the live list automatically; off is per
+notice type, permanent, and set in Setup. Hide once; if it keeps returning and
+is never wanted, turn the type off. That is also the answer to the
+ultra-low-nutrient case, and it is why the app never asks *"are you running
+ULNS?"* — §21 says Setup asks for facts.
+
+**The parameter-card contradiction is fixed by deciding what the panel is
+for**, not by wording. The wizard owns direction and works from the last few
+readings; the steadiness panel answers how consistent a level has been over a
+longer window, leads with that window as a heading, and **never uses direction
+words**. An explanatory caption was considered and rejected: if the panel needs
+a caption saying it is different, it is not different enough.
+
+**The reading confirmation shows a two-line receipt then the wizard's card
+verbatim**, and never forms its own opinion. **Findings collapse to three
+kinds:** the parameter's verdict, a suspect-reading notice belonging to its
+parameter, and a small set of relationship notices that belong to none.
+**Insights is deliberately unspecified and may not survive.**
+
+**Verification.** Docs only — canon, the two source specifications now reduced
+to decision records, the engine plan's Stage 3 marked done, and TW-026 to
+TW-028 updated with the wording they now build to. No code touched.
+
+**In plain terms.** The app now has, in writing, the exact sentence for every
+situation the dosing wizard can be in, and the rule for what each screen does
+with it. The summary line under a parameter is not written down anywhere — it
+is the first sentence of the card you get when you tap it, so the two cannot
+disagree. Hiding a notice lasts until the situation changes and then it comes
+back, because an app that goes permanently quiet about a tank getting worse is
+the failure this is guarding against; if you never want that kind of notice
+there is a switch in Setup. And the steadiness panel stops arguing with the
+advice above it — it says which weeks it is talking about, and it never says
+rising or falling again.
+
+### 2026-08-16 (earlier the same day) — Dan, spec owner: the count is same-side, and nitrate's trend is patience rather than statistics
 
 Closes the two questions §29.5 left open on the first pass, the same day and
 before anything shipped. Recorded in `reef-chemistry.md` §29.5, with §29's
@@ -599,7 +715,7 @@ high, one low, one high is phosphate doing what phosphate does, and the app
 stays quiet — which is the whole reason the count exists instead of a trend
 line.
 
-### 2026-08-16 (earlier the same day) — Dan, spec owner: phosphate and nitrate get their own rules — nine decisions in one pass
+### 2026-08-16 (earliest of the three) — Dan, spec owner: phosphate and nitrate get their own rules — nine decisions in one pass
 
 Closes open item 10 entirely, and authorises the spec edit that records it.
 Recorded as `docs/spec/reef-chemistry.md` **§29**. **Spec only — the

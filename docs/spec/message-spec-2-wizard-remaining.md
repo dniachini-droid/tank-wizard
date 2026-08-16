@@ -2,6 +2,13 @@
 
 Dan, 16 August 2026. Continues `message-spec-1-wizard.md`. Same five rules.
 
+**Folded into canon 16 August 2026, and this file is now the decision record
+rather than the reference.** Rule 6 is `wizard-states.md` §23.6; the ten cards
+are §24.13–24.21 and §24.23; §9's wrong-tool correction is
+`reef-chemistry.md` §9, "The wrong-tool rule, amended 16 August". The two open
+items carried from here are `wizard-states.md` §25.6, items 1 and 2. **Where
+this file and canon differ, canon wins.**
+
 **With this, the wizard is covered.** The other surfaces render these verdicts
 rather than forming their own.
 
@@ -128,6 +135,12 @@ contradicts everything else the app says about rate of change.
 
 **The right answer is a gradual plan and an honest duration.** Nine days is nine
 days; the app should say so and offer the plan.
+
+**Done:** `reef-chemistry.md` §9's rule is amended — the bullet no longer names
+another product, and the reasoning is recorded under "The wrong-tool rule,
+amended 16 August". `wizard-states.md` §2's branch 18 and §3's "Wrong tool" tab
+label are deliberately left standing: the branch still fires, and the label is
+a Stage 6c rewrite rather than a rename made in the same pass.
 
 **What still needs deciding:** whether the volume ceiling has any role left. It
 may be that a plan spread over enough days brings the daily volume back under
