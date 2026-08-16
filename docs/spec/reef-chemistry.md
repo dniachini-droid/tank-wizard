@@ -859,7 +859,7 @@ push layer itself remains open here.
 on whether it validates band/alert consistency. **Answered 14 Aug: it does** —
 §18 carries the rule forward, and `wizard-states.md` §13 gives the vocabulary and
 boundary rules it returns. The function itself still does not exist
-(`.agent/backlog.md` TW-002).
+(`.agent/items/TW-002.md`).
 
 **13.4 §8.4's step-cap relaxation has no threshold of its own.** Opened 15 Aug
 by the owner, deliberately left unanswered. §8.4 says the 25% cap relaxes when
@@ -872,7 +872,7 @@ have been describing different tanks. **Neither is authorised to move.** What
 is settled is only what the source may not be: not §27's wording margins, not
 a trend constant, not a borrowed figure of any kind. What it should be is a
 judgement about how much evidence justifies a larger-than-ordinary step, and
-belongs with whoever chooses it. Filed as `.agent/backlog.md` TW-049.
+belongs with whoever chooses it. Filed as `.agent/items/TW-049.md`.
 
 ---
 
@@ -1374,7 +1374,7 @@ The current app has the opposite arrangement, and it is a defect:
 Phosphate bounces. It genuinely does. Applying alkalinity's trend logic and
 thresholds to it produces noise dressed as findings. **That is a real defect,
 not a display problem** — the notices are wrong, not merely unhelpful — and it
-is filed as `.agent/backlog.md` TW-029.
+is filed as `.agent/items/TW-029.md`.
 
 Added to §12's refusals: **the app does not judge one parameter by another
 parameter's thresholds, trend logic or evidence bar.**
@@ -1437,7 +1437,7 @@ Not settled here, and not to be inferred from it:
 Per §14, named rather than asserted: **nothing asserts any of this today.**
 `scripts/verify/wordingcheck.mjs` checks that one loop in one function repeats
 the wizard's headline, which is a fraction of the rule. The enforcement this
-section needs is `.agent/backlog.md` TW-028, and until it exists this section
+section needs is `.agent/items/TW-028.md`, and until it exists this section
 describes an intention.
 
 ### In plain terms
@@ -1877,7 +1877,7 @@ arithmetic, not chemistry: `next` is rounded to a tenth (10.8) and compared
 against an unrounded `currentDose` (10.799999999999999), so `next >
 currentDose` is true by 1.8 × 10⁻¹⁵ (`alkalinity.js:922`, `calcium.js:629`,
 `helpers.js:1114` — all three engines, identically). Pre-existing and newly
-reachable, not introduced. Filed as `.agent/backlog.md` TW-050; fixing it moves
+reachable, not introduced. Filed as `.agent/items/TW-050.md`; fixing it moves
 `action` values and needs its own audit.
 
 ### Flagged, not changed
@@ -1888,7 +1888,7 @@ correction or none — so `repeatedCorrections(...) >= 2` is false in all 5,940
 cases. That is a gap in the app's widest behavioural net, not a fault in this
 decision, and it is not fixed here: widening the corpus re-records the
 fingerprint for reasons unrelated to §27 and belongs in its own item. Filed as
-`.agent/backlog.md` TW-047.
+`.agent/items/TW-047.md`.
 
 ### Enforced by
 
@@ -2046,7 +2046,7 @@ Recorded rather than answered. **None of these is authorised.**
 
 **Nothing yet, and that is stated rather than implied.** §14 exists because
 this document once claimed enforcement it did not have. No code implements
-drift back; no test asserts it. The item is `.agent/backlog.md` TW-048,
+drift back; no test asserts it. The item is `.agent/items/TW-048.md`,
 untagged — the decision settles that the instrument exists and what it must
 respect, not that it may be built without a design.
 

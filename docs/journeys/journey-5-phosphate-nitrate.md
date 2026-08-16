@@ -3,7 +3,7 @@
 Dictated by Dan, 15 August 2026.
 
 The first journey about parameters the app does **not** dose. Read alongside
-`.agent/backlog.md` TW-029, which records that both are currently assessed with
+`.agent/items/TW-029.md`, which records that both are currently assessed with
 alkalinity's reasoning and calls it a defect.
 
 ---

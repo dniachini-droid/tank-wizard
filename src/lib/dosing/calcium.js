@@ -4,7 +4,7 @@ import { minutesOf, nowTime } from '../analytics/time-of-day.js'
 import { dayNum } from '../analytics/water-changes.js'
 import { todayStr } from '../dates.js'
 import { alkAnomaly, alkFit, alkIntervals, alkStamp, applyDoseConstraints, directionConsistent, noteCurrentAndInterventions, rateLimitDose, trendConfirmed } from './alkalinity.js'
-import { correctionPlanFor, correctionProgress, doseDriftedFrom, dosePlausible, gainingHold, mgEffectPerMl, missingDoseInputs, outOfBandWorsening, pendingCorrection } from './helpers.js'
+import { correctionPlanFor, correctionProgress, doseAction, doseDriftedFrom, dosePlausible, gainingHold, mgEffectPerMl, missingDoseInputs, outOfBandWorsening, pendingCorrection } from './helpers.js'
 import { strengthPlausible } from './magnesium.js'
 
 /* --- Calcium dosing assessment ---
@@ -626,7 +626,7 @@ export function assessCalcium({ readings, doseLog = [], waterChanges = [], setti
 
   out.ok = true;
   out.recommendedDose = next;
-  out.action = next > out.currentDose ? "increase" : next < out.currentDose ? "decrease" : "hold";
+  out.action = doseAction(next, out.currentDose);
   out.staged = mag > 3;
 
   if (out.staged) {
