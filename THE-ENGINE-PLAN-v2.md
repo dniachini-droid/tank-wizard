@@ -139,20 +139,25 @@ closed three of them on 16 August.** Item 5: **§24.24 does not word the
 logged-correction case, because the card does not fire when a correction is
 logged.** Item 4: **relationship notices are the third of the ordering's four
 tiers.** Item 6: **the fixed parameter order breaks the headline's tie too** —
-one order, one reason. **Three remain**, none blocking anything — §9's volume
-ceiling and the 6.9 dKH overlap are chemistry decisions in Stage 5's list, and
-app-level notices in Tasks is a placement question for Stage 6.
+one order, one reason. **Three remain in canon**, none blocking anything — §9's
+volume ceiling, the 6.9 dKH overlap and app-level notices in Tasks. **All three
+are answered by `docs/spec/stage-5c-last-items.md`, which is not folded**, so
+canon still carries them as open and they are a fold rather than a question.
 
-**Stage 5b closed the rest of Stage 4's open list — 16 August**, eight owner
-decisions folded from `docs/spec/stage-5b-remaining-items.md`: ammonia's own
+**Stage 5b closed the rest of Stage 4's open list — 16 August**, seven of its
+eight owner decisions folded from `docs/spec/stage-5b-remaining-items.md`:
+ammonia's own
 section (`reef-chemistry.md` §32, G-22), the notice ordering (G-28), the off
 switch's scope (G-31), `drifting` producing no notice and the deletion of
 "heading out of range" (G-21), the kit-accuracy split (D-1), and the
 negative-consumption suppression, plus the headline tie-break the ordering turned
-out to answer as well. Filed as **TW-079 to TW-083**. **Five items remain of the
-gap report's open list and all five are Dan's** — `.agent/needs-dan.md` item 14.
-Stage 3's own three surviving questions (`wizard-states.md` §25.6 items 1–3) are
-separate and unchanged.
+out to answer as well. Filed as **TW-080 to TW-084**. **Four items remain of the
+gap report's open list and all four are Dan's** — `.agent/needs-dan.md` item 14.
+
+**The eighth decision — the parameter tile (G-9) — is decided and not folded.**
+It landed after the fold ran. So did **Stage 5c**, which answers §25.6 items 1–3,
+magnesium's default band and Insights. **Two staging documents are now ahead of
+canon**, and until they are folded canon is the reference and they are not.
 
 **Insights was deliberately not specified** and may not survive; see §25.5.
 

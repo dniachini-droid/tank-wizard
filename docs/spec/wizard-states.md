@@ -2967,7 +2967,7 @@ Five checks would close it, and all five are extensions of work already filed:
 | 25.1's notice ordering | the expanded list is the four tiers in order, proportional distance within the first two, the fixed parameter order breaking ties — asserted on a tank where tier and distance disagree | TW-081 |
 | 25.1's off switch | a parameter switched off produces no notice of any kind, alerts and safe-bounds excursions included, and no other parameter is affected | TW-082 |
 | 25.4's deleted `heading-out-*` | no surface computes a second direction claim over a second window; the id is absent | TW-080 |
-| §32's ammonia rules | a zero reading produces nothing anywhere; any positive reading produces one alert-tier notice; no trend, verdict or dose is reachable | TW-079 |
+| §32's ammonia rules | a zero reading produces nothing anywhere; any positive reading produces one alert-tier notice; no trend, verdict or dose is reachable | TW-084 |
 
 **§25.1's hidden-versus-off distinction needs a test of its own**, and it is
 the one behaviour in this section that can fail silently in a way the user pays

@@ -6,27 +6,46 @@ Decisions no agent may make. Newest at top. Dan clears this file.
 
 ## Open
 
-### 14. The five that survive Stage 5b — 2026-08-16
+### 14. The four that survive Stage 5b — 2026-08-16
 
 Filed by the run that folded `docs/spec/stage-5b-remaining-items.md` into canon.
 **Eight owner decisions cleared the gap report's open list** — ammonia's own
 section, the notice ordering, the off switch's scope, `drifting`, the
 "heading out of range" deletion, the kit-accuracy split in two parts, and the
 negative-consumption suppression, **and the headline tie-break the ordering
-turned out to answer as well**. **Five things are still yours**, and this entry
+turned out to answer as well**. **Four things are still yours**, and this entry
 replaces items 12 and 13 as the live list rather than adding to them.
 
-**Scope, stated so the count is not read wider than it is.** These five are what
+**Scope, stated so the count is not read wider than it is.** These four are what
 is left of the gap report's open list — items 12 and 13's lineage. **Item 11 is
 still open on its own terms** and is not counted here: its questions 1, 2 and 3
 (§9's volume ceiling, the 6.9 dKH card overlap, where app-level notices go) are
 carried in canon at `wizard-states.md` §25.6 items 1–3. Its question 4 closed
 today with the ordering.
 
-**1. What the parameter tile's chip shows (G-9).** Unchanged since Stage 5 —
-deferred rather than decided. The tile turned out better than the code suggested
-and its two real faults were the vocabulary split (now §15's **range**) and
-bands that do not match canon's defaults.
+**Amended after the merge with main — 16 August.** Two staging documents landed
+on main the same evening, `stage-5b-remaining-items.md` in its original form and
+`stage-5c-last-items.md`. **Neither is folded into canon**, and nothing in either
+may be read as canon until it is. What they change about this list: **entry 1 is
+struck** — the parameter tile is decided in stage-5b decision 1 and is now a fold
+waiting to happen rather than a question for you. **Item 11's three surviving
+questions are answered by stage-5c**, along with magnesium's default band
+(TW-052) and Insights, which survives — again, decided, not folded. **TW-063
+stands and is still open on its own terms.**
+
+**~~1. What the parameter tile's chip shows (G-9).~~ — decided 2026-08-16, and
+not yet in canon.** `docs/spec/stage-5b-remaining-items.md` decision 1 answers
+it: **the tile keeps all five elements.** The value, the slider, the position
+word and the sparkline are **one fact shown four ways** — presentation, and the
+app's first rule working as intended — so there are three claims on the tile, not
+four severities: the position word, the steadiness word and the dose chip,
+**every one sourced from `classifyReading`**. Reskinning is Phase 9 and is not
+that decision.
+
+**This is not a question for you; it is a fold that has not happened.** The
+decision landed on the same day as the fold that answered the other seven and
+after it had run, so canon does not carry it yet. **No agent may treat G-9 as
+open**, and none may fold it without the ordinary authorisation.
 
 **2. What an "N of M in range" claim may count (G-29).** And with it, what a
 completely quiet tank's collapsed headline says, since all three of its slots
@@ -75,12 +94,17 @@ the earliest parameter they name**, because tier 3 needs an internal order for t
 same determinism reason as the rest. **Correct either if it is wrong; neither is
 waiting on you.**
 
-**In plain terms.** Five things left, and none of them is holding anything up.
-Two are about what a screen says when nothing is wrong — the little chip on each
-tile, and the line at the top when your whole tank is fine. One is a trap you
-already know about: the four status colours mean "too low / too high" on some
-screens and "out of range / needs attention" on others. And two are fine print in
-the evidence rules you set on Sunday.
+**In plain terms.** Four things left, and none of them is holding anything up.
+One is about what the summary line says when your whole tank is fine. One is a
+trap you already know about: the four status colours mean "too low / too high" on
+some screens and "out of range / needs attention" on others. And two are fine
+print in the evidence rules you set on Sunday.
+
+The fifth — the little chip on each tile — **you answered the same evening**, in
+the copy of stage-5b that landed on main: the tile keeps everything it shows,
+because the value, the slider, the position word and the sparkline are one fact
+shown four ways rather than four opinions. That one is waiting on a fold, not on
+you.
 
 The sixth was the tie — two parameters exactly, identically out of range, and
 which one the summary line names first. **You answered it the same day**: the
@@ -164,7 +188,7 @@ Stage 5b.** `reef-chemistry.md` **§32**. Two states — undetectable and
 detectable — and not §13's seven bands, because its target is zero. Silence when
 undetectable; one alert-tier notice on a single reading when detectable; no
 trend, no steadiness verdict, no dose, no analysis window. The
-`CONSISTENCY_RULES` entry and the second finding tier go with it. TW-079.
+`CONSISTENCY_RULES` entry and the second finding tier go with it. TW-084.
 
 **~~4. The four cards with no state (G-1 to G-4)~~ — closed 2026-08-16, see
 Decisions.** `due`, `worked` route 12, the negative-consumption hold and its

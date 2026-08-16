@@ -1,256 +1,277 @@
-# Stage 5b — The Remaining Items
+# Stage 5b — The Remaining Open Items
 
-Dan, 16 August 2026. Owner decisions. Clears the open list `.agent/gap-report.md`
-left behind after Stage 5 answered the numbers and the four-cards fold answered
-the states — G-21, G-22, G-28, G-31, D-1, and the two questions those folds
-raised on their way through.
+Dan, 16 August 2026. Owner decisions. Clears the open list from
+`.agent/gap-report.md` Part 2 and the items carried from
+`stage-5-the-numbers.md`.
 
-Eight decisions. **The spec edits are authorised. Docs only.**
-
-**Folded into canon 16 August 2026, and this file is now the decision record
-rather than the reference.** Ammonia is `reef-chemistry.md` **§32**, its own
-section. The notice ordering and the off switch's scope are `wizard-states.md`
-**§25.1**; `drifting`'s answer is **§13** and the deletion it causes is **§25.4**;
-the kit-accuracy split is `reef-chemistry.md` **§19**; and the
-negative-consumption suppression is `reef-chemistry.md` **§24** with
-`wizard-states.md` **§24.24**. **Where this file and canon differ, canon wins.**
-
-The implementation is filed as **TW-079** to **TW-083**, all untagged, plus
-amendments to **TW-075** and **TW-076** where this decision overtook them. The
-five items still open at the end of this file are `.agent/needs-dan.md` item 14.
+**With this, nothing on the gap report's open list is unanswered.** Stage 6
+proceeds.
 
 ---
 
-# 1. Ammonia gets a section of its own
+## Folded into canon 16 August 2026 — and what this file now is
 
-**It does not fit `wizard-states.md` §13's bands, because its target is zero.**
+**This file is the decision record, not the reference.** Decisions 2 to 8 below
+are in canon: ammonia is `reef-chemistry.md` **§32**, its own section; the notice
+ordering and the off switch's scope are `wizard-states.md` **§25.1**;
+`drifting`'s answer is **§13** and the deletion it causes is **§25.4**; the
+relationship-notice placement is **§25.1** and **§25.4**; the kit-accuracy split
+is `reef-chemistry.md` **§19**; and the negative-consumption suppression is
+`reef-chemistry.md` **§24** with `wizard-states.md` **§24.24**. **Where this file
+and canon differ, canon wins.**
 
-Every other parameter has a target *range* — two edges, a width, a midpoint —
-and the bands, the alert offsets, the ordering fraction and the margins are all
-built on that shape. None of it survives when the target is a point. Six of the
-seven bands are unreachable and the seventh, `in-band`, would have to mean
-*exactly zero*, which is a value rather than a band.
+**Decision 1 is not in canon.** The fold covered the seven that follow it, and
+the parameter tile (G-9) was still recorded as open when it ran. **It is decided
+here and awaiting a fold** — `.agent/needs-dan.md` item 14 carries it as such,
+and no agent may treat it as unanswered.
 
-**Two states:**
+The implementation is filed as **TW-080** to **TW-084**, all untagged, plus
+amendments to **TW-075** and **TW-076** where these decisions overtook them.
+**TW-084 is the ammonia item** — it was filed as TW-079 and renumbered when
+Stage 6a took that number on main. The open list at the end of this file is
+reconciled below and is `.agent/needs-dan.md` item 14.
 
-| State | Condition | What the app does |
-|---|---|---|
-| Undetectable | the reading is zero | **nothing at all** |
-| Detectable | the reading is above zero | **one notice, at alert tier** |
+---
+# 1. The parameter tile keeps all five elements
 
-**Silence when undetectable.** No verdict, no notice, no tile state, no entry in
-the tank summary, no clause in the collapsed headline. Almost every ammonia
-reading on an established tank is zero, and a parameter that confirms it is fine
-every time is a line the keeper stops reading — which costs exactly once.
+Gap report G-9. `ParamCard` shows the value, a slider with the range edges, a
+position word, a sparkline, a steadiness word with a date, and a dose chip when
+one applies.
 
-**An alert-tier notice when detectable, on one reading.** No second reading is
-waited for. §30's evidence bars are about movement and none of them applies.
+**All of it stays. What changes is where the words come from.**
 
-**And none of the rest of the machinery:**
+The gap report counted four independently computed severities in one card,
+which is why one reading can disagree with itself in a square inch. But looking
+at the tile rather than the code, the value, slider, position word and
+sparkline are **one fact shown four ways** — that is presentation, and it is the
+app's first rule working as intended: state it, then show the basis. The
+position word is the claim; the slider and the numbers beside it are the basis,
+on the same tile.
 
-- **no trend** — never graded for movement in either direction; 0.5 then 0.25 is
-  not a fall the app reports;
-- **no steadiness verdict** — §22's six do not apply, and the
-  `CONSISTENCY_RULES` entry goes;
-- **no dose** — not dosed, no product, no rail, no return plan;
-- **no analysis window** — each reading is judged alone.
+The steadiness word is a second genuine claim. The dose chip is a third.
 
-The two live findings, `ammonia-high` and `ammonia-detected`, become one. A
-second tier is a band, and there are none here.
+**So: three claims, four presentations of the first, and every one sourced from
+`classifyReading`.** They cannot disagree because there is nothing left to
+disagree with.
+
+Reskinning is Phase 9's work and is not this decision.
 
 ---
 
-# 2. The notice list gets its order
+# 2. `drifting` is a tile state, not a notice
 
-**§25.1 gains it. Four tiers:**
+Gap report G-21. `drifting` — inside the range, trending toward an edge — is one
+of §13's seven bands. The tile can show it. **It produces no notice.**
 
-1. **alerts**
-2. **out of range**
-3. **relationship notices**
-4. **everything else, in a fixed parameter order**
+Nothing is wrong yet: the level is in range. A notice for every parameter
+wandering inside its own range is the kind of noise this rebuild exists to
+remove, and if the *dose* is actually wrong the wizard says so on its own terms.
 
-**The fixed parameter order: alkalinity, calcium, magnesium, salinity, nitrate,
-phosphate, potassium, ammonia.**
+## This deletes the "heading out of range" warning entirely
 
-**Within the first two tiers, ranked by proportional distance** — how far past
-the nearer edge, as a share of the range's own width. **The fixed order breaks
-ties.**
+`findings.js:466-557`, and it is the specimen the gap report singled out:
 
-Same key as the collapsed headline sorts on, and for the same reason: 0.3 dKH
-and 30 ppm are not two sizes of the same thing. **A ranking key, not a margin** —
-§27 rule 3 is untouched.
+> *"Alkalinity is 8.5 dKH and moving down at about 0.35 dKH a week. At that pace
+> it reaches the bottom of your range in roughly 12 days. The dosing protocol
+> looks only as far back as your last dose change and sees nothing to act on
+> there, so no dose change is suggested yet — but the longer view is drifting.
+> Worth another test or two to see which holds."*
 
-The fixed order is a total order, so the list is deterministic. A list that
-reshuffles without the tank changing is a list nobody can learn.
-
-**And it breaks the collapsed headline's tie as well** — the question
-`wizard-states.md` §25.6 item 6 had been carrying since the four-cards fold.
-
-> **It was decided about the notice list but it applies to both — one order, one
-> reason.**
-
-Which also means the headline and the list beneath it can never name two equally
-out-of-range parameters in opposite orders. The tiles' own order stays not
-chosen: a display arrangement that may change for display reasons cannot be what
-makes a headline checkable.
+**That is a surface reconciling two time windows in prose**, which is precisely
+what §25.2 replaced with a structural fix. It is the 16 August contradiction,
+written down and shipped. It goes.
 
 ---
 
-# 3. The off switch is per parameter, and it covers everything
+# 3. Ammonia — its own model, and a short one
 
-**Off is per parameter**, not per finding id, not per id family, not per §25.4
-kind. Turning phosphate off turns off phosphate and nothing else; nitrate is
-untouched.
+Gap report G-22. Ammonia has no chemistry section and does not fit the one
+canon has. Every other parameter has a range you sit inside; **ammonia's target
+is zero**, so §13's seven bands do not apply — there is no "in range" for a
+parameter that should read nothing.
 
-**It includes alerts and safe-bounds excursions.** There is no notice a
-parameter can produce that survives its switch being off — including ammonia's.
+**The whole model:**
 
-**The reasoning, which is the half worth recording:**
+| Undetectable | Silence. Not a green tick, not a verdict — nothing. |
+| Detectable | An immediate notice at the alert tier. |
+| Trend, steadiness, dose | None of them. Ever. |
 
-> **The keeper ran the test and typed the number in.** The app is choosing
-> whether to **comment** on a figure already in front of them — it is not
-> informing them of something they do not have.
+No band, no seven-word vocabulary, no steadiness verdict, no analysis window,
+no noise floor beyond what the kit resolves.
 
-Every instinct against letting a user silence an alert comes from systems that
-hold information the user does not: a smoke alarm, a warning light, a sensor
-nobody is watching. **This app holds none.** The reading is on the tile, on the
-chart and in the log. Turning the notice off removes the app's remark about it
-and nothing else.
-
-It also matches hide exactly, which §20 settled the same way and for the same
-reason. Two controls with different exception lists teach the keeper that the
-rules are arbitrary.
+**One reading is grounds for acting**, which is true of no other parameter and
+is why it needs its own section rather than an entry in an existing table.
 
 ---
 
-# 4. `drifting` produces no notice — only a tile state
+# 4. Kit accuracy — deleted for alkalinity, reported without a verdict for the rest
 
-It colours the tile and says where the reading sits. **It produces no notice, no
-summary line and no card.**
+Gap report D-1, which was worked up with three options rather than deleted,
+because canon's rule against telling a keeper their kit is wrong was argued
+from **drift**, and an independent lab panel is not drift.
 
-A band is a position, not an event. `drifting` says the reading is **inside its
-band**, which is where it is meant to be; what it adds is a direction, and
-direction is the wizard's.
+## Alkalinity's version is arithmetic on a comparison that does not exist
 
----
+**ICP does not measure carbonate alkalinity.** So the finding compares
+alkalinity readings against something that cannot measure alkalinity. That is
+not a rule to debate — **delete it outright.**
 
-# 5. "Heading out of range" is deleted entirely
+## Calcium and magnesium keep the observation, lose the verdict
 
-**A deletion, recorded with its reason** rather than left as an empty slot for
-someone to fill later.
+ICP does measure both, so a paired comparison is real. The finding survives as
+a statement about the **comparison**, not about the kit:
 
-> *"Alkalinity is 8.5 dKH and moving down at about 0.35 dKH a week … The dosing
-> protocol looks only as far back as your last dose change and sees nothing to
-> act on there, so no dose change is suggested yet — **but the longer view is
-> drifting.** Worth another test or two to see which holds."*
+> Your last three calcium readings sat 25% above the lab panel.
 
-**It is a surface reconciling two time windows in prose, which §25.2 replaced
-with a structural fix.** §25.2's answer was never to word it better — it was to
-decide what each surface is for, so the two never make the same kind of claim and
-never need reconciling. This is the reconciliation the fix removed the need for,
-still running.
-
-Nothing replaces it. If a level moving inside its band warrants saying
-something, the wizard says it.
+**No "your kit is wrong". No "worth replacing the reagent".** The observation is
+reported; the conclusion is the keeper's. That is §23.5's rule applied
+precisely — report what was seen, do not name what it means.
 
 ---
 
-# 6. Kit accuracy — one deletion, two demotions
+# 5. Notice ordering — three tiers, then a fixed order
 
-`.agent/gap-report.md` D-1, answered in two parts because it is two questions.
+Gap report G-28. The summary shows one notice per parameter; canon said nothing
+about the order.
 
-**Alkalinity: deleted outright, and not for canon's reason.** **ICP does not
-measure carbonate alkalinity.** ICP measures elements; alkalinity is a titration
-result. The two numbers are not measurements of the same quantity, so **the
-comparison cannot exist** — this is not a rule being enforced, it is arithmetic
-on two different properties. No future decision about ICP reopens it.
+**Tier 1 — alerts**, ranked among themselves by proportional distance.
+**Tier 2 — out of range**, same ranking.
+**Tier 3 — relationship notices.**
+**Tier 4 — everything else, in a fixed parameter order.**
 
-**Calcium and magnesium: the observation survives, the verdict does not.** ICP
-does measure both, against the same water.
+## The fixed order
 
-> *"Your last three calcium readings sat 25% above the lab panel taken the same
-> day."*
+**Alkalinity, calcium, magnesium, salinity, nitrate, phosphate, potassium,
+ammonia.**
 
-**And nothing after it.** No *"your kit is reading high"*, no *"worth replacing
-the reagent"*. **The app does not know which of the two is wrong** — a lab is a
-better measurement, not a true one, and the sample was drawn, stored and posted
-by the keeper.
+Roughly how often each is looked at. **Ammonia sits last** — unless it is
+detectable, in which case it is an alert and is at the top by definition.
 
-5% stays as the trigger. 25% goes with the verdict it graded: one wording, one
-severity, `watch`.
+A salinity alert jumps to the front; once it clears, salinity drops back to
+fourth.
 
----
+## Why relationship notices sit third, not first
 
-# 7. The negative-consumption card does not fire when a correction is logged
+They were proposed for the top, above alerts, and that was rejected: **an alert
+is a level that needs attention now; a relationship notice is context.** Context
+does not outrank a tank in trouble.
 
-This closes the question §24.24 left open the day before. **Not a second
-wording — a suppression.**
+The magnesium gate is not an exception to this. When it fires, magnesium is
+below alert-low, so magnesium's own alert is already at the top — the
+relationship notice sits below it, explaining what is being held.
 
-A logged correction is the first of the six ordinary causes `reef-chemistry.md`
-§24 itself lists. Where one is in the record the arithmetic is explained and
-there is nothing to report. The card would be the app announcing a surprise and
-explaining it away in the same breath, about the keeper's own action.
+## The tie-break
 
-**§24 part 3 is now spent entirely**: no water change in either direction, no
-missing correction, no logged one. Parts 1, 2 and 4 are untouched, and the
-suppression now agrees with part 4's count, which never counted an interval with
-a correction logged in it.
+Two parameters equally far out proportionally: **the fixed order above breaks
+the tie.** No new rule.
 
 ---
 
-# 8. The implementation is filed untagged
+# 6. Off is per parameter, and it means off
 
-**TW-079** ammonia; **TW-080** `drifting` and the deleted finding; **TW-081** the
-notice ordering; **TW-082** the off switch; **TW-083** kit accuracy. TW-075 and
-TW-076 are corrected where this decision overtook them.
+Gap report G-31. §25.1 registers **hide** (per notice, temporary, resurfaces on
+supersession) and **off** (permanent, set in Setup). What canon never said is
+what a *type* is.
 
-**Untagged. None may be built without `[approved]`.**
+**A parameter.** Turn phosphate off and nothing about phosphate speaks again
+until it is turned back on.
 
----
+Not per finding id, not per finding family, not per §25.4 kind.
 
-# What remains open after this
+## Alerts and safe-bounds excursions are included
 
-**Five of the gap report's open list, and every one is Dan's.**
-`.agent/needs-dan.md` item 14. Stage 3's own three surviving questions —
-`wizard-states.md` §25.6 items 1 to 3, the volume ceiling, the 6.9 dKH card
-overlap and where app-level notices go — are a separate list and are unchanged
-by this fold; §25.6 items 4 and 6 closed with decision 2.
+**Off means off.** Turning phosphate off silences the below-0.03 warning too.
 
-**1. What the parameter tile's chip shows** (G-9). Deferred at Stage 5 rather
-than decided.
+> *"If the notifications go off, all notifications go off. They turned it off."*
 
-**2. What an "N of M in range" claim may count** (G-29) — and therefore what a
-completely quiet tank's headline says, since all three of its slots drop.
+The reasoning is the strongest part of the decision, and it applies to the
+whole app: **the keeper ran the test and typed the number in.** They already
+know the level is low. The app is not telling them something they do not have
+in front of them; it is choosing whether to comment.
 
-**3. The severity colours mean direction on one screen and tier on another.**
-§15's mapping is redone in the four registered colours; `paramStatus` still uses
-two of them for *under the minimum* and *over the maximum*. TW-072 cannot be
-built until it is answered.
-
-**4. Two relationships `reef-chemistry.md` §30 deliberately did not settle** —
-§30.1's three-readings bar against `directional()`'s four-row gate, and whether
-claiming a dose change **worked** uses §30.2's bar or stays a stability question
-under §11.
-
-**5. `settings.mgAlertLow`** (N-2) — a live per-user override with no Setup field
-and no canon entry.
+This is the same principle as everything being hideable, and it is the answer
+to the ultra-low-nutrient case §25.1 names — someone deliberately running
+phosphate at 0.02 turns phosphate off, and the app never asks whether they are
+running an ultra-low-nutrient system.
 
 ---
 
-# The sixth, answered the same day
+# 7. Relationship notices — placement
 
-**What breaks an exact tie in §25.1's headline ordering.** Carried since the
-four-cards fold, put back with this one, and closed: **decision 2's fixed
-parameter order breaks it too.** One order, one reason. TW-076 and TW-081 share
-a single definition of it rather than carrying two.
+Gap report §25.6 item 4. **Tier 3 of the ordering above**, in their own group,
+below out-of-range and above the fixed parameter order.
+
+They are about the tank rather than a parameter, so attaching one to the
+parameter most affected was rejected: the magnesium gate hung under alkalinity
+would be missed by someone looking at calcium, which is also being held.
 
 ---
 
-# Two things this fold derived rather than decided
+# 8. The negative-consumption card does not fire when a correction is logged
+
+Carried from the §24.24 fold-in. The card exists because a rise the dose cannot
+explain is unexplained. **If a one-off correction is logged, the rise is
+accounted for and the card is simply wrong.**
+
+No card, no escalation, no counting toward the three-consecutive threshold.
+
+---
+
+
+# What the fold added, and where to read it
+
+The decisions above are the owner's words. Canon carries them plus the
+consequences the fold had to settle to make them implementable. **Nothing here is
+a new decision** — each is either a restatement, a boundary, or a rule already in
+canon applied to the new text.
+
+**Ammonia** (`reef-chemistry.md` §32). "Undetectable" and "detectable" are given
+a definition the app can apply — **a reading above zero** — because §5 abolished
+per-kit figures and ammonia is not to reacquire one. The single reading is stated
+as carrying **no evidence bar**: §30's three bars are about *movement*, and
+detectability is not a movement claim. `wizard-states.md` §13 is amended to say
+ammonia falls **outside** its seven bands rather than reaching only some of them,
+which is the one place the existing rule did not stretch. The two findings
+`ammonia-high` and `ammonia-detected` collapse to one — a second tier is a band.
+The `CONSISTENCY_RULES` ammonia entry is deleted rather than left as dead
+configuration (§22).
+
+**The ordering** (`wizard-states.md` §25.1). The proportional-distance key is
+stated to be **a ranking key and not a margin**, so `reef-chemistry.md` §27
+rule 3 is untouched — it gates no recommendation and relaxes no constraint. The
+fixed order being a **total order** is what makes the list deterministic, which
+is the property being bought. And it breaks the collapsed headline's tie as well
+as the list's — *one order, one reason* — so the headline and the list beneath it
+can never name two equally out-of-range parameters in opposite orders.
+
+**Off** (`wizard-states.md` §25.1). Recorded as matching **hide** exactly, on
+§20's own reasoning, because two controls with different exception lists teach
+the keeper that the rules are arbitrary. What off does *not* do is stated: the
+reading is still recorded, charted and tiled, and the engine still assesses the
+parameter (§19). It removes the parameter from the notices — the app speaking
+first.
+
+**The deleted warning** (`wizard-states.md` §25.4). Recorded **as a deletion with
+its reason**, next to the others, so the empty slot in the card set is not read
+as an invitation to write a replacement.
+
+**Kit accuracy** (`reef-chemistry.md` §19). The finding's two live figures split:
+**5% is ratified as the trigger** on §31's terms, and **25% goes with the
+severity ladder it graded** — one wording, one severity, at `watch`, because
+`act` would contradict a notice that asks for nothing.
+
+**The negative-consumption suppression** (`reef-chemistry.md` §24). §24 part 3 is
+now **spent entirely** — no water change in either direction, no missing
+correction, no logged one — and the suppression is noted to agree with part 4's
+count, which never counted an interval with a correction logged in it.
+
+---
+
+# Two things the fold derived rather than decided
 
 Both are written into §25.1 the way §20's mapping of *serious* and §25.1's own
-slot table are written — **so the rule is implementable, correctable in one
-line, and not mistaken for a decision.**
+slot table are written — **so the rule is implementable, correctable in one line,
+and not mistaken for a decision.**
 
 **pH is not in the fixed parameter order.** The order names eight parameters and
 the app has nine. pH has no alert tier but does produce notices — §31's *pH high*
@@ -262,3 +283,48 @@ one-line correctability, and so the fixed order still names eight.
 **Relationship notices order among themselves by the earliest parameter they
 name** in the fixed order. Tier 3 needs an internal order for the same
 determinism reason as the others.
+
+---
+
+# What is now closed
+
+Every item on the gap report's open list, plus the two carried from tonight's
+folds. Specifically: G-9, G-21, G-22, G-27, G-28, G-31, D-1, §25.6 item 4, the
+headline tie-break, and the logged-correction case.
+
+**Still open, and none of it blocks Stage 6:**
+
+- **The 6.9 dKH card overlap** (§25.6 item 2) — three cards claim that
+  situation, and the third was found by the gap report after the item was
+  written.
+- **App-level notices going to Tasks** (§25.6 item 3) — six finding ids, no
+  home, and the fit is unproven.
+- **§9's volume ceiling** (§25.6 item 1) — whether the ~1.5 L limit has any
+  remaining role once a plan spreads a correction over days.
+- **Magnesium's default band** ships 1250–1400 against §2 layer 3's 1275–1425
+  (TW-052).
+- **TW-063** — the golden sweep feeds each engine only its own element's
+  readings, so it is structurally blind to cross-parameter rules and could let
+  Stage 6 break the magnesium gate without the fingerprint moving.
+- **Insights** (§25.5) — deliberately unspecified, may not survive.
+
+## Reconciled after the merge — 16 August
+
+Two lists were written against this file on the same day and both are kept.
+
+**Five of the six above are since answered by `stage-5c-last-items.md`** — the
+6.9 dKH overlap, app-level notices going to Tasks, the volume ceiling, magnesium's
+default band, and Insights, which survives. **TW-063 stands.** Stage 5c is a
+staging document like this one and **is not folded into canon**; nothing in it
+may be read as canon until it is.
+
+**Four items are open on the other lineage** — the one `.agent/needs-dan.md`
+items 12 and 13 carried, now item 14: what an **"N of M in range"** claim may
+count (G-29); the **severity colours** meaning direction on one screen and tier
+on another; the **two relationships `reef-chemistry.md` §30 did not settle**; and
+**`settings.mgAlertLow`** (N-2). None blocks Stage 6.
+
+**And one is decided here but not in canon: the parameter tile** (G-9, decision 1
+above). It was open when the fold ran and closed by this file. It is carried at
+item 14 as **decided, awaiting a fold** — not as a question for the owner, and
+not as canon.
