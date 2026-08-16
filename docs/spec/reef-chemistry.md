@@ -19,7 +19,11 @@ questions, then the same day the margins were confined to wording only, and a
 third dosing instrument was named. Folded in from
 `docs/spec/DECISION-drift-back.md` (now deleted), the same way §25 was folded
 in from `DECISION-reef-chemistry-engine.md`. **§28 added 15 August 2026** —
-drift back.
+drift back. **§10's magnesium gate amended 16 August 2026** on the spec
+owner's authority — "corrections" covers the daily dose too, the gate's four
+boundaries are fixed, and the alert-low floor and the measured cost are
+recorded; written while the rule was built for the first time (Stage 2a),
+having sat in canon since 13 August with no implementation anywhere.
 
 > Agents never edit this file. Disagreements → `.agent/spec-challenges.md`.
 
@@ -786,6 +790,68 @@ Below roughly 1200–1350 ppm, calcium and alkalinity cannot be held properly an
 precipitation becomes likely (BRS). While magnesium is below alert-low, the app
 does not recommend alkalinity or calcium corrections, and says why.
 
+**Decided 16 Aug (Dan, spec owner): "corrections" here covers the daily dose
+too.** The gate withholds every recommendation to raise alkalinity or calcium —
+the one-off correction, the correction offers at all three paces, Setup's
+correction calculator, **and a recommendation to increase the daily dose.**
+
+This needs saying explicitly because §1's distinction points the other way and
+would, read alone, settle it the other way. A daily dose *holds* a level and a
+correction *moves* one; on that reading only the correction is a push against
+low magnesium, and a dose merely keeping pace with consumption pushes nothing.
+That reading is rejected, for two reasons.
+
+**§23's worked example 4 does not leave room for it.** "Addresses magnesium
+only" is the whole answer for that tank. An app that defers the alkalinity
+correction and in the same breath tells the keeper to turn the alkalinity doser
+up has not addressed magnesium only; it has given two instructions, one of
+which it just said not to follow.
+
+**And a dose tuned against a level that cannot respond is chasing something
+that will not move.** The maintenance dose is derived from measured
+consumption. While magnesium is under alert-low that measurement is describing
+a tank that cannot hold what it is given, so the figure the arithmetic produces
+is an answer to the wrong question. Raising the dose against it is not neutral —
+it is acting on a number the tank is about to invalidate.
+
+**What the gate never touches**, and these are the boundaries, not
+illustrations:
+
+- **A dose decrease is never withheld.** Lowering a level cannot precipitate
+  anything, and §1's asymmetry means it is the only instrument available in
+  that direction anyway.
+- **Magnesium's own correction is never gated.** It is the thing the gate is
+  asking for, and gating it would leave the keeper with no way out.
+- **Magnesium that has never been measured does not close the gate.** The rule
+  is conditional on magnesium being below alert-low, and an unmeasured level is
+  not below anything. Refusing on a measurement nobody has taken would withhold
+  every alkalinity and calcium correction from every tank that does not test
+  magnesium.
+- **The safe-bounds warning is not suppressed.** §2's layer 1 is a statement
+  about harm and outranks every question about the dose. The gate withholds
+  advice about a correction; it never withholds the fact that a level is
+  outside what corals tolerate.
+
+**Where alert-low comes from, and the floor under it.** §18's threshold —
+midpoint − 200 ppm — hung from whatever magnesium target range is in force,
+floored at §2's safe bound of 1150. The floor exists because §2's layers must
+not invert: layer 1 is where sources describe harm and the alert is the
+earlier, act-now signal, so an act-now line sitting *below* the harm point is
+incoherent. It changes nothing when the two agree, which they do on §2 layer
+3's suggested 1275–1425 (midpoint 1350, alert-low exactly 1150); it bites only
+while a magnesium range is centred lower than that. It can never fire on an
+in-band reading, because §12 already refuses a target range whose minimum is
+below the safe bound.
+
+**The cost, measured rather than asserted.** A tank whose magnesium sits under
+alert-low while its demand compounds has its alkalinity dose held where it is,
+and on the three-year simulation that cost 5.7 dKH over six weeks before the
+level reached §2's floor and the warning took over. That is the price of the
+rule and it is accepted: the tank in that state needs magnesium, and the app
+says so throughout. It is recorded here so that whoever finds the simulation
+result later knows it was seen and weighed, rather than re-deriving the narrow
+reading from §1 and quietly restoring it.
+
 ### Precipitation
 
 **Magnesium does not precipitate with calcium or alkalinity.** BRS: it can be
@@ -839,7 +905,7 @@ This replaces the dose-gap halving (§7), which was a patch for this fault.
 - Propose a correction for a level inside its band
 - Propose a correction on a reading older than the last intervention
 - Propose an alkalinity or calcium correction while magnesium is below
-  alert-low
+  alert-low — including a recommendation to raise either daily dose, per §10
 - Move a level faster than the §3 rails
 - Change a dose by more than 25% at once, except when outside the band and
   moving further out
