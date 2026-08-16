@@ -24,7 +24,14 @@ owner's authority — automatic dose advice only ever stabilises, and moving a
 level is a plan the user opts into, symmetrical in both directions and offered
 only once the level is stable. Folded in from
 `docs/spec/message-spec-1-wizard.md`, whose wording half is `wizard-states.md`
-§23 and §24.
+§23 and §24. **§9's wrong-tool rule amended 16 August 2026** on the spec
+owner's authority — the app no longer points at dry salt or a water change when
+a correction exceeds the maintenance solution's reach, because the constraint
+is the rate and not the product; it offers a gradual plan and an honest
+duration instead. Folded in from
+`docs/spec/message-spec-2-wizard-remaining.md`, whose wording half is
+`wizard-states.md` §24.23, alongside part 3's surfaces at `wizard-states.md`
+§25.
 
 > Agents never edit this file. Disagreements → `.agent/spec-challenges.md`.
 
@@ -751,11 +758,57 @@ being relied on to argue that a narrower arrival test would be costly.
   the tank uses it. Where the arithmetic wants a negative dose, the app offers
   zero and says how long that will take.
 - **Where the maintenance solution cannot do the job** — more than about 1.5 L
-  — say so and point at dry salt or water changes rather than quoting an
-  impossible volume.
+  — never quote the impossible volume. **Amended 16 Aug: and do not point at
+  another product either.** Say what it takes and offer a gradual plan with an
+  honest duration. See below.
 - **Plans expire on the calendar.** Past the estimate, `correction-due`; past
   `(expected × 2) + 2` days, `correction-stalled`. A 3-day plan survives to day
   8. Testing a day late does not kill it; a month of silence does.
+
+### The wrong-tool rule, amended 16 August
+
+**Decided 16 Aug (Dan, spec owner)**, folded in from
+`docs/spec/message-spec-2-wizard-remaining.md` with the wording it produced at
+`wizard-states.md` §24.23.
+
+**The half about not quoting an impossible volume is right. The half about
+pointing at another product is wrong.**
+
+> *"A dry buffer or a water change would be quicker" — not good, because corals
+> don't like fast changes.*
+
+**The constraint is not the product, it is the rate.** §3's rails apply however
+the alkalinity gets there, so a different product does not make a fast change
+safe — **it just makes an unsafe one easier to perform.** Naming it as the
+better tool contradicts everything else this document says about rate of
+change, and it does so at the exact moment a keeper is most likely to act
+quickly.
+
+**The right answer is a gradual plan and an honest duration.** Nine days is
+nine days; the app says so and offers the plan. That is
+`wizard-states.md` §24.23:
+
+> **Alkalinity is very low at 6.9 dKH**
+> Bringing it to 8.5 would take about nine days at a safe rate.
+> **Plan a gradual return to 8.5 dKH →**
+
+The duration is not a warning. It is what it takes, and the rate is the
+constraint whatever product is used — which is why naming a product would not
+shorten it honestly.
+
+**What is still open, and is not settled here: whether the volume ceiling has
+any role left.** A plan spread over enough days may bring the daily volume back
+under ~1.5 L on its own, in which case the rule dissolves; or the ceiling stays
+as a sanity check on a single day's dose. Carried at `wizard-states.md` §25.6
+along with the second question this card raised — that at 6.9 dKH the level is
+also below `SAFE_BOUNDS`, so `wizard-states.md` §24.9's *very low* card claims
+the same situation.
+
+**One thing this amendment does not touch:** `wizard-states.md` §2's branch 18
+and §3's "Wrong tool" tab label. The branch still exists and still fires; what
+it says changes. The label itself names a product judgement the app no longer
+makes, so it is a finding for Stage 6c's rewrite rather than a rename made
+here.
 
 ---
 

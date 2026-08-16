@@ -115,7 +115,29 @@ that is a reason to defer it into Stage 6 rather than write it four times.
 
 ---
 
-## STAGE 3 — What every screen should say *(Dan's week)*
+## STAGE 3 — What every screen should say ✅ done
+
+**Done 16 August 2026, in one day rather than the week budgeted**, across three
+owner sessions: `docs/spec/message-spec-1-wizard.md`, `-2-wizard-remaining.md`
+and `-3-surfaces.md`, all three now folded into canon and reduced to decision
+records.
+
+**The specification is `wizard-states.md` §23, §24 and §25** — seven wording
+rules, twenty-three reference cards, and what each surface renders. Its
+arithmetic half is `reef-chemistry.md` §28, rewritten, and §9, amended. Stage
+6c builds the message layer from §24 and §25; **where a card and a current app
+string differ, the card wins and the string is a finding.**
+
+**Four questions are carried open and are Dan's** — `wizard-states.md` §25.6.
+None blocks Stage 4; two of them (§9's volume ceiling, the 6.9 dKH overlap)
+are chemistry decisions that belong in Stage 5's list, and two (app-level
+notices in Tasks, where relationship notices sit) are placement questions for
+Stage 6.
+
+**Insights was deliberately not specified** and may not survive; see §25.5.
+
+The rest of this section is what the stage was scoped to do, kept as the record
+of what it was asked for.
 
 **This is the work, and it cannot be delegated.**
 
