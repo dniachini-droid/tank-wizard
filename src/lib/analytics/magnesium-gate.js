@@ -1,7 +1,7 @@
 import { PARAM_DEFS } from '../constants.js'
 import { SAFE_BOUNDS } from '../findings.js'
 import { ALERT_WIDTH } from './reading-meaning.js'
-import { byNewest } from './time-of-day.js'
+import { dayPos } from './time-of-day.js'
 
 /* --- The magnesium gate — reef-chemistry.md §10, restated in §20 and §12 ---
  *
@@ -76,10 +76,20 @@ function magnesiumLevel(readings, settings) {
     const v = Number(s[field]);
     if (isFinite(v) && v > 0) return v;
   }
-  const rows = (readings || [])
-    .filter((r) => r && r.param === "magnesium" && isFinite(r.value))
-    .sort(byNewest);
-  return rows.length ? rows[0].value : null;
+  /* One pass, keeping the newest, rather than filtering a copy and sorting it.
+     This runs on every assessment and every one of them is handed the whole
+     reading log, so a sort here is O(n log n) of work per call that grows with
+     a keeper's entire history — the cost the engines' own 400-day floor exists
+     to avoid, and `tests/legacy-port/perf.js` grades the SHAPE of that growth,
+     not just its ceiling. `byNewest` is the ordering being reproduced; it is
+     `dayPos(b) - dayPos(a)`, so "newest" is the largest `dayPos`. */
+  let best = null, bestPos = -Infinity;
+  for (const r of readings || []) {
+    if (!r || r.param !== "magnesium" || !isFinite(r.value)) continue;
+    const pos = dayPos(r);
+    if (best === null || pos > bestPos) { best = r; bestPos = pos; }
+  }
+  return best ? best.value : null;
 }
 
 /* Null when the gate is open — no magnesium reading, or magnesium is above

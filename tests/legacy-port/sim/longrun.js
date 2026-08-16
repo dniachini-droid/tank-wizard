@@ -169,16 +169,23 @@ function run(seed, opts) {
         /* The keeper does what the app tells them, including when the answer
            is not a doser setting.
 
-           When a level is out of band and the app refuses the correction
-           because the maintenance solution is the wrong tool — "a dedicated
-           supplement or dry salt is the right tool for a gap this size"
-           (helpers.js, proposeCorrection) — a real keeper opens Setup's
-           correction calculator and weighs it out. This harness previously
-           could not, so it modelled a keeper who reads that instruction and
-           does nothing, for years. Magnesium is where that bites: its daily
-           dose is never tuned from readings (reef-chemistry.md §10), so once
-           demand outgrows a fixed dose the level falls and the doser is not
-           the route back.
+           When a level is out of band and the correction is refused because
+           the maintenance solution cannot reach it, §9's wrong-tool rule (as
+           amended 16 Aug) says the answer is a gradual plan at a safe rate and
+           an honest duration — not a different product. That is what this
+           models: the gap closed at §3's rail over as many days as it takes,
+           which is the same arithmetic whether the keeper gets there with a
+           dedicated supplement, dry salt or a stronger mix. This harness
+           previously modelled a keeper who reads that instruction and does
+           nothing, for years. Magnesium is where that bites: its daily dose is
+           never tuned from readings (reef-chemistry.md §10), so once demand
+           outgrows a fixed dose the level falls and the doser is not the route
+           back.
+
+           `proposeCorrection`'s refusal text still names dry salt, which §9 as
+           amended no longer permits. That is message-spec-2's to fix, not this
+           harness's — the shape of the refusal is what is read here, never its
+           wording.
 
            A refusal that IS the magnesium gate is deliberately excluded. There
            the app is telling the keeper NOT to correct this element yet, and a
