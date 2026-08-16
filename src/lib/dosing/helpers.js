@@ -774,7 +774,7 @@ export function assessMagnesium({ readings, doseLog = [], waterChanges = [], set
     used: [], trendPerDay: null, trendPerWeek: null, band: null, consistent: null,
     supplied: null, consumption: null, maintenanceDose: null,
     recommendedDose: null, action: "hold", explanation: "", nextCheck: "",
-    anomaly: null, events: [], effectPerMl: null, effectSolved: null,
+    anomaly: null, effectPerMl: null, effectSolved: null,
     activePlan: null, stage: null, stages: null, planTarget: null, nextTestDue: null,
     correction: null, salinityShift: null,
   };
