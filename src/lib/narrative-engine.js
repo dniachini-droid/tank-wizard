@@ -4,7 +4,7 @@ import { windowRows } from './analytics/time-of-day.js'
 import { PARAM_DEFS } from './constants.js'
 import { daysBetween, paramStatus, todayStr } from './dates.js'
 import { SAFE_BOUNDS, directional } from './findings.js'
-import { STABILITY_RULES, computeStability } from './stability-engine.js'
+import { computeStability } from './stability-engine.js'
 
 /* ---------------------------------- narrative overview engine ---------------------------------- */
 
@@ -761,20 +761,13 @@ export const CORRECTION_STATES = new Set([
 export const isCorrectionState = (state) => CORRECTION_STATES.has(state);
 
 export function buildOverview(readings, latestByParam, defs, findings, doseStates) {
-  const paras = [];
   const analysed = (defs || PARAM_DEFS)
     .map((def) => ({ def, reading: latestByParam[def.key], stab: computeStability(def, readings) }))
     .filter((x) => x.reading);
 
   if (!analysed.length) {
-    return { headline: "No data yet", paragraphs: ["Log your first readings and this summary will start describing how the tank is tracking."], score: null };
+    return { headline: "No data yet", score: null };
   }
-
-  const inRange = analysed.filter((x) => paramStatus(x.def, x.reading.value) === "ok");
-  const outRange = analysed.filter((x) => paramStatus(x.def, x.reading.value) !== "ok");
-  const steady = analysed.filter((x) => x.stab && x.stab.grade === "green");
-  const wobbly = analysed.filter((x) => x.stab && x.stab.grade === "amber");
-  const unstable = analysed.filter((x) => x.stab && x.stab.grade === "red");
 
   /* Composite health score.
      Two earlier faults: being out of range cost a flat penalty regardless of
@@ -851,12 +844,9 @@ export function buildOverview(readings, latestByParam, defs, findings, doseState
     : "Several parameters need attention";
 
 
-  /* --- Urgent findings lead ---
-     Previously the assessment never read findings, so an [act] item lived only
-     as a small badge on one card. A person could open the app to a warm
-     paragraph about steady alkalinity while ammonia sat at 0.4ppm. When
-     something urgent exists it is said first, and the rest of the summary
-     stands down to make room for it. */
+  /* --- What the headline needs to know ---
+     Findings at [act] level, ranked: the headline names the one urgent item
+     when there is exactly one, and counts them when there are several. */
   /* Ordered by how much it matters, not by the order findings happen to be
      generated. Ammonia threatens livestock today; a nutrient a long way out is
      a problem for the month. */
@@ -868,431 +858,13 @@ export function buildOverview(readings, latestByParam, defs, findings, doseState
   const urgent = (findings || [])
     .filter((f) => f.severity === "act")
     .sort((a, b) => rank(a) - rank(b));
-  const watch = (findings || []).filter((f) => f.severity === "watch");
-  /* --- Dosing, if anything is happening ---
-     Placed before the parameter commentary because a change in progress
-     changes how the numbers below should be read: a tank mid-correction is
-     supposed to be moving. */
+
+  /* The dose states the headline counts. A change in progress belongs in the
+     one line about the tank: mid-correction is not the same as drifting. */
   const ds = (doseStates || []).filter(Boolean);
-  const running = ds.filter((d) => d.state === "settling" || d.state === "due");
   const needsTest = ds.filter((d) => d.state === "due");
   const suggested = ds.filter((d) => d.state === "suggested");
-  const landed = ds.filter((d) => d.state === "worked");
   const missed = ds.filter((d) => d.state === "fell-short" || d.state === "overshot");
-
-  if (needsTest.length) {
-    paras.push(needsTest.length === 1
-      ? `${needsTest[0].headline}. ${needsTest[0].detail}`
-      : `${joinList(needsTest.map((d) => d.el))} all have dose changes waiting on a test before they can be judged. Until those readings go in, the app cannot tell you whether the changes worked or what to do next.`);
-  } else if (running.length) {
-    paras.push(running.length === 1
-      ? `${running[0].headline}. ${running[0].detail}`
-      : `${joinList(running.map((d) => d.el))} both have dose changes settling. Hold them and test when due — reading anything into the numbers before then is guesswork.`);
-  }
-  if (missed.length) {
-    paras.push(`${missed.map((d) => d.headline).join(". ")}. ${missed[0].detail}`);
-  } else if (landed.length && !running.length) {
-    paras.push(landed.length === 1
-      ? `${landed[0].headline}. ${landed[0].detail}`
-      : `${joinList(landed.map((d) => d.el))} have settled after their dose changes.`);
-  }
-  if (suggested.length && !running.length) {
-    paras.push(suggested.length === 1
-      ? `${suggested[0].headline}. ${suggested[0].detail}`
-      : `${joinList(suggested.map((d) => d.el))} each look like the dose no longer matches what the tank uses. The Dosing tab shows the working for each.`);
-  }
-
-  /* --- Paragraph 0: anything urgent, said first ---
-     This is the only paragraph that can push the rest aside. A person opening
-     the app to a tank in trouble should read about the trouble, not about how
-     steadily magnesium has been holding. */
-  if (urgent.length) {
-    const titles = urgent.map((f) => f.title);
-    paras.push(urgent.length === 1
-      ? `Start here: ${titles[0]}. ${firstSentence(urgent[0].detail)}`
-      : `Start here — ${urgent.length} things need attention: ${joinList(titles)}. Tap the parameter cards below for what to do about each.`);
-  }
-
-  // --- Paragraph 1: overall shape ---
-  /* Each parameter should be explained once, in whichever paragraph explains it
-     best. Without this, alkalinity was being named up to nine times in one
-     summary — roll-call, detail, trend, trio, cross-set comparison, priority —
-     all describing the same drift. */
-  const detailed = new Set();
-
-  /* Paragraph 2 gives a full account of in-range-but-moving parameters, so the
-     roll-call above shouldn't flag them as well — that was the last remaining
-     double-mention. */
-  const willDetail = new Set(
-    analysed.filter((x) => paramStatus(x.def, x.reading.value) === "ok"
-      && x.stab && (x.stab.grade === "red" || x.stab.grade === "amber"))
-      .map((x) => x.def.key));
-
-  /* Opening paragraph is the headline only: how many are where they should be,
-     and whether the tank is steady overall. Naming individual parameters here
-     duplicated the detail paragraphs that follow. */
-  const p1 = [];
-  const steadyAndIn = steady.filter((x) => paramStatus(x.def, x.reading.value) === "ok");
-  p1.push(`${inRange.length} of ${analysed.length} tracked ${analysed.length === 1 ? "parameter is" : "parameters are"} sitting inside ${analysed.length === 1 ? "its" : "their"} target range${steady.length ? `, and ${steady.length} of ${analysed.length} ${steady.length === 1 ? "is" : "are"} holding steady` : ""}.`);
-
-  if (steady.length && steadyAndIn.length !== steady.length) {
-    p1.push(`Steady isn't the same as on target though — ${steady.length - steadyAndIn.length === 1 ? "one of those is being held" : `${steady.length - steadyAndIn.length} of those are being held`} at a level outside the band you set, which is worth separating from being genuinely under control.`);
-  } else if (steady.length === analysed.length) {
-    p1.push(`Day-to-day movement is inside the tolerance corals prefer, which matters more for long-term health than hitting an exact number.`);
-  }
-
-  if (unstable.length) {
-    p1.push(`The bigger concern is movement rather than position: ${joinList(unstable.map((x) => x.def.label))} ${unstable.length === 1 ? "is" : "are"} swinging faster than is comfortable.`);
-    unstable.forEach((x) => detailed.add(x.def.key));
-  } else if (wobbly.length) {
-    const notElsewhere = wobbly.filter((x) => !willDetail.has(x.def.key));
-    if (notElsewhere.length) {
-      p1.push(`${joinList(notElsewhere.map((x) => x.def.label))} ${notElsewhere.length === 1 ? "shows" : "show"} moderate movement — not alarming, but worth tightening if you can.`);
-      notElsewhere.forEach((x) => detailed.add(x.def.key));
-    }
-  }
-  paras.push(p1.join(" "));
-
-  // --- Paragraph 2: the nuanced cases (out of range but stable, in range but volatile) ---
-  /* Only genuinely marginal parameters belong in the "steady, leave it" group.
-     Magnesium 300 ppm low was being described as "parked slightly off" and told
-     to be left alone, while a later paragraph said to fix it first. */
-  /* A parameter climbing back into its band from below is being corrected, not
-     misbehaving. Flagging it as the tank's biggest problem tells someone to
-     stop the fix they're in the middle of. */
-  const isRecovering = (x) => {
-    if (!x.stab || !x.stab.netChange) return false;
-    const now = x.reading.value;
-    const started = now - x.stab.netChange;
-    const up = x.stab.pattern === "trending up";
-    const down = x.stab.pattern === "trending down";
-    if (up) return started < x.def.min && now <= x.def.max;
-    if (down) return started > x.def.max && now >= x.def.min;
-    return false;
-  };
-
-  const bandsOut = (x) => {
-    const width = Math.max(1e-9, x.def.max - x.def.min);
-    const gap = x.reading.value > x.def.max ? x.reading.value - x.def.max : x.def.min - x.reading.value;
-    return gap / width;
-  };
-  const outButStable = outRange.filter((x) => x.stab && x.stab.grade === "green" && bandsOut(x) <= 1);
-  const outAndFar = outRange.filter((x) => bandsOut(x) > 1);
-  const inButVolatile = inRange.filter((x) => x.stab && (x.stab.grade === "red" || x.stab.grade === "amber"));
-  const p2 = [];
-
-  /* Grouped rather than repeated: two parameters that are both steady-but-off
-     used to produce the same forty-word passage twice in a row. */
-  if (outButStable.length) {
-    outButStable.forEach((x) => detailed.add(x.def.key));
-    const bits = outButStable.map((x) => {
-      const status = paramStatus(x.def, x.reading.value);
-      const dir = status === "high" ? "above" : "below";
-      const target = status === "high" ? x.def.max : x.def.min;
-      const gap = Math.abs(x.reading.value - target);
-      return `${x.def.label} at ${fmtVal(x.def, x.reading.value)}${x.def.unit} (${fmtVal(x.def, gap)}${x.def.unit} ${dir === "above" ? "over" : "under"} target)`;
-    });
-    const list = bits.length === 1 ? bits[0]
-      : bits.slice(0, -1).join(", ") + " and " + bits[bits.length - 1];
-    p2.push(`${bits.length === 1 ? "One parameter is" : `${bits.length} parameters are`} sitting off-target but holding steady: ${list}. Parked slightly off but rock steady beats bouncing through the ideal band, so there's no need to chase ${bits.length === 1 ? "it" : "them"} — let water changes bring ${bits.length === 1 ? "it" : "them"} round gradually.`);
-  }
-
-  if (outAndFar.length) {
-    const bits = outAndFar.map((x) => {
-      const st = paramStatus(x.def, x.reading.value);
-      const target = st === "high" ? x.def.max : x.def.min;
-      const gap = Math.abs(x.reading.value - target);
-      return `${x.def.label} at ${fmtVal(x.def, x.reading.value)}${x.def.unit}, ${fmtVal(x.def, gap)}${x.def.unit} ${st === "high" ? "above" : "below"} target`;
-    });
-    outAndFar.forEach((x) => detailed.add(x.def.key));
-    p2.push(`${joinList(bits)} ${bits.length === 1 ? "is" : "are"} a long way out — far enough that this isn't a case of the target being set slightly wrong. ${bits.length === 1 ? "It needs" : "They need"} correcting rather than accepting, though still gradually.`);
-  }
-
-  for (const x of inButVolatile) {
-    detailed.add(x.def.key);
-    /* Plain language: today's single reading is inside the band, but the run of
-       readings behind it is not settled. Avoid "spot value" and similar jargon. */
-    const moving = x.stab.pattern === "oscillating" ? "moving up and down"
-      : x.stab.pattern === "trending up" ? "climbing steadily"
-      : x.stab.pattern === "trending down" ? "falling steadily" : "moving about";
-    p2.push(`${x.def.label} happens to be inside your target today at ${fmtVal(x.def, x.reading.value)}${x.def.unit}, but today's reading only tells you where it is right now. Look at the last ${x.stab.readingCount} readings and it has covered a ${x.stab.fmtRate} and is ${moving} — so it's passing through your target band rather than settling in it, and that movement is what corals respond to.`);
-  }
-  if (p2.length) paras.push(p2.join(" "));
-
-  /* Only call something a trend when the movement clears the test kit's own
-     resolution. pH shifting 0.10 across a month, or phosphate 0.07, is inside
-     the noise and was previously reported as a direction with a deadline.
-     Dosing advice deliberately lives in the dosing box, not here. */
-  const trending = analysed.filter((x) => {
-    if (!x.stab) return false;
-    /* Already described in the paragraph above; saying it again adds nothing. */
-    if (detailed.has(x.def.key)) return false;
-    if (x.stab.pattern !== "trending up" && x.stab.pattern !== "trending down") return false;
-    const floor = STABILITY_RULES[x.def.key] ? STABILITY_RULES[x.def.key].noiseFloor : 0;
-    return Math.abs(x.stab.netChange) > floor * 2;
-  });
-
-  if (trending.length) {
-    const p3 = trending.map((x) => {
-      const dir = x.stab.pattern === "trending up" ? "risen" : "fallen";
-      const amt = Math.abs(x.stab.netChange);
-      const status = paramStatus(x.def, x.reading.value);
-      const headroom = status === "ok"
-        ? (x.stab.pattern === "trending up" ? x.def.max - x.reading.value : x.reading.value - x.def.min)
-        : null;
-      if (isRecovering(x)) {
-        return `${x.def.label} has ${dir} ${amt < 1 ? amt.toFixed(2) : amt.toFixed(0)}${x.def.unit} over the past ${x.stab.spanDays} days, moving back toward its target band rather than away from it — that's a correction in progress, so let it run rather than reacting to the movement.`;
-      }
-      let s2 = `${x.def.label} has ${dir} ${amt < 1 ? amt.toFixed(2) : amt.toFixed(0)}${x.def.unit} over the past ${x.stab.spanDays} days, which is a consistent direction rather than noise.`;
-      if (headroom != null && headroom >= 0 && x.stab.typicalRate > 0) {
-        const daysToExit = Math.round(headroom / x.stab.typicalRate);
-        if (daysToExit > 0 && daysToExit < 90) {
-          s2 += ` Carry on at that pace and it reaches the edge of your target band in roughly ${daysToExit} days.`;
-        }
-      }
-      return s2;
-    });
-    paras.push(p3.join(" "));
-  }
-
-  /* --- The foundation trio, read together ---
-     Alkalinity, calcium and magnesium are the three every experienced reefer
-     names first, and they only make sense as a set: calcium supplies the
-     building blocks, alkalinity the carbonate, magnesium keeps both in
-     solution. Reporting them separately misses the interactions. */
-  const p4 = [];
-  const alk = analysed.find((x) => x.def.key === "alkalinity");
-  const ca = analysed.find((x) => x.def.key === "calcium");
-  const mg = analysed.find((x) => x.def.key === "magnesium");
-
-  if (alk && ca && mg) {
-    const trio = [alk, ca, mg];
-    const steadyTrio = trio.filter((x) => x.stab && x.stab.grade === "green").length;
-    const inTrio = trio.filter((x) => paramStatus(x.def, x.reading.value) === "ok").length;
-    if (steadyTrio === 3 && inTrio === 3) {
-      p4.push(`The foundation trio is in good shape: alkalinity ${fmtVal(alk.def, alk.reading.value)}${alk.def.unit}, calcium ${fmtVal(ca.def, ca.reading.value)}ppm and magnesium ${fmtVal(mg.def, mg.reading.value)}ppm are all on target and all holding. Those three carry coral skeleton growth between them, so with the set behaving you have room to pay attention elsewhere.`);
-    } else if (steadyTrio === 3) {
-      p4.push(mg.reading.value < 1250
-        ? `The foundation trio — alkalinity ${fmtVal(alk.def, alk.reading.value)}${alk.def.unit}, calcium ${fmtVal(ca.def, ca.reading.value)}ppm, magnesium ${fmtVal(mg.def, mg.reading.value)}ppm — is holding steady, but steady isn't the same as sufficient here.`
-        : `The foundation trio — alkalinity ${fmtVal(alk.def, alk.reading.value)}${alk.def.unit}, calcium ${fmtVal(ca.def, ca.reading.value)}ppm, magnesium ${fmtVal(mg.def, mg.reading.value)}ppm — is all steady, even where the numbers sit off your targets. Corals build skeleton from these three together, and consistency across the set matters more than any one of them hitting a textbook figure.`);
-    } else {
-      const looseX = trio.filter((x) => x.stab && x.stab.grade !== "green");
-      const loose = looseX.map((x) => x.def.label);
-      /* If the roll-call already named these, repeating them adds nothing —
-         the set explanation only earns its place when it tells you something
-         the paragraphs above didn't. */
-      const alreadySaid = looseX.every((x) => detailed.has(x.def.key));
-      if (alreadySaid && loose.length < 3) {
-        // nothing new to add about the trio
-      } else p4.push(loose.length === 3
-        ? `All three of the foundation parameters are moving about at once. When they wander together it's usually one underlying cause rather than three separate ones — worth checking dosing consistency and water change routine before adjusting any of them individually.`
-        : `Of the foundation trio, ${joinList(loose)} ${loose.length === 1 ? "is" : "are"} moving more than the other${loose.length === 1 ? "s" : ""}. They work as a set — one supplies the building blocks, one the carbonate, one keeps both in solution — so settling the loose one usually steadies the others with it.`);
-    }
-  }
-
-  /* Magnesium only stops calcium and alkalinity holding when it is genuinely
-     low in absolute terms. Below a user-set target of 1450 it may still be
-     1400, which is a perfectly ordinary level and not a blocker. */
-  const MG_CRITICAL = 1250;
-  const mgTrulyLow = mg && mg.reading.value < MG_CRITICAL;
-  if (mgTrulyLow) {
-    p4.push(`Magnesium at ${fmtVal(mg.def, mg.reading.value)}ppm is low enough to matter — below about ${MG_CRITICAL} it stops holding calcium and alkalinity in solution, and they become difficult to maintain no matter how much you dose. Worth resolving before anything else.`);
-  } else if (mg && paramStatus(mg.def, mg.reading.value) === "low") {
-    p4.push(`Magnesium sits under your target at ${fmtVal(mg.def, mg.reading.value)}ppm, though it's still within the range most tanks run without trouble — worth nudging up gradually rather than treating as urgent.`);
-  }
-
-  /* Calcium and alkalinity are consumed in fixed proportion, so their ratio is
-     a cross-check that neither number gives on its own. */
-  if (alk && ca) {
-    const ratio = ca.reading.value / alk.reading.value;
-    if (ratio < 42) {
-      p4.push(`Calcium to alkalinity sits at ${ratio.toFixed(0)}:1, on the low side of the roughly 50:1 a balanced tank shows — calcium is lagging what your alkalinity implies, so the calcium side of your dosing is the one to look at.`);
-    } else if (ratio > 60) {
-      p4.push(`Calcium to alkalinity sits at ${ratio.toFixed(0)}:1, above the roughly 50:1 of a balanced tank — there's more calcium in solution than your alkalinity is drawing on, which usually means the calcium dose is running ahead.`);
-    }
-  }
-
-  if (mg && ca) {
-    const mgRatio = mg.reading.value / ca.reading.value;
-    if (mgRatio < 2.7) {
-      p4.push(`Magnesium to calcium is ${mgRatio.toFixed(1)}:1, under the ~3.1:1 of natural seawater — too little magnesium to hold calcium and alkalinity comfortably in solution.`);
-    }
-  }
-
-  if (p4.length) paras.push(p4.join(" "));
-
-  /* --- Nutrients: the ratio, not just the levels ---
-     Corals build tissue from nitrogen and phosphorus and skeleton from
-     alkalinity, so the nutrient pair and alkalinity have to be read together.
-     High alkalinity on lean nutrients is the classic burnt-tip setup. */
-  const p5 = [];
-  const po4 = analysed.find((x) => x.def.key === "phosphate");
-  const no3 = analysed.find((x) => x.def.key === "nitrate");
-
-  if (po4 && no3 && po4.reading.value > 0) {
-    const ratio = no3.reading.value / po4.reading.value;
-    const balanced = ratio >= 50 && ratio <= 150;
-    /* A ratio says nothing about whether there is enough of either. Nitrate 1.0
-       against phosphate 0.01 is exactly 100:1 and also a starving tank. */
-    const starved = no3.reading.value < 3 || po4.reading.value < 0.03;
-    const loaded = no3.reading.value > 25 || po4.reading.value > 0.2;
-
-    if (starved) {
-      p5.push(`Your nutrients read ${fmtVal(no3.def, no3.reading.value)}ppm nitrate against ${fmtVal(po4.def, po4.reading.value)}ppm phosphate. The proportion between them is ${balanced ? "fine" : "off"}, but the levels themselves are the problem — both are close to bottom, and corals need measurable nitrogen and phosphorus to build tissue. Running this lean pales corals out and is the classic opening for dinoflagellates. Feeding more, or dosing nitrate back toward 5ppm, matters more here than the ratio.`);
-    } else if (loaded) {
-      const wayOver = no3.reading.value > no3.def.max * 2 || po4.reading.value > po4.def.max * 2;
-      p5.push(`Your nutrients read ${fmtVal(no3.def, no3.reading.value)}ppm nitrate against ${fmtVal(po4.def, po4.reading.value)}ppm phosphate — a ratio of about ${ratio.toFixed(0)}:1. ${wayOver ? `Both are well above where you want them, far enough that this needs actively bringing down rather than just watching` : `The levels are on the high side, which tends to show as darker coral tissue and faster algae growth rather than anything acute`}. Work them down through water changes and export gradually; sudden nutrient crashes are harder on corals than steady high readings.`);
-    } else if (balanced) {
-      p5.push(`Your nutrients read ${fmtVal(no3.def, no3.reading.value)}ppm nitrate against ${fmtVal(po4.def, po4.reading.value)}ppm phosphate — a ratio of about ${ratio.toFixed(0)}:1, close to the 100:1 reefers treat as balanced. The ratio matters more than either figure alone: when one runs out well ahead of the other, whichever is left over tends to feed algae or cyano instead of coral.`);
-    } else if (ratio > 150) {
-      p5.push(`Your nutrients read ${fmtVal(no3.def, no3.reading.value)}ppm nitrate against ${fmtVal(po4.def, po4.reading.value)}ppm phosphate — about ${ratio.toFixed(0)}:1, well above the 100:1 that counts as balanced. Phosphate is the limiting one here, and when it runs short corals pale while the spare nitrate goes to nuisance growth. Easing off phosphate export usually works better than chasing nitrate down.`);
-    } else {
-      p5.push(`Your nutrients read ${fmtVal(no3.def, no3.reading.value)}ppm nitrate against ${fmtVal(po4.def, po4.reading.value)}ppm phosphate — about ${ratio.toFixed(0)}:1, below the 100:1 that counts as balanced. Phosphate is running ahead of nitrate, which favours algae and can slow calcification. Nudging nitrate up usually rebalances this more gently than stripping phosphate.`);
-    }
-  }
-
-  /* Alkalinity and nutrients set each other's safe range. */
-  if (alk && po4 && no3) {
-    const alkVal = alk.reading.value;
-    const lean = no3.reading.value < 3 || po4.reading.value < 0.03;
-    const rich = no3.reading.value >= 5 && po4.reading.value >= 0.05;
-    if (alkVal >= 9 && lean) {
-      p5.push(`Worth flagging: alkalinity at ${fmtVal(alk.def, alkVal)}${alk.def.unit} on nutrients this lean is the combination that burns SPS tips. Skeleton growth outruns tissue growth when there's carbonate to spare but little nitrogen and phosphorus to build with. Either feed a little more, or bring alkalinity down toward 8 — the two have to move together.`);
-    } else if (alkVal >= 9 && rich) {
-      p5.push(`Alkalinity at ${fmtVal(alk.def, alkVal)}${alk.def.unit} is on the higher side, but your nutrients support it — tissue growth can keep pace with skeleton growth at these nitrate and phosphate levels. That pairing is coherent; the same alkalinity on a lean tank would risk burnt tips.`);
-    } else if (alkVal <= 7.5 && rich) {
-      p5.push(`Alkalinity at ${fmtVal(alk.def, alkVal)}${alk.def.unit} is fairly low for nutrients this generous. Corals have plenty to build tissue with but less carbonate for skeleton, which tends to show as good colour and slow growth. Raising alkalinity gently would let growth catch up.`);
-    }
-  }
-
-  if (p5.length) paras.push(p5.join(" "));
-
-  /* --- Control quality across the set ---
-     Only worth saying when it draws a contrast the roll-call above didn't
-     already make. Repeating the same names in a different sentence made the
-     summary feel padded. */
-  const graded = analysed.filter((x) => x.stab && x.stab.grade !== "unknown");
-  if (graded.length >= 3) {
-    const tightest = graded.filter((x) => x.stab.grade === "green");
-    const loosest = graded.filter((x) => x.stab.grade === "red");
-    const anyOff = analysed.some((x) => paramStatus(x.def, x.reading.value) !== "ok");
-    if (tightest.length === graded.length) {
-      paras.push(anyOff
-        ? `Taken as a whole, everything you track is being held steadily — including the parameters sitting off their targets. Steady in the wrong place is a much easier problem than unsteady in the right one.`
-        : `Taken as a whole, everything you track is holding tightly. There's nothing here that needs adjusting.`);
-    } else if (loosest.length && loosest.length < graded.length) {
-      const names = loosest.map((x) => x.def.label);
-      paras.push(`Set against the rest of the tank, ${joinList(names)} ${names.length === 1 ? "is the outlier" : "are the outliers"} — everything else is holding. Tightening the loose one usually lifts the whole tank more than fine-tuning something already steady.`);
-    }
-  }
-
-  /* pH is the parameter most often misdiagnosed, so say where it comes from. */
-  const ph = analysed.find((x) => x.def.key === "ph");
-  if (ph && ph.reading.value > 8.4) {
-    paras.push(`On pH: at ${fmtVal(ph.def, ph.reading.value)} you're running high, which usually means kalkwasser or a heavy buffer rather than a problem. Corals tolerate it well as long as it's steady, but watch that alkalinity doesn't get pushed up alongside it, and be careful adding anything else alkaline while pH sits here.`);
-  } else if (ph && ph.reading.value < 7.9) {
-    paras.push(`On pH: at ${fmtVal(ph.def, ph.reading.value)} it's on the low side, and the usual cause is carbon dioxide in the room rather than anything wrong in the tank. More surface agitation, fresh air to the skimmer intake, or a refugium lit opposite your display all lift it more reliably than buffering does — and chasing pH with alkalinity additives usually causes more trouble than the low reading itself.`);
-  }
-
-  // --- Paragraph 5: testing cadence feedback ---
-  const stale = analysed.filter((x) => {
-    if (!x.def.freqDays) return false;
-    return daysBetween(x.reading.date, todayStr()) > x.def.freqDays * 2;
-  });
-  if (stale.length) {
-    paras.push(`Worth noting the data itself is thinning out: ${stale.map((x) => `${x.def.label} (last tested ${daysBetween(x.reading.date, todayStr())} days ago)`).join(", ")}. Stability readings get less trustworthy as gaps widen, since a smooth line between two distant points can hide real movement in between.`);
-  }
-
-  /* --- One priority ---
-     The commentary above lists observations; this ranks them. Ordered by what
-     actually destabilises a tank fastest: magnesium failing first (it gates
-     the other two), then genuine swing, then sustained drift, then placement. */
-  const priority = (() => {
-    // Magnesium gates the other two, so it goes first regardless.
-    if (mg && mg.reading.value < 1250) {
-      return `bring magnesium up — below about 1250 it stops holding calcium and alkalinity in solution, and they'll fight you no matter what you dose.`;
-    }
-    /* Starved nutrients paired with high alkalinity burns SPS tips, which
-       outranks a parameter merely sitting under its target. */
-    if (alk && no3 && po4 && alk.reading.value >= 9
-        && (no3.reading.value < 3 || po4.reading.value < 0.03)) {
-      return `feed more — alkalinity this high on nutrients this lean is what burns SPS tips, and the nutrients are the easier half to fix.`;
-    }
-    /* A foundation parameter swinging wildly is more dangerous than a nutrient
-       sitting off-target, because corals feel movement faster than position. */
-    const bigThree = ["alkalinity", "calcium", "magnesium"];
-    const wildFoundation = analysed.filter((x) =>
-      bigThree.includes(x.def.key) && x.stab && x.stab.grade === "red" && !isRecovering(x));
-    if (wildFoundation.length) {
-      const worst = wildFoundation.sort((a, b) =>
-        (a.def.key === "alkalinity" ? -1 : b.def.key === "alkalinity" ? 1 : 0))[0];
-      return `settle ${worst.def.label.toLowerCase()} — it's swinging widely, and corals feel that movement long before they mind a number being off target.`;
-    }
-
-    // Anything a long way outside its band outranks remaining stability concerns.
-    const farOut = analysed
-      .filter((x) => {
-        if (paramStatus(x.def, x.reading.value) === "ok" || x.def.key === "ph") return false;
-        if (bandsOut(x) <= 1) return false;
-        /* Magnesium above the critical level is never the most important thing
-           on a tank that is otherwise behaving, however far it sits from a
-           user-set target. */
-        if (x.def.key === "magnesium" && x.reading.value >= 1250) return false;
-        return true;
-      })
-      .sort((a, b) => bandsOut(b) - bandsOut(a));
-    if (farOut.length) {
-      return `bring ${farOut[0].def.label.toLowerCase()} back toward its band — at ${fmtVal(farOut[0].def, farOut[0].reading.value)}${farOut[0].def.unit} it's far enough out that steadiness isn't the issue.`;
-    }
-    // Starved nutrients are a real risk even when everything looks steady.
-    if (no3 && po4 && (no3.reading.value < 3 || po4.reading.value < 0.03)) {
-      return `feed a little more — nutrients this lean starve corals and invite dinoflagellates, whatever the rest of the numbers say.`;
-    }
-    const swinging = analysed
-      .filter((x) => x.stab && x.stab.grade === "red" && !isRecovering(x))
-      .sort((a, b) => (a.def.key === "alkalinity" ? -1 : b.def.key === "alkalinity" ? 1 : 0));
-    if (swinging.length) {
-      return `settle ${swinging[0].def.label.toLowerCase()} — it's the widest-moving thing here, and movement costs corals more than being off-target does.`;
-    }
-    const drifting = analysed.filter((x) => {
-      if (!x.stab || isRecovering(x)) return false;
-      const floor = STABILITY_RULES[x.def.key] ? STABILITY_RULES[x.def.key].noiseFloor : 0;
-      return (x.stab.pattern === "trending up" || x.stab.pattern === "trending down")
-        && Math.abs(x.stab.netChange) > floor * 2;
-    }).sort((a, b) => (a.def.key === "alkalinity" ? -1 : b.def.key === "alkalinity" ? 1 : 0));
-    if (drifting.length) {
-      return `keep an eye on ${drifting[0].def.label.toLowerCase()} — it's travelling in one direction, and a small dosing correction now beats a large one later.`;
-    }
-    /* pH is never managed by moving a target, so it is excluded here. */
-    const off = analysed.filter((x) => paramStatus(x.def, x.reading.value) !== "ok" && x.def.key !== "ph");
-    /* Changing a target is a decision that needs history behind it; a handful
-       of readings is not grounds for redefining what you are aiming at. */
-    if (off.length && !thinData) {
-      return `decide whether your ${off[0].def.label.toLowerCase()} target is still the right one — the tank is holding steady, just not where you told it to.`;
-    }
-    if (off.length && thinData) {
-      return `keep testing — ${off[0].def.label.toLowerCase()} is sitting outside your target, but there isn't enough history yet to know whether that's the tank or the target.`;
-    }
-    if (ph && ph.reading.value < 7.9) {
-      return `work on gas exchange for the low pH — more surface agitation or fresh air to the skimmer, rather than anything added to the water.`;
-    }
-    const stale = analysed.filter((x) => x.def.freqDays && daysBetween(x.reading.date, todayStr()) > x.def.freqDays * 2);
-    if (stale.length) {
-      return `get a fresh ${stale[0].def.label.toLowerCase()} reading in — everything looks well held, but the data behind that is getting old.`;
-    }
-    if (thinData) {
-      return `keep logging — there isn't enough history yet for any of this to mean much, and a few weeks of consistent testing will change that.`;
-    }
-    return `nothing needs attention — keep testing at your current rhythm and leave the dosing alone.`;
-  })();
-  paras.push(`If you do one thing this week: ${priority}`);
-
-  /* When something urgent leads, the rest of the summary steps back. Three
-     screenfuls of prose beneath a warning buries it, and the detail is all
-     still on the parameter cards. */
-  const trimmed = urgent.length
-    ? [paras[0], ...paras.slice(1, 3)]
-    : paras;
 
   /* One line, and it says what rather than how many. "One thing needs
      attention" made you open the card to find out which; naming it costs the
@@ -1340,9 +912,6 @@ export function buildOverview(readings, latestByParam, defs, findings, doseState
 
   return {
     headline: lead || headline,
-    paragraphs: trimmed.filter(Boolean),
     score,
-    urgentCount: urgent.length,
-    watchCount: watch.length,
   };
 }

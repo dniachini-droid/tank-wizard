@@ -8,7 +8,7 @@ import { computeSkeletonMass } from '../lib/analytics/calcification.js'
 import { DOSE_ELEMENTS, computeConsumption } from '../lib/analytics/consumption.js'
 import { computeDemandSeries } from '../lib/analytics/demand.js'
 import { calibrateDoseStrength } from '../lib/analytics/dose-strength.js'
-import { computeDoseAdvice, computeIonicBalance } from '../lib/analytics/drift.js'
+import { computeIonicBalance } from '../lib/analytics/drift.js'
 import { computeCalibration } from '../lib/analytics/icp-calibration.js'
 import { computeIcpTrends, icpGroupOf, icpRef, icpStatus } from '../lib/analytics/icp-reference.js'
 import { computeNutrientProduction, computeNutrientRatio } from '../lib/analytics/nutrients.js'
@@ -103,7 +103,6 @@ export function Insights({ readings, icps, paramDefs, settings, latestByParam,
   const [appliedMsg, setAppliedMsg] = useState(null);
   const icpTrends = useMemo(() => computeIcpTrends(icps), [icps]);
   const saltRows = useMemo(() => computeSaltComparison(latestByParam || {}, paramDefs), [latestByParam, paramDefs]);
-  const doseAdvice = useMemo(() => computeDoseAdvice(readings, doseLog, paramDefs, 30, settings), [readings, doseLog, paramDefs, settings]);
 
   const demandSeries = useMemo(
     () => ["alkalinity", "calcium"]

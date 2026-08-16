@@ -456,7 +456,7 @@ export function assessAlkalinity({ readings, doseLog = [], waterChanges = [], se
     used: [], trendPerDay: null, band: null, consistent: null,
     supplied: null, consumption: null, maintenanceDose: null,
     recommendedDose: null, action: "hold", explanation: "", nextCheck: "",
-    anomaly: null, events: [], effectPerMl: null,
+    anomaly: null, effectPerMl: null,
     /* A staged correction spans days, so the destination has to survive between
        sessions. Without it the app would recompute a fresh plan each time and
        forget it was already partway through one. */
