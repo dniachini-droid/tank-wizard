@@ -123,7 +123,7 @@ expect('pH 7.6 is flagged', { ph: 7.6 }, (r) => saysAnything(r, /ph|carbon/i));
     }
     const fn = k === 'alkalinity' ? L.assessAlkalinity : k === 'calcium' ? L.assessCalcium : L.assessMagnesium;
     const a = fn({ readings, doseLog: [], waterChanges: [], corrections: [], settings, def });
-    if (a.targetCorrection && a.targetCorrection.ppmPerDay > lim * 1.05) {
+    if (a.correction && a.correction.ppmPerDay > lim * 1.05) {
       console.log(`  FAIL ${k} correction exceeds the ${lim}/day ceiling`); bad++;
     }
   }

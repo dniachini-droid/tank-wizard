@@ -228,8 +228,8 @@ export function buildHeadline(ctx) {
   else if (allIn && allSteady) state = "All in range today, with something worth watching";
   else if (allIn && mostSteady) state = "All in range, and mostly holding steady";
   else if (allIn) state = "All in range, but not all of it settled";
-  else if (allSteady && halfOut) state = "Rock steady, but a lot of it is off-target";
-  else if (allSteady) state = "Steady throughout, with a few sitting off-target";
+  else if (allSteady && halfOut) state = "Rock steady, but a lot of it is out of range";
+  else if (allSteady) state = "Steady throughout, with a few sitting out of range";
   /* "Mostly in range" is true at 75% and reads as reassurance. With six
      parameters that means one can sit a full point outside its band and the
      headline still opens with "in range" — and a swept sample found no surface
@@ -237,7 +237,7 @@ export function buildHeadline(ctx) {
      impression was not.
      
      A flat reading out of band was already caught, because allSteady goes
-     false and the sentence falls through to "a few sitting off-target". A
+     false and the sentence falls through to "a few sitting out of range". A
      MOVING one was not: the trend grades amber or red, mostSteady stays true,
      and it lands here. Out of band and heading further out is exactly when
      silence is worst. */
@@ -250,9 +250,9 @@ export function buildHeadline(ctx) {
     ? `${outNames} is out of range, with some movement elsewhere`
     : "Mostly in range, with some movement";
   else if (mostSteady && halfOut) state = "Held steady, but held in the wrong place";
-  else if (mostSteady) state = "Fairly steady, with several off-target";
-  else if (halfOut && drifting >= 2) state = "Unsettled — several are off-target and moving";
-  else if (halfOut) state = "A good part of the tank is off-target";
+  else if (mostSteady) state = "Fairly steady, with several out of range";
+  else if (halfOut && drifting >= 2) state = "Unsettled — several are out of range and moving";
+  else if (halfOut) state = "A good part of the tank is out of range";
   else state = "Mixed picture across the tank";
 
   /* ---- The qualifier: what that means for you today -------------------- */
@@ -262,9 +262,9 @@ export function buildHeadline(ctx) {
   if (urgent) {
     qualifier = allIn && allSteady ? "everything else is in range and holding"
       : mostIn && mostSteady ? "the rest is mostly stable"
-      : halfOut ? "and a good part of the rest is off-target"
+      : halfOut ? "and a good part of the rest is out of range"
       : drifting >= 2 ? "and several others are moving"
-      : offSteady >= 1 ? "the rest is steady, some off-target"
+      : offSteady >= 1 ? "the rest is steady, some out of range"
       : "the rest looks alright";
   }
   else if (missed) qualifier = missed === 1
@@ -287,8 +287,8 @@ export function buildHeadline(ctx) {
     : `${staleCount} readings are getting old`;
   else if (drifting === 1) qualifier = "one parameter to keep an eye on";
   else if (drifting > 1) qualifier = `${drifting} parameters to keep an eye on`;
-  else if (offSteady === 1) qualifier = "one sitting off-target but going nowhere";
-  else if (offSteady > 1) qualifier = `${offSteady} sitting off-target but going nowhere`;
+  else if (offSteady === 1) qualifier = "one sitting out of range but going nowhere";
+  else if (offSteady > 1) qualifier = `${offSteady} sitting out of range but going nowhere`;
   else if (allIn && allSteady && !watching) qualifier = "nothing needs doing";
 
   if (!qualifier) return state;
@@ -415,7 +415,7 @@ export function buildBriefing(readings, latestByParam, defs, findings, doseState
 
      This is deliberately not a permanent "never tell me". Someone who is
      content running calcium at 430 does not want a suppressed warning, they
-     want a different target — and the app already lets them set one. */
+     want a different target range — and the app already lets them set one. */
   /* The dose snooze is the one that genuinely should lift on the next test, so
      the reading's timestamp belongs in the signature — but the key stays
      stable so the count and the storage entry survive it. */
@@ -444,7 +444,7 @@ export function buildBriefing(readings, latestByParam, defs, findings, doseState
     /* When a finding already says this element is a long way out of range,
        a dose claim saying "the dose is right, the level is not" is the same
        news twice — and the finding is the better of the two, carrying the
-       reading and the target. Only claims about the level are dropped; a real
+       reading and the target range. Only claims about the level are dropped; a real
        dose change, a settling one, or one awaiting a test still has something
        of its own to say. */
     if ((findings || []).some((f) => f.id === "far-out-" + d.key)
@@ -631,7 +631,7 @@ export function buildBriefing(readings, latestByParam, defs, findings, doseState
     add({
       id: "moving-out:" + x.def.key, tone: "warn", rank: 4,
       claim: `${x.def.label} is outside your range and still ${up ? "rising" : "falling"}`,
-      support: `${fmtVal(x.def, moved)}${x.def.unit} over ${span} days, and it has not turned. Now ${fmtVal(x.def, x.reading.value)}${x.def.unit} against a target of ${fmtVal(x.def, x.def.min)}–${fmtVal(x.def, x.def.max)}${x.def.unit}.`,
+      support: `${fmtVal(x.def, moved)}${x.def.unit} over ${span} days, and it has not turned. Now ${fmtVal(x.def, x.reading.value)}${x.def.unit} against a target range of ${fmtVal(x.def, x.def.min)}–${fmtVal(x.def, x.def.max)}${x.def.unit}.`,
       goto: { tab: "param", key: x.def.key },
       dismissible: true, dismissKey: `moving-out|${x.def.key}`,
       dismissSignature: `${up ? "up" : "down"}|${Math.round(x.reading.value * 100) / 100}`,
@@ -642,8 +642,8 @@ export function buildBriefing(readings, latestByParam, defs, findings, doseState
     add({
       id: "parked", tone: "watch", rank: 5,
       claim: parked.length === 1
-        ? `${parked[0].def.label} is parked off-target`
-        : `${joinList(parked.map((x) => x.def.label))} are parked off-target`,
+        ? `${parked[0].def.label} is parked out of range`
+        : `${joinList(parked.map((x) => x.def.label))} are parked out of range`,
       support: parked.length === 1
         ? `Steady rather than drifting, so there is nothing to chase — water changes will bring it round.`
         : `Steady rather than drifting, so there is nothing to chase — water changes will bring them round.`,
@@ -936,7 +936,7 @@ export function buildOverview(readings, latestByParam, defs, findings, doseState
   p1.push(`${inRange.length} of ${analysed.length} tracked ${analysed.length === 1 ? "parameter is" : "parameters are"} sitting inside ${analysed.length === 1 ? "its" : "their"} target range${steady.length ? `, and ${steady.length} of ${analysed.length} ${steady.length === 1 ? "is" : "are"} holding steady` : ""}.`);
 
   if (steady.length && steadyAndIn.length !== steady.length) {
-    p1.push(`Steady isn't the same as on target though — ${steady.length - steadyAndIn.length === 1 ? "one of those is being held" : `${steady.length - steadyAndIn.length} of those are being held`} at a level outside the band you set, which is worth separating from being genuinely under control.`);
+    p1.push(`Steady isn't the same as in range though — ${steady.length - steadyAndIn.length === 1 ? "one of those is being held" : `${steady.length - steadyAndIn.length} of those are being held`} at a level outside the band you set, which is worth separating from being genuinely under control.`);
   } else if (steady.length === analysed.length) {
     p1.push(`Day-to-day movement is inside the tolerance corals prefer, which matters more for long-term health than hitting an exact number.`);
   }
@@ -988,24 +988,24 @@ export function buildOverview(readings, latestByParam, defs, findings, doseState
     const bits = outButStable.map((x) => {
       const status = paramStatus(x.def, x.reading.value);
       const dir = status === "high" ? "above" : "below";
-      const target = status === "high" ? x.def.max : x.def.min;
-      const gap = Math.abs(x.reading.value - target);
-      return `${x.def.label} at ${fmtVal(x.def, x.reading.value)}${x.def.unit} (${fmtVal(x.def, gap)}${x.def.unit} ${dir === "above" ? "over" : "under"} target)`;
+      const edge = status === "high" ? x.def.max : x.def.min;
+      const gap = Math.abs(x.reading.value - edge);
+      return `${x.def.label} at ${fmtVal(x.def, x.reading.value)}${x.def.unit} (${fmtVal(x.def, gap)}${x.def.unit} ${dir === "above" ? "over" : "under"} your range)`;
     });
     const list = bits.length === 1 ? bits[0]
       : bits.slice(0, -1).join(", ") + " and " + bits[bits.length - 1];
-    p2.push(`${bits.length === 1 ? "One parameter is" : `${bits.length} parameters are`} sitting off-target but holding steady: ${list}. Parked slightly off but rock steady beats bouncing through the ideal band, so there's no need to chase ${bits.length === 1 ? "it" : "them"} — let water changes bring ${bits.length === 1 ? "it" : "them"} round gradually.`);
+    p2.push(`${bits.length === 1 ? "One parameter is" : `${bits.length} parameters are`} sitting out of range but holding steady: ${list}. Parked slightly off but rock steady beats bouncing through the ideal band, so there's no need to chase ${bits.length === 1 ? "it" : "them"} — let water changes bring ${bits.length === 1 ? "it" : "them"} round gradually.`);
   }
 
   if (outAndFar.length) {
     const bits = outAndFar.map((x) => {
       const st = paramStatus(x.def, x.reading.value);
-      const target = st === "high" ? x.def.max : x.def.min;
-      const gap = Math.abs(x.reading.value - target);
-      return `${x.def.label} at ${fmtVal(x.def, x.reading.value)}${x.def.unit}, ${fmtVal(x.def, gap)}${x.def.unit} ${st === "high" ? "above" : "below"} target`;
+      const edge = st === "high" ? x.def.max : x.def.min;
+      const gap = Math.abs(x.reading.value - edge);
+      return `${x.def.label} at ${fmtVal(x.def, x.reading.value)}${x.def.unit}, ${fmtVal(x.def, gap)}${x.def.unit} ${st === "high" ? "above" : "below"} your range`;
     });
     outAndFar.forEach((x) => detailed.add(x.def.key));
-    p2.push(`${joinList(bits)} ${bits.length === 1 ? "is" : "are"} a long way out — far enough that this isn't a case of the target being set slightly wrong. ${bits.length === 1 ? "It needs" : "They need"} correcting rather than accepting, though still gradually.`);
+    p2.push(`${joinList(bits)} ${bits.length === 1 ? "is" : "are"} a long way out — far enough that this isn't a case of the target range being set slightly wrong. ${bits.length === 1 ? "It needs" : "They need"} correcting rather than accepting, though still gradually.`);
   }
 
   for (const x of inButVolatile) {
@@ -1015,7 +1015,7 @@ export function buildOverview(readings, latestByParam, defs, findings, doseState
     const moving = x.stab.pattern === "oscillating" ? "moving up and down"
       : x.stab.pattern === "trending up" ? "climbing steadily"
       : x.stab.pattern === "trending down" ? "falling steadily" : "moving about";
-    p2.push(`${x.def.label} happens to be inside your target today at ${fmtVal(x.def, x.reading.value)}${x.def.unit}, but today's reading only tells you where it is right now. Look at the last ${x.stab.readingCount} readings and it has covered a ${x.stab.fmtRate} and is ${moving} — so it's passing through your target band rather than settling in it, and that movement is what corals respond to.`);
+    p2.push(`${x.def.label} happens to be inside your target range today at ${fmtVal(x.def, x.reading.value)}${x.def.unit}, but today's reading only tells you where it is right now. Look at the last ${x.stab.readingCount} readings and it has covered a ${x.stab.fmtRate} and is ${moving} — so it's passing through your target range rather than settling in it, and that movement is what corals respond to.`);
   }
   if (p2.length) paras.push(p2.join(" "));
 
@@ -1041,13 +1041,13 @@ export function buildOverview(readings, latestByParam, defs, findings, doseState
         ? (x.stab.pattern === "trending up" ? x.def.max - x.reading.value : x.reading.value - x.def.min)
         : null;
       if (isRecovering(x)) {
-        return `${x.def.label} has ${dir} ${amt < 1 ? amt.toFixed(2) : amt.toFixed(0)}${x.def.unit} over the past ${x.stab.spanDays} days, moving back toward its target band rather than away from it — that's a correction in progress, so let it run rather than reacting to the movement.`;
+        return `${x.def.label} has ${dir} ${amt < 1 ? amt.toFixed(2) : amt.toFixed(0)}${x.def.unit} over the past ${x.stab.spanDays} days, moving back toward its target range rather than away from it — that's a correction in progress, so let it run rather than reacting to the movement.`;
       }
       let s2 = `${x.def.label} has ${dir} ${amt < 1 ? amt.toFixed(2) : amt.toFixed(0)}${x.def.unit} over the past ${x.stab.spanDays} days, which is a consistent direction rather than noise.`;
       if (headroom != null && headroom >= 0 && x.stab.typicalRate > 0) {
         const daysToExit = Math.round(headroom / x.stab.typicalRate);
         if (daysToExit > 0 && daysToExit < 90) {
-          s2 += ` Carry on at that pace and it reaches the edge of your target band in roughly ${daysToExit} days.`;
+          s2 += ` Carry on at that pace and it reaches the edge of your target range in roughly ${daysToExit} days.`;
         }
       }
       return s2;
@@ -1070,11 +1070,11 @@ export function buildOverview(readings, latestByParam, defs, findings, doseState
     const steadyTrio = trio.filter((x) => x.stab && x.stab.grade === "green").length;
     const inTrio = trio.filter((x) => paramStatus(x.def, x.reading.value) === "ok").length;
     if (steadyTrio === 3 && inTrio === 3) {
-      p4.push(`The foundation trio is in good shape: alkalinity ${fmtVal(alk.def, alk.reading.value)}${alk.def.unit}, calcium ${fmtVal(ca.def, ca.reading.value)}ppm and magnesium ${fmtVal(mg.def, mg.reading.value)}ppm are all on target and all holding. Those three carry coral skeleton growth between them, so with the set behaving you have room to pay attention elsewhere.`);
+      p4.push(`The foundation trio is in good shape: alkalinity ${fmtVal(alk.def, alk.reading.value)}${alk.def.unit}, calcium ${fmtVal(ca.def, ca.reading.value)}ppm and magnesium ${fmtVal(mg.def, mg.reading.value)}ppm are all in range and all holding. Those three carry coral skeleton growth between them, so with the set behaving you have room to pay attention elsewhere.`);
     } else if (steadyTrio === 3) {
       p4.push(mg.reading.value < 1250
         ? `The foundation trio — alkalinity ${fmtVal(alk.def, alk.reading.value)}${alk.def.unit}, calcium ${fmtVal(ca.def, ca.reading.value)}ppm, magnesium ${fmtVal(mg.def, mg.reading.value)}ppm — is holding steady, but steady isn't the same as sufficient here.`
-        : `The foundation trio — alkalinity ${fmtVal(alk.def, alk.reading.value)}${alk.def.unit}, calcium ${fmtVal(ca.def, ca.reading.value)}ppm, magnesium ${fmtVal(mg.def, mg.reading.value)}ppm — is all steady, even where the numbers sit off your targets. Corals build skeleton from these three together, and consistency across the set matters more than any one of them hitting a textbook figure.`);
+        : `The foundation trio — alkalinity ${fmtVal(alk.def, alk.reading.value)}${alk.def.unit}, calcium ${fmtVal(ca.def, ca.reading.value)}ppm, magnesium ${fmtVal(mg.def, mg.reading.value)}ppm — is all steady, even where the numbers sit outside your target ranges. Corals build skeleton from these three together, and consistency across the set matters more than any one of them hitting a textbook figure.`);
     } else {
       const looseX = trio.filter((x) => x.stab && x.stab.grade !== "green");
       const loose = looseX.map((x) => x.def.label);
@@ -1091,14 +1091,14 @@ export function buildOverview(readings, latestByParam, defs, findings, doseState
   }
 
   /* Magnesium only stops calcium and alkalinity holding when it is genuinely
-     low in absolute terms. Below a user-set target of 1450 it may still be
+     low in absolute terms. Below a user-set range reaching 1450 it may still be
      1400, which is a perfectly ordinary level and not a blocker. */
   const MG_CRITICAL = 1250;
   const mgTrulyLow = mg && mg.reading.value < MG_CRITICAL;
   if (mgTrulyLow) {
     p4.push(`Magnesium at ${fmtVal(mg.def, mg.reading.value)}ppm is low enough to matter — below about ${MG_CRITICAL} it stops holding calcium and alkalinity in solution, and they become difficult to maintain no matter how much you dose. Worth resolving before anything else.`);
   } else if (mg && paramStatus(mg.def, mg.reading.value) === "low") {
-    p4.push(`Magnesium sits under your target at ${fmtVal(mg.def, mg.reading.value)}ppm, though it's still within the range most tanks run without trouble — worth nudging up gradually rather than treating as urgent.`);
+    p4.push(`Magnesium sits under your target range at ${fmtVal(mg.def, mg.reading.value)}ppm, though it's still within the range most tanks run without trouble — worth nudging up gradually rather than treating as urgent.`);
   }
 
   /* Calcium and alkalinity are consumed in fixed proportion, so their ratio is
@@ -1178,7 +1178,7 @@ export function buildOverview(readings, latestByParam, defs, findings, doseState
     const anyOff = analysed.some((x) => paramStatus(x.def, x.reading.value) !== "ok");
     if (tightest.length === graded.length) {
       paras.push(anyOff
-        ? `Taken as a whole, everything you track is being held steadily — including the parameters sitting off their targets. Steady in the wrong place is a much easier problem than unsteady in the right one.`
+        ? `Taken as a whole, everything you track is being held steadily — including the parameters sitting outside their target ranges. Steady in the wrong place is a much easier problem than unsteady in the right one.`
         : `Taken as a whole, everything you track is holding tightly. There's nothing here that needs adjusting.`);
     } else if (loosest.length && loosest.length < graded.length) {
       const names = loosest.map((x) => x.def.label);
@@ -1213,7 +1213,7 @@ export function buildOverview(readings, latestByParam, defs, findings, doseState
       return `bring magnesium up — below about 1250 it stops holding calcium and alkalinity in solution, and they'll fight you no matter what you dose.`;
     }
     /* Starved nutrients paired with high alkalinity burns SPS tips, which
-       outranks a parameter merely sitting under its target. */
+       outranks a parameter merely sitting under its target range. */
     if (alk && no3 && po4 && alk.reading.value >= 9
         && (no3.reading.value < 3 || po4.reading.value < 0.03)) {
       return `feed more — alkalinity this high on nutrients this lean is what burns SPS tips, and the nutrients are the easier half to fix.`;
@@ -1226,7 +1226,7 @@ export function buildOverview(readings, latestByParam, defs, findings, doseState
     if (wildFoundation.length) {
       const worst = wildFoundation.sort((a, b) =>
         (a.def.key === "alkalinity" ? -1 : b.def.key === "alkalinity" ? 1 : 0))[0];
-      return `settle ${worst.def.label.toLowerCase()} — it's swinging widely, and corals feel that movement long before they mind a number being off target.`;
+      return `settle ${worst.def.label.toLowerCase()} — it's swinging widely, and corals feel that movement long before they mind a number being out of range.`;
     }
 
     // Anything a long way outside its band outranks remaining stability concerns.
@@ -1236,7 +1236,7 @@ export function buildOverview(readings, latestByParam, defs, findings, doseState
         if (bandsOut(x) <= 1) return false;
         /* Magnesium above the critical level is never the most important thing
            on a tank that is otherwise behaving, however far it sits from a
-           user-set target. */
+           user-set target range. */
         if (x.def.key === "magnesium" && x.reading.value >= 1250) return false;
         return true;
       })
@@ -1252,7 +1252,7 @@ export function buildOverview(readings, latestByParam, defs, findings, doseState
       .filter((x) => x.stab && x.stab.grade === "red" && !isRecovering(x))
       .sort((a, b) => (a.def.key === "alkalinity" ? -1 : b.def.key === "alkalinity" ? 1 : 0));
     if (swinging.length) {
-      return `settle ${swinging[0].def.label.toLowerCase()} — it's the widest-moving thing here, and movement costs corals more than being off-target does.`;
+      return `settle ${swinging[0].def.label.toLowerCase()} — it's the widest-moving thing here, and movement costs corals more than being out of range does.`;
     }
     const drifting = analysed.filter((x) => {
       if (!x.stab || isRecovering(x)) return false;
@@ -1263,15 +1263,15 @@ export function buildOverview(readings, latestByParam, defs, findings, doseState
     if (drifting.length) {
       return `keep an eye on ${drifting[0].def.label.toLowerCase()} — it's travelling in one direction, and a small dosing correction now beats a large one later.`;
     }
-    /* pH is never managed by moving a target, so it is excluded here. */
+    /* pH is never managed by moving a target range, so it is excluded here. */
     const off = analysed.filter((x) => paramStatus(x.def, x.reading.value) !== "ok" && x.def.key !== "ph");
-    /* Changing a target is a decision that needs history behind it; a handful
+    /* Changing a target range is a decision that needs history behind it; a handful
        of readings is not grounds for redefining what you are aiming at. */
     if (off.length && !thinData) {
-      return `decide whether your ${off[0].def.label.toLowerCase()} target is still the right one — the tank is holding steady, just not where you told it to.`;
+      return `decide whether your ${off[0].def.label.toLowerCase()} target range is still the right one — the tank is holding steady, just not where you told it to.`;
     }
     if (off.length && thinData) {
-      return `keep testing — ${off[0].def.label.toLowerCase()} is sitting outside your target, but there isn't enough history yet to know whether that's the tank or the target.`;
+      return `keep testing — ${off[0].def.label.toLowerCase()} is sitting outside your target range, but there isn't enough history yet to know whether that's the tank or the range.`;
     }
     if (ph && ph.reading.value < 7.9) {
       return `work on gas exchange for the low pH — more surface agitation or fresh air to the skimmer, rather than anything added to the water.`;

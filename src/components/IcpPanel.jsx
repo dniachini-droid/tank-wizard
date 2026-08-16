@@ -166,7 +166,7 @@ export function IcpPanel({ icps, onAdd, onDelete }) {
               return (
                 <>
                   <ZoomableLineChart data={graphData} color="#B8541A" height={240}
-                    targetMin={gRef ? gRef.lo : null} targetMax={gRef ? gRef.hi : null} />
+                    targetRangeMin={gRef ? gRef.lo : null} targetRangeMax={gRef ? gRef.hi : null} />
                   {gRef && (
                     <p className="text-[11px] text-ink2 font-medium leading-relaxed mt-2">
                       {gRef.derived

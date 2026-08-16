@@ -60,11 +60,11 @@ for (let i = 0; i < RUNS; i++) {
   const txt = (a.explanation || '') + (a.reason || '') + (a.caution || '') + (st ? st.headline + st.detail : '');
   if (/NaN|undefined|Infinity|\[object/.test(txt)) note('leaked internals into text', `${k}: ${txt.slice(0, 60)}`);
 
-  if (a.targetCorrection) {
+  if (a.correction) {
     /* Nothing you can dose lowers these parameters. */
-    if (a.targetCorrection.direction !== 'up') note('downward correction offered', k);
-    if (a.targetCorrection.ppmPerDay > LIMIT[k] * 1.05) note('correction exceeds safe rate', k);
-    if (!(a.targetCorrection.days >= 2)) note('correction not spread over days', k);
+    if (a.correction.direction !== 'up') note('downward correction offered', k);
+    if (a.correction.ppmPerDay > LIMIT[k] * 1.05) note('correction exceeds safe rate', k);
+    if (!(a.correction.days >= 2)) note('correction not spread over days', k);
   }
   /* Only judge the rate where the app is actually changing the dose — on a
      hold, the movement is the user's existing dose, not a recommendation. */

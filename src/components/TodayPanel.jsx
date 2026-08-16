@@ -287,9 +287,9 @@ export function RemindersPanel({ view, windowDays, setWindowDays, onOpenTest, on
    ===========================================================================
    The old summary described a shape in prose: "the last nine readings covered
    a 0.7 dKH spread and is climbing steadily, so it's passing through your
-   target band rather than settling in it". This draws it.
+   target range rather than settling in it". This draws it.
 
-   The target band is the lit segment. The observed spread of recent readings
+   The target range is the lit segment. The observed spread of recent readings
    is the darker bar. Today is the dot. Where the bar sits inside the band the
    tank is settled; where it overhangs either end, the parameter is travelling
    through — which is the distinction the paragraph needed a whole sentence to
@@ -321,7 +321,7 @@ export function StabilityStrip({ def, readings }) {
 
   return (
     <div className="strip" role="img"
-      aria-label={`${def.label}: recent readings span ${fmtVal(def, stab.p05)} to ${fmtVal(def, stab.p95)}${def.unit}, target ${fmtVal(def, def.min)} to ${fmtVal(def, def.max)}${def.unit}`}>
+      aria-label={`${def.label}: recent readings span ${fmtVal(def, stab.p05)} to ${fmtVal(def, stab.p95)}${def.unit}, target range ${fmtVal(def, def.min)} to ${fmtVal(def, def.max)}${def.unit}`}>
       <div className="strip-rail">
         <div className="strip-band"
           style={{ left: `${at(def.min)}%`, width: `${at(def.max) - at(def.min)}%`,
@@ -346,7 +346,7 @@ export function StabilityStrip({ def, readings }) {
         <span className="strip-scale-mid">
           {travelled
             ? `${fmtVal(def, then)} \u2192 ${fmtVal(def, now)}${def.unit}`
-            : "target"}
+            : "target range"}
         </span>
         <span>{fmtVal(def, def.max)}</span>
       </div>
@@ -444,10 +444,10 @@ export function ScoreBreakdown({ ex, onOpenParam }) {
    and a dialog in front of a cheap reversible action is friction that teaches
    people to dismiss dialogs. It appears twice: the first time, so the promise
    is explicit, and again once the same suggestion has been put off three
-   times, which is the point at which the target is more likely wrong than the
+   times, which is the point at which the target range is more likely wrong than the
    advice.
    ========================================================================= */
-export function SnoozeSheet({ claim, param, count, onConfirm, onCancel, onOpenTargets }) {
+export function SnoozeSheet({ claim, param, count, onConfirm, onCancel, onOpenTargetRange }) {
   useEscape(onCancel);
   const habit = count >= 2;
   return (
@@ -474,20 +474,20 @@ export function SnoozeSheet({ claim, param, count, onConfirm, onCancel, onOpenTa
 
         {habit && (
           /* The honest alternative. Someone content at this level does not want
-             a suppressed warning, they want a target that matches the tank they
+             a suppressed warning, they want a target range that matches the tank they
              are actually keeping. */
           <div className="rounded-xl p-3 mb-3" style={{ background: "#A2621B0D", border: "1px solid #A2621B33" }}>
             <div className="text-[11px] font-extrabold uppercase tracking-wide mb-1" style={{ color: "#A2621B" }}>
               You have put this off {count} times
             </div>
             <p className="text-[12px] text-ink font-medium leading-relaxed mb-2">
-              If you are content with {param} where it is, the target is the thing
+              If you are content with {param} where it is, the target range is the thing
               to change rather than the dose. A range you actually want beats a
               warning you always dismiss.
             </p>
-            {onOpenTargets && (
-              <Btn variant="ghost" className="w-full" onClick={onOpenTargets}>
-                Change the {param} target
+            {onOpenTargetRange && (
+              <Btn variant="ghost" className="w-full" onClick={onOpenTargetRange}>
+                Change the {param} target range
               </Btn>
             )}
           </div>
@@ -578,8 +578,8 @@ export function Briefing({ claims, readings, paramDefs, onOpenParam, onGoTo, onD
 
       {snoozeHint && (
         <p className="brief-target-note">
-          Putting the same suggestion off each time usually means the target is
-          the thing to change, not the dose — targets live in Setup, and a range
+          Putting the same suggestion off each time usually means the target range is
+          the thing to change, not the dose — target ranges live in Setup, and a range
           you actually want is better than a warning you always dismiss.
         </p>
       )}

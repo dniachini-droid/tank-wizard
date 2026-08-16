@@ -57,16 +57,16 @@ export const DOSED_ELEMENTS = new Set(["alkalinity", "calcium", "magnesium"]);
 export const NUTRIENTS_AWAITING_OWN_RULES = new Set(["phosphate", "nitrate"]);
 
 /* What the hobby regards as safe, as distinct from whatever band you have set
-   as your target.
+   as your target range.
    
-   These matter because "outside your target" and "dangerous" are different
+   These matter because "outside your target range" and "dangerous" are different
    claims, and the app was treating them as the same one. Alkalinity 7.5 on a
-   target of 8.5–9.5 was reported as "a long way below range" at act severity —
+   target range of 8.5–9.5 was reported as "a long way below range" at act severity —
    but 7.5 dKH is a perfectly ordinary alkalinity, and Randy Holmes-Farley's
    own guidance puts the workable range at roughly 7–11 dKH. Raising an alarm
    there trains people to ignore alarms.
 
-   Outside your target but inside these bounds is worth knowing. Outside these
+   Outside your target range but inside these bounds is worth knowing. Outside these
    is worth acting on. Ammonia is absent deliberately: any detectable reading
    is handled on its own terms, because there is no safe amount. */
 /* Test kit precision, chosen in Setup. The settling window is derived from it:
@@ -116,7 +116,7 @@ export const SAFE_BOUNDS = {
      for a tank that low. Below 7 or above 11 is worth saying plainly. */
   alkalinity: { min: 7, max: 11 },
   /* Below 380 growth slows; above 500 the sources describe alkalinity being
-     dragged down, which is a real risk rather than merely off-target. */
+     dragged down, which is a real risk rather than merely out of range. */
   calcium:    { min: 350, max: 500 },
   /* Above about 1600 the sources report lethargic invertebrates and suppressed
      calcium and alkalinity uptake. An earlier attempt at this edit matched on
@@ -204,7 +204,7 @@ export function buildFindings({ readings, icps, paramDefs, settings, doseLog, wa
       severity: severe ? "act" : "watch",
       title: `kit reads ${pct > 0 ? "high" : "low"} ${Math.abs(pct).toFixed(0)}%`,
       detail: severe
-        ? `Your ${r.def.label.toLowerCase()} kit read ${Math.abs(pct).toFixed(0)}% ${pct > 0 ? "higher" : "lower"} than the lab across ${r.n} paired comparison${r.n === 1 ? "" : "s"}. That's far beyond normal kit variation, so anything derived from these readings — targets, trends, dosing advice — is built on a number the lab disagrees with. Worth replacing the reagent before acting on it.`
+        ? `Your ${r.def.label.toLowerCase()} kit read ${Math.abs(pct).toFixed(0)}% ${pct > 0 ? "higher" : "lower"} than the lab across ${r.n} paired comparison${r.n === 1 ? "" : "s"}. That's far beyond normal kit variation, so anything derived from these readings — target ranges, trends, dosing advice — is built on a number the lab disagrees with. Worth replacing the reagent before acting on it.`
         : `Your ${r.def.label.toLowerCase()} kit runs about ${Math.abs(pct).toFixed(0)}% ${pct > 0 ? "high" : "low"} against the lab. Small, but it shifts every figure derived from it in the same direction, so treat ${r.def.label.toLowerCase()} conclusions as carrying that offset.`,
     });
   }
@@ -251,7 +251,7 @@ export function buildFindings({ readings, icps, paramDefs, settings, doseLog, wa
     if (outBy < half * 2) continue;               // two half-bands = a full band out
 
     const dir = over > 0 ? "above" : "below";
-    /* A full band outside a narrow target can still be a perfectly ordinary
+    /* A full band outside a narrow target range can still be a perfectly ordinary
        reading. Only escalate when it is also outside what the hobby treats as
        safe; otherwise this is worth knowing, not worth alarm. */
     const safe = SAFE_BOUNDS[def.key];
@@ -260,7 +260,7 @@ export function buildFindings({ readings, icps, paramDefs, settings, doseLog, wa
       id: "far-out-" + def.key, params: [def.key], scope: "chemistry",
       severity: unsafe ? "act" : "watch",
       value: last.value,
-      /* The severity already distinguished dangerous from merely off-target;
+      /* The severity already distinguished dangerous from merely out of range;
          the wording did not. At 5.0 dKH the Dosing Wizard said "dangerously
          low" while the summary said "a long way below range" — the same fact,
          two registers, and the softer one is where most people look first. It
@@ -270,8 +270,8 @@ export function buildFindings({ readings, icps, paramDefs, settings, doseLog, wa
          way" is a judgement, and a number is not. */
       title: unsafe
         ? `${def.label.toLowerCase()} is ${fmtVal(def, last.value)}${def.unit} — dangerously ${dir === "below" ? "low" : "high"}`
-        : `${def.label.toLowerCase()} is well ${dir} your target`,
-      detail: `${fmtVal(def, last.value)}${def.unit} against a target of ${fmtVal(def, def.min)}–${fmtVal(def, def.max)}${def.unit}, measured ${fmtDate(last.date)}. Confirm it with a second test before making a large correction — a single reading this far out is as likely to be a test error as a real change. If it holds, correct it gradually: moving ${def.label.toLowerCase()} quickly is usually harder on livestock than the level itself.` + (unsafe ? "" : ` For what it is worth, ${fmtVal(def, last.value)}${def.unit} is still inside what the hobby treats as workable for ${def.label.toLowerCase()} — off your target rather than dangerous, so bring it back at a steady pace rather than in one move.`),
+        : `${def.label.toLowerCase()} is well ${dir} your target range`,
+      detail: `${fmtVal(def, last.value)}${def.unit} against a target range of ${fmtVal(def, def.min)}–${fmtVal(def, def.max)}${def.unit}, measured ${fmtDate(last.date)}. Confirm it with a second test before making a large correction — a single reading this far out is as likely to be a test error as a real change. If it holds, correct it gradually: moving ${def.label.toLowerCase()} quickly is usually harder on livestock than the level itself.` + (unsafe ? "" : ` For what it is worth, ${fmtVal(def, last.value)}${def.unit} is still inside what the hobby treats as workable for ${def.label.toLowerCase()} — outside your target range rather than dangerous, so bring it back at a steady pace rather than in one move.`),
     });
   }
 

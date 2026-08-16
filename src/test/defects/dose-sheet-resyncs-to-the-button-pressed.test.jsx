@@ -46,7 +46,7 @@ const STAGED = {
   /* The summary rows the block always draws, so the component renders at all.
      `target` here is the band, which is the shape this branch reads — see
      TW-035 for the field's other meaning elsewhere. */
-  target: { min: DEF.min, max: DEF.max },
+  targetRange: { min: DEF.min, max: DEF.max },
   used: [
     { param: 'alkalinity', date: '2026-08-10', time: '08:00', value: 7.0 },
     { param: 'alkalinity', date: '2026-08-14', time: '08:00', value: 7.1 },

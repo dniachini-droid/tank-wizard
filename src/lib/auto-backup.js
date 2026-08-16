@@ -97,8 +97,8 @@ export async function ringAdd(backup, nowIso) {
 
 /* A snapshot's contents, without restoring it, so the same preview the file
    restore shows can be built for a snapshot: what is in it, and whether its
-   target bands disagree with this device's. The ring was the one restore path
-   with no preview at all, which is how it came to rewrite targets on a tap. */
+   target ranges disagree with this device's. The ring was the one restore path
+   with no preview at all, which is how it came to rewrite target ranges on a tap. */
 export async function readSnapshot(key) {
   const res = await run(RING_STORE, "readonly", (s) => s.get(key));
   return res.ok && res.value ? res.value : null;
@@ -108,7 +108,7 @@ export async function readSnapshot(key) {
    never removes anything, and restores idempotently — the same three promises
    the file restore makes, because it is the same code making them. That
    includes the fourth: it will not decide on its own what to do about target
-   bands the snapshot and the device disagree about, so `options` is passed
+   ranges the snapshot and the device disagree about, so `options` is passed
    through rather than defaulted here. */
 export async function restoreSnapshot(key, current, applySettings = true, options = {}) {
   const value = await readSnapshot(key);

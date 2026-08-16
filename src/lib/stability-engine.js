@@ -32,7 +32,7 @@ import { addDaysFromToday, daysBetween } from './dates.js'
 export const STABILITY_RULES = {
   /* Alkalinity graded "steady" at up to 0.2 dKH a day, which is 1.4 a week —
      nearly three times the 0.5 dKH weekly drift the guidance allows, and more
-     than the whole target band. A tank crossing its entire range in five days
+     than the whole target range. A tank crossing its entire range in five days
      still came out green, which is how "parked" and "steady" ended up on
      parameters that were visibly moving. The thresholds are the sourced
      weekly figures divided out, not a per-day noise tolerance: day-to-day

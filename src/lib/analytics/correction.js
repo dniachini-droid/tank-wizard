@@ -47,13 +47,13 @@ export function fmtDoseMass(g) {
   return Math.round(g * 1000) + " mg";
 }
 
-export function computeCorrection(paramKey, current, target, volumeL) {
+export function computeCorrection(paramKey, current, aimPoint, volumeL) {
   const c = CORRECTIONS[paramKey];
-  if (!c || current == null || target == null || isNaN(current) || isNaN(target)) return null;
+  if (!c || current == null || aimPoint == null || isNaN(current) || isNaN(aimPoint)) return null;
   /* Doses scale straight off the volume, so without it there is no correction
      to quote — a missing volume must not quietly become a zero-gram answer. */
   if (!(volumeL > 0)) return null;
-  const delta = target - current;
+  const delta = aimPoint - current;
   if (Math.abs(delta) < 1e-9) return null;
   const volFactor = volumeL / 100;
   const days = Math.max(1, Math.ceil(Math.abs(delta) / c.maxPerDay));

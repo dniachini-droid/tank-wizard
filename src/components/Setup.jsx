@@ -29,7 +29,7 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
   const [backupAt, setBackupAt] = useState(null);
   const [restoreMsg, setRestoreMsg] = useState(null);
   const [pending, setPending] = useState(null);
-  /* "keep" or "file" — what to do about target bands the incoming copy and
+  /* "keep" or "file" — what to do about target ranges the incoming copy and
      this device disagree about. Null until the user says, and the restore
      will not run without it, because both answers rewrite how the whole log
      reads and neither is the app's to assume. */
@@ -167,12 +167,12 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
   // Correction calculator state
   const correctable = paramDefs.filter((d) => CORRECTIONS[d.key]);
   const [calcParam, setCalcParam] = useState(correctable[0] ? correctable[0].key : "alkalinity");
-  const [calcTarget, setCalcTarget] = useState("");
+  const [calcAimPoint, setCalcAimPoint] = useState("");
   const calcDef = paramDefs.find((d) => d.key === calcParam) || correctable[0];
   const calcCurrent = latestByParam && latestByParam[calcParam] ? latestByParam[calcParam].value : null;
   const correction = useMemo(
-    () => computeCorrection(calcParam, calcCurrent, parseFloat(calcTarget), settings.volumeL),
-    [calcParam, calcCurrent, calcTarget, settings.volumeL]);
+    () => computeCorrection(calcParam, calcCurrent, parseFloat(calcAimPoint), settings.volumeL),
+    [calcParam, calcCurrent, calcAimPoint, settings.volumeL]);
 
   // Lighting log state
   const [lightDate, setLightDate] = useState(todayStr());
@@ -453,13 +453,13 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
         summary="Work out a one-off dose to move a parameter">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
           <Field label="Parameter">
-            <select value={calcParam} onChange={(e) => { setCalcParam(e.target.value); setCalcTarget(""); }} className={inputCls}>
+            <select value={calcParam} onChange={(e) => { setCalcParam(e.target.value); setCalcAimPoint(""); }} className={inputCls}>
               {correctable.map((d) => <option key={d.key} value={d.key}>{d.label}</option>)}
             </select>
           </Field>
-          <Field label={`Target${calcDef && calcDef.unit ? ` (${calcDef.unit})` : ""}`}>
-            <input type="number" inputMode="decimal" step={calcDef ? calcDef.step : 0.1} value={calcTarget}
-              onChange={(e) => setCalcTarget(e.target.value)} className={inputCls}
+          <Field label={`Aim point${calcDef && calcDef.unit ? ` (${calcDef.unit})` : ""}`}>
+            <input type="number" inputMode="decimal" step={calcDef ? calcDef.step : 0.1} value={calcAimPoint}
+              onChange={(e) => setCalcAimPoint(e.target.value)} className={inputCls}
               placeholder={calcDef ? `${calcDef.min}–${calcDef.max}` : ""} />
           </Field>
         </div>
@@ -472,7 +472,7 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
           </p>
         ) : !correction ? (
           <p className="text-[13px] text-ink2 font-medium">
-            Currently {calcCurrent}{calcDef.unit}. Enter a target to see what it takes to get there in {settings.volumeL}L.
+            Currently {calcCurrent}{calcDef.unit}. Enter an aim point to see what it takes to get there in {settings.volumeL}L.
           </p>
         ) : !correction.raising ? (
           <div className="rounded-xl p-3" style={{ background: "#1D6FA512", border: "1px solid #1D6FA540" }}>
@@ -721,7 +721,7 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
               or duplicated, and running the same file twice changes nothing the second time.
             </p>
 
-            {/* Target bands are the one thing a restore cannot merge, and the
+            {/* Target ranges are the one thing a restore cannot merge, and the
                 one thing it used to overwrite without saying so. Every reading
                 in the log is coloured, shaded and described against these
                 bands as it is drawn — nothing records what band a reading was
@@ -732,7 +732,7 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
             {rangeConflicts.length > 0 && (
               <div className="rounded-lg border-2 p-2.5 mb-2" style={{ borderColor: "#A2621B55", background: "#A2621B12" }}>
                 <div className="text-[11px] font-black mb-1" style={{ color: "#8A5A18" }}>
-                  This {pending.kind === "snapshot" ? "snapshot" : "backup"}'s targets are not the ones set here
+                  This {pending.kind === "snapshot" ? "snapshot" : "backup"}'s target ranges are not the ones set here
                 </div>
                 <div className="space-y-1 my-1.5">
                   {rangeConflicts.map((c) => {
@@ -785,11 +785,11 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
                 const added = pending.info.summary.reduce((a, r) => a + r.fresh, 0);
                 /* The old message said "nothing was overwritten", which was
                    false for the one field that was. It now reports what was
-                   decided about the targets, because that is the part a user
+                   decided about the target ranges, because that is the part a user
                    cannot see happening. */
                 const ranges = rangeConflicts.length === 0 ? ""
-                  : rangeChoice === "file" ? " Your targets now come from this file."
-                  : " The targets set on this device were kept.";
+                  : rangeChoice === "file" ? " Your target ranges now come from this file."
+                  : " The target ranges set on this device were kept.";
                 setPending(null);
                 setRangeChoice(null);
                 setRestoreMsg((added
@@ -800,7 +800,7 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
             </div>
             {rangeConflicts.length > 0 && !rangeChoice && (
               <p className="text-[11px] font-bold mt-2" style={{ color: "#8A5A18" }}>
-                Choose what happens to the targets first.
+                Choose what happens to the target ranges first.
               </p>
             )}
           </div>
@@ -868,7 +868,7 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
                   {/* Through the same preview the file restore uses. The ring
                       was the one path that wrote on a single tap with nothing
                       shown first, which is how a snapshot could re-label a
-                      whole log against an old target before anyone saw it. */}
+                      whole log against an old target range before anyone saw it. */}
                   <Btn variant="ghost" onClick={async () => {
                     const parsed = await readSnapshot(s.key);
                     const info = parsed && inspectBackup(parsed, restoreCurrent(), customRanges);

@@ -158,7 +158,7 @@ export function CorrectionPanel({ def, state, offers, onStart, onCancel, onFinis
       <div className="text-[11px] font-extrabold uppercase tracking-wide text-ink2 mb-1">Bring it back to range</div>
       <p className="text-[12px] text-ink2 leading-snug">
         {def.label} is {offer.up ? "below" : "above"} your band. The daily dose can walk it
-        to {fmtVal(def, offer.target)}{def.unit} if it runs {offer.up ? "above" : "below"} what
+        to {fmtVal(def, offer.aimPoint)}{def.unit} if it runs {offer.up ? "above" : "below"} what
         the tank uses for a while, then goes back.
       </p>
       <div className="flex gap-1.5 mt-3">

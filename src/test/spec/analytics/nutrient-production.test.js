@@ -5,7 +5,7 @@
  * volume. Never gross"; §9 (line 204): the app must refuse to "Calculate any
  * dose when net volume is unset". computeNutrientProduction is not a dose
  * calculation itself, but every downstream number it produces (perWeek,
- * holdAtTarget, equilibrium) is volume-dependent the same way a dose is, and
+ * holdAtMax, equilibrium) is volume-dependent the same way a dose is, and
  * the function already refuses correctly — this locks that, and locks the
  * mass-balance formula the module's own header comment documents:
  *   P = [ (Cend - Cstart) + SUM_i f_i*(C_i - Cnew) ] / days

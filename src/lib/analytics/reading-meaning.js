@@ -9,7 +9,7 @@ import { STABILITY_RULES } from '../stability-engine.js'
 /* --- What a reading actually means in practice ---
  *
  * Ranges alone don't tell you whether to worry. These notes carry the
- * practical consequence: magnesium at 1550 is above the usual target but
+ * practical consequence: magnesium at 1550 is above the usual target range but
  * widely reported as harmless (and typical of Aquaforest Reef Salt, which
  * mixes high), whereas phosphate at 0.3 is a real problem. Written to be
  * read as advice, not as a lookup table.
@@ -34,7 +34,7 @@ export function paramContext(def, value, salt) {
     }
     return value < 380
       ? `Below about 380 ppm calcium starts to limit how fast corals can build skeleton, so this one is worth correcting — though gently. Check magnesium first, since low magnesium is usually the reason calcium won't hold.`
-      : `At ${Math.round(value)} ppm you're just under your own target, but comfortably inside the 380–450 ppm range most tanks run happily. Nothing here is harming corals — it only matters if it keeps falling, so watch the direction rather than the number.`;
+      : `At ${Math.round(value)} ppm you're just under your own target range, but comfortably inside the 380–450 ppm range most tanks run happily. Nothing here is harming corals — it only matters if it keeps falling, so watch the direction rather than the number.`;
   }
 
   if (k === "alkalinity") {
@@ -90,9 +90,9 @@ export function paramContext(def, value, salt) {
  *
  * The tier is §13's, read from the LAST reading (reef-chemistry.md §26 —
  * position is the last reading, never a fitted or projected value). Alert
- * thresholds are §18's defaults, applied to the band midpoint — the user's
- * target: §18's own worked example reads the 8.2–8.8 band as target 8.5 with
- * alert-low at 7.5. Canon defines alert thresholds for the three dosed
+ * thresholds are §18's defaults, hung from the midpoint of the target range
+ * — the derived anchor of §2 (no target point is stored anywhere): the
+ * 8.2–8.8 range gives alert-low 7.5. Canon defines alert thresholds for the three dosed
  * elements only; the other parameters can reach the off-band tier but never
  * the alert tier. Band edges are inclusive of the band they bound, and a
  * value exactly on an alert threshold is at alert (§13 boundary rules);
@@ -126,7 +126,7 @@ export function computeControl(def, readings, days = 90) {
   const vals = rows.map((r) => r.value).sort((a, b) => a - b);
   const p05 = percentile(vals, 5), p50 = percentile(vals, 50), p95 = percentile(vals, 95);
   const spread = p95 - p05;
-  const targetWidth = def.max - def.min;
+  const rangeWidth = def.max - def.min;
 
   /* Direction of travel and whether every step is inside test resolution —
      previously computed separately, now part of the single control result. */
@@ -151,9 +151,9 @@ export function computeControl(def, readings, days = 90) {
   const above = rows.filter((r) => r.value > def.max).length;
   const pct = Math.round((inRange / rows.length) * 100);
 
-  // How tight is the tank's own band relative to the width of the target band?
+  // How tight is the tank's own band relative to the width of the target range?
   /* Consistency is now judged against published per-parameter tolerances
-     rather than the width of whatever target band happens to be set. */
+     rather than the width of whatever target range happens to be set. */
   /* Where a rate can be measured it supersedes the spread for grading, since
      a spread cannot distinguish a slow climb from a bounce. */
   const rateInfo = computeRates(def, readings, days);
@@ -185,7 +185,7 @@ export function computeControl(def, readings, days = 90) {
       : metric <= cRule.moderate ? "moderate" : "loose";
     if (rateGrade) consistency = rateGrade;
   }
-  const ratio = targetWidth > 0 ? spread / targetWidth : null;
+  const ratio = rangeWidth > 0 ? spread / rangeWidth : null;
 
   /* Bar fill runs the intuitive way round: full means tightly held. */
   let consistencyScore = 0;
@@ -204,14 +204,14 @@ export function computeControl(def, readings, days = 90) {
 
   const step = ROUND_STEP[def.key] || def.step || 0.1;
   const suggested = { min: roundTo(p05, step), max: roundTo(p95, step) };
-  // Only worth suggesting if it is materially different from the current target.
+  // Only worth suggesting if it is materially different from the current target range.
   const suggestDiff = Math.abs(suggested.min - def.min) + Math.abs(suggested.max - def.max);
 
   /* Verdict is driven by where the median sits relative to the band, not by a
-     percentage cliff. A median inside the band means the tank is on target and
-     the excursions are noise; a median outside it means genuinely off target. */
+     percentage cliff. A median inside the band means the tank is in range and
+     the excursions are noise; a median outside it means genuinely out of range. */
   const medianInside = p50 >= def.min && p50 <= def.max;
-  /* If the whole spread sits inside the target band, the parameter is doing
+  /* If the whole spread sits inside the target range, the parameter is doing
      exactly what was asked of it — a fold ratio shouldn't override that. */
   const wholeRangeInBand = p05 >= def.min && p95 <= def.max;
   if (wholeRangeInBand && consistency === "moderate") consistency = "tight";
@@ -258,7 +258,7 @@ export function computeControl(def, readings, days = 90) {
     note = `Your ${name} is centred in the ${band} band, currently reading ${fmtVal(def, latestVal)}${def.unit}.${outside === 0 ? ` Every reading landed inside it.` : bothSides ? ` ${outside} of ${rows.length} readings drifted outside, on both the high and low side, so there's no consistent bias — that pattern is normal test-to-test variation.` : ` ${outside} of ${rows.length} readings sat ${below > 0 ? "under" : "over"} the band.`}${consistency === "moderate" ? ` Movement is a little wider than ideal, so it's worth keeping an eye on.` : ``}`;
   } else if (consistency === "tight") {
     verdict = "steady-off"; tone = "#1D6FA5"; headline = `Steady, running ${bias}`;
-    note = `Your ${name} has been very steady, but it's settled around ${fmtVal(def, p50)}${def.unit} — about ${gapTxt} ${dirWord} the ${band} you're aiming for. Corals care far more about steadiness than about the exact number, so a tank parked here and holding is in decent shape. The usual call is to move your target to match the tank rather than push the tank to match the target.`;
+    note = `Your ${name} has been very steady, but it's settled around ${fmtVal(def, p50)}${def.unit} — about ${gapTxt} ${dirWord} the ${band} you're aiming for. Corals care far more about steadiness than about the exact number, so a tank parked here and holding is in decent shape. The usual call is to move your target range to match the tank rather than push the tank to match the range.`;
   } else {
     /* Renamed from `drifting` (§22): that is §13's band word — inside the
        band, trending toward an edge — and this verdict fires on close to the
@@ -284,7 +284,7 @@ export function computeControl(def, readings, days = 90) {
 
   const contextNote = paramContext(def, latestVal, SALT_MIX);
 
-  /* Only offer a new target where the tank is genuinely biased and held
+  /* Only offer a new target range where the tank is genuinely biased and held
      tightly. Suggesting a wider band for a swinging parameter would just
      hide instability, and a centred median needs no retarget at all. */
   const suggestWorth = verdict === "steady-off" && suggestDiff > (ROUND_STEP[def.key] || def.step || 0.1) * 1.5;
