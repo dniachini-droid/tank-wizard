@@ -32,12 +32,19 @@ const STATIC_CHECKS = [
   ['deadcode', 'scripts/verify/deadcode.mjs', 'advisory'],
   ['livecheck', 'scripts/verify/livecheck.mjs', 'blocking'],
   ['wordingcheck', 'scripts/verify/wordingcheck.mjs', 'blocking'],
+  ['consistencycheck', 'scripts/verify/consistencycheck.mjs', 'blocking'],
   ['dupcheck', 'scripts/verify/dupcheck.mjs', 'blocking'],
   ['blockdup', 'scripts/verify/blockdup.mjs', 'blocking'],
   ['csscheck', 'scripts/verify/csscheck.mjs', 'advisory'],
   ['motioncheck', 'scripts/verify/motioncheck.mjs', 'blocking'],
   ['a11ycheck', 'scripts/verify/a11ycheck.mjs', 'blocking'],
   ['escapecheck', 'scripts/verify/escapecheck.mjs', 'blocking'],
+  // Not a source checker: it validates `.agent/items/` — ids match filenames,
+  // statuses are one of the four, `status: approved` carries the [approved]
+  // tag, and every TW- cross-reference resolves to a file. Blocking because
+  // the folder replaced a hand-written list; the checker is what stops it
+  // rotting the way an unchecked list does. Reads no source, costs ~30ms.
+  ['backlog', 'scripts/backlog.mjs --check', 'blocking'],
 ];
 
 let failed = false;
@@ -64,7 +71,7 @@ run('build', 'npm', ['run', 'build', '--silent'], 'blocking');
 
 console.log('\n── static checks ──');
 for (const [label, script, mode] of STATIC_CHECKS) {
-  run(label, 'node', [script], mode);
+  run(label, 'node', script.split(' '), mode);
 }
 
 console.log('\n── behavioural checks (already ported, Phase 3 — tests/legacy-port/) ──');
@@ -92,7 +99,7 @@ console.log('       monolith\'s JSX source, which no longer exists. Not rewritte
 // pre-existing, already-labelled "SPEC VIOLATION" test tracking a chemistry
 // gap the backlog already has open (rate-rails.test.js's calcium/magnesium
 // rail mismatch is TW-020's own arrival-zone item; several others match
-// TW-018/TW-019 in .agent/backlog.md). Wiring that suite into the one
+// TW-018/TW-019 in .agent/items/). Wiring that suite into the one
 // required check would make it permanently red on every PR, including ones
 // with nothing to do with chemistry, until those [chem] items are approved
 // and closed — the opposite of what a merge gate is for. See

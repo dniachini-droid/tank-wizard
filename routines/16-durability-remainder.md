@@ -48,7 +48,8 @@ shared), new modules under `src/lib/`, `src/App.jsx`, `src/components/Setup.jsx`
 5. **This routine is the `[schema]` authorisation** AGENTS.md #5 requires for
    storage work. It comes from `THE-PLAN-v3.md` §PHASE 7, written by Dan on
    14 August, which names all three of these pieces as the remaining work. File
-   each piece's backlog item tagged `[schema]` **with** the work, the way
+   each piece's backlog item (one file under `.agent/items/`) tagged `[schema]`
+   **with** the work, the way
    TW-032 was. Nothing here authorises a chemistry change (AGENTS.md #3) — no
    part of this routine may alter a constant, a threshold or a unit conversion.
 6. **Fail safe, always, in the same shape the photo move used.** A value that

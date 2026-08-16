@@ -48,7 +48,7 @@ safety property, not a quality property.
     keeps a reef tank; he does not write code. If the plain version is hard to
     write, the finding is muddled, and that is worth reporting. This is a
     writing requirement, not an extra agent. Structured files are exempt:
-    `.agent/backlog.md` keeps the item format above, where the `why:` line
+    `.agent/items/` keeps the item format above, where the `why:` line
     carries the plain meaning and the identifiers are the point.
 12. **Dispatch `domain-verifier` only for chemistry.** Use it when a finding
     changes a chemistry constant, changes what the app tells the user to dose,
@@ -106,26 +106,53 @@ Stopping is a successful outcome. Guessing is not.
 The repo is the shared memory. Agents do not talk to each other directly;
 they read and write these files:
 
-- `.agent/backlog.md` — the queue. Ordered. Tagged.
+- `.agent/items/<TW-id>.md` — the queue. One file per item. Ordered. Tagged.
+  `npm run backlog` prints the whole thing in order; `npm run backlog --
+  --approved` prints only what may be implemented.
 - `.agent/log/<run-id>.md` — what happened this run, per agent
 - `.agent/findings.md` — raw audit output, pre-triage
 - `.agent/needs-dan.md` — decisions only Dan can make
 - `.agent/spec-challenges.md` — where an agent thinks the spec is wrong
 
-## Backlog item format
+## Backlog item format — one file per item, never one shared list
+
+Every item is exactly one file, `.agent/items/<TW-id>.md`, named by its number:
 
 ```
-- [ ] [approved][chem] TW-034 Alkalinity dosing calc rounds before unit conversion
-      why: 0.1 dKH error at low volumes
-      spec: docs/spec/reef-chemistry.md#alkalinity
-      repro: tests/dosing.alk.test.js "rounds after conversion"
-      owner: implementer
+id: TW-034
+title: Alkalinity dosing calc rounds before unit conversion
+status: approved
+tags: [approved][chem]
+order: 340
+
+why: 0.1 dKH error at low volumes
+spec: docs/spec/reef-chemistry.md#alkalinity
+repro: tests/dosing.alk.test.js "rounds after conversion"
+owner: implementer
 ```
+
+Header lines, a blank line, then the body in the same `why: / spec: / repro: /
+owner:` prose as before. `status` is `approved` · `needs-approval` · `blocked` ·
+`done` — the four sections the old list had.
 
 Tags: `[approved]` (implementer may act), `[chem]`, `[schema]`, `[pwa]`, `[a11y]`,
 `[perf]`, `[sec]`, `[deps]`, `[docs]`, `[blocked]`.
 
 **Untagged items are read-only to the implementer.** No `[approved]`, no code change.
+
+**Order lives in the `order:` field, not in line position.** Lower is sooner,
+values are spaced by 10 so an item can be slotted between two others without
+touching either, and ties break by id. Top = next still holds; it is now
+`npm run backlog -- --approved` and take the first.
+
+**The one rule: a run edits only the files for the items it is touching.**
+Filing an item creates a new path, so two runs filing different items cannot
+conflict. There is no combined `.agent/backlog.md` any more — one shared list
+that every run appended to is what this replaced, for the same reason
+`.agent/run-state.md` was replaced by `.agent/runs/`. Do not reintroduce it,
+and do not commit a generated index of the folder: a second copy of the queue
+conflicts exactly as the original did. `npm run backlog` prints the view to
+stdout, deliberately writing no file. Full contract: `.agent/items/README.md`.
 
 ## PR body template
 
@@ -205,7 +232,8 @@ all.** For each one that is not yours, before doing anything new:
 1. Check for its open branch with uncommitted changes.
 2. If the work is complete and verified → commit and open the PR.
 3. If the work is half-done and unverified → **revert it entirely** and put the
-   item back on the backlog with a note. Half-finished chemistry code is more
+   item back on the backlog with a note — its own file under `.agent/items/`,
+   which is the only file this touches. Half-finished chemistry code is more
    dangerous than no code.
 4. Log what you found and what you did about it.
 5. Set that file's `status` to `interrupted` and record what you did, but leave

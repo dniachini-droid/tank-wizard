@@ -1,4 +1,4 @@
-/* TW-034 (.agent/backlog.md, 2026-08-14 consistency sweep) — one-off dose
+/* TW-034 (.agent/items/, 2026-08-14 consistency sweep) — one-off dose
  * corrections feed the engines permanently and are written down nowhere.
  *
  * `logCorrection` (App.jsx:888-905) writes to its own `corrections` array,

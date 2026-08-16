@@ -151,7 +151,7 @@ Full detail, evidence, and suggested fixes for all of these are in
 `.agent/findings.md`. None of it was fixed here — `src/` was not touched,
 per the routine's own rule. All four ported checkers that found something
 land **advisory**, with `[blocked]` backlog items TW-021 through TW-023
-naming exactly what closes each one out — see §7 below and `.agent/backlog.md`.
+naming exactly what closes each one out — see §7 below and `.agent/items/`.
 
 **Plain terms:** two buttons in the app are currently broken — tapping
 "go to dosing" from a reading-logged popup, and marking a reminder done from
@@ -277,7 +277,7 @@ of output to search through.
 part of `legacy/verify.sh` — vitest didn't exist in the monolith — so porting
 it was outside this routine's scope, and right now it's 69/261 tests red
 across 32/44 files, every one already a labelled `SPEC VIOLATION` test
-tracking an open, already-filed `[chem]` backlog item (TW-016 and others),
+tracking an open, already-filed `[chem]` backlog item (TW-051 and others),
 not a regression. Wiring it into the one required check today would make
 every PR's required check red — including PRs with nothing to do with
 chemistry — until dozens of pre-existing, [chem]-tagged items are approved
@@ -319,5 +319,5 @@ routine that wasn't already unguarded before it.
   heuristics this port uses, closing this gap and three coverage caveats at
   once. Not installed — Dan approves dependencies, AGENTS.md #6.
 
-All four are in `.agent/backlog.md` under **Blocked**, each naming exactly
+All four are in `.agent/items/` under **Blocked**, each naming exactly
 what moving the checker to blocking requires.

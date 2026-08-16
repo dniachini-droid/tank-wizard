@@ -184,7 +184,7 @@ the user actually sets and the thing every classification is made against.
 | `src/lib/analytics/reading-meaning.js:95,120-122,154` | `targetWidth = def.max - def.min`, "the width of the **target band**" |
 | `src/lib/stability-engine.js:35` | "…than the whole **target band**" |
 | `src/lib/analytics/time-in-range.js:5-7` | "somewhere the **target** does not…" |
-| `src/lib/backup.jsx` / `.agent/backlog.md` TW-013, TW-033 | "restore overwrites **targets**" — meaning `custom-ranges`, i.e. bands |
+| `src/lib/backup.jsx` / `.agent/items/TW-013.md` TW-013, TW-033 | "restore overwrites **targets**" — meaning `custom-ranges`, i.e. bands |
 
 **Why it is a distinct concept:** a band has two edges and a width. §2's Layer
 2 calls the width a separate user choice. `reading-meaning.js:95` divides by
@@ -245,7 +245,7 @@ question, see §11):
 ## 7. Meaning 5 — a dose rate in mL/day
 
 **Not in the parking note's list of four.** This is the one with a unit
-mismatch behind it, already filed as **TW-035** (`.agent/backlog.md:452-469`)
+mismatch behind it, already filed as **TW-035** (`.agent/items/TW-035.md`)
 and pinned by `tests/parity/dose-status-target-field-semantics.test.js`.
 
 **What it means:** the mL/day a staged dose plan is working up to — a *rate*,

@@ -1,4 +1,4 @@
-/* TW-036 (.agent/backlog.md, 2026-08-14 consistency sweep) — the dose sheet
+/* TW-036 (.agent/items/, 2026-08-14 consistency sweep) — the dose sheet
  * can record a number the user did not pick.
  *
  * `DoseChangeSheet` seeded its amount field once, with `useState(String(...))`

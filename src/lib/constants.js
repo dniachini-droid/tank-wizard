@@ -29,8 +29,16 @@ export const PARAM_DEFS = [
   { key: "magnesium", label: "Magnesium", unit: "ppm", min: 1250, max: 1400, step: 1, freqDays: 21, color: "#7B4FCB" },
     /* Potassium is slow-moving and monthly-tested. 380-420 is all comfortable
      territory, so the band is wide and the cadence is 30 days rather than 7. */
-  { key: "potassium", label: "Potassium", unit: "ppm", min: 380, max: 420, step: 5, freqDays: 30, color: "#926A09" },
-  { key: "phosphate", label: "Phosphate", unit: "ppm", min: 0.03, max: 0.10, step: 0.01, freqDays: 7, color: "#C4285B" },
+  /* Brand colours may never be byte-identical to a severity colour
+     (wizard-states.md §15, colour registry, decided 14 Aug). Potassium was
+     #926A09 (== STATUS_COLOR.low) and phosphate #C4285B (== STATUS_COLOR.high),
+     so a perfect phosphate reading charted in the danger red. The replacements
+     are measured, not eyeballed: contrast on the #F3F7F6 page 4.54:1 and
+     5.76:1 (§18 floor 4.5 text / 3 stroke), CIE76 from the severity colour
+     each replaced 32.7 and 37.9. Alkalinity's #0B7C86 (== ok) stays by
+     decision — TW-046, 2026-08-15. */
+  { key: "potassium", label: "Potassium", unit: "ppm", min: 380, max: 420, step: 5, freqDays: 30, color: "#5F7A12" },
+  { key: "phosphate", label: "Phosphate", unit: "ppm", min: 0.03, max: 0.10, step: 0.01, freqDays: 7, color: "#9B3A8C" },
   { key: "nitrate", label: "Nitrate", unit: "ppm", min: 5, max: 15, step: 0.1, freqDays: 7, color: "#2A8050" },
   { key: "ammonia", label: "Ammonia", unit: "ppm", min: 0, max: 0.25, step: 0.01, freqDays: null, color: "#D0342C", idealAt: "min" },
   { key: "ph", label: "pH", unit: "", min: 7.8, max: 8.4, step: 0.01, freqDays: null, color: "#2AA7B0" },

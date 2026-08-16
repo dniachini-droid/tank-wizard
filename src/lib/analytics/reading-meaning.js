@@ -86,6 +86,40 @@ export function paramContext(def, value, salt) {
   return null;
 }
 
+/* --- §22: a verdict never masks a position ---
+ *
+ * The tier is §13's, read from the LAST reading (reef-chemistry.md §26 —
+ * position is the last reading, never a fitted or projected value). Alert
+ * thresholds are §18's defaults, applied to the band midpoint — the user's
+ * target: §18's own worked example reads the 8.2–8.8 band as target 8.5 with
+ * alert-low at 7.5. Canon defines alert thresholds for the three dosed
+ * elements only; the other parameters can reach the off-band tier but never
+ * the alert tier. Band edges are inclusive of the band they bound, and a
+ * value exactly on an alert threshold is at alert (§13 boundary rules);
+ * distances are measured from the band edges with nothing added (§27, out
+ * has no margin).
+ */
+export const ALERT_WIDTH = { alkalinity: 1.0, calcium: 50, magnesium: 200 };
+
+export function positionBand(def, value) {
+  const aw = ALERT_WIDTH[def.key];
+  const mid = (def.min + def.max) / 2;
+  if (value < def.min) {
+    return aw != null && value <= mid - aw
+      ? { band: "alert-low", tier: 2 } : { band: "out-of-band-low", tier: 1 };
+  }
+  if (value > def.max) {
+    return aw != null && value >= mid + aw
+      ? { band: "alert-high", tier: 2 } : { band: "out-of-band-high", tier: 1 };
+  }
+  return { band: "in-band", tier: 0 };
+}
+
+/* The verdict tones, ranked on the same three tiers as the bands: teal and
+   green say in-band, blue and amber say off the band, red says act. A verdict
+   may render soberer than its reading's band, never calmer — §22. */
+const TONE_TIER = { "#0B7C86": 0, "#2A8050": 0, "#1D6FA5": 1, "#A2621B": 1, "#C4285B": 2, "#9FB0AE": 0 };
+
 export function computeControl(def, readings, days = 90) {
   const rows = windowRows(readings, def.key, days);
   if (rows.length < 3) return null;
@@ -162,8 +196,11 @@ export function computeControl(def, readings, days = 90) {
     else if (metric <= m) consistencyScore = 0.85 - 0.35 * ((metric - t) / Math.max(1e-9, m - t));
     else consistencyScore = Math.max(0.12, 0.5 - 0.38 * Math.min(1, (metric - m) / Math.max(1e-9, m - base)));
   }
+  /* "unknown" (no rule) renders the ungraded grey, not the loose red — a
+     surface that cannot grade may not paint a grade (§22, unknown refuses). */
   const consistencyColor = consistency === "tight" ? "#0B7C86"
-    : consistency === "moderate" ? "#A2621B" : "#C4285B";
+    : consistency === "moderate" ? "#A2621B"
+    : consistency === "loose" ? "#C4285B" : "#9FB0AE";
 
   const step = ROUND_STEP[def.key] || def.step || 0.1;
   const suggested = { min: roundTo(p05, step), max: roundTo(p95, step) };
@@ -183,7 +220,7 @@ export function computeControl(def, readings, days = 90) {
   const gapTxt = gap === 0 ? "" : (gap < 1 ? gap.toFixed(2) : gap.toFixed(0)) + (def.unit || "");
   const dirWord = bias === "high" ? "above" : "below";
 
-  let verdict, tone, headline, note;
+  let verdict, tone, headline, note, refused = false, missing = null;
 
   const name = def.label.toLowerCase();
   const band = `${fmtVal(def, def.min)}\u2013${fmtVal(def, def.max)}${def.unit}`;
@@ -193,7 +230,15 @@ export function computeControl(def, readings, days = 90) {
   const directional = pattern === "trending up" || pattern === "trending down";
   const wayWord = pattern === "trending up" ? "up" : "down";
 
-  if (severeDrift || (consistency === "loose" && directional)) {
+  if (!cRule) {
+    /* \u00a722 "Unknown refuses", per \u00a713's last row: where consistency cannot be
+       graded, refuse and name what is missing \u2014 never fall through to a
+       verdict resting on no grading. Latent today: every PARAM_DEFS key has a
+       CONSISTENCY_RULES entry, so no live parameter reaches this. */
+    refused = true; verdict = null; missing = "consistency tolerance rule";
+    tone = "#9FB0AE"; headline = "Steadiness not graded";
+    note = `No consistency tolerance is defined for ${name}, so how steady it has been can't be graded \u2014 saying nothing beats grading against nothing. The readings and their position are unaffected.`;
+  } else if (severeDrift || (consistency === "loose" && directional)) {
     /* One-way movement is a slide, not a swing — the advice differs and so
        should the word. */
     verdict = "sliding"; tone = "#C4285B"; headline = `Moving ${wayWord} fast`;
@@ -215,8 +260,26 @@ export function computeControl(def, readings, days = 90) {
     verdict = "steady-off"; tone = "#1D6FA5"; headline = `Steady, running ${bias}`;
     note = `Your ${name} has been very steady, but it's settled around ${fmtVal(def, p50)}${def.unit} — about ${gapTxt} ${dirWord} the ${band} you're aiming for. Corals care far more about steadiness than about the exact number, so a tank parked here and holding is in decent shape. The usual call is to move your target to match the tank rather than push the tank to match the target.`;
   } else {
-    verdict = "drifting"; tone = "#A2621B"; headline = `Drifting ${bias}`;
+    /* Renamed from `drifting` (§22): that is §13's band word — inside the
+       band, trending toward an edge — and this verdict fires on close to the
+       opposite condition, the window median outside the band. Same
+       condition, same tone, same note apart from the word. */
+    verdict = "unsettled"; tone = "#A2621B"; headline = `Unsettled ${bias}`;
     note = `Your ${name} is running around ${fmtVal(def, p50)}${def.unit}, roughly ${gapTxt} ${dirWord} the ${band} band, and it's moving about while it does. Steady the movement first — corrections are far easier to judge once a parameter has stopped wandering.`;
+  }
+
+  /* §22's alert tier: every verdict carries the tier of the latest reading's
+     §13 band and renders no calmer than it. The verdict word itself never
+     changes — the window graded the window; the tier reports the reading. At
+     the alert tier the note leads with the position, in §13/§15's own words
+     ("needs attention", "alert"), before it discusses steadiness. */
+  const position = positionBand(def, latestVal);
+  if ((TONE_TIER[tone] ?? 0) < position.tier) {
+    tone = position.tier === 2 ? "#C4285B" : "#A2621B";
+  }
+  if (position.tier === 2) {
+    const side = position.band === "alert-low" ? "below" : "above";
+    note = `Your ${name} needs attention: the latest reading, ${fmtVal(def, latestVal)}${def.unit}, is at or ${side} the alert threshold. ` + note;
   }
 
   const contextNote = paramContext(def, latestVal, SALT_MIX);
@@ -232,5 +295,6 @@ export function computeControl(def, readings, days = 90) {
     medianInside, bias, gap, metric, metricLabel, cRule,
     pattern, atResolution, maxDelta, netChange, rateInfo, rateGrade,
     suggested, suggestWorth, verdict, tone, headline, note, contextNote, days,
+    position, refused, missing,
   };
 }

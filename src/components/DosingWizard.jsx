@@ -241,7 +241,7 @@ export function DosingWizard({ paramDefs, alkAssessment, caAssessment, mgAssessm
       </div>
 
       {active && activeDef && (
-        <Card className="p-4">
+        <Card key={active.key} className="p-4">
           <div className="flex items-center gap-2 mb-3">
             <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: activeDef.color }} />
             <span className="text-[15px] font-black text-ink flex-1">{activeDef.label}</span>
@@ -265,7 +265,7 @@ export function DosingWizard({ paramDefs, alkAssessment, caAssessment, mgAssessm
               else and then ends. Conflating them is what had the app
               recommending a dose cut in the middle of a deliberate rise. */}
           <CorrectionPanel
-            def={active.def}
+            def={activeDef}
             state={doseStates.find((d) => d && d.key === active.key)}
             offers={correctionOffers[active.key]}
             onStart={(offer) => onStartCorrection(active.key, offer)}

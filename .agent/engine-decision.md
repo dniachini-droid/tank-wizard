@@ -831,7 +831,7 @@ Measured with the repo's own tools, not asserted:
   harness (`routines/18-real-history-replay.md:189-209`). Both paths must
   fix it to be replay-testable; consolidation carries it as a live defect.
 - **Open items already filed against these engines, counted.**
-  `.agent/backlog.md`: 29 open items in all; those attached to the dosing
+  `.agent/items/`: 29 open items in all; those attached to the dosing
   engines and notice layer include TW-003, TW-004, TW-005, TW-006, TW-008,
   TW-012, TW-014, TW-018, TW-025, TW-026, TW-027, TW-028, TW-029, TW-030,
   TW-031 — **15**. `.agent/needs-dan.md`: **2** open items (4: one-off

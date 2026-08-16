@@ -102,8 +102,15 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
      so the change date is editable rather than assumed to be today. */
   const [doseDate, setDoseDate] = useState(todayStr());
 
+  /* Only an actual change to volumeL (e.g. an external backup restore)
+     should resync this field. Depending on the whole `settings` object
+     re-fired this on every unrelated settings write on this screen (e.g.
+     saving a dose change), clobbering an unsaved volume edit. */
   useEffect(() => {
     setVol((settings.volumeL == null ? "" : String(settings.volumeL)));
+  }, [settings.volumeL]);
+
+  useEffect(() => {
     setElemDose(String(settings[elem.doseField] ?? 0));
     setElemStrength(String(settings[elem.strengthField] ?? elem.defaultStrength));
     setSigmaVal(String(kitSigma(elem.key, settings)));
@@ -548,15 +555,15 @@ export function Setup({ settings, onSaveSettings, paramDefs, latestByParam, read
 
       {/* --- 11. Backup and export --- */}
       {/* Anything hidden has to be findable again, or dismissing becomes its own
-          trap — a note you can never get back. */}
-      <InfoBlock icon={CheckCircle2} eyebrow="Acknowledged" title="Hidden notes" tone="#45605F"
+          trap — a notice you can never get back. */}
+      <InfoBlock icon={CheckCircle2} eyebrow="Acknowledged" title="Hidden notices" tone="#45605F"
         collapsible
         summary={dismissedList.length
-          ? `${dismissedList.length} note${dismissedList.length === 1 ? "" : "s"} hidden`
+          ? `${dismissedList.length} notice${dismissedList.length === 1 ? "" : "s"} hidden`
           : "Nothing hidden"}>
         {dismissedList.length === 0 ? (
           <p className="text-[13px] text-ink2 font-medium leading-relaxed">
-            Notes you hide will be listed here. They come back on their own if the situation changes —
+            Notices you hide will be listed here. They come back on their own if the situation changes —
             hiding one only silences the version you read.
           </p>
         ) : (

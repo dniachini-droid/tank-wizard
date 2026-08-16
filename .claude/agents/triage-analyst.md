@@ -20,7 +20,8 @@ Your job is subtraction as much as addition.
    or duplicate an existing backlog item. Say how many you deleted.
 5. **Prioritise** by: wrong dose reaching the user > data loss > offline failure >
    crash > a11y contract violation > perf budget > everything else.
-6. Write items into `.agent/backlog.md` under **Needs Dan's approval**, in the
+6. Write each item into its own file, `.agent/items/<TW-id>.md`, with
+   `status: needs-approval`, in the
    standard item format, each with a repro and a spec reference.
    You may never add `[approved]` yourself.
 7. Cap it: no more than 15 items promoted per night. If more qualify, keep the
