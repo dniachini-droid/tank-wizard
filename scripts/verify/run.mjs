@@ -32,6 +32,7 @@ const STATIC_CHECKS = [
   ['deadcode', 'scripts/verify/deadcode.mjs', 'advisory'],
   ['livecheck', 'scripts/verify/livecheck.mjs', 'blocking'],
   ['wordingcheck', 'scripts/verify/wordingcheck.mjs', 'blocking'],
+  ['consistencycheck', 'scripts/verify/consistencycheck.mjs', 'blocking'],
   ['dupcheck', 'scripts/verify/dupcheck.mjs', 'blocking'],
   ['blockdup', 'scripts/verify/blockdup.mjs', 'blocking'],
   ['csscheck', 'scripts/verify/csscheck.mjs', 'advisory'],
