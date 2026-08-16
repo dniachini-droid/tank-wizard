@@ -318,8 +318,22 @@ the result rather than decided** — whether a parameter's off switch reaches a
 relationship notice naming it, and which of a verdict and a suspect reading is
 the one live notice when both apply.
 
-**6c — The message layer.** Stage 3's specification, rendered. One place that
-turns a verdict into a sentence.
+**6c — The message layer.** ✅ **built 16 August**, TW-093. Stage 3's
+specification, rendered. One place that turns a verdict into a sentence:
+`src/lib/messages/message-layer.js`, §24's twenty-seven cards plus §25.1's short
+form and collapsed headline and §25.3's deferral. 51 tests, every card asserted
+against §24's own quoted string. Nothing calls it.
+
+**It does not invent wording.** §24's preamble authorises two substitutions — the
+parameter, and direction on 24.13 alone — and everywhere else the layer **refuses
+the mirror** rather than composing it. **Nine gaps**
+(`.agent/stage-6c-gaps.md`), and **five of them are cards §24 has not written**:
+in range but rising, steady and *above* the range (whose situation
+`reef-chemistry.md` §28.3 already works through at 455 ppm), above-and-recovering,
+above-and-worsening, and the unwritten `fell-short`/`overshot` quadrants. **That
+is wording work for the owner**, of the kind §24 itself is. One composition was
+chosen and flagged — §25.1's collapsed headline reads as two clauses by its slot
+table and one list by its naming rule.
 
 **6d — The contradiction states** in `doseStatus`, and its position tests
 re-sourced from `classifyReading`.
