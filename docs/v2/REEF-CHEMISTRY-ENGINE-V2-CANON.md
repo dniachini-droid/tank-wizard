@@ -70,9 +70,10 @@ Examples:
 
 - `CORE-POSITION-001`
 - `CORE-STABILISE-001`
-- `EVID-MOVEMENT-001`
-- `INTERVENTION-ACTUAL-001`
-- `POTENCY-CONTEXT-001`
+- `SHARED-DELIVERY-BASIS-001`
+- `SHARED-SLOPE-UNCERTAINTY-001`
+- `ALK-MOVEMENT-001`
+- `ALK-PREDICTION-SNAPSHOT-001`
 - `ALK-RAPID-001`
 
 Section numbering is for navigation. Rule IDs are for behavioural cross-reference.
@@ -90,6 +91,24 @@ A behavioural change is complete only when all three agree:
 A rule in canon without a test is specified but not enforced.
 A behaviour in code without canon is implementation drift.
 A golden test that preserves obsolete V1 behaviour does not outrank V2 canon.
+
+## Mechanical freeze-integrity requirement
+
+`CORE-CANON-COVERAGE-001`
+
+Before any future shared or parameter freeze is declared:
+
+1. every stable rule ID referenced anywhere in the active canon must resolve to exactly one active normative rule body;
+2. a rule-ID marker alone is not a body: the mechanical checker must verify that the owning rule section contains a non-trivial amount of substantive normative text, using an explicit conservative threshold recorded by the checker;
+3. every active normative rule body must appear in the canonical rule-coverage manifest;
+4. every manifest entry must point to at least one named coverage fixture;
+5. every named coverage fixture must itself exist;
+6. numerical/controller behaviour should be covered by a golden scenario;
+7. structural, ownership, migration, wording or governance rules may be covered by an invariant fixture where an arithmetic golden would be artificial;
+8. the mechanical checker must return zero dangling rule IDs, zero duplicate authoritative bodies, zero insubstantial rule bodies, zero uncovered normative rule bodies and zero missing fixture IDs;
+9. before a checker revision is trusted as a freeze gate, at least one deliberate negative-control mutation representing the defect class it is intended to catch must be shown to fail.
+
+This is a structural verification gate. It does not prove that the rule is scientifically correct or that a named fixture semantically exercises the right rule. Those remain review/conformance responsibilities. It prevents a rule from being treated as frozen merely because an ID marker or fixture name exists somewhere in the document.
 
 ---
 
@@ -481,6 +500,40 @@ Tank facts and user preferences used to interpret events:
 - test method where relevant.
 
 Configuration is versioned. A current change must not silently rewrite historical interpretation.
+
+### 2.2A Effective-dated configuration
+
+`SHARED-CONFIG-VERSION-001`
+
+Every V2 configuration version that can affect a derived assessment stores at minimum:
+
+```text
+configVersionId
+recordedAt
+effectiveFrom
+changedFields
+source
+```
+
+A derived assessment resolves the configuration version that was effective at its explicit `assessmentAsOf`.
+
+A current configuration value must never be backfilled into an earlier historical period merely because the older app did not version that field.
+
+For migration from an unversioned legacy app:
+
+- the legacy current settings may become the **first V2 configuration version**;
+- its `effectiveFrom` is the confirmed V2 migration/activation time unless an earlier effective time is independently proven;
+- pre-V2 raw facts remain preserved;
+- a historical replay/recommendation that requires a configuration value for a time before the first proven configuration version is:
+
+```text
+NOT_RUN
+reason = HISTORICAL_CONFIGURATION_UNAVAILABLE
+```
+
+- config-independent historical facts/analyses may still be shown or computed when their own requirements are satisfied.
+
+Do not manufacture historical target ranges, net volume, potency, actuator resolution or other configuration merely to make replay complete.
 
 ## 2.3 Derived estimates
 
@@ -2207,6 +2260,46 @@ If a reading is stored as 8.849 dKH and displayed as 8.8:
 
 must use 8.849.
 
+## 2.3A Legacy timestamps without a proven absolute instant
+
+`SHARED-LEGACY-TIME-001`
+
+New V2 events must satisfy §2.1 and store an unambiguous absolute instant.
+
+Legacy imports may not.
+
+Classify legacy time provenance explicitly:
+
+```text
+EXACT_ABSOLUTE
+RECONSTRUCTED_WITH_PROVENANCE
+LOCAL_TIME_ZONE_UNKNOWN
+DATE_ONLY
+```
+
+Rules:
+
+- `EXACT_ABSOLUTE` may participate normally.
+- `RECONSTRUCTED_WITH_PROVENANCE` may participate normally only when the historical timezone/offset is independently proven and the reconstruction is recorded.
+- `LOCAL_TIME_ZONE_UNKNOWN` remains visible in history and may support event order where that order is independently unambiguous, but it is **not** eligible for calculations requiring exact elapsed seconds across an offset/DST ambiguity.
+- `DATE_ONLY` remains visible and may support current position if otherwise valid, but it is not an exact trend point where assumed time-of-day could change slope, clustering or intervention attribution.
+
+Forbidden:
+
+- silently assigning noon;
+- silently applying the keeper's current timezone to old local timestamps;
+- silently treating a local `HH:MM` as an absolute instant.
+
+Missing behaviour for exact-time-dependent analysis:
+
+```text
+DEGRADE
+timeCapability = IMPRECISE_OR_ABSOLUTE_TIME_UNKNOWN
+exactElapsedTimeAnalysis = NOT_RUN
+```
+
+A new clean V2 regime may begin once precise absolute timestamps are available.
+
 ## 2.4 Event ordering at identical timestamps
 
 Where events share a timestamp, ordering must be explicit.
@@ -2699,6 +2792,49 @@ A pre/post pair should normally require:
 - no clear evidence consumption changed materially across the comparison.
 
 Exact qualification rules belong to the dosed parameter's canon.
+
+## 16A. Confirmed consumption-context change
+
+`SHARED-CONSUMPTION-CONTEXT-001`
+
+`CONSUMPTION_CONTEXT_CHANGE` is a **recorded confounder classification**, not a guess that biological demand must have changed.
+
+It exists only when a retained event explicitly states that a material demand context changed for the relevant parameter.
+
+Canonical event shape:
+
+```text
+ConsumptionContextEvent {
+    eventId
+    effectiveAt
+    affectedParameters[]
+    materiality = MATERIAL
+    source = USER_CONFIRMED | SYSTEM_CONFIRMED
+    reasonCode
+    note?
+}
+```
+
+Examples of reasons the product may allow a keeper/system to record include:
+
+```text
+CALCIFYING_BIOMASS_CHANGE
+LIGHTING_REGIME_CHANGE
+FLOW_REGIME_CHANGE
+TEMPERATURE_REGIME_CHANGE
+MAJOR_TISSUE_LOSS_OR_RECOVERY
+OTHER_CONFIRMED_CONSUMPTION_CONTEXT_CHANGE
+```
+
+The shared engine must not infer this classification merely because a slope changed unexpectedly.
+
+For a potency-learning pre/post comparison:
+
+- if a confirmed `CONSUMPTION_CONTEXT_CHANGE` falls after the start of the pre window and before the end of the post window, that potency candidate is ineligible;
+- if a new complete pre/post comparison is established entirely after the event in one stable context, eligibility may be reassessed normally;
+- absence of a logged context-change event does **not** prove biological demand was constant; potency remains an inference and still requires the parameter-specific evidence burden.
+
+Missing/unavailable consumption-context logging does not block core Alk control. It is one reason empirical potency learning remains capability-gated until its capture contract is implemented.
 
 ---
 
@@ -4605,7 +4741,7 @@ External narrow recheck result: **READY — freeze shared V2 architecture and pr
 
 All ten recheck items PASS. The only residue identified was the placement of `OVERSHOOT` inside the Part II §34 response-class numbering; that cosmetic residue is now removed without changing behaviour.
 
-**Shared architecture status: FROZEN — `SHARED_V2_FREEZE_1` — 2026-08-19.**
+**Historical shared architecture status at that review: FROZEN — `SHARED_V2_FREEZE_1` — 2026-08-19. Current authority is `SHARED_V2_FREEZE_2`.**
 
 ---
 
@@ -4630,7 +4766,7 @@ All ten narrow-recheck checks PASS.
 
 ```text
 sharedArchitectureCanon = FROZEN
-alkBehaviourCanon = ALK_V2_FREEZE_3
+alkBehaviourCanon = ALK_V2_FREEZE_3  # historical state at Shared Freeze 1
 implementationConformance = NOT_YET_PROVEN
 productionMigration = NOT_YET_PERFORMED
 ```
@@ -4664,10 +4800,58 @@ three evenly spaced Alk readings made the old endpoint uncertainty formula numer
 
 ---
 
+# SHARED V2 ARCHITECTURE FREEZE 2 DECLARATION
+
+**Freeze identifier:** `SHARED_V2_FREEZE_2`  
+**Status:** FROZEN — 2026-08-19  
+**Supersedes:** `SHARED_V2_FREEZE_1`
+
+### Reason
+
+Repository-informed implementation planning exposed shared completeness/capability gaps that were not visible during document-only review.
+
+Freeze 2 adds:
+
+- `CORE-CANON-COVERAGE-001` mechanical reference/coverage integrity, including a substantive-body check and demonstrated negative control;
+- `SHARED-CONFIG-VERSION-001` effective-dated configuration semantics;
+- `SHARED-LEGACY-TIME-001` deterministic legacy-time degradation;
+- `SHARED-CONSUMPTION-CONTEXT-001` definition of the potency-learning confounder;
+- removal of dangling example rule IDs from Master Rule 4;
+- named invariant/golden coverage required by the mechanical freeze gate.
+
+These changes are marked:
+
+```text
+IMPACTS_FROZEN_ALK
+```
+
+because Alk consumes the shared configuration/time/evidence semantics. Part III is therefore reissued as `ALK_V2_FREEZE_4`.
+
+### Freeze status
+
+```text
+sharedArchitectureCanon = SHARED_V2_FREEZE_2
+alkBehaviourCanon = ALK_V2_FREEZE_4
+implementationConformance = NOT_YET_PROVEN
+productionMigration = NOT_YET_PERFORMED
+```
+
+### Reopening rule
+
+A future shared behavioural or load-bearing completeness change requires:
+1. exact affected shared rule IDs;
+2. concrete failure scenario;
+3. impact analysis for every frozen parameter;
+4. coverage fixture updates;
+5. a new shared freeze identifier;
+6. a corresponding parameter reissue wherever `IMPACTS_FROZEN_<PARAMETER>` applies.
+
+---
+
 # PART III — ALKALINITY ENGINE
 
-**Status:** **FROZEN — ALK V2 FREEZE 3 — 2026-08-19.**  
-Freeze 1 was superseded after external adversarial review. Freeze 2 incorporated the capability contract, outer-bound safety path, advisory-responsibility integration, and final focused-review closures. Freeze 3 adds the explicit `ALK-011A/ALK-011B` uncertainty rules and aligns the shared evidence engine to the same `Sxx` formula family.
+**Status:** **FROZEN — ALK V2 FREEZE 4 — 2026-08-19.**  
+Freeze 1 was superseded after external adversarial review. Freeze 2 incorporated the capability contract, outer-bound safety path, advisory-responsibility integration, and final focused-review closures. Freeze 3 added the explicit `ALK-011A/ALK-011B` uncertainty rules and aligned the shared evidence engine to the same `Sxx` formula family. Freeze 4 closes implementation-discovered canon-completeness/capability gaps without changing the intended stabilise-first controller policy.
 
 
 ### Freeze 3 reason
@@ -7577,6 +7761,51 @@ Confidence remains an output/description of the evidence, not a coefficient that
 
 ---
 
+## ALK-048B — Actuator rounding
+
+`ALK-ROUNDING-001`
+
+This rule owns final actuator rounding for **maintenance mL/day recommendations**.
+
+Inputs:
+
+```text
+D_current
+D_continuous_feasible
+R_pump = actuatorIncrementMlPerDay
+```
+
+Preconditions:
+
+- `R_pump` is known and greater than zero;
+- the continuous candidate has already passed the applicable evidence, physical-rail, step-cap, empirical-bracket and non-negative-dose rules.
+
+### Canonical rounding
+
+1. Find the two adjacent representable actuator settings around `D_continuous_feasible`.
+2. Choose the representable setting with the smallest absolute distance from `D_continuous_feasible`.
+3. If the continuous candidate is an exact midpoint, choose the tied setting **closer to `D_current`**.
+4. If a tie still remains, choose the **lower** representable setting.
+5. Recalculate the actual dose delta and physical Alk effect from the rounded command.
+6. Recheck all hard constraints that can be affected by actuator discretisation.
+7. If the rounded command violates a hard constraint only because rounding moved the command farther from `D_current`, move by actuator increments **toward `D_current`** until the command is feasible.
+8. If no changed representable command remains feasible and the result returns to the current command:
+
+```text
+recommendation = HOLD
+reason = ACTUATOR_RESOLUTION
+```
+
+Do not force a one-increment change merely to avoid HOLD.
+
+### Scope
+
+M-1's actuator increment requirement applies to final actionable **maintenance mL/day**.
+
+A one-off urgent `SAFETY_RETURN` correction volume remains governed by `ALK-SAFETY-CORRECTION-RESOLUTION-001` and is not blocked merely because a maintenance-rate increment is unknown.
+
+---
+
 ## ALK-048A — Predicted post-change slope uses the actual recommended dose
 
 `ALK-PREDICTED-POST-SLOPE-001`
@@ -8337,14 +8566,14 @@ The following do not survive as active Alk-control rules:
 
 The four initial Alk decision gates are resolved.
 
-## `ALK-POSTCHANGE-001` — two-stage response assessment
+## Decision summary — `ALK-POSTCHANGE-001` — two-stage response assessment
 
 - first ordinary post-change check at ~48 h;
 - Day 2 shows position, exposure and the first interval relative to the predicted trajectory, but does not run the formal causal response classifier;
 - usually HOLD unless an explicit rapid/safety/delivery rule applies;
 - the second post-change test around Day 4 creates the first ordinary non-overlapping post-change slope and is the preferred point for formal response classification and maintenance reassessment.
 
-## `ALK-SLOPE-SUPPORT-001` — uncertainty-aware dose sizing
+## Decision summary — `ALK-SLOPE-SUPPORT-001` — uncertainty-aware dose sizing
 
 - canonical observed slope remains Theil–Sen for 3+ eligible points;
 - control slope uncertainty is deterministic under ALK-011A;
@@ -8352,14 +8581,14 @@ The four initial Alk decision gates are resolved.
 - maintenance change is calculated from \(S_{supported}\);
 - no arbitrary confidence multiplier or raw-mL staging percentage.
 
-## `ALK-STEP-CAP-001` — 25% ordinary / 50% narrow rapid-boundary exception
+## Decision summary — `ALK-STEP-CAP-001` — 25% ordinary / 50% narrow rapid-boundary exception
 
 - ordinary cap = 25%;
 - up to 50% only for confirmed rapid change plus actual/forecast outer-operating-bound risk;
 - 0.50 dKH/day physical rail remains binding;
 - earlier retest required.
 
-## `ALK-NEGATIVE-CONSUMPTION-001` — broken mass balance cannot size maintenance
+## Decision summary — `ALK-NEGATIVE-CONSUMPTION-001` — broken mass balance cannot size maintenance
 
 - materially negative/uninterpretable consumption does not produce a maintenance-dose change;
 - HOLD established maintenance;
@@ -13003,7 +13232,7 @@ The implementation phase must diff code/tests against this frozen Part III and c
 
 # PART III — FREEZE DECLARATION
 
-**Alk V2 Freeze 1 is superseded. The current Part III authority is Alk V2 Freeze 3 (FROZEN — 2026-08-19).**
+**Alk V2 Freeze 1 is superseded. The current Part III authority is Alk V2 Freeze 4 (FROZEN — 2026-08-19).**
 
 Any review finding that changes behaviour must:
 1. identify the conflicting rule ID(s);
@@ -13779,6 +14008,149 @@ This golden exists specifically so three-point arithmetic cannot hide a divergen
 
 ---
 
+
+## WG-ALK-063 — Rounding cannot break a hard physical rail
+
+Inputs:
+
+```text
+D_current = 9.0 mL/day
+D_continuous_feasible = 16.352941 mL/day
+actuatorIncrementMlPerDay = 0.10 mL/day
+P_selected = 0.0680 dKH/mL
+physicalEffectRail = 0.50 dKH/day
+```
+
+Nearest ordinary rounding would select:
+
+```text
+16.4 mL/day
+```
+
+but:
+
+\[
+(16.4-9.0)(0.0680)=0.5032\ dKH/day
+\]
+
+which exceeds the rail.
+
+`ALK-ROUNDING-001` therefore moves one actuator step toward the current dose:
+
+```text
+recommendedDose = 16.3 mL/day
+```
+
+and:
+
+\[
+(16.3-9.0)(0.0680)=0.4964\ dKH/day
+\]
+
+Required:
+- final command = 16.3 mL/day;
+- no rail violation after rounding;
+- no arbitrary refusal while a feasible representable command exists.
+
+---
+
+## WG-ALK-064 — Confirmed consumption-context change blocks one potency comparison
+
+Pre and post Alk slopes otherwise satisfy the potency-learning evidence burden.
+
+A retained event occurs between the pre-window start and post-window end:
+
+```text
+classification = CONSUMPTION_CONTEXT_CHANGE
+affectedParameters = [ALK]
+materiality = MATERIAL
+source = USER_CONFIRMED
+reasonCode = LIGHTING_REGIME_CHANGE
+```
+
+Required:
+
+```text
+potencyObservationEligible = false
+reason = CONSUMPTION_CONTEXT_CHANGE
+```
+
+Forbidden:
+- inferring a potency value across the event;
+- inferring the context-change classification merely from an unexpected slope without a retained event.
+
+A later complete comparison entirely inside the new stable context may become eligible normally.
+
+---
+
+## WG-ALK-065 — Legacy target range is not backfilled into historical replay
+
+Legacy history contains Alk measurements from July.
+
+The first effective-dated V2 configuration is created on 2026-08-19 with:
+
+```text
+targetRange = 8.2–8.8 dKH
+effectiveFrom = 2026-08-19T21:00:00+10:00
+```
+
+No earlier target-range version is proven.
+
+Required for a July historical recommendation replay:
+
+```text
+historicalConfigDependentReplay = NOT_RUN
+reason = HISTORICAL_CONFIGURATION_UNAVAILABLE
+```
+
+Required:
+- July raw measurements remain visible;
+- the August configuration is not silently treated as July configuration;
+- new assessments from the effective date onward use the V2 config normally.
+
+---
+
+## WG-ALK-066 — Legacy local time without timezone does not become an absolute instant
+
+Imported legacy reading:
+
+```text
+date = 2026-04-05
+time = 02:30
+timezone/offset = UNKNOWN
+```
+
+Required:
+
+```text
+timeProvenance = LOCAL_TIME_ZONE_UNKNOWN
+exactElapsedTimeAnalysis = NOT_RUN
+```
+
+The reading may remain visible in history and may support current position if otherwise valid.
+
+Forbidden:
+- assigning the keeper's current timezone;
+- assigning noon;
+- using it as an exact elapsed-time trend point across a possible DST/offset ambiguity.
+
+---
+
+## WG-ALK-067 — Gross liquid-volume guard remains independent of Alk rate rail
+
+Assume a very dilute maintenance solution where a candidate dose would satisfy the Alk 0.50 dKH/day rail but would deliver more than:
+
+```text
+2% of configured net system water volume in 24 h
+```
+
+Required:
+- do not issue that liquid volume as one 24-hour maintenance/correction command;
+- stage/lengthen as canon permits until both the Alk rail and liquid-volume guard are satisfied;
+- do not treat satisfaction of the dKH/day rail as satisfying the liquid-volume guard.
+
+---
+
 # PART III — APP CAPABILITY & DEGRADATION CONTRACT
 
 `ALK-CAPABILITY-CONTRACT-001`
@@ -14220,6 +14592,84 @@ Consequences:
 Magnesium state is advisory/contextual for this Alk emergency override, not a prerequisite to calculate the Alk safety action.
 
 
+## M-12 — Effective-dated configuration history
+
+### Required by
+
+Part I `SHARED-CONFIG-VERSION-001`, deterministic replay, historical assessment truthfulness, and any Alk assessment whose interpretation depends on target/configuration state.
+
+### Canonical data
+
+```text
+configVersionId
+recordedAt
+effectiveFrom
+changedFields
+source
+```
+
+### Missing behaviour
+
+For legacy history before the first proven effective-dated configuration version:
+
+```text
+NOT_RUN
+historicalConfigDependentReplay = NOT_RUN
+reason = HISTORICAL_CONFIGURATION_UNAVAILABLE
+```
+
+Consequences:
+
+- preserve raw historical measurements/events;
+- do not backfill today's target range, net volume, potency or actuator resolution into the old period;
+- current V2 analysis from the first valid configuration version onward proceeds normally;
+- config-independent historical analysis may still run if its own inputs are valid.
+
+The current unversioned legacy settings may seed the first V2 config version **effective at migration**, not retroactively.
+
+---
+
+## M-13 — Absolute event time / timezone provenance
+
+### Required by
+
+Part II `SHARED-LEGACY-TIME-001` and every calculation using exact elapsed seconds, repeat clustering, event order near intervention boundaries, or exact retest timing.
+
+### Canonical data for new V2 events
+
+```text
+absoluteInstant
+displayTimeZoneId
+timeProvenance = EXACT_ABSOLUTE
+```
+
+Equivalent offset-aware timestamp storage is acceptable.
+
+### Missing behaviour
+
+Legacy records without a proven absolute instant:
+
+```text
+DEGRADE
+timeCapability = IMPRECISE_OR_ABSOLUTE_TIME_UNKNOWN
+```
+
+Then:
+
+- history display remains available;
+- current position may remain available if the latest reading is otherwise valid;
+- exact elapsed-time trend/consumption/response calculations that could change under timezone/DST ambiguity are `NOT_RUN`;
+- no noon or current-timezone backfill is invented.
+
+If historical timezone/offset is independently proven, the importer may reconstruct an absolute instant and retain provenance:
+
+```text
+timeProvenance = RECONSTRUCTED_WITH_PROVENANCE
+```
+
+---
+
+
 # POTENCY LEARNING — BUILDABILITY DECISION
 
 `ALK-POTENCY-CAPABILITY-GATE-001`
@@ -14279,6 +14729,8 @@ This is a capability deferral, not a retreat from the learner design.
 | M-9 pre/post dose state | Potency observation **NOT_RUN** unless programmed states confirmed |
 | M-10 historical bracket evidence | Empirical bracket **NOT_RUN**; core controller continues |
 | M-11 magnesium alert state | **DEGRADE** to UNKNOWN; Alk safety still runs, no low-Mg warning invented |
+| M-12 effective-dated configuration | Historical config-dependent replay **NOT_RUN** before first proven config version; raw facts retained |
+| M-13 absolute-time/timezone provenance | **DEGRADE** legacy ambiguous time; exact elapsed-time analyses **NOT_RUN** where ambiguity matters |
 
 
 
@@ -14390,7 +14842,7 @@ M-10 empirical historical bracket capability       FIXED / NOT_RUN fallback
 
 ## Freeze 2 owner decision — N-4 magnesium precedence
 
-`ALK-SAFETY-MG-OVERRIDE-001`
+Rule reference: `ALK-SAFETY-MG-OVERRIDE-001`
 
 **Decision:** OPTION B.
 
@@ -14429,7 +14881,7 @@ No substantive focused safety finding remains open.
 
 # PART III — Implementation directive
 
-**Status:** Alk V2 Freeze 3 is behaviourally frozen. Do not treat empirical potency learning as available merely because its mathematics is specified.
+**Status:** Alk V2 Freeze 4 is frozen. Do not treat empirical potency learning as available merely because its mathematics is specified.
 
 Core Alk V2 may be implemented subject to:
 - all Parts I–III invariants;
@@ -14469,16 +14921,53 @@ Any newly discovered substantive V1/V2 conflict must return to canon review rath
 ---
 
 
-# PART III — ALK V2 FREEZE 3 DECLARATION
+# PART III — ALK V2 FREEZE 3 DECLARATION — HISTORICAL
 
 **Freeze identifier:** `ALK_V2_FREEZE_3`  
 **Frozen:** 2026-08-19  
+**Superseded by:** `ALK_V2_FREEZE_4`
+
+Freeze 3 closed the shared `Sxx` uncertainty mismatch. Repository inspection later identified additional canon-completeness/capability gaps, requiring a governed reissue rather than an in-place patch.
+
+---
+
+# PART III — ALK V2 FREEZE 4 DECLARATION
+
+**Freeze identifier:** `ALK_V2_FREEZE_4`  
+**Status:** FROZEN — 2026-08-19  
 **Scope:** Part III behavioural canon and its explicitly referenced active shared/governing rules as incorporated at freeze time.
+
+### Freeze 4 closure items
+
+Freeze 4 adds/clarifies:
+
+1. explicit `ALK-ROUNDING-001` rule body, preserving the already-settled nearest/tie-toward-current policy and hard-constraint recheck;
+2. explicit shared definition of `CONSUMPTION_CONTEXT_CHANGE` for potency-learning eligibility;
+3. M-12 effective-dated configuration missing-data behaviour;
+4. M-13 legacy absolute-time/timezone provenance missing-data behaviour;
+5. mechanical canon reference/coverage integrity under `CORE-CANON-COVERAGE-001`;
+6. new worked goldens/invariants for the implementation-discovered cases.
+
+### Policy statement
+
+This is a **canon-completeness/capability freeze**, not a redesign of the Alk controller.
+
+The frozen owner decisions remain:
+- stabilise first;
+- current position from latest valid measurement;
+- `ALK_SLOPE_SUPPORT_K = 1.28`;
+- `sigma_Alk_base = 0.10 dKH`;
+- ordinary 25% / exceptional 50% cap policy;
+- 0.50 dKH/day rail;
+- negative/uninterpretable consumption does not size ordinary maintenance;
+- two-stage intervention assessment;
+- magnesium safety interface remains `UNKNOWN` in the Alk-only migration phase.
 
 ### Freeze status
 
 ```text
-behaviouralCanon = FROZEN
+behaviouralCanon = ALK_V2_FREEZE_4
+sharedArchitectureCanon = SHARED_V2_FREEZE_2
 implementationConformance = NOT_YET_PROVEN
 productionMigration = NOT_YET_PERFORMED
 empiricalPotencyLearning = CAPABILITY_GATED
@@ -14488,13 +14977,13 @@ empiricalPotencyLearning = CAPABILITY_GATED
 
 Do not silently edit Alk behaviour after this marker.
 
-A future cross-part architecture review may discover a shared primitive defect that impacts frozen Alk. If so:
-- identify `IMPACTS_FROZEN_ALK`;
-- demonstrate the concrete behavioural failure;
-- update canon and goldens explicitly;
-- issue Alk V2 Freeze 4 or later.
-
-A shared-architecture cleanup that does **not** alter Part III behaviour does not require reopening Alk.
+Any future Alk behavioural or load-bearing completeness change requires:
+- exact affected rule IDs;
+- concrete failure scenario;
+- canon vs implementation classification;
+- affected coverage fixture updates;
+- `IMPACTS_FROZEN_ALK` where caused by a shared change;
+- Alk V2 Freeze 5 or later.
 
 ---
 
@@ -14998,6 +15487,169 @@ The raw values remain available for future V2 design/testing without implying th
 
 ---
 
+## X-INV-001 — Canon/reference integrity
+
+Coverage ID: `INV-CANON-001`
+
+Mechanical checker requirements:
+- zero dangling stable rule references;
+- every active normative stable rule body appears exactly once in the coverage manifest;
+- every manifest rule has at least one existing fixture ID;
+- every listed fixture ID exists.
+
+---
+
+## X-INV-002 — Advisory truth and non-adherence
+
+Coverage ID: `INV-CORE-ADVISORY-001`
+
+Required invariants:
+- recommendation does not become implementation without an implementation event;
+- confirmed non-adherence may be surfaced but does not create punitive lockout;
+- unknown implementation remains unknown;
+- engine-originated uncertainty/capability gaps still refuse/degrade as canon requires.
+
+---
+
+## X-INV-003 — Non-adherence rescue complexity
+
+Coverage ID: `INV-NONADHERENCE-001`
+
+A hostile simulation that requires the keeper to ignore multiple prior recommendations may be classified as `NONADHERENCE_OUTCOME`. The engine must still remain deterministic and internally safe, but passing the simulation does not require increasingly complex rescue branches solely to compensate for repeated ignored advice.
+
+---
+
+## X-INV-004 — One analytical owner
+
+Coverage ID: `INV-CORE-OWNER-001`
+
+Required:
+- domain engine owns chemistry;
+- presentation renders structured output;
+- no UI component independently calculates slope, dose, response class or retest time;
+- one retest scheduler owns chemistry timing.
+
+---
+
+## X-INV-005 — Surface wording contract
+
+Coverage ID: `INV-SURFACE-WORDING-001`
+
+Snapshot/contract tests must verify the Part IX wording rules, including conclusion before basis, no unsupported causal speculation, dose only when relevant, units present, recent-intervention precedence, no causal “working” claim before formal evidence, and non-adherence wording that informs without shaming or punitive lockout.
+
+---
+
+## X-INV-006 — Effective-dated configuration
+
+Coverage ID: `INV-CONFIG-001`
+
+Same raw pre-V2 history plus two different current target ranges must not rewrite the historical target configuration. Historical config-dependent replay before the first proven configuration version remains `NOT_RUN`.
+
+---
+
+## X-INV-007 — Legacy absolute-time provenance
+
+Coverage ID: `INV-TIME-001`
+
+Legacy date-only/local-time-without-zone records must never gain fabricated noon/current-zone instants. Exact elapsed-time calculations use only exact or provenance-backed reconstructed instants.
+
+---
+
+## X-INV-008 — No V1 staging/confidence multiplier
+
+Coverage ID: `INV-ALK-STAGING-001`
+
+Given the same supported slope and final physical constraints, changing a presentation confidence label must not change the numerical maintenance dose. No 100/90/70/55% raw-mL staging band may run.
+
+---
+
+## X-INV-009 — Variable semantics are dimension-safe
+
+Coverage ID: `INV-ALK-VARIABLES-001`
+
+Level targets, maintenance dose rates, temporary movement components, correction volumes and potency remain separate domain concepts. A field named `target` must not carry both chemical level and mL/day semantics.
+
+---
+
+## X-INV-010 — Confidence is output, not dose multiplier
+
+Coverage ID: `INV-ALK-CONFIDENCE-001`
+
+For identical evidence and supported slope, changing only a descriptive confidence label cannot alter the dose calculation.
+
+---
+
+# CANON RULE COVERAGE MANIFEST
+
+`CORE-CANON-COVERAGE-001` requires every active normative stable rule body below to have at least one named fixture.
+
+| Rule ID | Coverage fixture(s) |
+|---|---|
+| `CORE-CANON-COVERAGE-001` | `INV-CANON-001` |
+| `CORE-ADVISORY-RESPONSIBILITY-001` | `INV-CORE-ADVISORY-001` |
+| `CORE-INFORM-PROCEED-001` | `INV-CORE-ADVISORY-001` |
+| `CORE-NONADHERENCE-COMPLEXITY-001` | `INV-NONADHERENCE-001` |
+| `SIM-NONADHERENCE-001` | `INV-NONADHERENCE-001` |
+| `CORE-STABILISE-001` | `WG-ALK-014`, `WG-ALK-034` |
+| `CORE-POSITION-001` | `ALK-G024`, `ALK-G025`, `ALK-G039` |
+| `CORE-SOURCE-001` | `INV-CORE-OWNER-001` |
+| `SHARED-DELIVERY-BASIS-001` | `WG-ALK-047` |
+| `SHARED-SLOPE-UNCERTAINTY-001` | `WG-ALK-062` |
+| `SHARED-CONFIG-VERSION-001` | `WG-ALK-065`, `INV-CONFIG-001` |
+| `SHARED-LEGACY-TIME-001` | `WG-ALK-066`, `INV-TIME-001` |
+| `SHARED-CONSUMPTION-CONTEXT-001` | `WG-ALK-064` |
+| `ALK-OUTER-BOUNDS-001` | `WG-ALK-041`, `WG-ALK-043` |
+| `ALK-OUTER-BOUND-ACTION-001` | `WG-ALK-041`, `WG-ALK-051` |
+| `ALK-SAFETY-BUFFER-001` | `WG-ALK-041`, `WG-ALK-053` |
+| `ALK-SAFETY-CORRECTION-RESOLUTION-001` | `WG-ALK-061` |
+| `ALK-HIGH-BREACH-UNRESOLVED-001` | `WG-ALK-051` |
+| `ALK-SAFETY-RETURN-INTEGRATION-001` | `WG-ALK-052`, `WG-ALK-056`, `WG-ALK-058`, `WG-ALK-059`, `WG-ALK-060` |
+| `ALK-SAFETY-MG-OVERRIDE-001` | `WG-ALK-055` |
+| `ALK-MINIMUM-CADENCE-001` | `ALK-G002`, `ALK-G003`, `WG-ALK-049` |
+| `ALK-MOVEMENT-001` | `ALK-G003`, `ALK-G004A` |
+| `ALK-SLOPE-UNCERTAINTY-001` | `WG-ALK-062` |
+| `ALK-SUPPORTED-SLOPE-001` | `ALK-G003`, `ALK-G004A`, `WG-ALK-062` |
+| `ALK-STABLE-001` | `ALK-G006`, `ALK-G007` |
+| `ALK-RAPID-001` | `ALK-G005`, `WG-ALK-043` |
+| `ALK-POTENCY-PLAUSIBILITY-001` | `ALK-G037`, `WG-ALK-050` |
+| `ALK-POTENCY-POOL-001` | `ALK-G035`, `ALK-G036` |
+| `ALK-POTENCY-CONFIDENCE-001` | `ALK-G036`, `ALK-G037` |
+| `ALK-CONSUMPTION-ESTIMATE-001` | `ALK-G003`, `ALK-G026`, `ALK-G027` |
+| `ALK-MAINTENANCE-SEMANTICS-001` | `ALK-G006`, `ALK-G008`, `ALK-G009` |
+| `ALK-NEGATIVE-CONSUMPTION-001` | `ALK-G026`, `ALK-G027`, `ALK-G028`, `WG-ALK-051` |
+| `ALK-BRACKET-COMPARABILITY-001` | `ALK-G038`, `WG-ALK-054` |
+| `ALK-WATERCHANGE-UNKNOWN-001` | `ALK-G021`, `ALK-G022`, `ALK-G023`, `WG-ALK-048` |
+| `ALK-POSTCHANGE-001` | `ALK-G010`, `ALK-G011`, `WG-ALK-007`, `WG-ALK-008` |
+| `ALK-MINIMUM-ACTION-001` | `ALK-G004A`, `WG-ALK-003` |
+| `ALK-COMPOSITE-RAIL-001` | `WG-ALK-052` |
+| `ALK-STEP-CAP-001` | `WG-ALK-004`, `WG-ALK-006`, `WG-ALK-043` |
+| `ALK-ROUNDING-001` | `WG-ALK-005`, `WG-ALK-063` |
+| `ALK-STAGING-001` | `INV-ALK-STAGING-001` |
+| `ALK-PREDICTED-POST-SLOPE-001` | `ALK-G010`, `WG-ALK-001` |
+| `ALK-POSTCHANGE-RETEST-001` | `ALK-G010`, `ALK-G011`, `WG-ALK-060` |
+| `ALK-RETURN-EXPIRY-001` | `WG-ALK-031`, `WG-ALK-032` |
+| `ALK-LIQUID-VOLUME-GUARD-001` | `WG-ALK-067` |
+| `ALK-FORECAST-SLOPE-001` | `WG-ALK-042`, `WG-ALK-043` |
+| `ALK-VARIABLE-SEMANTICS-001` | `INV-ALK-VARIABLES-001` |
+| `ALK-CONFIDENCE-OUTPUT-001` | `INV-ALK-CONFIDENCE-001` |
+| `ALK-SLOPE-SUPPORT-001` | `WG-ALK-001`, `WG-ALK-002`, `WG-ALK-062` |
+| `ALK-RESPONSE-PRE-EVIDENCE-001` | `WG-ALK-044` |
+| `ALK-RESPONSE-CLASSIFIER-001` | `WG-ALK-007`, `WG-ALK-008`, `WG-ALK-009` |
+| `ALK-RESPONSE-ATTRIBUTION-001` | `ALK-G010`, `WG-ALK-010`, `WG-ALK-021`, `WG-ALK-022`, `WG-ALK-023` |
+| `ALK-RESPONSE-DETECTABILITY-001` | `WG-ALK-010` |
+| `ALK-CARD-ATTRIBUTION-001` | `ALK-G039A`, `ALK-G039B`, `INV-SURFACE-WORDING-001` |
+| `ALK-INTERVENTION-EXTERNAL-CHANGE-001` | `WG-ALK-016`, `WG-ALK-017`, `WG-ALK-018` |
+| `ALK-PREDICTION-SNAPSHOT-001` | `WG-ALK-019`, `WG-ALK-029` |
+| `ALK-CAPABILITY-CONTRACT-001` | `WG-ALK-045`, `WG-ALK-046`, `WG-ALK-047`, `WG-ALK-048`, `WG-ALK-054`, `WG-ALK-061`, `WG-ALK-065`, `WG-ALK-066` |
+| `ALK-POTENCY-CAPABILITY-GATE-001` | `WG-ALK-046`, `WG-ALK-064` |
+| `SURFACE-WORDING-001` | `INV-SURFACE-WORDING-001` |
+| `SURFACE-INFORM-PROCEED-001` | `INV-CORE-ADVISORY-001`, `INV-SURFACE-WORDING-001` |
+| `MIGRATION-ALK-ONLY-001` | `X-MIG-001` |
+| `MIGRATION-INERT-CA-MG-MEASUREMENTS-001` | `X-MIG-001` |
+| `MIGRATION-MG-GATE-ISOLATION-001` | `X-MIG-001` |
+
+---
+
 ## X-GOV-001 — Confirmed ignored recommendation: reassess and continue
 
 History:
@@ -15245,11 +15897,11 @@ with sign restored.
 
 `ALK_SLOPE_SUPPORT_K = 1.28` is a fixed-but-reviewable engineering constant, never a Setup/user preference.
 
-## `ALK-POSTCHANGE-001` — Two-stage Alk intervention assessment
+## Owner-lock summary — `ALK-POSTCHANGE-001` — Two-stage Alk intervention assessment
 
 First ordinary Alk response test is ~48 hours after a maintenance change and is judged against the predicted post-change trajectory. A second post-change test around Day 4 is normally preferred before declaring final maintenance matching.
 
-## `ALK-NEGATIVE-CONSUMPTION-001` — Non-physical Alk mass balance does not size maintenance
+## Owner-lock summary — `ALK-NEGATIVE-CONSUMPTION-001` — Non-physical Alk mass balance does not size maintenance
 
 Materially negative/uninterpretable Alk consumption cannot itself produce a maintenance-dose change. Position/risk may shorten retesting but does not validate a broken estimate.
 
