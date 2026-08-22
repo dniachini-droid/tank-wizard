@@ -70,6 +70,35 @@ safety property, not a quality property.
     the change looks — a wrong number in this app can kill livestock, and the
     last human check is the whole point of the gate.
 
+## The unimpressed reefkeeper runs first
+
+`unimpressed-reefkeeper` runs **before any other reviewer** on any round that
+changes something Dan will look at. Rounds that touch only the engine or the
+canon do not need it. It reads no code and no canon — it drives the running app
+in a browser and reports what does not make sense. It exists because every
+code-reading reviewer on this project has passed, as correct and fully tested,
+faults that were obvious within seconds of using the app.
+
+**Its findings are fixed in the same round.** They are not filed for Dan to
+decide on. He is told what was fixed and why.
+
+**Three exceptions go to Dan instead**, via `.agent/needs-dan.md`:
+
+- anything touching chemistry or the canon
+- anything the agent flags as *"was this decided?"*
+- anything where it names two options rather than one answer
+
+**It needs two things and stops without them:**
+
+1. the app running in a browser it can drive
+2. a written summary of what is in the tank's data — how many readings of each
+   parameter, how many dose changes, how many water changes, how many tasks
+
+Give it both before dispatching it. Without the summary it cannot tell real data
+from invented data, which is how twenty phantom water-change markers survived
+four rounds of review. A run that cannot supply both does not run this agent and
+says so; half a review from it is worse than none, because it will be trusted.
+
 ## Definition of done
 
 An item is only done when all of these hold:
