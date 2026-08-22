@@ -1,4 +1,7 @@
-# The 27 Agents — what each one does
+# The 28 Agents — what each one does
+
+## Runs first, before everything
+| unimpressed-reefkeeper | drives the running app in a browser and reports what does not make sense; reads no code and no canon |
 
 ## Build wave — writes code, tightly gated
 | planner | picks and scopes the night's work; refuses underspecified items |
